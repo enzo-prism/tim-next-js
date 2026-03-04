@@ -12,6 +12,7 @@
 1. [Deployment on Vercel](./deployment-vercel.md)
 2. [Operations Runbook](./operations-runbook.md)
 3. [Migration Parity Checklist](./parity-checklist.md)
+4. Release command: `npm run release:prod`
 
 ## Quality and Analytics
 

@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
-    "check": "npm run typecheck && npm run lint && npm run test"
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "release:prod": "bash scripts/release-prod.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

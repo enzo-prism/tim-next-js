@@ -21,6 +21,23 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `ADMIN_PASSWORD`
    - analytics variables from `docs/environment-variables.md`
 
+## Critical Deployment Guardrails
+
+The most common failure mode is branch/config drift:
+
+- GitHub default branch is not `main`
+- Vercel project is not connected to the GitHub repo
+
+Verify and fix before release:
+
+```bash
+gh repo view enzo-prism/tim-next-js --json defaultBranchRef
+gh api -X PATCH repos/enzo-prism/tim-next-js -f default_branch=main
+vercel git connect https://github.com/enzo-prism/tim-next-js.git
+```
+
+`vercel git connect` is safe to run repeatedly; it will report if already connected.
+
 ## One-Time Project Linking
 
 If not already linked:
@@ -82,6 +99,23 @@ Use production credentials locally only in a controlled release window.
 
 ## Deploy Flow
 
+### Recommended guarded production release (fast path)
+
+Run one command from clean `main`:
+
+```bash
+npm run release:prod
+```
+
+This script enforces:
+
+1. clean git working tree
+2. local `main` aligned with `origin/main`
+3. GitHub default branch forced to `main` if drifted
+4. Vercel Git integration connected to this repo
+5. quality checks (`npm run check`)
+6. production deploy via Vercel CLI
+
 ### Preview deploy
 
 ```bash
@@ -95,6 +129,8 @@ Validate preview URL before production promotion.
 ```bash
 vercel --prod
 ```
+
+If you already ran `npm run release:prod`, do not run `vercel --prod` again unless intentionally creating another deployment.
 
 ## Post-Deploy Smoke Tests
 

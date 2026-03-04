@@ -126,6 +126,26 @@ Actions:
    - `/?page_id=1073` to `/patient-info`
 3. Deploy fix and run redirect smoke tests.
 
+## Incident: Push landed on GitHub but not visible in Vercel
+
+Symptoms:
+
+- latest commit exists on GitHub `main`
+- no matching Vercel deployment appears
+
+Actions:
+
+1. Verify GitHub default branch:
+   - `gh repo view enzo-prism/tim-next-js --json defaultBranchRef`
+2. If not `main`, reset immediately:
+   - `gh api -X PATCH repos/enzo-prism/tim-next-js -f default_branch=main`
+3. Reconnect Vercel Git integration:
+   - `vercel git connect https://github.com/enzo-prism/tim-next-js.git`
+4. Run guarded release:
+   - `npm run release:prod`
+5. Confirm new production deployment is Ready:
+   - `vercel ls tim-next-js`
+
 ## Routine Operational Tasks
 
 ## Rotate admin password

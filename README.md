@@ -83,11 +83,16 @@ npm run db:push
 
 ## Deployment Summary
 
-1. Push to GitHub `main`.
-2. Ensure Vercel project framework is `nextjs`.
+1. Keep GitHub default branch set to `main`.
+2. Ensure Vercel Git integration is connected to `enzo-prism/tim-next-js`.
 3. Ensure required env vars are configured.
 4. Run `npm run db:push` against production database.
-5. Deploy with `vercel --prod`.
+5. Run one-command guarded release:
+
+```bash
+npm run release:prod
+```
+
 6. Run smoke tests on routes, redirects, APIs, and admin auth.
 
 See [Deployment on Vercel](docs/deployment-vercel.md) for full details.
