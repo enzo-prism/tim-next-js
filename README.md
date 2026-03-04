@@ -1,123 +1,103 @@
-# Family First Smile Care (Next.js Rebuild)
+# Family First Smile Care (Next.js)
 
-Full Next.js App Router rebuild of the original Family First Smile Care website, migrated from a Replit Vite/Express stack to Vercel-ready architecture.
+Production-grade Next.js rebuild of the Family First Smile Care website, migrated from a Replit Vite/Express stack and optimized for Vercel deployment.
 
-## Stack
+## What This Repo Contains
 
-- Next.js 15 + App Router
-- TypeScript (strict)
-- Tailwind CSS + shadcn-style UI primitives
-- Drizzle ORM + Vercel Postgres
-- Basic Auth middleware for `/admin` and `/api/admin/*`
+- Full public website route parity
+- Admin dashboard protected with Basic Auth
+- Contact form persistence using Postgres via Drizzle ORM
+- GA4 + Google Search Console admin reporting APIs
+- Canonical SEO + schema.org JSON-LD + sitemap/robots/llms assets
+- Vercel-ready routing, headers, and deployment flow
 
-## Route Parity
+## Quick Start
 
-Public routes implemented:
-
-- `/`
-- `/about`
-- `/services`
-- `/services/[serviceId]`
-- `/services/childrens-dentistry/babys-first-visit`
-- `/services/invisalign`
-- `/technology/itero-digital-scanner`
-- `/team`
-- `/patient-info`
-- `/patient-info/brushing`
-- `/patient-info/flossing`
-- `/patient-info/nutrition`
-- `/contact`
-- `/tmj`
-- `/privacy-policy`
-- `/sitemap`
-- `/font-test`
-- `/admin`
-- custom 404
-
-Legacy redirects implemented:
-
-- `/hello-world` -> `/`
-- `/dental-services/dental-crowns` -> `/services/dental-crowns`
-- `/digital-x-ray` -> `/services/dental-exams`
-- `/articles/premium_education/category/47362` -> `/services`
-- `/articles/premium_education/category/47364` -> `/services`
-- `/articles/premium_education/category/47367` -> `/services`
-- `/?page_id=1073` -> `/patient-info`
-- `/services/tmj` -> `/tmj`
-- `www.*` host -> apex host (middleware)
-
-## API Parity
-
-- `POST /api/contacts`
-- `GET /api/admin/changelog`
-- `GET /api/admin/contacts?limit=&offset=&q=`
-- `GET /api/admin/ga4/overview?days=7|30|90`
-- `GET /api/admin/gsc/overview?days=7|30|90`
-
-## SEO/Crawlers
-
-- Per-route metadata via shared resolver
-- LocalBusiness JSON-LD injected globally
-- Service + FAQ JSON-LD preserved on service/marketing pages
-- `src/app/robots.ts` -> `/robots.txt`
-- `src/app/sitemap.ts` -> `/sitemap.xml`
-- `public/llms.txt` -> `/llms.txt`
-- `/sitemap` human-readable page
-
-## Environment Variables
-
-Copy `.env.example` to `.env.local` and fill values.
-
-Production-critical:
-
-- `DATABASE_URL`
-- `ADMIN_PASSWORD`
-
-Optional but recommended:
-
-- `GA4_PROPERTY_ID`
-- `GSC_SITE_URL`
-- `GOOGLE_SERVICE_ACCOUNT_JSON` (or `_BASE64` / `GOOGLE_APPLICATION_CREDENTIALS`)
-
-## Local Development
+1. Install dependencies.
 
 ```bash
 npm ci
+```
+
+2. Create local env file.
+
+```bash
+cp .env.example .env.local
+```
+
+3. Start dev server.
+
+```bash
 npm run dev
 ```
 
-Checks:
+4. Open locally:
+
+- `http://localhost:3000`
+
+5. Run quality checks.
 
 ```bash
+npm run check
+```
+
+## Documentation Index
+
+- [Docs Hub](docs/README.md)
+- [Architecture](docs/architecture.md)
+- [Routing and SEO](docs/routing-and-seo.md)
+- [API Reference](docs/api-reference.md)
+- [Environment Variables](docs/environment-variables.md)
+- [Analytics Setup (GA4 + GSC)](docs/analytics-setup.md)
+- [Deployment on Vercel](docs/deployment-vercel.md)
+- [Operations Runbook](docs/operations-runbook.md)
+- [Testing and Quality](docs/testing-and-quality.md)
+- [Migration Parity Checklist](docs/parity-checklist.md)
+
+## Tech Stack
+
+- Next.js 15 (App Router)
+- TypeScript (strict)
+- Tailwind CSS + component primitives
+- React Query (client data fetching in admin)
+- Drizzle ORM + Postgres
+- Vercel runtime + middleware
+
+## Core Commands
+
+```bash
+# Local app
+npm run dev
+
+# Static checks
 npm run typecheck
 npm run lint
 npm run test
 npm run build
+npm run check
+
+# Database schema push
+npm run db:push
 ```
 
-## Vercel CLI Workflow
+## Deployment Summary
 
-```bash
-# authenticate if needed
-vercel login
+1. Push to GitHub `main`.
+2. Ensure Vercel project framework is `nextjs`.
+3. Ensure required env vars are configured.
+4. Run `npm run db:push` against production database.
+5. Deploy with `vercel --prod`.
+6. Run smoke tests on routes, redirects, APIs, and admin auth.
 
-# create and link project
-vercel project add tim-next-js
-vercel link --yes --project tim-next-js
+See [Deployment on Vercel](docs/deployment-vercel.md) for full details.
 
-# inspect envs
-vercel env ls
-```
+## CI
 
-Then add env vars in Vercel dashboard (or `vercel env add`), run a preview deploy, and promote after smoke tests pass.
+GitHub Actions workflow: `.github/workflows/ci.yml`
 
-## GitHub
-
-Repo: [enzo-prism/tim-next-js](https://github.com/enzo-prism/tim-next-js)
-
-CI is configured in `.github/workflows/ci.yml` to run:
+Checks run on PRs and pushes to `main` / `codex/**`:
 
 - typecheck
 - lint
 - test
-- production build
+- build
