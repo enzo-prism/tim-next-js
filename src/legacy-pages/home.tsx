@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import TestimonialCarousel from "@/components/testimonial-carousel";
 import SocialMediaSection from "@/components/social-media";
-import { Heart, Microscope, Users, Star } from "lucide-react";
+import { ArrowRight, Heart, Microscope, Users, Star } from "lucide-react";
 import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import BrandIcon from "@/components/brand/BrandIcon";
 import HeadingMark from "@/components/brand/HeadingMark";
@@ -58,6 +58,44 @@ const scaleIn = {
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
 };
+
+const OFFICE_TOUR_VIDEO_SRC =
+  "https://player.vimeo.com/video/1106179834?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&background=1&controls=0";
+
+const featuredServices = [
+  {
+    title: "Family Dentistry",
+    description: "Routine check-ups, cleanings, and preventive care for all ages.",
+    href: "/services/family-dentistry",
+    icon: "tooth" as const,
+    iconBg: "bg-primary",
+    panelAccent: "from-primary to-primary/60",
+  },
+  {
+    title: "Children's Dentistry",
+    description: "Gentle first visits and child-friendly care with toys and stickers.",
+    href: "/services/children-dentistry",
+    icon: "child" as const,
+    iconBg: "bg-secondary",
+    panelAccent: "from-secondary to-secondary/60",
+  },
+  {
+    title: "Dental Hygiene",
+    description: "Professional cleanings and coaching for stronger, healthier smiles.",
+    href: "/services/dental-hygiene",
+    icon: "sparkles" as const,
+    iconBg: "bg-accent",
+    panelAccent: "from-accent to-accent/60",
+  },
+  {
+    title: "Invisalign",
+    description: "Clear aligners for straighter teeth with free consultations.",
+    href: "/services/invisalign",
+    icon: "smile" as const,
+    iconBg: "bg-primary",
+    panelAccent: "from-primary to-secondary",
+  },
+];
 
 const additionalServices = [
   {
@@ -128,14 +166,15 @@ export default function Home() {
   return (
     <div className="pt-16">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-28">
+      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24">
         <HeroBackdrop variant="default" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:gap-14">
             <motion.div
               initial={false}
               animate="visible"
               variants={slideInLeft}
+              className="max-w-2xl"
             >
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-800 mb-5 sm:mb-6 leading-tight text-balance">
                 <motion.span
@@ -175,34 +214,48 @@ export default function Home() {
               </motion.div>
             </motion.div>
             <motion.div 
-              className="relative"
+              className="relative mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[390px]"
               initial={false}
               animate="visible"
               variants={slideInRight}
             >
+              <motion.p
+                className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-primary/75"
+                variants={fadeInUp}
+              >
+                Virtual Office Tour
+              </motion.p>
               <motion.div 
-                className="rounded-2xl shadow-xl w-full h-[280px] sm:h-96 relative overflow-hidden"
+                className="relative"
                 variants={scaleIn}
               >
-                <iframe
-                  src="https://player.vimeo.com/video/1106154947?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;autoplay=1&amp;loop=1&amp;muted=1&amp;background=1"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                  title="Family First Smile Care Office Tour"
-                ></iframe>
+                <div
+                  className="absolute -inset-2 rounded-[2rem] bg-gradient-to-b from-white/80 via-white/30 to-primary/15 blur-md"
+                  aria-hidden="true"
+                />
+                <div className="relative rounded-[1.8rem] border border-white/70 bg-white/80 p-2 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.42)] backdrop-blur-sm">
+                  <div className="relative aspect-[9/16] overflow-hidden rounded-[1.35rem] bg-slate-900">
+                    <iframe
+                      src={OFFICE_TOUR_VIDEO_SRC}
+                      className="absolute inset-0 h-full w-full"
+                      frameBorder="0"
+                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                      title="Family First Smile Care Office Tour"
+                    />
+                  </div>
+                </div>
               </motion.div>
               <motion.div 
-                className="mt-4 inline-block bg-white rounded-lg p-4 shadow-lg sm:absolute sm:-bottom-6 sm:-left-6 sm:mt-0"
+                className="mt-4 inline-flex items-center gap-3 rounded-xl bg-white/95 px-4 py-3 shadow-lg ring-1 ring-slate-200 sm:absolute sm:-bottom-6 sm:-left-10 sm:mt-0"
                 initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
               >
-                <div className="flex items-center">
-                  <span className="text-accent mr-2">⭐</span>
-                  <span className="font-semibold">5.0 Rating</span>
+                <span className="text-accent text-lg leading-none">⭐</span>
+                <div>
+                  <p className="font-semibold leading-tight">5.0 Rating</p>
+                  <p className="text-sm text-gray-600 leading-tight">From 60+ families</p>
                 </div>
-                <p className="text-sm text-gray-600">From 60+ families</p>
               </motion.div>
             </motion.div>
           </div>
@@ -210,15 +263,30 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-16 sm:py-20 bg-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-blue-50/40 py-16 sm:py-20">
+        <div
+          className="pointer-events-none absolute -left-28 top-8 h-64 w-64 rounded-full bg-secondary/10 blur-3xl"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute -right-24 bottom-8 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
+          aria-hidden="true"
+        />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
-            className="text-center mb-16"
+            className="text-center mb-12 sm:mb-14"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
+            <motion.div
+              className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80"
+              variants={fadeInUp}
+            >
+              <Star className="h-3.5 w-3.5" />
+              Verified Reviews
+            </motion.div>
             <motion.h2
               className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
               variants={fadeInUp}
@@ -229,11 +297,22 @@ export default function Home() {
               </span>
             </motion.h2>
             <motion.p 
-              className="text-xl text-gray-600"
+              className="mx-auto max-w-3xl text-lg text-gray-600 sm:text-xl"
               variants={fadeInUp}
             >
               Real stories from families who trust us with their smiles
             </motion.p>
+            <motion.div className="mt-6 flex flex-wrap items-center justify-center gap-3" variants={fadeInUp}>
+              <div className="rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                5.0 average rating
+              </div>
+              <div className="rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                60+ local families
+              </div>
+              <div className="rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                Rotating featured stories
+              </div>
+            </motion.div>
           </motion.div>
           
           <motion.div
@@ -333,10 +412,10 @@ export default function Home() {
       <SocialMediaSection />
 
       {/* Featured Services Section */}
-      <section className="py-16 sm:py-20 bg-gray-50">
+      <section className="bg-gradient-to-b from-white to-blue-50/40 py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
-            className="text-center mb-16"
+            className="text-center mb-12 sm:mb-14"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -352,7 +431,7 @@ export default function Home() {
               </span>
             </motion.h2>
             <motion.p 
-              className="text-xl text-gray-600"
+              className="mx-auto max-w-3xl text-lg text-gray-600 sm:text-xl"
               variants={fadeInUp}
             >
               Comprehensive dental care tailored to your family's unique needs
@@ -360,95 +439,44 @@ export default function Home() {
           </motion.div>
           
           <motion.div 
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
           >
-            <motion.div 
-              className="service-card p-6 group"
-              variants={scaleIn}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-            >
-              <motion.div className="mb-4" whileHover={{ scale: 1.05, rotate: 4 }}>
-                <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center shadow-md">
-                  <BrandIcon name="tooth" className="h-9 w-9" />
+            {featuredServices.map((service) => (
+              <motion.div
+                key={service.href}
+                className="group"
+                variants={scaleIn}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+              >
+                <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm transition-[box-shadow,border-color] duration-300 group-hover:border-primary/30 group-hover:shadow-xl">
+                  <div
+                    className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${service.panelAccent}`}
+                    aria-hidden="true"
+                  />
+                  <motion.div className="mb-5" whileHover={{ scale: 1.04, rotate: 3 }}>
+                    <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${service.iconBg} shadow-md`}>
+                      <BrandIcon name={service.icon} className="h-9 w-9" />
+                    </div>
+                  </motion.div>
+                  <h3 className="mb-2 text-xl font-semibold text-gray-800">{service.title}</h3>
+                  <p className="mb-6 text-base leading-relaxed text-gray-600">{service.description}</p>
+                  <Button
+                    asChild
+                    variant="link"
+                    className="mt-auto w-fit p-0 text-primary transition-colors duration-200 group-hover:text-primary/80"
+                  >
+                    <Link href={service.href}>
+                      Learn More
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </Link>
+                  </Button>
                 </div>
               </motion.div>
-              <h3 className="text-lg font-semibold mb-2">Family Dentistry</h3>
-              <p className="text-gray-600 text-sm mb-4">Routine check-ups, cleanings, and preventive care for all ages.</p>
-              <Button
-                asChild
-                variant="link"
-                className="p-0 text-primary font-medium transition-colors duration-200 group-hover:underline"
-              >
-                <Link href="/services/family-dentistry">Learn More</Link>
-              </Button>
-            </motion.div>
-            
-            <motion.div 
-              className="service-card p-6 group"
-              variants={scaleIn}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-            >
-              <motion.div className="mb-4" whileHover={{ scale: 1.05, rotate: 4 }}>
-                <div className="h-14 w-14 rounded-2xl bg-secondary flex items-center justify-center shadow-md">
-                  <BrandIcon name="child" className="h-9 w-9" />
-                </div>
-              </motion.div>
-              <h3 className="text-lg font-semibold mb-2">Children's Dentistry</h3>
-              <p className="text-gray-600 text-sm mb-4">Gentle first visits and child-friendly approach with toys and stickers.</p>
-              <Button
-                asChild
-                variant="link"
-                className="p-0 text-primary font-medium transition-colors duration-200 group-hover:underline"
-              >
-                <Link href="/services/children-dentistry">Learn More</Link>
-              </Button>
-            </motion.div>
-            
-            <motion.div 
-              className="service-card p-6 group"
-              variants={scaleIn}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-            >
-              <motion.div className="mb-4" whileHover={{ scale: 1.05, rotate: 4 }}>
-                <div className="h-14 w-14 rounded-2xl bg-accent flex items-center justify-center shadow-md">
-                  <BrandIcon name="sparkles" className="h-9 w-9" />
-                </div>
-              </motion.div>
-              <h3 className="text-lg font-semibold mb-2">Dental Hygiene</h3>
-              <p className="text-gray-600 text-sm mb-4">Professional cleanings and education for maintaining strong smiles.</p>
-              <Button
-                asChild
-                variant="link"
-                className="p-0 text-primary font-medium transition-colors duration-200 group-hover:underline"
-              >
-                <Link href="/services/dental-hygiene">Learn More</Link>
-              </Button>
-            </motion.div>
-            
-            <motion.div 
-              className="service-card p-6 group"
-              variants={scaleIn}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-            >
-              <motion.div className="mb-4" whileHover={{ scale: 1.05, rotate: 4 }}>
-                <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center shadow-md">
-                  <BrandIcon name="smile" className="h-9 w-9" />
-                </div>
-              </motion.div>
-              <h3 className="text-lg font-semibold mb-2">Invisalign</h3>
-              <p className="text-gray-600 text-sm mb-4">Clear aligners for straightening teeth with free consultations.</p>
-              <Button
-                asChild
-                variant="link"
-                className="p-0 text-primary font-medium transition-colors duration-200 group-hover:underline"
-              >
-                <Link href="/services/invisalign">Learn More</Link>
-              </Button>
-            </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -605,7 +633,7 @@ export default function Home() {
               >
                 <iframe
                   className="w-full h-96 sm:h-[28rem] md:h-[32rem]"
-                  src="https://player.vimeo.com/video/1106179834?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;autoplay=1&amp;loop=1&amp;muted=1&amp;background=1&amp;controls=0"
+                  src={OFFICE_TOUR_VIDEO_SRC}
                   title="Family First Smile Care Virtual Office Tour"
                   frameBorder="0"
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageSquareQuote, Star } from "lucide-react";
 import { useReducedMotion } from "framer-motion";
 import type { Testimonial } from "@/lib/types";
 
@@ -113,7 +113,7 @@ export default function TestimonialCarousel() {
 
   return (
     <div
-      className="relative max-w-4xl mx-auto"
+      className="relative mx-auto max-w-6xl"
       role="region"
       aria-label="Patient testimonials"
       onMouseEnter={() => setIsPaused(true)}
@@ -121,95 +121,91 @@ export default function TestimonialCarousel() {
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
     >
-      <div className="overflow-hidden">
-        <div 
-          className="flex transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-        >
-          {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="w-full flex-shrink-0 px-2 sm:px-4">
-              <div className="testimonial-card p-5 sm:p-8 text-center">
-                <div className="flex justify-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-accent fill-current" />
-                  ))}
+      <div className="relative overflow-hidden rounded-[2rem] border border-slate-200/90 bg-white/95 p-4 shadow-[0_32px_80px_-48px_rgba(15,23,42,0.7)] backdrop-blur sm:p-6 lg:p-8">
+        <div
+          className="pointer-events-none absolute -top-24 right-16 h-44 w-44 rounded-full bg-primary/10 blur-3xl"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-secondary/10 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          >
+            {testimonials.map((testimonial) => (
+              <article key={testimonial.id} className="w-full flex-shrink-0 px-1 py-2">
+                <div className="grid gap-7 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
+                  <aside className="rounded-2xl border border-slate-200/80 bg-slate-50/90 px-4 py-5 text-center lg:px-5 lg:py-6">
+                    <div className="mx-auto mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+                      <MessageSquareQuote className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Google Review</p>
+                    <div className="mx-auto mt-3 inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 ring-1 ring-amber-200/70">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-current text-accent" aria-hidden="true" />
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-slate-500">
+                      {testimonial.id + 1} of {testimonials.length}
+                    </p>
+                  </aside>
+                  <div className="min-w-0 text-center lg:text-left">
+                    <p className="text-xl leading-relaxed text-slate-700 italic sm:text-2xl sm:leading-relaxed">
+                      "{testimonial.content}"
+                    </p>
+                    <div className="mx-auto mt-6 h-px w-20 bg-slate-200 lg:mx-0" aria-hidden="true" />
+                    <div className="mt-4 text-2xl font-semibold text-slate-800">{testimonial.name}</div>
+                    <div className="text-base text-slate-600">{testimonial.title}</div>
+                  </div>
                 </div>
-                <p className="text-base sm:text-lg text-gray-700 mb-5 sm:mb-6 italic text-balance">"{testimonial.content}"</p>
-                <div className="font-semibold text-gray-800">{testimonial.name}</div>
-                <div className="text-sm text-gray-600">{testimonial.title}</div>
-              </div>
-            </div>
-          ))}
+              </article>
+            ))}
+          </div>
         </div>
-      </div>
-      
-      {/* Carousel Navigation */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute left-1 top-1/2 hidden -translate-y-1/2 rounded-full bg-white shadow-lg sm:inline-flex"
-        onClick={previousTestimonial}
-        aria-label="Previous testimonial"
-      >
-        <ChevronLeft className="h-4 w-4 text-primary" />
-      </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute right-1 top-1/2 hidden -translate-y-1/2 rounded-full bg-white shadow-lg sm:inline-flex"
-        onClick={nextTestimonial}
-        aria-label="Next testimonial"
-      >
-        <ChevronRight className="h-4 w-4 text-primary" />
-      </Button>
 
-      <div className="mt-4 flex items-center justify-center gap-3 sm:hidden">
-        <Button
-          variant="outline"
-          size="sm"
-          className="rounded-full"
-          onClick={previousTestimonial}
-          aria-label="Previous testimonial"
-        >
-          <ChevronLeft className="h-4 w-4 text-primary" />
-          Prev
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="rounded-full"
-          onClick={nextTestimonial}
-          aria-label="Next testimonial"
-        >
-          Next
-          <ChevronRight className="h-4 w-4 text-primary" />
-        </Button>
-      </div>
-      
-      {/* Carousel Indicators */}
-      <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-1">
-        {testimonials.map((_, index) => {
-          const isActive = index === currentIndex;
-          return (
+        <div className="mt-6 flex flex-col gap-4 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-center gap-2 sm:justify-start">
             <Button
-              key={index}
-              type="button"
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="h-7 w-7 rounded-full hover:bg-gray-100 sm:h-9 sm:w-9"
-              onClick={() => goToTestimonial(index)}
-              aria-label={`Go to testimonial ${index + 1}`}
-              aria-current={isActive}
+              className="rounded-full border-slate-300 bg-white"
+              onClick={previousTestimonial}
+              aria-label="Previous testimonial"
             >
-              <span
-                aria-hidden="true"
-                className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                  isActive ? "bg-primary" : "bg-gray-500"
-                }`}
-              />
+              <ChevronLeft className="h-4 w-4 text-primary" />
             </Button>
-          );
-        })}
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full border-slate-300 bg-white"
+              onClick={nextTestimonial}
+              aria-label="Next testimonial"
+            >
+              <ChevronRight className="h-4 w-4 text-primary" />
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
+            {testimonials.map((_, index) => {
+              const isActive = index === currentIndex;
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    isActive ? "w-10 bg-primary" : "w-2.5 bg-slate-400 hover:bg-slate-500"
+                  }`}
+                  onClick={() => goToTestimonial(index)}
+                  aria-label={`Go to testimonial ${index + 1}`}
+                  aria-current={isActive}
+                />
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
