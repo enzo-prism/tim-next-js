@@ -1,0 +1,159 @@
+Destination requirements
+Google provides translated versions of the Advertising Policies Help Center, though they're not meant to change the content of the policies. The English version is the official language used to enforce Google Ads policies. To view this article in a different language, use the language dropdown at the bottom of the page.
+
+Display & Video 360 users must comply with this Google Ads policy. Visit the Display & Video 360 help center for additional restrictions.
+
+
+ 
+For subtitles in your language, turn on YouTube captions. Select the settings icon Image of YouTube settings icon at the bottom of the video player, then select "Subtitles/CC" and choose your language.
+
+Google prioritizes user experience across all its products, and a key part of this is fostering a safe and trustworthy environment within the Google ad network. The Destination Requirements policy ensures that when users click on an ad and are sent to a landing page, that website is functional, useful, and easy to navigate. This also creates an ads ecosystem that’s supportive to advertisers and the people who interact with their brand through these ads.
+
+Violations of this policy will not lead to immediate account suspension without prior warning. A warning will be issued at least 7 days prior to any suspension of your account. Learn more about suspended accounts.
+In this article
+Destination not working
+Destination mismatch
+Destination not crawlable
+Destination not accessible
+Destination experience
+Insufficient original content
+App or web store policy violation
+Unacceptable URL
+Unrecognized app
+Unverified phone number
+Unacceptable phone number
+Steps to override user agent with Chrome DevTools
+Destination not working
+Google requires that your ad destination and contents work on common browsers and devices so users are led to a functional ad destination.
+
+The following would lead to disapproval for Destination not working:
+
+red x mark Destinations that don't function properly or have been set up incorrectly.
+
+red x mark Destinations that return an HTTP error code for Google AdsBot web crawlers on common devices globally.
+
+Learn more about the Destination not working policy.
+
+Destination mismatch
+Google requires ads to accurately reflect which app or website the user is being directed to when they click on the ad.
+
+The following would lead to disapproval for Destination mismatch:
+
+red x mark The domain or domain extension in the display URL doesn’t match the final and mobile URLs where users are taken to
+
+red x mark Failing to use a subdomain to clearly identify a site from all other sites hosted on that domain or from the parent domain
+
+red x mark Redirects from the final URL that take the user to a different domain
+
+red x mark Tracking template or expanded URL that don’t lead to the same content as the final URL
+
+Learn more about the Destination mismatch policy.
+
+Destination not crawlable
+Google requires that your ad destination and contents are crawlable by Google AdsBot web crawlers so we can make sure that users are led to an ad destination that reflects the ad they have clicked on.
+
+The following would lead to disapproval for Destination not crawlable:
+
+red x mark Destinations that aren’t crawlable by Google Ads
+
+Learn more about the Destination not crawlable policy.
+
+Destination not accessible
+Google requires ads to be accessible in the targeted location.
+
+The following would lead to disapproval for Destination not accessible:
+
+red x mark Destinations that aren’t accessible in the targeted location
+
+Learn more about the Destination not accessible policy.
+Destination experience
+Google requires that ad destinations must be easy to navigate and safe for users clicking on an ad on the Google Ad network.
+
+The following would lead to disapproval for Destination experience:
+
+red x mark Destinations or content that are unnecessarily difficult or frustrating to navigate
+
+red x mark Links that initiate a direct download from the ad or that lead to an email address or a file
+
+red x mark Destinations that contain abusive experiences
+
+red x mark Destinations containing ad experiences that do not don’t conform to the Better Ads Standards. For more information about the types of disallowed ad experiences, please visit the Coalition for Better Ads website
+
+Learn more about the Destination experience policy.
+
+Insufficient original content
+Google Ads prioritizes providing a positive user experience, so ad destinations must offer unique value to users.
+
+The following would lead to disapproval for Insufficient original content:
+
+red x mark Destination content that is designed for the primary purpose of showing ads
+
+red x mark Destination content that is replicated from another source without adding value in the form of original content or additional functionality
+
+red x mark Destinations that are solely designed to send users elsewhere
+
+red x mark Destinations that display a message of the destination not providing any services
+
+red x mark Destinations that are incomprehensible or don’t make sense
+
+Learn more about the Insufficient original content policy.
+
+App or web store policy violation
+Google requires that your app or web store destinations adhere to Google app or web store policies.
+
+The following would lead to disapproval for App or web store policy violation:
+
+red x mark Destinations that violate their app or web store policies
+
+Learn more about the App or web store policy violation policy.
+
+Unacceptable URL
+The following would lead to disapproval for Unacceptable URL: 
+
+red x mark URLs that do not don’t follow standard syntax
+
+red x mark Using an IP address as the display URL
+
+red x mark Display URLs that use unacceptable characters
+
+Learn more about the Unacceptable URL policy.
+
+Unrecognized app
+The following scenarios would lead to disapproval for Unrecognized app:
+
+red x mark Apps that cannot can’t be recognized by Google
+
+Learn more about the Unrecognized app policy.
+
+Unverified phone number
+Google requires that the phone numbers in call-only ads, call assets, message assets, and location assets must be in service in the location you’re targeting and relate to the advertised company.
+
+The following would lead to disapproval for Unverified phone number in call-only ads, call assets, and location assets:
+
+red x mark Phone numbers that haven’t been verified by Google
+
+Learn more about the Unverified phone number policy.
+
+Unacceptable phone number
+Google requires that the phone numbers in call-only ads, call assets, and location assets must be in service in the location you’re targeting and relate to the advertised company.
+
+The following would lead to disapproval for Unacceptable phone number in call-only ads, call assets, and location assets:
+
+red x mark Phone numbers that are inaccurate, inactive, irrelevant, or that don't connect to the advertised company
+
+red x mark Fax numbers, premium numbers, or vanity numbers
+
+red x mark Phone numbers that aren’t local or domestic for the country location you are you’re targeting
+
+red x mark Virtual phone number services or personal numbering
+
+red x mark Phone numbers that don’t have an active voicemail service
+
+Learn more about the Unacceptable phone number policy.
+
+Override user agent with Chrome DevTools
+You can use Chrome DevTools to override your web browser's user agent in order to mimic the Google AdsBot web crawler used to review destination URLs.
+
+Learn more about how to Override user agent with Chrome DevTools.
+Need help?
+If you have questions about our policies, review the policy guidelines and examples provided or contact Google Ads Support.
