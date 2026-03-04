@@ -14,6 +14,16 @@ const safeTimingEqual = (a: string, b: string) => {
 const isProtectedPath = (pathname: string) =>
   pathname === "/admin" || pathname.startsWith("/api/admin");
 
+const getCanonicalHost = () => {
+  const raw = process.env.CANONICAL_HOST?.trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw).host;
+  } catch {
+    return "";
+  }
+};
+
 function unauthorizedResponse() {
   return new NextResponse(
     JSON.stringify({ ok: false, error: "unauthorized", message: "Unauthorized" }),
@@ -48,10 +58,18 @@ function missingAdminPasswordResponse() {
 export function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const host = req.headers.get("host") || "";
+  const canonicalHost = getCanonicalHost();
+  const isNonCanonicalHost =
+    Boolean(canonicalHost) &&
+    host !== canonicalHost &&
+    !host.endsWith(".vercel.app") &&
+    !host.endsWith(".vercel.sh") &&
+    !host.startsWith("localhost") &&
+    !host.startsWith("127.0.0.1");
 
-  if (host.startsWith("www.")) {
+  if (isNonCanonicalHost) {
     const redirectUrl = new URL(req.url);
-    redirectUrl.host = host.replace(/^www\./, "");
+    redirectUrl.host = canonicalHost;
     return NextResponse.redirect(redirectUrl, 301);
   }
 
