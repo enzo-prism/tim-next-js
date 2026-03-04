@@ -1,29 +1,31 @@
+type StaticImageData = import("next/image").StaticImageData;
+
 declare module "*.png" {
-  const content: string;
+  const content: StaticImageData;
   export default content;
 }
 
 declare module "*.jpg" {
-  const content: string;
+  const content: StaticImageData;
   export default content;
 }
 
 declare module "*.jpeg" {
-  const content: string;
+  const content: StaticImageData;
   export default content;
 }
 
 declare module "*.webp" {
-  const content: string;
+  const content: StaticImageData;
   export default content;
 }
 
 declare module "*.heif" {
-  const content: string;
+  const content: StaticImageData;
   export default content;
 }
 
 declare module "*.avif" {
-  const content: string;
+  const content: StaticImageData;
   export default content;
 }
