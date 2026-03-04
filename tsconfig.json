@@ -16,10 +16,10 @@
     "plugins": [{ "name": "next" }],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@shared/*": ["./src/content/*"],
-      "@assets/*": ["./src/assets/*"],
-      "wouter": ["./src/lib/wouter"]
+      "@/*": ["src/*"],
+      "@shared/*": ["src/content/*"],
+      "@assets/*": ["src/assets/*"],
+      "wouter": ["src/lib/wouter"]
     }
   },
   "include": [
