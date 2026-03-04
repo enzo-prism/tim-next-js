@@ -127,14 +127,14 @@ export default function TestimonialCarousel() {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
-              <div className="testimonial-card p-8 text-center">
+            <div key={testimonial.id} className="w-full flex-shrink-0 px-2 sm:px-4">
+              <div className="testimonial-card p-5 sm:p-8 text-center">
                 <div className="flex justify-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-accent fill-current" />
                   ))}
                 </div>
-                <p className="text-lg text-gray-700 mb-6 italic">"{testimonial.content}"</p>
+                <p className="text-base sm:text-lg text-gray-700 mb-5 sm:mb-6 italic text-balance">"{testimonial.content}"</p>
                 <div className="font-semibold text-gray-800">{testimonial.name}</div>
                 <div className="text-sm text-gray-600">{testimonial.title}</div>
               </div>
@@ -147,7 +147,7 @@ export default function TestimonialCarousel() {
       <Button
         variant="outline"
         size="icon"
-        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full"
+        className="absolute left-1 top-1/2 hidden -translate-y-1/2 rounded-full bg-white shadow-lg sm:inline-flex"
         onClick={previousTestimonial}
         aria-label="Previous testimonial"
       >
@@ -156,15 +156,38 @@ export default function TestimonialCarousel() {
       <Button
         variant="outline"
         size="icon"
-        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full"
+        className="absolute right-1 top-1/2 hidden -translate-y-1/2 rounded-full bg-white shadow-lg sm:inline-flex"
         onClick={nextTestimonial}
         aria-label="Next testimonial"
       >
         <ChevronRight className="h-4 w-4 text-primary" />
       </Button>
+
+      <div className="mt-4 flex items-center justify-center gap-3 sm:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-full"
+          onClick={previousTestimonial}
+          aria-label="Previous testimonial"
+        >
+          <ChevronLeft className="h-4 w-4 text-primary" />
+          Prev
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-full"
+          onClick={nextTestimonial}
+          aria-label="Next testimonial"
+        >
+          Next
+          <ChevronRight className="h-4 w-4 text-primary" />
+        </Button>
+      </div>
       
       {/* Carousel Indicators */}
-      <div className="flex justify-center mt-8 gap-1">
+      <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-1">
         {testimonials.map((_, index) => {
           const isActive = index === currentIndex;
           return (
@@ -173,7 +196,7 @@ export default function TestimonialCarousel() {
               type="button"
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-full hover:bg-gray-100"
+              className="h-7 w-7 rounded-full hover:bg-gray-100 sm:h-9 sm:w-9"
               onClick={() => goToTestimonial(index)}
               aria-label={`Go to testimonial ${index + 1}`}
               aria-current={isActive}

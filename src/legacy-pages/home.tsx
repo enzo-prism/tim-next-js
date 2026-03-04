@@ -128,18 +128,18 @@ export default function Home() {
   return (
     <div className="pt-16">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
+      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-28">
         <HeroBackdrop variant="default" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             <motion.div
-              initial="hidden"
+              initial={false}
               animate="visible"
               variants={slideInLeft}
             >
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-800 mb-6">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-800 mb-5 sm:mb-6 leading-tight text-balance">
                 <motion.span
-                  initial="hidden"
+                  initial={false}
                   animate="visible"
                   variants={fadeInUp}
                   style={{ display: 'block' }}
@@ -154,12 +154,12 @@ export default function Home() {
                 We provide exceptional dental care in a warm environment to foster healthy smiles for life.
               </motion.p>
               <motion.div 
-                className="flex flex-col sm:flex-row gap-4"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4"
                 variants={fadeInUp}
               >
                 <Button
                   asChild
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold px-8 py-3 hover:scale-105 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
+                  className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold px-6 sm:px-8 py-3 hover:scale-105 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
                 >
                   <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                     Schedule Appointment
@@ -168,7 +168,7 @@ export default function Home() {
                 <Button
                   asChild
                   variant="outline"
-                  className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-lg font-semibold px-8 py-3 hover:scale-105 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
+                  className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-base sm:text-lg font-semibold px-6 sm:px-8 py-3 hover:scale-105 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
                 >
                   <Link href="/team">Meet the Team</Link>
                 </Button>
@@ -176,12 +176,12 @@ export default function Home() {
             </motion.div>
             <motion.div 
               className="relative"
-              initial="hidden"
+              initial={false}
               animate="visible"
               variants={slideInRight}
             >
               <motion.div 
-                className="rounded-2xl shadow-xl w-full h-96 relative overflow-hidden"
+                className="rounded-2xl shadow-xl w-full h-[280px] sm:h-96 relative overflow-hidden"
                 variants={scaleIn}
               >
                 <iframe
@@ -193,8 +193,8 @@ export default function Home() {
                 ></iframe>
               </motion.div>
               <motion.div 
-                className="absolute -bottom-6 -left-6 bg-white rounded-lg p-4 shadow-lg"
-                initial={{ opacity: 0, y: 20 }}
+                className="mt-4 inline-block bg-white rounded-lg p-4 shadow-lg sm:absolute sm:-bottom-6 sm:-left-6 sm:mt-0"
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
               >
@@ -202,7 +202,7 @@ export default function Home() {
                   <span className="text-accent mr-2">⭐</span>
                   <span className="font-semibold">5.0 Rating</span>
                 </div>
-                <p className="text-sm text-gray-600">From 55+ families</p>
+                <p className="text-sm text-gray-600">From 60+ families</p>
               </motion.div>
             </motion.div>
           </div>
@@ -210,11 +210,11 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-white">
+      <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             className="text-center mb-16"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
@@ -237,7 +237,7 @@ export default function Home() {
           </motion.div>
           
           <motion.div
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={scaleIn}
@@ -248,11 +248,11 @@ export default function Home() {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="py-20 bg-white">
+      <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             className="text-center mb-16"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
@@ -276,7 +276,7 @@ export default function Home() {
           
           <motion.div 
             className="grid md:grid-cols-3 gap-8"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
@@ -333,11 +333,11 @@ export default function Home() {
       <SocialMediaSection />
 
       {/* Featured Services Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-16 sm:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             className="text-center mb-16"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
@@ -361,7 +361,7 @@ export default function Home() {
           
           <motion.div 
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
@@ -458,7 +458,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             className="text-center mb-12"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
@@ -478,7 +478,7 @@ export default function Home() {
           </motion.div>
           <motion.div 
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
@@ -510,7 +510,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-12"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
@@ -531,7 +531,7 @@ export default function Home() {
 
           <motion.div
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
@@ -560,8 +560,8 @@ export default function Home() {
 
       {/* Office Tour Video Section */}
       <motion.section 
-        className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5"
-        initial="hidden"
+        className="py-16 sm:py-20 bg-gradient-to-br from-primary/5 to-secondary/5"
+        initial={false}
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}
@@ -625,7 +625,7 @@ export default function Home() {
       {/* Google Review CTA Section */}
       <motion.section 
         className="py-16 bg-gradient-to-br from-orange-50 to-orange-100"
-        initial="hidden"
+        initial={false}
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}
@@ -639,7 +639,7 @@ export default function Home() {
               {[...Array(5)].map((_, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, scale: 0 }}
+                  initial={false}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1, duration: 0.3 }}
                   viewport={{ once: true }}
@@ -675,7 +675,7 @@ export default function Home() {
       {/* Call to Action Section */}
       <motion.section 
         className="py-20 gradient-primary text-white"
-        initial="hidden"
+        initial={false}
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}

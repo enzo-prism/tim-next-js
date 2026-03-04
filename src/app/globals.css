@@ -120,6 +120,7 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    overflow-x: clip;
   }
 
   html {
@@ -143,7 +144,7 @@
   }
 
   .nav-link {
-    @apply inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply inline-flex items-center whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
 
   .nav-link:hover {

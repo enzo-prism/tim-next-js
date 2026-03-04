@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Instagram, BookOpen } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Instagram, Sparkles } from "lucide-react";
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
 
 const staggerContainer = {
@@ -12,210 +11,113 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2,
-      delayChildren: 0.1
-    }
-  }
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
+    },
+  },
 };
 
-// Instagram post URLs extracted from embed codes
-const instagramPosts = [
-  "https://www.instagram.com/p/DSvVBG3EnVf/",
-  "https://www.instagram.com/reel/DSL1E46D9yM/",
-  "https://www.instagram.com/reel/DRVD-p7kt-4/",
-  "https://www.instagram.com/reel/DPC4XC5AYjR/",
-  "https://www.instagram.com/p/DOrx8tmjwO4/",
-  "https://www.instagram.com/reel/DNrGJb4ZMXi/",
-  "https://www.instagram.com/reel/DNYUG_KBaKM/",
-  "https://www.instagram.com/p/DNOvY7ny3ey/"
+const socialHighlights = [
+  {
+    title: "Smile Tips for Parents",
+    description: "Quick at-home habits to keep little smiles healthy between visits.",
+    href: "https://www.instagram.com/p/DSvVBG3EnVf/",
+  },
+  {
+    title: "Behind the Scenes",
+    description: "A peek at our warm office experience and team-first care approach.",
+    href: "https://www.instagram.com/reel/DSL1E46D9yM/",
+  },
+  {
+    title: "Preventive Care Advice",
+    description: "Practical reminders for brushing, flossing, and routine checkups.",
+    href: "https://www.instagram.com/reel/DRVD-p7kt-4/",
+  },
+  {
+    title: "Community Updates",
+    description: "Recent moments from families in Los Gatos who visit our office.",
+    href: "https://www.instagram.com/p/DNOvY7ny3ey/",
+  },
 ];
 
-const INSTAGRAM_SCRIPT_ID = "instagram-embed-script";
-
-const waitForInstagramGlobal = (timeoutMs = 15000) =>
-  new Promise<void>((resolve, reject) => {
-    const start = Date.now();
-    const tick = () => {
-      if ((window as any).instgrm?.Embeds?.process) {
-        resolve();
-        return;
-      }
-
-      if (Date.now() - start > timeoutMs) {
-        reject(new Error("Instagram embed script did not initialize in time"));
-        return;
-      }
-
-      window.setTimeout(tick, 50);
-    };
-
-    tick();
-  });
-
-const ensureInstagramScriptLoaded = () => {
-  if (typeof window === "undefined") return Promise.resolve();
-  if ((window as any).instgrm?.Embeds?.process) return Promise.resolve();
-
-  const existing = document.getElementById(INSTAGRAM_SCRIPT_ID);
-  if (!existing) {
-    const script = document.createElement("script");
-    script.id = INSTAGRAM_SCRIPT_ID;
-    script.src = "https://www.instagram.com/embed.js";
-    script.async = true;
-    document.body.appendChild(script);
-  }
-
-  return waitForInstagramGlobal();
-};
-
 export default function SocialMediaSection() {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const [shouldLoadEmbeds, setShouldLoadEmbeds] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el || typeof window === "undefined") return;
-
-    // Lazy-load the Instagram embed script only when this section is near the viewport.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setShouldLoadEmbeds(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "250px" }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!shouldLoadEmbeds) return;
-
-    let cancelled = false;
-    ensureInstagramScriptLoaded()
-      .then(() => {
-        if (cancelled) return;
-        (window as any).instgrm?.Embeds?.process?.();
-      })
-      .catch((error) => {
-        // If the script fails to load, we still show the plain links as a fallback.
-        console.warn("Failed to load Instagram embeds:", error);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [shouldLoadEmbeds]);
-
   return (
-    <motion.section 
-      ref={sectionRef}
-      className="py-16 lg:py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50"
-      initial="hidden"
+    <motion.section
+      className="bg-gradient-to-br from-gray-50 via-white to-gray-50 py-14 sm:py-16 lg:py-20"
+      initial={false}
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
       variants={fadeInUp}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <motion.div 
-          className="text-center mb-12"
-          variants={fadeInUp}
-        >
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
-            Follow Us on Social Media
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Stay updated with the latest from our practice, dental tips, and behind-the-scenes moments
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <motion.div className="mb-10 text-center sm:mb-12" variants={fadeInUp}>
+          <h2 className="text-3xl font-bold text-gray-800 lg:text-4xl">Follow Us on Social Media</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600 sm:text-lg">
+            Keep up with office updates, dental education, and family-friendly smile care tips.
           </p>
         </motion.div>
 
-        {/* Instagram Posts Grid */}
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 justify-items-center"
+        <motion.div
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          initial={false}
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
           variants={staggerContainer}
         >
-          {instagramPosts.map((postUrl) => (
-            <motion.div
-              key={postUrl}
+          {socialHighlights.map((post, index) => (
+            <motion.a
+              key={post.href}
+              href={post.href}
+              target="_blank"
+              rel="noopener noreferrer"
               variants={fadeInUp}
-              className="instagram-embed-container flex justify-center"
+              className="group block rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <blockquote 
-                className="instagram-media" 
-                data-instgrm-captioned 
-                data-instgrm-permalink={`${postUrl}?utm_source=ig_embed&utm_campaign=loading`}
-                data-instgrm-version="14"
-                style={{
-                  background: "#FFF",
-                  border: 0,
-                  borderRadius: "3px",
-                  boxShadow: "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
-                  margin: "1px",
-                  maxWidth: "540px",
-                  minWidth: "326px",
-                  padding: 0,
-                  width: "99.375%"
-                }}
+              <div
+                className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm ${
+                  index % 2 === 0 ? "bg-primary" : "bg-secondary"
+                }`}
               >
-                <div style={{ padding: "16px" }}>
-                  <a 
-                    href={postUrl}
-                    style={{
-                      background: "#FFFFFF",
-                      lineHeight: 0,
-                      padding: 0,
-                      textAlign: "center",
-                      textDecoration: "none",
-                      width: "100%"
-                    }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View this post on Instagram
-                  </a>
-                </div>
-              </blockquote>
-            </motion.div>
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800">{post.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">{post.description}</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
+                View on Instagram
+                <ArrowUpRight className="h-4 w-4" />
+              </span>
+            </motion.a>
           ))}
         </motion.div>
 
-        {/* Call to Action */}
-        <motion.div 
-          className="text-center mt-12 space-y-4"
-          variants={fadeInUp}
-        >
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a 
+        <motion.div className="mt-10 text-center sm:mt-12" variants={fadeInUp}>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <a
               href="https://www.instagram.com/famfirstsmilecare/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-700 text-white font-medium rounded-full hover:from-pink-700 hover:to-purple-800 transition duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:hover:scale-100 motion-reduce:transition-none"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-secondary px-6 py-3 font-semibold text-white transition duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-auto"
               data-testid="button-follow-instagram"
             >
-              <Instagram className="w-5 h-5" />
+              <Instagram className="h-5 w-5" />
               Follow @famfirstsmilecare
             </a>
-            <a 
+            <a
               href="https://www.xiaohongshu.com/user/profile/6787d0fa000000000801e7e7"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-medium rounded-full hover:from-red-700 hover:to-red-800 transition duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:hover:scale-100 motion-reduce:transition-none"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 font-semibold text-white transition duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-auto"
               data-testid="button-follow-xiaohongshu"
             >
-              <BookOpen className="w-5 h-5" />
+              <BookOpen className="h-5 w-5" />
               Dr. Chuang on Xiaohongshu
             </a>
           </div>
-          <p className="text-sm text-gray-600 mt-2">
-            Follow Dr. Chuang on Xiaohongshu (小红书) for dental tips and updates in Chinese
+          <p className="mt-3 text-sm text-gray-600">
+            Follow Dr. Chuang on Xiaohongshu (小红书) for dental tips and updates in Chinese.
           </p>
         </motion.div>
       </div>
-
     </motion.section>
   );
 }

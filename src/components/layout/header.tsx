@@ -48,15 +48,15 @@ export default function Header() {
     location === "/tmj";
   return (
     <nav
-      className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur border-b border-gray-200/60 shadow-sm"
+      className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl shadow-sm"
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="mx-auto w-full max-w-[1320px] px-3 sm:px-4 lg:px-6">
+        <div className="flex h-16 items-center justify-between gap-3">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <div className="h-10 w-10 mr-3 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5">
+          <Link href="/" className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <div className="h-10 w-10 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 group-hover:scale-[1.02]">
               <img
                 src={familyFirstLogo.src}
                 alt="Family First Smile Care Logo"
@@ -73,107 +73,146 @@ export default function Header() {
                 }}
               />
             </div>
-            <span className="text-xl font-bold text-gray-800">Family First Smile Care</span>
+            <div className="min-w-0">
+              <span className="hidden whitespace-nowrap text-base font-extrabold leading-tight tracking-tight text-gray-900 sm:block sm:text-lg">
+                Family First Smile Care
+              </span>
+              <span className="block text-xs font-extrabold leading-tight tracking-tight text-gray-900 sm:hidden">
+                <span className="block">Family First</span>
+                <span className="block">Smile Care</span>
+              </span>
+              <span className="hidden text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 2xl:block">
+                Los Gatos Family Dentistry
+              </span>
+            </div>
           </Link>
-          
+
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              item.dropdown ? (
-                <DropdownMenu key={item.name}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      aria-current={isServicesActive ? "page" : undefined}
-                      className={`nav-link inline-flex items-center gap-1 ${
-                        isServicesActive
-                          ? "text-primary font-semibold"
-                          : "text-gray-700 hover:text-primary"
-                      } data-[state=open]:text-primary`}
-                    >
-                      Services
-                      <ChevronDown className="h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-80 p-3">
-                    <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Services
-                    </DropdownMenuLabel>
-                    <DropdownMenuItem
-                      asChild
-                      className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
-                    >
-                      <Link href="/services">View all services</Link>
-                    </DropdownMenuItem>
-                    <div className="space-y-1">
-                      {serviceMenuItems.map((service) => (
-                        <DropdownMenuItem
-                          key={service.href}
-                          asChild
-                          className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
-                        >
-                          <Link href={service.href}>{service.title}</Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </div>
-                    <DropdownMenuSeparator className="my-2" />
-                    <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Technology
-                    </DropdownMenuLabel>
-                    <DropdownMenuItem
-                      asChild
-                      className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
-                    >
-                      <Link href="/technology/itero-digital-scanner">iTero Digital Scanner</Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  aria-current={location === item.href ? "page" : undefined}
-                  className={`nav-link ${
-                    location === item.href
-                      ? "text-primary font-semibold"
-                      : "text-gray-700 hover:text-primary"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              )
-            ))}
+          <div className="hidden xl:flex flex-1 items-center justify-center">
+            <div className="flex items-center gap-1 rounded-full border border-gray-200/90 bg-white/95 p-1 shadow-sm">
+              {navigation.map((item) =>
+                item.dropdown ? (
+                  <DropdownMenu key={item.name}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-current={isServicesActive ? "page" : undefined}
+                        className={`inline-flex h-9 items-center gap-1 rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
+                          isServicesActive
+                            ? "bg-primary/10 text-primary"
+                            : "text-gray-700 hover:bg-primary/5 hover:text-primary"
+                        } data-[state=open]:bg-primary/10 data-[state=open]:text-primary`}
+                      >
+                        Services
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-80 p-3">
+                      <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Services
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem
+                        asChild
+                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
+                      >
+                        <Link href="/services">View all services</Link>
+                      </DropdownMenuItem>
+                      <div className="space-y-1">
+                        {serviceMenuItems.map((service) => (
+                          <DropdownMenuItem
+                            key={service.href}
+                            asChild
+                            className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
+                          >
+                            <Link href={service.href}>{service.title}</Link>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                      <DropdownMenuSeparator className="my-2" />
+                      <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Technology
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem
+                        asChild
+                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
+                      >
+                        <Link href="/technology/itero-digital-scanner">iTero Digital Scanner</Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    aria-current={location === item.href ? "page" : undefined}
+                    className={`inline-flex h-9 items-center rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
+                      location === item.href
+                        ? "bg-primary/10 text-primary"
+                        : "text-gray-700 hover:bg-primary/5 hover:text-primary"
+                    }`}
+                  >
+                    {item.name === "About Us"
+                      ? "About"
+                      : item.name === "Our Team"
+                        ? "Team"
+                        : item.name}
+                  </Link>
+                ),
+              )}
+            </div>
+          </div>
+
+          <div className="hidden xl:flex items-center gap-2">
             <Button
               asChild
               variant="outline"
-              className="mr-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              className="h-10 whitespace-nowrap border-primary/60 text-primary hover:bg-primary hover:text-primary-foreground"
             >
               <a
                 href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <CreditCard className="h-4 w-4 mr-2" />
+                <CreditCard className="mr-2 h-4 w-4" />
                 Pay Bill
               </a>
             </Button>
-            <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button asChild className="h-10 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90">
               <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                 Book Appointment
               </Link>
             </Button>
           </div>
-          
-          {/* Mobile Menu */}
-          <div className="md:hidden">
+
+          {/* Compact / Mobile Actions */}
+          <div className="xl:hidden flex items-center gap-2">
+            <Button
+              asChild
+              variant="outline"
+              className="hidden sm:inline-flex h-9 whitespace-nowrap border-primary/60 text-primary hover:bg-primary hover:text-primary-foreground"
+            >
+              <a
+                href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Pay Bill
+              </a>
+            </Button>
+            <Button asChild className="hidden sm:inline-flex h-9 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90">
+              <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+                Book
+              </Link>
+            </Button>
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Toggle mobile menu">
+                <Button variant="ghost" size="icon" aria-label="Toggle mobile menu" className="shrink-0">
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col space-y-4 mt-8">
+                <nav className="mt-8 flex flex-col space-y-4">
                   {navigation.filter((item) => !item.dropdown).map((item) => (
                     <Link
                       key={item.name}
@@ -223,11 +262,7 @@ export default function Header() {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  >
+                  <Button asChild variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                     <a
                       href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
                       target="_blank"
@@ -238,7 +273,6 @@ export default function Header() {
                       Pay Bill Online
                     </a>
                   </Button>
-
                   <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                     <Link
                       href={APPOINTMENT_FORM_URL}

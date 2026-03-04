@@ -2,7 +2,7 @@
 
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { Heart, Stethoscope, Users, User, Shield } from "lucide-react";
+import { Heart, User, Shield } from "lucide-react";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -122,7 +122,7 @@ export default function About() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             className="text-center"
-            initial="hidden"
+            initial={false}
             animate="visible"
             variants={staggerContainer}
           >
@@ -147,7 +147,7 @@ export default function About() {
         
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
           <motion.div
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={slideInLeft}
@@ -199,7 +199,7 @@ export default function About() {
             </motion.p>
           </motion.div>
           <motion.div
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={slideInRight}
@@ -226,7 +226,7 @@ export default function About() {
         
         <motion.div 
           className="bg-gray-50 rounded-2xl p-8 lg:p-12"
-          initial="hidden"
+          initial={false}
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={scaleIn}
@@ -288,7 +288,7 @@ export default function About() {
         
         <motion.div 
           className="mt-20"
-          initial="hidden"
+          initial={false}
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={fadeInUp}
@@ -370,7 +370,7 @@ export default function About() {
           
           <motion.div 
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
@@ -419,7 +419,7 @@ export default function About() {
           {/* Additional Office Photos Grid */}
           <motion.div 
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
@@ -481,7 +481,7 @@ export default function About() {
           {/* Extended Office Gallery */}
           <motion.div 
             className="grid md:grid-cols-3 lg:grid-cols-5 gap-3 mt-6"
-            initial="hidden"
+            initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-30px" }}
             variants={staggerContainer}
