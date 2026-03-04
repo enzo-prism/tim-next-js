@@ -72,11 +72,16 @@ fi
 echo "Ensuring Vercel Git integration is connected..."
 git_connect_log="$(mktemp)"
 if ! vercel git connect "$REPO_URL" >"$git_connect_log" 2>&1; then
-  cat "$git_connect_log" >&2
-  rm -f "$git_connect_log"
-  exit 1
+  if grep -qi "already connected" "$git_connect_log"; then
+    cat "$git_connect_log"
+  else
+    cat "$git_connect_log" >&2
+    rm -f "$git_connect_log"
+    exit 1
+  fi
+else
+  cat "$git_connect_log"
 fi
-cat "$git_connect_log"
 rm -f "$git_connect_log"
 
 if [[ "$SKIP_CHECK" -eq 0 ]]; then
