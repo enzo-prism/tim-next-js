@@ -57,7 +57,7 @@ vercel env add NEXT_PUBLIC_GOOGLE_ADS_TAG_ID production
 vercel env add NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT production
 vercel env add NEXT_PUBLIC_HOTJAR_ID production
 vercel env add NEXT_PUBLIC_HOTJAR_SNIPPET_VERSION production
-vercel env add NEXT_PUBLIC_APPOINTMENT_FORM_URL production
+vercel env add FORMSPREE_APPOINTMENT_ENDPOINT production
 vercel env add GA4_PROPERTY_ID production
 vercel env add GSC_SITE_URL production
 vercel env add GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 production
@@ -106,6 +106,7 @@ Use production domain and preview domain checks.
 curl -I https://famfirstsmile.com/
 curl -I https://famfirstsmile.com/services
 curl -I https://famfirstsmile.com/contact
+curl -I https://famfirstsmile.com/book-appointment
 curl -I https://famfirstsmile.com/tmj
 ```
 
@@ -134,6 +135,10 @@ Public:
 curl -X POST https://famfirstsmile.com/api/contacts \
   -H "Content-Type: application/json" \
   -d '{"firstName":"Deploy","lastName":"Test","email":"deploy@example.com"}'
+
+curl -X POST https://famfirstsmile.com/api/appointments \
+  -H "Content-Type: application/json" \
+  -d '{"firstName":"Deploy","lastName":"Test","email":"deploy@example.com","phone":"555-111-2222","service":"dental-exams","preferredDate":"2026-03-10","preferredTime":"10:00"}'
 ```
 
 Admin unauthorized check:

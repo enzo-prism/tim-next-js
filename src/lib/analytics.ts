@@ -40,48 +40,21 @@ const ensureGtag = () => {
   return true;
 };
 
-const openUrl = (url: string, target: "_self" | "_blank") => {
-  if (!url) return;
-
-  if (target === "_blank") {
-    const newWindow = window.open(url, "_blank");
-    if (newWindow) {
-      newWindow.opener = null;
-    }
-    return;
-  }
-
-  window.location.assign(url);
-};
-
 export const triggerGoogleAdsConversion = (url?: string, target: "_self" | "_blank" = "_self") => {
   if (typeof window === "undefined") return;
 
   initGA();
+  if (!window.gtag) return;
 
-  const navigate = () => {
-    if (!url) return;
-    openUrl(url, target);
-  };
+  window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT);
 
-  if (!window.gtag) {
-    navigate();
+  if (!url) return;
+  if (target === "_blank") {
+    const newWindow = window.open(url, "_blank");
+    if (newWindow) newWindow.opener = null;
     return;
   }
-
-  let callbackInvoked = false;
-  const callback = () => {
-    if (callbackInvoked) return;
-    callbackInvoked = true;
-    navigate();
-  };
-
-  window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT, {
-    event_callback: callback,
-    event_timeout: 2000,
-  });
-
-  window.setTimeout(callback, 2100);
+  window.location.assign(url);
 };
 
 // Initialize Google Analytics
@@ -149,4 +122,17 @@ export const trackEvent = (
     event_label: label,
     value: value,
   });
+};
+
+export const trackAppointmentCtaClick = (label?: string) => {
+  trackEvent("appointment_cta_click", "appointment", label);
+};
+
+export const trackAppointmentSubmitSuccess = () => {
+  triggerGoogleAdsConversion();
+  trackEvent("appointment_submit_success", "appointment");
+};
+
+export const trackAppointmentSubmitFallback = () => {
+  trackEvent("appointment_submit_fallback", "appointment");
 };

@@ -1,10 +1,9 @@
-import type { MouseEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { Link } from "wouter";
 import type { Service } from "@/lib/types";
 import BrandIcon, { type BrandIconName } from "@/components/brand/BrandIcon";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { getServiceHref } from "@/lib/routes";
 
 interface ServiceCardProps {
@@ -13,9 +12,8 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ service, featured = false }: ServiceCardProps) {
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick(`service_card:${service.id}`);
   };
 
   const normalizeIconName = (iconName: string): BrandIconName => {
@@ -117,14 +115,9 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
                 variant="outline"
                 className="w-full rounded-xl border-2 border-primary py-3 font-semibold text-primary transition-colors duration-200 hover:bg-primary hover:text-primary-foreground"
               >
-                <a
-                  href={APPOINTMENT_FORM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={handleAppointmentClick}
-                >
+                <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                   Schedule Free Consultation
-                </a>
+                </Link>
               </Button>
             )}
           </div>

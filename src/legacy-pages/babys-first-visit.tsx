@@ -1,13 +1,12 @@
 "use client";
 
-import type { MouseEvent } from "react";
 import { useEffect } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Baby, Shield, Sparkles, Heart, NotebookPen, PhoneCall, Smile, Star, MapPin, Phone, BookOpen, Expand } from "lucide-react";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -24,9 +23,8 @@ const scaleIn = {
 };
 
 export default function BabysFirstVisit() {
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick("babys_first_visit");
   };
 
   // Ensure the Instagram embed script is available when the page loads
@@ -133,14 +131,9 @@ export default function BabysFirstVisit() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                  <a
-                    href={APPOINTMENT_FORM_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={handleAppointmentClick}
-                  >
+                  <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                     Schedule Baby&apos;s First Visit
-                  </a>
+                  </Link>
                 </Button>
                 <Button
                   asChild
@@ -649,14 +642,9 @@ export default function BabysFirstVisit() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild className="w-full sm:w-auto bg-white text-primary hover:bg-gray-100 shadow-lg">
-                  <a
-                    href={APPOINTMENT_FORM_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={handleAppointmentClick}
-                  >
+                  <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                     Schedule Now
-                  </a>
+                  </Link>
                 </Button>
                 <Button
                   asChild

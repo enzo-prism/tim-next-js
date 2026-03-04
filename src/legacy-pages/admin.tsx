@@ -97,6 +97,10 @@ type AdminContactsResponse = {
     phone: string | null;
     service: string | null;
     message: string | null;
+    requestType: string;
+    preferredDate: string | null;
+    preferredTime: string | null;
+    formspreeStatus: string | null;
   }>;
 };
 
@@ -735,10 +739,13 @@ export default function Admin() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[190px]">Received</TableHead>
+                        <TableHead className="w-[120px]">Type</TableHead>
                         <TableHead className="w-[200px]">Name</TableHead>
                         <TableHead className="w-[220px]">Email</TableHead>
                         <TableHead className="w-[160px]">Phone</TableHead>
                         <TableHead className="w-[180px]">Service</TableHead>
+                        <TableHead className="w-[220px]">Preferred Time</TableHead>
+                        <TableHead className="w-[160px]">Formspree</TableHead>
                         <TableHead>Message</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -748,6 +755,11 @@ export default function Admin() {
                           <TableRow key={row.id}>
                             <TableCell className="font-mono text-xs">
                               {formatDateTime(row.createdAt)}
+                            </TableCell>
+                            <TableCell>
+                              <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                                {row.requestType || "contact"}
+                              </span>
                             </TableCell>
                             <TableCell className="text-sm">
                               {row.firstName} {row.lastName}
@@ -766,6 +778,26 @@ export default function Admin() {
                             <TableCell className="text-sm">
                               {row.service || "-"}
                             </TableCell>
+                            <TableCell className="text-sm">
+                              {row.preferredDate || row.preferredTime
+                                ? `${row.preferredDate || "Date TBD"}${row.preferredTime ? ` • ${row.preferredTime}` : ""}`
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {row.requestType === "appointment" ? (
+                                <span
+                                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                    row.formspreeStatus === "delivered"
+                                      ? "bg-green-100 text-green-700"
+                                      : "bg-amber-100 text-amber-700"
+                                  }`}
+                                >
+                                  {row.formspreeStatus || "failed"}
+                                </span>
+                              ) : (
+                                "-"
+                              )}
+                            </TableCell>
                             <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap">
                               {row.message || "-"}
                             </TableCell>
@@ -773,7 +805,7 @@ export default function Admin() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-sm text-muted-foreground">
+                          <TableCell colSpan={9} className="text-sm text-muted-foreground">
                             No contacts found.
                           </TableCell>
                         </TableRow>

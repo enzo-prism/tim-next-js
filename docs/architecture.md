@@ -30,6 +30,19 @@ Primary design goals:
    - Development without DB: in-memory fallback
    - Production without DB: explicit unavailable storage error
 
+### Appointment flow (custom scheduling page)
+
+1. `/book-appointment` posts to `POST /api/appointments`.
+2. Payload is validated via `insertAppointmentSchema`.
+3. Request is persisted first in `contacts` with:
+   - `requestType="appointment"`
+   - `preferredDate` / `preferredTime`
+   - initial `formspreeStatus="failed"`
+4. Server relays to `FORMSPREE_APPOINTMENT_ENDPOINT`.
+5. Relay outcomes:
+   - success -> `formspreeStatus` updated to `delivered`, API returns `201`.
+   - failure -> DB record is still retained, API returns `202 delivered:false` with fallback messaging.
+
 ### Admin flow
 
 1. Middleware guards `/admin` and `/api/admin/*` using Basic Auth (`src/middleware.ts`).

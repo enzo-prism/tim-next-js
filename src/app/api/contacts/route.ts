@@ -9,7 +9,13 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const validatedData = insertContactSchema.parse(body);
-    const contact = await storage.createContact(validatedData);
+    const contact = await storage.createContact({
+      ...validatedData,
+      requestType: "contact",
+      preferredDate: null,
+      preferredTime: null,
+      formspreeStatus: null,
+    });
 
     return NextResponse.json({ success: true, contact }, { status: 201 });
   } catch (error) {

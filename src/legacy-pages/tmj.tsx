@@ -1,19 +1,17 @@
 "use client";
 
-import type { MouseEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Activity, Shield, Stethoscope, CheckCircle, Clock, Users } from "lucide-react";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import type { RelatedLink } from "@/lib/internal-links";
 
 export default function TMJ() {
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick("tmj");
   };
 
   const relatedLinks: RelatedLink[] = [
@@ -276,14 +274,9 @@ export default function TMJ() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-3">
-              <a
-                href={APPOINTMENT_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleAppointmentClick}
-              >
+              <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                 Schedule Consultation
-              </a>
+              </Link>
             </Button>
             <Button
               asChild

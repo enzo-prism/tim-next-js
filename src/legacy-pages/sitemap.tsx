@@ -33,6 +33,7 @@ export default function SiteMap() {
               <li><Link href="/team" className="hover:text-primary transition-colors">Our Team</Link></li>
               <li><Link href="/patient-info" className="hover:text-primary transition-colors">Patient Info</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li><Link href="/book-appointment" className="hover:text-primary transition-colors">Book Appointment</Link></li>
               <li><Link href="/tmj" className="hover:text-primary transition-colors">TMJ Treatment</Link></li>
               <li>
                 <Link href="/technology/itero-digital-scanner" className="hover:text-primary transition-colors">
@@ -103,4 +104,3 @@ export default function SiteMap() {
     </div>
   );
 }
-

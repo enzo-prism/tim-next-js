@@ -31,6 +31,7 @@ Validate these return `200`:
 - `/about`
 - `/services`
 - `/contact`
+- `/book-appointment`
 - `/team`
 - `/patient-info` and child pages
 - `/tmj`
@@ -51,6 +52,14 @@ Validate these redirect as expected:
 - valid payload returns `201` and persisted object
 - malformed payload returns `400` with `errors`
 - storage failure returns `500`
+
+### Appointment API
+
+- valid payload returns:
+  - `201` with `delivered: true` when Formspree relay succeeds
+  - `202` with `delivered: false` when relay fails but DB write succeeds
+- malformed payload returns `400` with `errors`
+- honeypot-filled payload returns `400`
 
 ### Admin API auth
 
@@ -83,7 +92,8 @@ Manual checks on desktop and mobile:
 2. Keyboard navigation reaches all critical controls.
 3. Color contrast and heading hierarchy are sane.
 4. Contact form has clear validation messaging.
-5. Admin interface remains protected and non-indexable.
+5. Booking form has clear delivered/fallback success states.
+6. Admin interface remains protected and non-indexable.
 
 ## Suggested Automated Test Additions
 

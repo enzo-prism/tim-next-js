@@ -13,5 +13,4 @@ export const HOTJAR_SNIPPET_VERSION = Number.parseInt(
   10,
 );
 
-export const APPOINTMENT_FORM_URL =
-  process.env.NEXT_PUBLIC_APPOINTMENT_FORM_URL || "https://fxuqp40sseh.typeform.com/to/CiLYdxSU";
+export const APPOINTMENT_FORM_URL = "/book-appointment";

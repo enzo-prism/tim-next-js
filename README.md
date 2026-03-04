@@ -7,6 +7,7 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 - Full public website route parity
 - Admin dashboard protected with Basic Auth
 - Contact form persistence using Postgres via Drizzle ORM
+- Custom first-party scheduling form at `/book-appointment` with Formspree relay + DB persistence fallback
 - GA4 + Google Search Console admin reporting APIs
 - Canonical SEO + schema.org JSON-LD + sitemap/robots/llms assets
 - Vercel-ready routing, headers, and deployment flow

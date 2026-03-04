@@ -1,12 +1,12 @@
 "use client";
 
-import type { MouseEvent } from "react";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 import ServiceCard from "@/components/service-card";
 import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
 import { generalReviews } from "@/data/reviews";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import HeadingMark from "@/components/brand/HeadingMark";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
@@ -37,9 +37,8 @@ const scaleIn = {
 };
 
 export default function Services() {
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick("services_cta");
   };
 
   return (
@@ -145,17 +144,15 @@ export default function Services() {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
               variants={fadeInUp}
             >
-              <motion.a
-                href={APPOINTMENT_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+              <motion.div
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-lg ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
-                onClick={handleAppointmentClick}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Book Your Appointment
-              </motion.a>
+                <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+                  Book Your Appointment
+                </Link>
+              </motion.div>
               <span className="text-white text-sm">or call (408) 358-8100</span>
             </motion.div>
           </div>

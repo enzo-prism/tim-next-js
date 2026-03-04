@@ -2,8 +2,8 @@ import { Star, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Review } from "@/data/reviews";
 import { googleBusinessProfileUrl } from "@/data/reviews";
-import type { MouseEvent } from "react";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { Link } from "wouter";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 
 interface ReviewProps {
   review: Review;
@@ -82,9 +82,8 @@ interface ReviewsSectionProps {
 
 export function ReviewsSection({ reviews, title = "What Our Patients Say", showCTA = true }: ReviewsSectionProps) {
   if (!reviews || reviews.length === 0) return null;
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick("reviews");
   };
 
   return (
@@ -124,15 +123,13 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
                 <ExternalLink className="w-4 h-4" />
               </a>
               <span className="text-gray-500">•</span>
-              <a
+              <Link
                 href={APPOINTMENT_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 font-semibold transition-colors"
                 onClick={handleAppointmentClick}
               >
                 Book Your Appointment
-              </a>
+              </Link>
             </div>
           </motion.div>
         )}

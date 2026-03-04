@@ -6,6 +6,7 @@ All APIs are implemented as Next.js route handlers in `src/app/api/**`.
 
 - Public endpoint:
   - `POST /api/contacts`
+  - `POST /api/appointments`
 - Admin endpoints (Basic Auth required, enforced by middleware):
   - `/api/admin/*`
 
@@ -27,6 +28,28 @@ Defined by `insertContactSchema` in `src/server/schema.ts`:
 - `phone`: string, optional
 - `service`: string, optional
 - `message`: string, optional
+
+### Appointment Payload (`InsertAppointment`)
+
+Defined by `insertAppointmentSchema` in `src/server/schema.ts`:
+
+- `firstName`: string, required
+- `lastName`: string, required
+- `email`: string, required
+- `phone`: string, required
+- `service`: string, required
+- `preferredDate`: string, required
+- `preferredTime`: string, required
+- `message`: string, optional
+
+### Stored Contact Record Fields
+
+The `contacts` table now also includes:
+
+- `requestType`: `"contact"` or `"appointment"`
+- `preferredDate`: string or null
+- `preferredTime`: string or null
+- `formspreeStatus`: `"delivered" | "failed" | null`
 
 ## Endpoints
 
@@ -55,6 +78,36 @@ Responses:
   - `{ "success": false, "message": "Invalid form data", "errors": [...] }`
 - `500`
   - `{ "success": false, "message": "Failed to submit contact form" }`
+
+## `POST /api/appointments`
+
+Create an appointment request, persist it internally, then relay to Formspree.
+
+Request body:
+
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane@example.com",
+  "phone": "555-123-4567",
+  "service": "invisalign",
+  "preferredDate": "2026-03-10",
+  "preferredTime": "10:30",
+  "message": "Morning is best"
+}
+```
+
+Responses:
+
+- `201` (DB + Formspree delivered)
+  - `{ "success": true, "delivered": true, "appointment": { ... } }`
+- `202` (DB persisted, Formspree relay failed)
+  - `{ "success": true, "delivered": false, "appointment": { ... }, "fallbackMessage": "..." }`
+- `400`
+  - `{ "success": false, "message": "Invalid appointment data", "errors": [...] }`
+- `500`
+  - `{ "success": false, "message": "Failed to submit appointment request" }`
 
 ## `GET /api/admin/changelog`
 
@@ -112,6 +165,10 @@ Search fields:
 - phone
 - service
 - message
+- request type
+- preferred date
+- preferred time
+- Formspree status
 
 Success response:
 
@@ -127,7 +184,11 @@ Success response:
       "email": "smoke@example.com",
       "phone": "555-111-2222",
       "service": "Dental Exams",
-      "message": "Deployment smoke test"
+      "message": "Deployment smoke test",
+      "requestType": "appointment",
+      "preferredDate": "2026-03-10",
+      "preferredTime": "10:00",
+      "formspreeStatus": "delivered"
     }
   ]
 }

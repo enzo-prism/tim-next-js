@@ -1,13 +1,12 @@
 "use client";
 
 import { Link } from "wouter";
-import type { MouseEvent } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import TestimonialCarousel from "@/components/testimonial-carousel";
 import SocialMediaSection from "@/components/social-media";
 import { Heart, Microscope, Users, Star } from "lucide-react";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import BrandIcon from "@/components/brand/BrandIcon";
 import HeadingMark from "@/components/brand/HeadingMark";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
@@ -122,9 +121,8 @@ const patientResources = [
 ];
 
 export default function Home() {
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick("home_hero");
   };
 
   return (
@@ -163,14 +161,9 @@ export default function Home() {
                   asChild
                   className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold px-8 py-3 hover:scale-105 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
                 >
-                  <a
-                    href={APPOINTMENT_FORM_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={handleAppointmentClick}
-                  >
+                  <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                     Schedule Appointment
-                  </a>
+                  </Link>
                 </Button>
                 <Button
                   asChild

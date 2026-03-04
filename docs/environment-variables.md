@@ -37,8 +37,13 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
   - default fallback: `6487571`
 - `NEXT_PUBLIC_HOTJAR_SNIPPET_VERSION`
   - default fallback: `6`
-- `NEXT_PUBLIC_APPOINTMENT_FORM_URL`
-  - default fallback Typeform URL
+
+## Scheduling Relay (Server Variable)
+
+- `FORMSPREE_APPOINTMENT_ENDPOINT`
+  - server-side relay target for `POST /api/appointments`
+  - default fallback in code: `https://formspree.io/f/mojngolr`
+  - keep configured in Vercel for explicit environment control
 
 ## Admin Analytics Variables
 

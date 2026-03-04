@@ -17,6 +17,7 @@ Use this checklist before cutting traffic fully to Vercel production.
 - [ ] `/patient-info/flossing` renders correctly
 - [ ] `/patient-info/nutrition` renders correctly
 - [ ] `/contact` renders correctly and submits
+- [ ] `/book-appointment` renders correctly and submits
 - [ ] `/tmj` renders correctly
 - [ ] `/privacy-policy` renders correctly
 - [ ] `/sitemap` renders correctly
@@ -52,16 +53,20 @@ Use this checklist before cutting traffic fully to Vercel production.
 
 - [ ] `POST /api/contacts` persists valid submissions
 - [ ] invalid contact payload returns `400` with errors
+- [ ] `POST /api/appointments` returns `201` when DB + relay succeed
+- [ ] `POST /api/appointments` returns `202 delivered:false` when relay fails but DB persists
 - [ ] `/admin` requires Basic Auth
 - [ ] `/api/admin/contacts` requires Basic Auth
 - [ ] `/api/admin/changelog` returns payload
 - [ ] admin contacts pagination and search work
+- [ ] admin contacts table shows request type, preferred date/time, and Formspree status
 
 ## Analytics
 
 - [ ] GA script loads with correct measurement ID
 - [ ] route-change pageviews are tracked
-- [ ] appointment conversion event fires
+- [ ] appointment CTA click event fires as non-conversion analytics event
+- [ ] Google Ads conversion event fires on successful appointment submission (not on CTA click)
 - [ ] `/api/admin/ga4/overview` returns valid data or expected `missing_config`
 - [ ] `/api/admin/gsc/overview` returns valid data or expected `missing_config`
 

@@ -1,12 +1,11 @@
 "use client";
 
-import type { MouseEvent } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { CheckCircle, ScanLine } from "lucide-react";
 import IteroScannerImage from "@/components/itero-scanner-image";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { iteroContent } from "@shared/marketing-pages";
 import { buildFaqSchema, buildServiceSchema } from "@shared/structured-data";
 import HeadingMark from "@/components/brand/HeadingMark";
@@ -41,9 +40,8 @@ const scaleIn = {
 };
 
 export default function IteroDigitalScanner() {
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick("itero");
   };
 
   const faqSchema = buildFaqSchema(iteroContent.faqs);
@@ -243,17 +241,15 @@ export default function IteroDigitalScanner() {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             variants={fadeInUp}
           >
-            <motion.a
-              href={APPOINTMENT_FORM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-lg ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
-              onClick={handleAppointmentClick}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Book Your Appointment
-            </motion.a>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href={APPOINTMENT_FORM_URL}
+                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-lg ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
+                onClick={handleAppointmentClick}
+              >
+                Book Your Appointment
+              </Link>
+            </motion.div>
             <span className="text-white text-sm">or call (408) 358-8100</span>
           </motion.div>
         </motion.section>

@@ -8,6 +8,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 
 - Public site: Next.js app on Vercel
 - Contact persistence: Postgres via Drizzle (`contacts` table)
+- Appointment relay: `POST /api/appointments` -> internal DB + Formspree relay
 - Admin auth: middleware Basic Auth (`/admin`, `/api/admin/*`)
 - Analytics APIs:
   - GA4: `/api/admin/ga4/overview`
@@ -18,8 +19,10 @@ Provide a fast, repeatable response guide for production incidents and routine o
 ### Daily
 
 1. Confirm production homepage and contact page return `200`.
-2. Submit one synthetic contact in non-production environment.
-3. Verify Vercel deployment logs are clean.
+2. Confirm booking page (`/book-appointment`) returns `200`.
+3. Submit one synthetic contact in non-production environment.
+4. Submit one synthetic appointment request in non-production environment.
+5. Verify Vercel deployment logs are clean.
 
 ### Weekly
 
@@ -61,6 +64,22 @@ Actions:
 4. Run schema push if table drift is suspected:
    - `npm run db:push`
 5. Re-test submit flow.
+
+## Incident: Appointment relay degraded (Formspree down)
+
+Symptoms:
+
+- `POST /api/appointments` returns `202 delivered:false`
+- appointments still appear in admin contacts with `requestType=appointment`
+- `formspreeStatus` remains `failed`
+
+Actions:
+
+1. Confirm DB persistence is still healthy (this is source of truth for lead capture).
+2. Check Vercel logs for relay errors from `/api/appointments`.
+3. Validate `FORMSPREE_APPOINTMENT_ENDPOINT` in Vercel env.
+4. Manually notify front desk to call back pending `failed` appointment rows.
+5. Once Formspree recovers, continue normal flow; no data loss should occur.
 
 ## Incident: Admin contacts list fails
 

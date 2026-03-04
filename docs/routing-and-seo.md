@@ -23,6 +23,7 @@ Implemented App Router pages:
 - `/patient-info/flossing`
 - `/patient-info/nutrition`
 - `/contact`
+- `/book-appointment`
 - `/tmj`
 - `/privacy-policy`
 - `/sitemap`

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ChevronDown, CreditCard, Menu } from "lucide-react";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import { services } from "@/data/services";
-import { APPOINTMENT_FORM_URL, triggerGoogleAdsConversion } from "@/lib/analytics";
+import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { getServiceHref } from "@/lib/routes";
 
 const navigation: Array<{ name: string; href: string; dropdown?: boolean }> = [
@@ -38,9 +38,8 @@ const serviceMenuItems = services.flatMap((service) => [
 export default function Header() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const handleAppointmentClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    triggerGoogleAdsConversion(APPOINTMENT_FORM_URL, "_blank");
+  const handleAppointmentClick = () => {
+    trackAppointmentCtaClick("header");
   };
   const isServicesActive =
     location === "/services" ||
@@ -159,14 +158,9 @@ export default function Header() {
               </a>
             </Button>
             <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <a
-                href={APPOINTMENT_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleAppointmentClick}
-              >
+              <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                 Book Appointment
-              </a>
+              </Link>
             </Button>
           </div>
           
@@ -246,17 +240,15 @@ export default function Header() {
                   </Button>
 
                   <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                    <a
+                    <Link
                       href={APPOINTMENT_FORM_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(event) => {
+                      onClick={() => {
                         setIsOpen(false);
-                        handleAppointmentClick(event);
+                        handleAppointmentClick();
                       }}
                     >
                       Book Appointment
-                    </a>
+                    </Link>
                   </Button>
                 </nav>
               </SheetContent>

@@ -11,6 +11,7 @@ export const staticSiteRoutes = [
   "/patient-info/flossing",
   "/patient-info/nutrition",
   "/contact",
+  "/book-appointment",
   "/privacy-policy",
   "/sitemap",
   "/tmj",
