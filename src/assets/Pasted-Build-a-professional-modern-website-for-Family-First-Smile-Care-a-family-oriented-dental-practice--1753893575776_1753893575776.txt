@@ -1,0 +1,36 @@
+Build a professional, modern website for Family First Smile Care, a family-oriented dental practice in Los Gatos, CA. The site should be welcoming, stress-free, and family-friendly, emphasizing gentle, compassionate care for all ages, especially children and anxious patients. Use a clean, warm color scheme (e.g., soft blues, greens, and whites) to evoke trust and comfort, with high-quality images of smiling families, kids, and dental tools (source royalty-free images if needed). Ensure the site is fully responsive for mobile and desktop, SEO-optimized with meta tags, alt text for images, and fast-loading. Build it using HTML5, CSS3 (with Flexbox/Grid for layout), and vanilla JavaScript for interactivity (no heavy frameworks unless necessary; Bootstrap is optional for quick responsiveness). Host it on Replit with a simple static setup—no backend required, but include a contact form that submits via email (use Formspree or similar free service if needed, or simulate with JS).
+
+Key business details to incorporate:
+- Business Name: Family First Smile Care
+- Tagline: "Gentle, Compassionate Dental Care for the Whole Family"
+- Location: 15251 National Ave, Suite 102, Los Gatos, CA 95032
+- Phone: (408) 358-8100
+- Email: hello@famfirstsmile.com
+- Lead Dentist: Dr. Tim J. Chuang, DDS – Born and raised in Cupertino, CA; Bachelor's in Human Biology from UC San Diego; Graduated from University of the Pacific School of Dentistry in 2020; Completed general dentistry residency in Hawaii. Highlight his gentle approach, thorough explanations, and expertise in painless procedures.
+- Team: Friendly hygienists, assistants, and staff focused on patient comfort.
+- Services: 
+  - Family Dentistry: Routine check-ups, cleanings, preventive care for all ages.
+  - Children's Dentistry: Gentle first visits, habit-building, child-friendly tools like toys and stickers.
+  - Dental Hygiene: Professional cleanings, education for strong smiles.
+  - Invisalign: Clear aligners for straightening, with free consultations.
+- Amenities/Patient Experience: Clean, spa-like office; cozy blankets, bottled water, free Wi-Fi, TVs in rooms, feminine products; flexible financing; same-day appointments; advanced tech like digital X-rays and CBCT scanners.
+- Testimonials: Include 3-4 sample quotes (e.g., "Dr. Chuang was so patient with my toddler!" – Kevin L.; "Best dentist experience ever!" – Eternal E.).
+- Target Demographic: Families, children, adults seeking personalized, low-stress care.
+
+Website Structure:
+1. **Header**: Fixed navigation bar with logo (text-based or simple SVG smile icon), menu links: Home, About Us, Services, Our Team, Patient Info, Contact. Include call-to-action button: "Book Appointment" (links to contact form).
+2. **Home Page**: Hero section with welcoming image/banner, tagline, brief intro: "We provide exceptional dental care in a warm environment to foster healthy smiles for life." Sections: Why Choose Us (bullet points on compassion, tech, family focus), Featured Services (cards with icons), Testimonials slider/carousel (use JS for simple animation), Call-to-Action: "Schedule Your Free Invisalign Consultation".
+3. **About Us Page**: Practice history (founded by Dr. Chuang, locally owned), mission/values (compassion, personalization, prevention), office tour (embed placeholder images or descriptions of the cozy setup).
+4. **Services Page**: Grid of service cards with descriptions, icons, and "Learn More" buttons (expandable accordions via JS). Highlight Invisalign promo.
+5. **Our Team Page**: Bio for Dr. Chuang (with photo placeholder), general team description.
+6. **Patient Info Page**: New patient forms (link to downloadable PDF placeholders), education tips (e.g., "How to Brush Properly" as short articles), FAQs (e.g., "Do you accept insurance? Yes, including Delta Dental.").
+7. **Contact Page**: Google Maps embed for location, contact form (fields: Name, Email, Phone, Message, Service Interested In), office hours (assume Mon-Fri 9AM-5PM, Sat by appointment—note to confirm), social links (Facebook: https://www.facebook.com/famfirstsmile/, Instagram: @famfirstsmile).
+8. **Footer**: Copyright, address, phone/email, social icons, quick links to pages, privacy policy placeholder.
+
+Additional Features:
+- Interactivity: Smooth scrolling, hover effects on buttons/cards, simple contact form validation with JS.
+- SEO: Title tags like "Family First Smile Care | Gentle Dentistry in Los Gatos, CA", keywords: family dentist Los Gatos, children's dentistry, Invisalign near me.
+- Accessibility: ARIA labels, alt text, keyboard navigation.
+- Optimization for Replit: Keep files organized (index.html, styles.css, script.js, assets folder for images). Use Replit's live preview for testing. If using external libs, link CDNs (e.g., Bootstrap CSS/JS).
+
+Generate the full code structure in Replit, starting with index.html as the entry point. Ensure it's complete and runnable out-of-the-box, with placeholder content where needed.
