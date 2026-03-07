@@ -8,6 +8,7 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
 - admin auth and APIs
 - contact persistence (Postgres)
 - SEO assets (`robots.txt`, `sitemap.xml`, `llms.txt`)
+- Vercel Web Analytics pageview collection on public routes
 
 ## Prerequisites
 
@@ -20,6 +21,7 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `DATABASE_URL`
    - `ADMIN_PASSWORD`
    - analytics variables from `docs/environment-variables.md`
+5. Vercel Web Analytics enabled for the linked Vercel project
 
 ## Critical Deployment Guardrails
 
@@ -79,6 +81,8 @@ vercel env add GA4_PROPERTY_ID production
 vercel env add GSC_SITE_URL production
 vercel env add GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 production
 ```
+
+Vercel Web Analytics does not require an app env var in this repo. It is controlled from the Vercel project dashboard plus the `@vercel/analytics` component already mounted in the app layout.
 
 Inspect current env values:
 
@@ -162,6 +166,13 @@ curl -I https://famfirstsmile.com/robots.txt
 curl -I https://famfirstsmile.com/sitemap.xml
 curl -I https://famfirstsmile.com/llms.txt
 ```
+
+### Vercel analytics checks
+
+1. Open the latest production deployment in a browser.
+2. Visit at least two public routes such as `/` and `/services`.
+3. Wait roughly 30-60 seconds and confirm traffic appears in the Vercel Analytics dashboard.
+4. If no data appears, disable content blockers and retry navigation between pages.
 
 ### API checks
 

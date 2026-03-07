@@ -8,7 +8,7 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 - Admin dashboard protected with Basic Auth
 - Contact form persistence using Postgres via Drizzle ORM
 - Custom first-party scheduling form at `/book-appointment` with Formspree relay + DB persistence fallback
-- GA4 + Google Search Console admin reporting APIs
+- Vercel Web Analytics + GA4 + Google Search Console admin reporting APIs
 - Canonical SEO + schema.org JSON-LD + sitemap/robots/llms assets
 - Vercel-ready routing, headers, and deployment flow
 
@@ -49,7 +49,7 @@ npm run check
 - [Routing and SEO](docs/routing-and-seo.md)
 - [API Reference](docs/api-reference.md)
 - [Environment Variables](docs/environment-variables.md)
-- [Analytics Setup (GA4 + GSC)](docs/analytics-setup.md)
+- [Analytics Setup (Vercel + GA4 + Ads + Hotjar + GSC)](docs/analytics-setup.md)
 - [Deployment on Vercel](docs/deployment-vercel.md)
 - [Operations Runbook](docs/operations-runbook.md)
 - [Testing and Quality](docs/testing-and-quality.md)

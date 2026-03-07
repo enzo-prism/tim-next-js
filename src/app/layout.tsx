@@ -5,6 +5,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import AppProviders from "@/components/app-providers";
 import RouteAnalytics from "@/components/route-analytics";
+import VercelAnalytics from "@/components/vercel-analytics";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
 import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
 import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
@@ -56,6 +57,7 @@ gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });`}
             dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusinessSchema()) }}
           />
         </AppProviders>
+        <VercelAnalytics />
       </body>
     </html>
   );

@@ -38,6 +38,15 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
 - `NEXT_PUBLIC_HOTJAR_SNIPPET_VERSION`
   - default fallback: `6`
 
+## Vercel Web Analytics
+
+- no repo-level env var is required for Vercel Web Analytics in this codebase
+- the integration is enabled by:
+  - installing `@vercel/analytics`
+  - mounting the analytics component in the app layout
+  - turning on Web Analytics in the Vercel project dashboard
+- data is collected from deployed environments after real visits; local development does not behave like production analytics
+
 ## Scheduling Relay (Server Variable)
 
 - `FORMSPREE_APPOINTMENT_ENDPOINT`

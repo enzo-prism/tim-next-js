@@ -1,6 +1,16 @@
-# Analytics Setup (GA4 + Ads + Hotjar + Admin APIs)
+# Analytics Setup (Vercel Analytics + GA4 + Ads + Hotjar + Admin APIs)
 
 ## Tracking Architecture in This Codebase
+
+### Vercel Web Analytics page tracking
+
+1. `@vercel/analytics` is installed in `package.json`.
+2. `src/components/vercel-analytics.tsx` wraps `<Analytics />` from `@vercel/analytics/next`.
+3. `src/app/layout.tsx` mounts that wrapper once at the app shell level.
+4. `beforeSend(...)` drops `/admin*` traffic so public analytics stay clean.
+5. Vercel automatically tracks page views in production after the deployment is visited.
+
+This does not replace GA4. It gives a first-party Vercel traffic view alongside the existing Google-based reporting stack.
 
 ### GA4 page tracking
 
@@ -33,6 +43,12 @@ This pattern is intentional for App Router SPA navigation accuracy.
 - both return `503 missing_config` when credentials/env are incomplete
 
 ## Required Variables
+
+### Vercel Web Analytics
+
+- no application env vars required
+- Vercel Web Analytics must be enabled in the Vercel project dashboard
+- data only appears for deployed environments, not normal local development
 
 ### Public tracking vars
 
@@ -70,13 +86,15 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 
 ## Validation Checklist (Production)
 
-1. Open [famfirstsmile.com](https://famfirstsmile.com) and verify `gtag/js?id=G-L7MH47XYXL` loads.
-2. In browser devtools Network tab, confirm `collect`/`g/collect` hits after page load.
-3. Navigate to a second route and confirm another GA hit is sent.
-4. In GA4 Realtime, verify active users and route page views appear.
-5. Confirm admin route `/admin` does not emit normal public pageview tracking.
-6. Verify Google Ads conversion fires by clicking an appointment CTA wired to `triggerGoogleAdsConversion`.
-7. Verify admin API connectivity:
+1. Open the production deployment and verify `/_vercel/insights/script.js` loads.
+2. Navigate across two or more public routes and confirm page views begin appearing in the Vercel Analytics dashboard.
+3. Open [famfirstsmile.com](https://famfirstsmile.com) and verify `gtag/js?id=G-L7MH47XYXL` loads.
+4. In browser devtools Network tab, confirm `collect`/`g/collect` hits after page load.
+5. Navigate to a second route and confirm another GA hit is sent.
+6. In GA4 Realtime, verify active users and route page views appear.
+7. Confirm admin route `/admin` does not emit normal public pageview tracking in either Vercel Analytics or GA4.
+8. Verify Google Ads conversion fires by clicking an appointment CTA wired to `triggerGoogleAdsConversion`.
+9. Verify admin API connectivity:
    - `GET /api/admin/ga4/overview?days=30`
    - `GET /api/admin/gsc/overview?days=30`
 
@@ -90,9 +108,11 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
    - service account email is not added as an owner/user in Search Console property.
 4. Route transitions not tracked:
    - `RouteAnalytics` removed or `trackPageView` not firing on pathname change.
+5. Vercel Analytics stays blank after deploy:
+   - Web Analytics is not enabled in the Vercel project, an ad/content blocker is suppressing the script, or nobody has visited the deployed site since the change.
 
 ## Hardening Recommendations
 
-1. Add a Playwright smoke script that asserts GA script tag presence and route transition pageview hit.
+1. Add a Playwright smoke script that asserts both the Vercel Insights script and GA script load on public routes.
 2. Add dashboard heartbeat endpoint for analytics config status.
-3. Add weekly manual verification against GA4 Realtime and conversion diagnostics.
+3. Add weekly manual verification against Vercel Analytics, GA4 Realtime, and conversion diagnostics.

@@ -31,7 +31,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
    - `/sitemap.xml`
    - `/llms.txt`
 2. Verify admin analytics endpoints return healthy payloads.
-3. Confirm GA4 Realtime and Search Console data are flowing.
+3. Confirm Vercel Analytics, GA4 Realtime, and Search Console data are flowing.
 
 ## Incident Playbooks
 

@@ -17,7 +17,7 @@
 ## Quality and Analytics
 
 1. [Testing and Quality](./testing-and-quality.md)
-2. [Analytics Setup (GA4 + GSC)](./analytics-setup.md)
+2. [Analytics Setup (Vercel + GA4 + Ads + Hotjar + GSC)](./analytics-setup.md)
 
 ## Suggested Reading Order for New Engineers
 
