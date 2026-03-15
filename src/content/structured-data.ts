@@ -190,3 +190,104 @@ export const buildCollectionPageSchema = ({
   },
   primaryImageOfPage: practiceInfo.image[0],
 });
+
+export const buildBlogCollectionSchema = ({
+  name,
+  description,
+  url,
+  posts,
+}: {
+  name: string;
+  description: string;
+  url: string;
+  posts: ReadonlyArray<{
+    title: string;
+    url: string;
+    datePublished: string;
+    dateModified?: string;
+    description: string;
+  }>;
+}) => ({
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "@id": `${url}#blog`,
+  url,
+  name,
+  description,
+  inLanguage: "en-US",
+  publisher: {
+    "@type": "Dentist",
+    "@id": `${practiceInfo.url}/#dentist`,
+    name: practiceInfo.name,
+    url: practiceInfo.url,
+  },
+  blogPost: posts.map((post) => ({
+    "@type": "BlogPosting",
+    headline: post.title,
+    url: post.url,
+    datePublished: post.datePublished,
+    dateModified: post.dateModified ?? post.datePublished,
+    description: post.description,
+    publisher: {
+      "@id": `${practiceInfo.url}/#dentist`,
+    },
+  })),
+});
+
+export const buildBlogPostingSchema = ({
+  title,
+  description,
+  url,
+  datePublished,
+  dateModified,
+  keywords,
+  articleSection,
+  image = practiceInfo.image[0],
+}: {
+  title: string;
+  description: string;
+  url: string;
+  datePublished: string;
+  dateModified?: string;
+  keywords?: string[];
+  articleSection?: string;
+  image?: string;
+}) => ({
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": url,
+  },
+  headline: title,
+  description,
+  url,
+  datePublished,
+  dateModified: dateModified ?? datePublished,
+  articleSection,
+  keywords: keywords?.join(", "),
+  image: [image],
+  author: {
+    "@type": "Organization",
+    name: "Family First Smile Care Editorial Team",
+    url: practiceInfo.url,
+  },
+  publisher: {
+    "@type": "Dentist",
+    "@id": `${practiceInfo.url}/#dentist`,
+    name: practiceInfo.name,
+    logo: {
+      "@type": "ImageObject",
+      url: practiceInfo.logo,
+    },
+  },
+  about: {
+    "@id": `${practiceInfo.url}/#dentist`,
+  },
+  isPartOf: {
+    "@type": "Blog",
+    "@id": `${practiceInfo.url}/blog#blog`,
+    name: `${practiceInfo.name} Blog`,
+    url: `${practiceInfo.url}/blog`,
+  },
+});

@@ -71,6 +71,7 @@ export default function Footer() {
               <li><Link href="/team" className="hover:text-blue-300 transition-colors">Our Team</Link></li>
               <li><Link href="/testimonials" className="hover:text-blue-300 transition-colors">Testimonials</Link></li>
               <li><Link href="/patient-info" className="hover:text-blue-300 transition-colors">Patient Info</Link></li>
+              <li><Link href="/blog" className="hover:text-blue-300 transition-colors">Blog</Link></li>
               <li><Link href="/contact" className="hover:text-blue-300 transition-colors">Contact</Link></li>
               <li>
                 <a 
@@ -106,6 +107,14 @@ export default function Footer() {
               <li><Link href="/tmj" className="hover:text-blue-300 transition-colors">TMJ Treatment</Link></li>
               <li><Link href="/services/night-guards" className="hover:text-blue-300 transition-colors">Night Guards</Link></li>
               <li><Link href="/technology/itero-digital-scanner" className="hover:text-blue-300 transition-colors">iTero Digital Scanner</Link></li>
+              <li>
+                <Link
+                  href="/blog/when-should-kids-first-see-a-dentist-los-gatos"
+                  className="hover:text-blue-300 transition-colors"
+                >
+                  Kids' First Dental Visit Guide
+                </Link>
+              </li>
             </ul>
           </div>
           

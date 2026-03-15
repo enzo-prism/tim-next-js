@@ -1,10 +1,12 @@
 import { services } from "@/content/services";
+import { getAllBlogRoutes } from "@/content/blog";
 import { getServiceHref } from "@/lib/routes";
 
 export const staticSiteRoutes = [
   "/",
   "/about",
   "/services",
+  "/blog",
   "/team",
   "/testimonials",
   "/patient-info",
@@ -25,4 +27,8 @@ export const serviceRoutes = services
   .flatMap((service) => [service, ...(service.subServices ?? [])])
   .map((service) => getServiceHref(service.id));
 
-export const allCanonicalRoutes = Array.from(new Set([...staticSiteRoutes, ...serviceRoutes]));
+export const blogRoutes = getAllBlogRoutes();
+
+export const allCanonicalRoutes = Array.from(
+  new Set([...staticSiteRoutes, ...serviceRoutes, ...blogRoutes]),
+);

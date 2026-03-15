@@ -4,9 +4,12 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import { services } from "@/data/services";
+import { getAllBlogPosts, getBlogPostHref } from "@/content/blog";
 import { getServiceHref } from "@/lib/routes";
 
 export default function SiteMap() {
+  const blogPosts = getAllBlogPosts();
+
   return (
     <div className="pt-16 pb-20 bg-white">
       <Helmet>
@@ -33,6 +36,7 @@ export default function SiteMap() {
               <li><Link href="/team" className="hover:text-primary transition-colors">Our Team</Link></li>
               <li><Link href="/testimonials" className="hover:text-primary transition-colors">Testimonials</Link></li>
               <li><Link href="/patient-info" className="hover:text-primary transition-colors">Patient Info</Link></li>
+              <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
               <li><Link href="/book-appointment" className="hover:text-primary transition-colors">Book Appointment</Link></li>
               <li><Link href="/tmj" className="hover:text-primary transition-colors">TMJ Treatment</Link></li>
@@ -100,6 +104,23 @@ export default function SiteMap() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="mt-14">
+          <h2 className="text-2xl font-bold mb-4">Blog Articles</h2>
+          <ul className="space-y-3 text-gray-700">
+            {blogPosts.map((post) => (
+              <li key={post.slug}>
+                <Link
+                  href={getBlogPostHref(post.slug)}
+                  className="font-semibold text-gray-900 hover:text-primary transition-colors"
+                >
+                  {post.title}
+                </Link>
+                <p className="mt-1 text-sm text-gray-600">{post.excerpt}</p>
+              </li>
+            ))}
+          </ul>
         </section>
       </div>
     </div>

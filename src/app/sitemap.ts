@@ -6,6 +6,7 @@ const baseUrl = (process.env.CANONICAL_HOST || "https://famfirstsmile.com").repl
 const routePriorityMap: Partial<Record<string, number>> = {
   "/": 1,
   "/services": 0.9,
+  "/blog": 0.75,
   "/about": 0.8,
   "/contact": 0.8,
   "/book-appointment": 0.9,
@@ -34,6 +35,7 @@ const routePriorityMap: Partial<Record<string, number>> = {
 const routeFrequencyMap: Partial<Record<string, MetadataRoute.Sitemap[number]["changeFrequency"]>> = {
   "/": "weekly",
   "/services": "weekly",
+  "/blog": "weekly",
   "/about": "monthly",
   "/contact": "monthly",
   "/book-appointment": "weekly",
@@ -43,6 +45,7 @@ const routeFrequencyMap: Partial<Record<string, MetadataRoute.Sitemap[number]["c
   "/patient-info/brushing": "monthly",
   "/patient-info/flossing": "monthly",
   "/patient-info/nutrition": "monthly",
+  "/blog/when-should-kids-first-see-a-dentist-los-gatos": "monthly",
   "/privacy-policy": "yearly",
   "/sitemap": "yearly",
 };
@@ -54,6 +57,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}${route === "/" ? "" : route}`,
     lastModified,
     changeFrequency: routeFrequencyMap[route] ?? "monthly",
-    priority: routePriorityMap[route] ?? 0.6,
+    priority: routePriorityMap[route] ?? (route.startsWith("/blog/") ? 0.65 : 0.6),
   }));
 }

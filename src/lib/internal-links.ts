@@ -30,6 +30,16 @@ const buildServiceIndex = () => {
 const serviceIndex = buildServiceIndex();
 
 const staticLinksByHref: Record<string, RelatedLink> = {
+  "/blog": {
+    href: "/blog",
+    title: "Dental Blog",
+    description: "Helpful articles answering common questions from Los Gatos families.",
+  },
+  "/blog/when-should-kids-first-see-a-dentist-los-gatos": {
+    href: "/blog/when-should-kids-first-see-a-dentist-los-gatos",
+    title: "When Should Kids First See a Dentist?",
+    description: "A Los Gatos parent guide to the age-one first visit and what happens next.",
+  },
   "/services": {
     href: "/services",
     title: "All Dental Services",
@@ -101,12 +111,23 @@ const curatedBoosts: Record<string, string[]> = {
   "dental-exams": ["dental-hygiene", "family-dentistry", "/patient-info/brushing", "/contact"],
   "dental-hygiene": ["dental-exams", "/patient-info/flossing", "/patient-info/brushing", "/contact"],
   "family-dentistry": ["dental-exams", "dental-hygiene", "/patient-info", "/team"],
-  "children-dentistry": ["childrens-dentistry/babys-first-visit", "/patient-info/brushing", "/contact"],
+  "children-dentistry": [
+    "childrens-dentistry/babys-first-visit",
+    "/blog/when-should-kids-first-see-a-dentist-los-gatos",
+    "/patient-info/brushing",
+    "/contact",
+  ],
   "night-guards": ["tmj", "dental-exams", "/contact"],
   "restorative-dentistry": ["invisalign", "teeth-whitening", "dental-crowns", "dental-exams"],
   invisalign: ["/technology/itero-digital-scanner", "restorative-dentistry", "teeth-whitening", "/contact"],
   "teeth-whitening": ["dental-hygiene", "restorative-dentistry", "/contact"],
   "dental-crowns": ["restorative-dentistry", "dental-exams", "/contact"],
+  "childrens-dentistry/babys-first-visit": [
+    "children-dentistry",
+    "/blog/when-should-kids-first-see-a-dentist-los-gatos",
+    "/patient-info/brushing",
+    "/contact",
+  ],
 };
 
 export const getRelatedLinksForService = (serviceId: string): RelatedLink[] => {

@@ -24,6 +24,7 @@ const navigation: Array<{ name: string; href: string; dropdown?: boolean }> = [
   { name: "Services", href: "/services", dropdown: true },
   { name: "Our Team", href: "/team" },
   { name: "Patient Info", href: "/patient-info" },
+  { name: "Blog", href: "/blog" },
   { name: "Contact", href: "/contact" },
 ];
 
@@ -46,6 +47,8 @@ export default function Header() {
     location.startsWith("/services/") ||
     location.startsWith("/technology/") ||
     location === "/tmj";
+  const isItemActive = (href: string) =>
+    href === "/blog" ? location === "/blog" || location.startsWith("/blog/") : location === href;
   return (
     <nav
       className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl shadow-sm"
@@ -144,9 +147,9 @@ export default function Header() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    aria-current={location === item.href ? "page" : undefined}
+                    aria-current={isItemActive(item.href) ? "page" : undefined}
                     className={`inline-flex h-9 items-center rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
-                      location === item.href
+                      isItemActive(item.href)
                         ? "bg-primary/10 text-primary"
                         : "text-gray-700 hover:bg-primary/5 hover:text-primary"
                     }`}
@@ -217,9 +220,9 @@ export default function Header() {
                     <Link
                       key={item.name}
                       href={item.href}
-                      aria-current={location === item.href ? "page" : undefined}
+                      aria-current={isItemActive(item.href) ? "page" : undefined}
                       className={`nav-link text-lg ${
-                        location === item.href
+                        isItemActive(item.href)
                           ? "text-primary font-semibold"
                           : "text-gray-700 hover:text-primary"
                       }`}
