@@ -60,6 +60,11 @@ const staticLinksByHref: Record<string, RelatedLink> = {
     title: "Meet Our Team",
     description: "Get to know Dr. Chuang and the caring team behind your visit.",
   },
+  "/testimonials": {
+    href: "/testimonials",
+    title: "Patient Testimonials",
+    description: "Read what patients say about gentle care, family dentistry, Invisalign, and TMJ support.",
+  },
   "/contact": {
     href: "/contact",
     title: "Contact & Scheduling",
@@ -158,4 +163,3 @@ export const getRelatedLinksForService = (serviceId: string): RelatedLink[] => {
 
   return result;
 };
-

@@ -6,6 +6,7 @@ export const staticSiteRoutes = [
   "/about",
   "/services",
   "/team",
+  "/testimonials",
   "/patient-info",
   "/patient-info/brushing",
   "/patient-info/flossing",

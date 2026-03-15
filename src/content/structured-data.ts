@@ -149,3 +149,44 @@ export const buildFaqSchema = (faqs: ReadonlyArray<FaqItem>) => ({
     },
   })),
 });
+
+export const buildBreadcrumbSchema = (
+  items: ReadonlyArray<{ name: string; item?: string }>,
+) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((entry, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: entry.name,
+    ...(entry.item ? { item: entry.item } : {}),
+  })),
+});
+
+export const buildCollectionPageSchema = ({
+  name,
+  description,
+  url,
+}: {
+  name: string;
+  description: string;
+  url: string;
+}) => ({
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": `${url}#webpage`,
+  url,
+  name,
+  description,
+  inLanguage: "en-US",
+  about: {
+    "@id": `${practiceInfo.url}/#dentist`,
+  },
+  isPartOf: {
+    "@type": "WebSite",
+    "@id": `${practiceInfo.url}/#website`,
+    name: practiceInfo.name,
+    url: practiceInfo.url,
+  },
+  primaryImageOfPage: practiceInfo.image[0],
+});

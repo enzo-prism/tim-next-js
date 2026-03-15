@@ -2,87 +2,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MessageSquareQuote, Star } from "lucide-react";
 import { useReducedMotion } from "framer-motion";
+import { homepageTestimonials } from "@/content/testimonials";
 import type { Testimonial } from "@/lib/types";
 
-const testimonials: Testimonial[] = [
-  {
-    id: 0,
-    name: "Priscilla Barajas",
-    title: "Patient & parent",
-    content: "They treat my family of seven with so much kindness and care. Every visit feels comfortable, and our kids actually enjoy going to the dentist now. We trust Dr. Chuang and his team completely.",
-    rating: 5
-  },
-  {
-    id: 1,
-    name: "Kevin Lan",
-    title: "Parent",
-    content: "Dr Chuang was great for my 2-year-old daughter's first dental visit. He was patient, fun and knew how to interact with toddlers.",
-    rating: 5
-  },
-  {
-    id: 2,
-    name: "Eternel Elegance",
-    title: "Patient",
-    content: "I am impressed with the excellent care I have received from Dr. Tim J Chuang and his team. Dr. Chuang is a skilled and caring professional.",
-    rating: 5
-  },
-  {
-    id: 3,
-    name: "Monica Lee",
-    title: "Patient",
-    content: "Dr. Chuang is stellar and provides great service! He was very patient and walked me through every step of my annual cleaning. Highly recommend!",
-    rating: 5
-  },
-  {
-    id: 4,
-    name: "Janey Lee",
-    title: "Patient",
-    content: "I have some dental anxiety and Dr. Chuang is always readily available with solid advice and a reassuring manner in addressing my concerns.",
-    rating: 5
-  },
-  {
-    id: 5,
-    name: "Chloe Yue",
-    title: "New Patient",
-    content: "We moved to Bay mid of last year and Family First Smile Care was the first and ideal dental care that we feel comfortable with.",
-    rating: 5
-  },
-  {
-    id: 6,
-    name: "Don Goers",
-    title: "Patient",
-    content: "Cleanings have been a breeze with a fun staff and a knowledgeable and laid-back Doctor leading the team.",
-    rating: 5
-  },
-  {
-    id: 7,
-    name: "Josephine Lan",
-    title: "Patient",
-    content: "I had a wonderful experience at this establishment. Dr. Chuang is warm, knowledgeable, and incredibly patient.",
-    rating: 5
-  },
-  {
-    id: 8,
-    name: "Tiecheng Yang",
-    title: "Patient",
-    content: "Great dental clinic! Dr Chuang and his team are friendly and professional. My treatment was smooth and painless. Highly recommended!",
-    rating: 5
-  },
-  {
-    id: 9,
-    name: "Davy H",
-    title: "Patient",
-    content: "Dr. Chuang's clinic is welcoming, professional, and truly caring. His team provides attentive, personalized care with expertise and kindness.",
-    rating: 5
-  },
-  {
-    id: 10,
-    name: "Zach Reece",
-    title: "Patient",
-    content: "Tim and the team here are great. He is patient, transparent, and took time to explain things to me. Definitely would recommend.",
-    rating: 5
-  }
-];
+const testimonials: Testimonial[] = homepageTestimonials;
 
 export default function TestimonialCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);

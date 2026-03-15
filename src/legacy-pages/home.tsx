@@ -323,6 +323,25 @@ export default function Home() {
           >
             <TestimonialCarousel />
           </motion.div>
+
+          <motion.div
+            className="mt-8 flex justify-center"
+            initial={false}
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeInUp}
+          >
+            <Button
+              asChild
+              variant="outline"
+              className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+            >
+              <Link href="/testimonials">
+                Read more patient reviews
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 

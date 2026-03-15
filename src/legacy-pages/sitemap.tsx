@@ -31,6 +31,7 @@ export default function SiteMap() {
               <li><Link href="/about" className="hover:text-primary transition-colors">About</Link></li>
               <li><Link href="/services" className="hover:text-primary transition-colors">Services</Link></li>
               <li><Link href="/team" className="hover:text-primary transition-colors">Our Team</Link></li>
+              <li><Link href="/testimonials" className="hover:text-primary transition-colors">Testimonials</Link></li>
               <li><Link href="/patient-info" className="hover:text-primary transition-colors">Patient Info</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
               <li><Link href="/book-appointment" className="hover:text-primary transition-colors">Book Appointment</Link></li>
