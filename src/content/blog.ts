@@ -37,6 +37,7 @@ export interface BlogPost {
   heroEyebrow: string;
   heroSummary: string;
   quickAnswer: string;
+  quickAnswerSupport: string;
   intro: string[];
   sections: BlogPostSection[];
   faq: BlogPostFaq[];
@@ -76,6 +77,8 @@ const blogPosts: BlogPost[] = [
       "Early dental visits are about prevention, comfort, and building healthy habits before dental care ever feels stressful.",
     quickAnswer:
       "Most children should see a dentist within six months of the first tooth erupting, or by the first birthday at the latest.",
+    quickAnswerSupport:
+      "This article gives parents a fast answer on timing, then walks through what the first visit looks like and how to make it feel easy.",
     intro: [
       "A lot of parents wait until something seems wrong before scheduling a dental visit for their child. In most cases, that is later than ideal.",
       "The better move is to start early, before pain, fear, or visible problems show up. Early dental visits help children get comfortable with the office, help parents learn how to care for baby teeth, and give your dentist a chance to catch small issues before they become stressful ones.",
@@ -257,6 +260,214 @@ const blogPosts: BlogPost[] = [
       "If you are wondering whether it is time to schedule, we can help you plan a calm, age-appropriate first appointment for your child.",
     ctaHref: "/book-appointment",
     ctaLabel: "Book a first visit",
+  },
+  {
+    slug: "jaw-pain-when-you-wake-up-los-gatos",
+    title: "Why Does My Jaw Hurt When I Wake Up? A Los Gatos Guide to TMJ and Teeth Clenching",
+    metaTitle:
+      "Why Does My Jaw Hurt When I Wake Up? TMJ Help in Los Gatos | Family First Smile Care",
+    metaDescription:
+      "Waking up with jaw pain, headaches, or sore teeth can point to clenching or TMJ issues. Learn the signs, common causes, and when to see a dentist in Los Gatos.",
+    excerpt:
+      "Morning jaw pain, temple tension, or waking headaches can point to nighttime clenching, grinding, or TMJ irritation. Here is what Los Gatos patients should watch for.",
+    category: "TMJ & Bruxism",
+    primaryKeyword: "jaw pain when you wake up Los Gatos",
+    secondaryKeywords: [
+      "TMJ Los Gatos",
+      "teeth clenching jaw pain",
+      "morning jaw pain dentist",
+      "bruxism Los Gatos",
+      "TMJ symptoms dentist",
+    ],
+    publishedAt: "2026-03-15",
+    updatedAt: "2026-03-15",
+    readingTimeMinutes: 8,
+    heroEyebrow: "TMJ and Bruxism Guide",
+    heroSummary:
+      "If your jaw feels sore, tight, or tired when you wake up, sleep-related clenching or TMJ irritation may be part of the picture, not just stress or a bad pillow.",
+    quickAnswer:
+      "Jaw pain that is strongest in the morning often points to nighttime clenching, grinding, or TMJ-related muscle and joint strain.",
+    quickAnswerSupport:
+      "This article helps you connect morning jaw pain to the most common dental causes, then shows when home care is enough and when an exam makes sense.",
+    intro: [
+      "If you wake up with a sore jaw, tension near your temples, or a headache that seems to start around your face, your body may be telling you something important.",
+      "A lot of people assume morning jaw pain is just stress, poor sleep, or a random muscle issue. Sometimes it is. But often, jaw discomfort that shows up first thing in the morning points to nighttime clenching, grinding, or irritation in the jaw joints.",
+      "At a family-focused dental office like Family First Smile Care, this comes up more often than many patients expect. Adults may notice jaw tightness, headaches, tooth sensitivity, or a clicking sound when they chew, but they do not always realize their teeth and jaw are part of the same pattern until the symptoms become frequent enough to disrupt sleep, work, or meals.",
+    ],
+    sections: [
+      {
+        id: "why-morning-jaw-pain-stands-out",
+        title: "Why jaw pain often feels worst in the morning",
+        paragraphs: [
+          "When jaw pain is strongest after sleep, the timing itself is a clue. Many patients clench or grind at night without realizing it, which can strain the jaw muscles, overload the joints, and leave tension behind for the next day.",
+          "NIDCR notes that sleep bruxism can lead to jaw pain or tiredness, headaches, tooth sensitivity, and damage to the teeth. Because it happens during sleep, patients are often surprised by how much force they are actually generating.",
+        ],
+        bullets: [
+          "Soreness when you first open your mouth",
+          "Tightness near the cheeks or temples",
+          "Headaches shortly after waking up",
+          "Tenderness when chewing breakfast",
+          "Teeth that feel sensitive, tired, or oddly sore",
+        ],
+        callout:
+          "When jaw pain is strongest on waking and eases as the day goes on, sleep-related clenching rises higher on the list of likely causes.",
+      },
+      {
+        id: "common-causes-of-morning-jaw-pain",
+        title: "Common causes of morning jaw pain",
+        paragraphs: [
+          "Jaw pain is not always caused by one issue alone. In many patients, several contributing factors overlap.",
+        ],
+        bullets: [
+          "Nighttime clenching or grinding, also called bruxism",
+          "TMJ or TMD-related muscle and joint irritation",
+          "Stress and poor sleep that increase muscle tension",
+          "Tooth wear, small cracks, or stressed restorations from grinding",
+          "Daytime habits like clenching while driving, working, or concentrating",
+        ],
+      },
+      {
+        id: "when-it-may-be-more-than-a-one-off-ache",
+        title: "Signs it may be more than a temporary ache",
+        paragraphs: [
+          "A mild one-off episode is not always a major issue, but repeated symptoms deserve attention. NIDCR lists painful clicking, jaw stiffness, limited movement, and pain in the chewing muscles or jaw joint among the symptoms that can signal a temporomandibular disorder.",
+          "It is also worth knowing that clicking or popping without pain is common and does not automatically mean something is wrong. The bigger concern is when those sounds are paired with pain, locking, or restricted movement.",
+        ],
+        bullets: [
+          "Jaw pain that keeps returning",
+          "Painful clicking or popping when you open or close",
+          "Headaches near the temples or behind the eyes",
+          "Soreness when chewing tougher foods",
+          "Difficulty opening wide comfortably",
+          "Flattened, chipped, or sensitive teeth",
+          "Facial tension that gets worse during stressful weeks",
+        ],
+      },
+      {
+        id: "why-a-dental-evaluation-helps-early",
+        title: "Why seeing a dentist makes sense early",
+        paragraphs: [
+          "A dentist can often spot the dental side of the problem faster than patients can. According to both NIDCR and MedlinePlus, diagnosis typically starts with symptom history, questions about when the pain shows up, and an exam of the jaw, face, teeth, and muscles.",
+          "Even if your main complaint is jaw soreness, an exam may reveal tooth wear, bite strain, chipped enamel, tender jaw muscles, or restorations that are taking too much force. Catching those patterns early is usually simpler than waiting until the symptoms are constant or the teeth are damaged.",
+          "At Family First Smile Care, that matters even more because many patients delay care when they expect a stressful dental visit. A calm evaluation and a clear explanation can make it easier to address the issue before it turns into a chronic habit.",
+        ],
+      },
+      {
+        id: "what-treatment-may-involve",
+        title: "What treatment may involve",
+        paragraphs: [
+          "Treatment depends on the cause and severity of the problem. The goal is not just to mask symptoms. It is to reduce strain and protect the teeth and jaw from ongoing damage.",
+          "Simple, nonsurgical steps are often the first place to start. NIDCR specifically recommends conservative approaches first for many TMD symptoms, including softer foods, heat or cold, and reducing habits like jaw clenching.",
+        ],
+        bullets: [
+          "A custom night guard to help protect teeth from grinding damage",
+          "A bite and tooth-wear evaluation to see where excess force is landing",
+          "Monitoring fillings, crowns, and enamel for grinding-related damage",
+          "Coaching around daytime clenching triggers and jaw habits",
+          "Referral or coordinated care if the joints, muscles, or symptoms are more complex",
+        ],
+      },
+      {
+        id: "what-you-can-do-at-home",
+        title: "What you can do at home for now",
+        paragraphs: [
+          "If you are waking up with jaw soreness, a few conservative steps may help while you arrange an evaluation. These are not a substitute for diagnosis if symptoms keep returning, but they can reduce irritation in the short term.",
+        ],
+        bullets: [
+          "Avoid chewing gum for a while",
+          "Choose softer foods if chewing is painful",
+          "Use a warm compress on tight jaw muscles",
+          "Notice whether you clench during the day",
+          "Avoid resting your chin in your hand for long periods",
+          "Do not force your jaw wide open if it feels stiff",
+        ],
+      },
+      {
+        id: "why-this-matters-for-families",
+        title: "Why this matters for families too",
+        paragraphs: [
+          "Family dental practices often see these issues in busy parents, teens under academic stress, and adults who are juggling work and caregiving. Morning jaw pain is easy to normalize because life is already full.",
+          "But untreated jaw strain can spill into eating, sleep, concentration, and overall comfort. If the symptom pattern is real, it is worth checking before it turns into tooth damage or an every-morning problem.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "Is jaw pain in the morning always TMJ?",
+        answer:
+          "No. Morning jaw pain can come from clenching, grinding, muscle tension, tooth-related strain, or TMJ irritation. A dental exam helps narrow down which pattern fits best.",
+      },
+      {
+        question: "Can stress cause jaw pain while sleeping?",
+        answer:
+          "Yes. Stress can contribute to nighttime clenching and grinding, which can leave the jaw muscles sore and tense when you wake up.",
+      },
+      {
+        question: "Is clicking without pain always a sign of TMJ?",
+        answer:
+          "Not necessarily. NIDCR notes that clicking or popping without pain is common and often does not need treatment. Pain, locking, or limited movement are more concerning signs.",
+      },
+      {
+        question: "Will a night guard help?",
+        answer:
+          "For many patients, a custom night guard is a common first step because it helps protect teeth from grinding damage. Whether it also relieves symptoms depends on the underlying cause, which is why an exam still matters.",
+      },
+      {
+        question: "When should I see a dentist for jaw pain?",
+        answer:
+          "If the pain keeps returning, affects chewing, comes with headaches or painful clicking, or you notice tooth wear or sensitivity, it is a good idea to schedule an evaluation.",
+      },
+    ],
+    relatedLinks: [
+      {
+        href: "/tmj",
+        title: "TMJ Treatment in Los Gatos",
+        description: "Learn how our office evaluates jaw pain, joint symptoms, and bite-related strain.",
+      },
+      {
+        href: "/services/night-guards",
+        title: "Custom Night Guards",
+        description: "See how custom appliances can help protect teeth from grinding and clenching damage.",
+      },
+      {
+        href: "/services/dental-exams",
+        title: "Dental Exams",
+        description: "Start with a comprehensive evaluation to spot wear, bite issues, and early damage.",
+      },
+      {
+        href: "/about",
+        title: "About Family First Smile Care",
+        description: "Meet the team and learn why gentle, family-focused care matters for stress-related concerns.",
+      },
+      {
+        href: "/contact",
+        title: "Contact & Scheduling",
+        description: "Ask a question or book an appointment if jaw pain keeps showing up in the morning.",
+      },
+    ],
+    sources: [
+      {
+        label: "NIDCR guide to bruxism",
+        href: "https://www.nidcr.nih.gov/health-info/bruxism",
+      },
+      {
+        label: "NIDCR guide to TMD",
+        href: "https://www.nidcr.nih.gov/health-info/tmd",
+      },
+      {
+        label: "MedlinePlus TMJ disorders overview",
+        href: "https://medlineplus.gov/temporomandibulardisorders.html",
+      },
+      {
+        label: "MedlinePlus medical encyclopedia entry on bruxism",
+        href: "https://medlineplus.gov/ency/article/001413.htm",
+      },
+    ],
+    ctaTitle: "Do not keep guessing about recurring jaw pain",
+    ctaBody:
+      "If you keep waking up sore, tight, or headache-prone, we can evaluate the pattern, check for wear, and help you decide on the simplest next step.",
+    ctaHref: "/book-appointment",
+    ctaLabel: "Book a jaw pain evaluation",
   },
 ];
 

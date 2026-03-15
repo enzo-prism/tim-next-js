@@ -148,7 +148,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
             items={[
               { label: "Home", href: "/" },
               { label: "Blog", href: "/blog" },
-              { label: "First Dental Visit Guide" },
+              { label: post.title },
             ]}
           />
 
@@ -191,8 +191,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                 {post.quickAnswer}
               </p>
               <p className="mt-4 text-sm leading-6 text-slate-600">
-                This article is written to answer the timing question clearly, then guide parents
-                toward what the first visit actually looks like.
+                {post.quickAnswerSupport}
               </p>
             </aside>
           </div>
