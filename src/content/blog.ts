@@ -469,6 +469,234 @@ const blogPosts: BlogPost[] = [
     ctaHref: "/book-appointment",
     ctaLabel: "Book a jaw pain evaluation",
   },
+  {
+    slug: "how-often-dental-cleaning-los-gatos",
+    title: "How Often Should You Get a Dental Cleaning? A Los Gatos Guide for Busy Families",
+    metaTitle:
+      "How Often Should You Get a Dental Cleaning in Los Gatos? | Family First Smile Care",
+    metaDescription:
+      "Wondering whether you really need a dental cleaning every six months? Learn how often cleanings and exams make sense for adults, kids, and higher-risk patients in Los Gatos.",
+    excerpt:
+      "For many adults and kids, twice-yearly cleanings are a strong baseline. Some patients need visits more often based on gum health, cavity risk, dry mouth, braces, or medical factors.",
+    category: "Preventive Dentistry",
+    primaryKeyword: "how often dental cleaning Los Gatos",
+    secondaryKeywords: [
+      "dental hygiene Los Gatos",
+      "dental exams Los Gatos",
+      "family dentist Los Gatos",
+      "how often should you get teeth cleaned",
+      "preventive dentist Los Gatos",
+    ],
+    publishedAt: "2026-03-19",
+    updatedAt: "2026-03-19",
+    readingTimeMinutes: 7,
+    heroEyebrow: "Preventive Care Guide",
+    heroSummary:
+      "Six months is a common starting point for cleanings and exams, but the right schedule depends on your mouth, your risk factors, and how stable things stay between visits.",
+    quickAnswer:
+      "Most adults and children do well with cleanings and exams every six months, but some patients benefit from visits every three to four months based on gum health, cavity risk, dry mouth, orthodontics, or medical conditions.",
+    quickAnswerSupport:
+      "This article explains why the six-month rhythm is common, when it may need to change, and how a personalized preventive plan helps busy Los Gatos families stay ahead of bigger problems.",
+    intro: [
+      "A lot of people grow up hearing the same rule: get your teeth cleaned every six months.",
+      "That is a useful starting point, but it is not the whole story. For many children and adults, twice-yearly cleanings and exams are exactly right. For others, a shorter interval makes more sense because of gum inflammation, heavier tartar buildup, dry mouth, braces or aligners, or a history of more frequent dental problems.",
+      "At Family First Smile Care in Los Gatos, the goal is not to force every patient into the same schedule. It is to match preventive care to the person sitting in the chair so cleanings stay realistic, useful, and easy to keep up with.",
+    ],
+    sections: [
+      {
+        id: "why-six-months-is-common",
+        title: "Why the six-month guideline is so common",
+        paragraphs: [
+          "The six-month rhythm is common for a reason. Routine cleanings and exams help remove tartar that cannot be brushed away at home, catch cavities or gum concerns early, and keep small issues from turning into more stressful appointments later.",
+          "MedlinePlus notes that most adults and children need routine dental exams every six months, while NIDCR emphasizes regular check-ups and professional cleaning as part of ongoing oral hygiene. The ADA also supports personalized oral care planning rather than assuming one schedule fits everyone equally well.",
+        ],
+        callout:
+          "Six months is a strong preventive baseline for many families, but it is better understood as a default starting point than as a rigid rule.",
+      },
+      {
+        id: "what-cleanings-help-prevent",
+        title: "What a dental cleaning actually helps prevent",
+        paragraphs: [
+          "Professional cleanings are about more than polished teeth. NIDCR explains that plaque can harden into tartar, and tartar can only be removed by a dentist or dental hygienist.",
+          "That matters because regular cleanings and exams help reduce the buildup and early changes that contribute to bigger problems over time.",
+        ],
+        bullets: [
+          "Cavities",
+          "Gum inflammation and bleeding",
+          "Plaque and tartar accumulation",
+          "Bad breath tied to buildup",
+          "Harder-to-spot changes in oral health",
+        ],
+      },
+      {
+        id: "who-does-well-every-six-months",
+        title: "Who often does well with cleanings every six months",
+        paragraphs: [
+          "Many patients fit comfortably into the standard twice-a-year schedule. This is especially common when oral health stays stable from one visit to the next and home care is consistent.",
+        ],
+        bullets: [
+          "You brush and floss consistently",
+          "You do not build heavy tartar quickly",
+          "You do not have active gum disease",
+          "You do not get frequent cavities",
+          "Your exams tend to stay stable over time",
+          "You are generally maintaining healthy habits without major risk factors",
+        ],
+      },
+      {
+        id: "who-may-need-more-frequent-care",
+        title: "Who may need cleanings more often",
+        paragraphs: [
+          "Some patients benefit from shorter intervals, such as every three or four months. NIDCR specifically notes that people at higher risk for gum disease, including some patients with diabetes, may need to be seen more frequently.",
+          "MedlinePlus also highlights that people with gum disease, frequent cavities, dry mouth, smoking exposure, pregnancy, or other health factors may need more frequent dental exams.",
+        ],
+        bullets: [
+          "Gum disease or a history of periodontal treatment",
+          "Frequent tartar buildup",
+          "A pattern of getting cavities often",
+          "Braces or aligners that make hygiene harder",
+          "Dry mouth from medications or health conditions",
+          "Diabetes or another condition that affects gum health",
+          "Bleeding gums or inflammation that returns quickly",
+        ],
+      },
+      {
+        id: "what-about-kids",
+        title: "What about kids and teens?",
+        paragraphs: [
+          "For many families, visits every six months are a strong foundation for children and teens. MedlinePlus notes that most babies should also be checked about every six months after that first visit timeline is established.",
+          "For school-age children, those preventive visits are not only about cavity prevention. They also help with habit coaching, tracking how teeth are coming in, and making the dental office feel normal instead of dramatic.",
+        ],
+        bullets: [
+          "Cavity prevention",
+          "Brushing and flossing coaching",
+          "Monitoring baby and permanent teeth development",
+          "Catching small problems before they become stressful",
+          "Helping kids stay comfortable with routine dental care",
+        ],
+      },
+      {
+        id: "if-your-teeth-feel-fine",
+        title: "What if your teeth feel completely fine?",
+        paragraphs: [
+          "This is where people often start stretching appointments. If nothing hurts, it is easy to assume everything is fine.",
+          "But many dental problems are quiet early on. Cavities can start small, gum inflammation can build gradually, and enamel wear or bite changes can progress without obvious pain. Preventive visits matter precisely because they catch problems before they begin interrupting your calendar.",
+        ],
+      },
+      {
+        id: "insurance-vs-clinical-timing",
+        title: "Insurance timing is not the same as clinical timing",
+        paragraphs: [
+          "Some dental plans cover two cleanings per year or one every six months. That may shape your scheduling, but insurance rules are not the same thing as clinical recommendations.",
+          "A patient with higher risk factors may need more care than a plan fully covers. Another patient may be stable but still benefits from staying on a regular preventive rhythm. The smarter sequence is to start with what your mouth needs, then coordinate that plan with coverage as practically as possible.",
+        ],
+      },
+      {
+        id: "how-your-dentist-decides",
+        title: "How your dentist decides what is right for you",
+        paragraphs: [
+          "A personalized cleaning schedule is usually based on the full picture, not just one symptom or one insurance benefit.",
+        ],
+        bullets: [
+          "Current gum health",
+          "Cavity history",
+          "Plaque and tartar buildup patterns",
+          "Home-care habits",
+          "Age and stage of development",
+          "Orthodontic treatment",
+          "Medical conditions that affect oral health",
+          "Whether your mouth stays stable between visits",
+        ],
+        callout:
+          "A good preventive plan should feel tailored, not scripted. The right interval is the one that keeps problems from building quietly between appointments.",
+      },
+      {
+        id: "why-this-matters-for-busy-families",
+        title: "Why this matters for busy Los Gatos families",
+        paragraphs: [
+          "Busy families delay preventive care for the same reason they delay a lot of things: nothing feels urgent yet. School schedules, work, sports, and errands crowd out the appointments that feel easiest to postpone.",
+          "But preventive care is one of the few areas where staying ahead usually saves time later. A short, low-stress cleaning visit is almost always easier than fitting in treatment after a tooth starts hurting or a child suddenly needs more involved care.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "Do I really need a cleaning every six months?",
+        answer:
+          "For many patients, yes. That schedule works well as a general preventive baseline. Others may need more frequent care depending on gum health, cavity risk, dry mouth, or other factors.",
+      },
+      {
+        question: "Can I wait longer if my teeth feel fine?",
+        answer:
+          "You can, but many dental problems do not hurt early. Preventive visits help catch issues while they are still easier and less disruptive to manage.",
+      },
+      {
+        question: "Do kids need cleanings twice a year too?",
+        answer:
+          "In many cases, yes. Regular preventive visits help monitor development, prevent cavities, and make the dental office feel familiar rather than stressful.",
+      },
+      {
+        question: "Why would someone need cleanings every three or four months?",
+        answer:
+          "Shorter intervals are often used for patients with gum disease, frequent buildup, frequent cavities, dry mouth, braces, or medical conditions that raise oral health risk.",
+      },
+      {
+        question: "Does insurance decide how often I should go?",
+        answer:
+          "Insurance may influence scheduling logistics, but your clinical needs should come first. Coverage rules and ideal preventive timing are not always the same thing.",
+      },
+    ],
+    relatedLinks: [
+      {
+        href: "/services/dental-hygiene",
+        title: "Dental Hygiene",
+        description: "See how professional cleanings and hygiene coaching support long-term prevention.",
+      },
+      {
+        href: "/services/dental-exams",
+        title: "Dental Exams",
+        description: "Learn what comprehensive exams help catch before symptoms become obvious.",
+      },
+      {
+        href: "/services/family-dentistry",
+        title: "General & Family Dentistry",
+        description: "Explore preventive care for children, parents, and older adults in one office.",
+      },
+      {
+        href: "/patient-info",
+        title: "Patient Information",
+        description: "Get practical visit guidance, FAQs, and what to expect before you come in.",
+      },
+      {
+        href: "/contact",
+        title: "Contact & Scheduling",
+        description: "Ask a question or schedule preventive care for yourself or your family.",
+      },
+    ],
+    sources: [
+      {
+        label: "NIDCR oral hygiene guidance",
+        href: "https://www.nidcr.nih.gov/health-info/oral-hygiene",
+      },
+      {
+        label: "MedlinePlus dental exam overview",
+        href: "https://medlineplus.gov/lab-tests/dental-exam/",
+      },
+      {
+        label: "MedlinePlus gingivitis overview",
+        href: "https://medlineplus.gov/ency/article/001056.htm",
+      },
+      {
+        label: "ADA home oral care guidance",
+        href: "https://www.ada.org/en/resources/ada-library/oral-health-topics/home-care",
+      },
+    ],
+    ctaTitle: "Build a preventive schedule that actually fits your family",
+    ctaBody:
+      "If you are not sure whether six months is right for your child, your partner, or yourself, we can help you choose a cleaning and exam rhythm that matches your real needs.",
+    ctaHref: "/book-appointment",
+    ctaLabel: "Book a preventive visit",
+  },
 ];
 
 export function getAllBlogPosts() {

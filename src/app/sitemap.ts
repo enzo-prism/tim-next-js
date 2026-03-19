@@ -46,6 +46,7 @@ const routeFrequencyMap: Partial<Record<string, MetadataRoute.Sitemap[number]["c
   "/patient-info/flossing": "monthly",
   "/patient-info/nutrition": "monthly",
   "/blog/when-should-kids-first-see-a-dentist-los-gatos": "monthly",
+  "/blog/how-often-dental-cleaning-los-gatos": "monthly",
   "/privacy-policy": "yearly",
   "/sitemap": "yearly",
 };

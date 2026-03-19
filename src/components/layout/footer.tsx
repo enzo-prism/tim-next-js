@@ -109,6 +109,14 @@ export default function Footer() {
               <li><Link href="/technology/itero-digital-scanner" className="hover:text-blue-300 transition-colors">iTero Digital Scanner</Link></li>
               <li>
                 <Link
+                  href="/blog/how-often-dental-cleaning-los-gatos"
+                  className="hover:text-blue-300 transition-colors"
+                >
+                  Dental Cleaning Frequency Guide
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/blog/when-should-kids-first-see-a-dentist-los-gatos"
                   className="hover:text-blue-300 transition-colors"
                 >

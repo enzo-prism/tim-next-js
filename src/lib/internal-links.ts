@@ -40,6 +40,12 @@ const staticLinksByHref: Record<string, RelatedLink> = {
     title: "When Should Kids First See a Dentist?",
     description: "A Los Gatos parent guide to the age-one first visit and what happens next.",
   },
+  "/blog/how-often-dental-cleaning-los-gatos": {
+    href: "/blog/how-often-dental-cleaning-los-gatos",
+    title: "How Often Should You Get a Dental Cleaning?",
+    description:
+      "A Los Gatos guide to six-month cleanings, higher-risk patients, and personalized preventive timing.",
+  },
   "/services": {
     href: "/services",
     title: "All Dental Services",
@@ -108,9 +114,27 @@ const asRelatedLink = (value: string): RelatedLink | null => {
 };
 
 const curatedBoosts: Record<string, string[]> = {
-  "dental-exams": ["dental-hygiene", "family-dentistry", "/patient-info/brushing", "/contact"],
-  "dental-hygiene": ["dental-exams", "/patient-info/flossing", "/patient-info/brushing", "/contact"],
-  "family-dentistry": ["dental-exams", "dental-hygiene", "/patient-info", "/team"],
+  "dental-exams": [
+    "dental-hygiene",
+    "family-dentistry",
+    "/blog/how-often-dental-cleaning-los-gatos",
+    "/patient-info/brushing",
+    "/contact",
+  ],
+  "dental-hygiene": [
+    "dental-exams",
+    "/blog/how-often-dental-cleaning-los-gatos",
+    "/patient-info/flossing",
+    "/patient-info/brushing",
+    "/contact",
+  ],
+  "family-dentistry": [
+    "dental-exams",
+    "dental-hygiene",
+    "/blog/how-often-dental-cleaning-los-gatos",
+    "/patient-info",
+    "/team",
+  ],
   "children-dentistry": [
     "childrens-dentistry/babys-first-visit",
     "/blog/when-should-kids-first-see-a-dentist-los-gatos",
