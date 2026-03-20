@@ -32,7 +32,8 @@ export default function Footer() {
               <span className="text-xl font-bold">Family First Smile Care</span>
             </div>
             <p className="text-gray-300 mb-4">
-              Gentle, compassionate dental care for the whole family in Los Gatos, CA.
+              Gentle, compassionate dental care for Los Gatos and Santa Cruz families who want a
+              warm, family-focused dental home.
             </p>
             <div className="space-y-2 text-gray-300">
               <div className="flex items-center">
@@ -73,6 +74,11 @@ export default function Footer() {
               <li><Link href="/patient-info" className="hover:text-blue-300 transition-colors">Patient Info</Link></li>
               <li><Link href="/blog" className="hover:text-blue-300 transition-colors">Blog</Link></li>
               <li><Link href="/contact" className="hover:text-blue-300 transition-colors">Contact</Link></li>
+              <li>
+                <Link href="/areas-we-serve/santa-cruz" className="hover:text-blue-300 transition-colors">
+                  Santa Cruz Families
+                </Link>
+              </li>
               <li>
                 <a 
                   href="https://g.page/r/Cej0Xl18KcCyEAE/review" 

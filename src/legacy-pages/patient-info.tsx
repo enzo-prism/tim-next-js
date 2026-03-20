@@ -12,7 +12,7 @@ const faqs: FAQItem[] = [
   {
     id: "insurance",
     question: "Do you accept insurance?",
-    answer: "Yes, we accept most major insurance plans including Delta Dental, Cigna, MetLife, Aetna, and Blue Cross Blue Shield. We also accept most PPO plans. Our team will help verify your benefits and maximize your coverage."
+    answer: "Yes, we accept many major insurance plans including Delta Dental, Cigna, MetLife, Aetna, and Blue Cross Blue Shield, and we also work with most PPO plans. If you're coming from Santa Cruz, call ahead and our team can help verify your benefits before your visit and explain what to expect."
   },
   {
     id: "frequency",
@@ -118,7 +118,7 @@ export default function PatientInfo() {
               </div>
               <h2 className="text-2xl font-bold text-gray-800">Insurance & Payment</h2>
             </div>
-            <p className="text-gray-600 mb-6">We accept most major insurance plans and offer flexible payment options to make dental care accessible for your family.</p>
+            <p className="text-gray-600 mb-6">We accept many major insurance plans and offer flexible payment options to make dental care accessible for your family.</p>
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">Accepted Insurance</h3>
@@ -138,6 +138,17 @@ export default function PatientInfo() {
                   <li>• Flexible financing available</li>
                   <li>• Payment plans</li>
                 </ul>
+              </div>
+              <div className="rounded-xl border border-secondary/20 bg-secondary/5 p-4">
+                <h3 className="font-semibold text-gray-800 mb-2">Coming from Santa Cruz?</h3>
+                <p className="text-sm text-gray-600">
+                  Many Santa Cruz families are happy to come over Highway 17 for care here. If you
+                  want to use PPO benefits at our office, call ahead and we will help verify your
+                  coverage before you make the trip.
+                </p>
+                <Button asChild variant="link" className="mt-3 h-auto p-0 text-primary">
+                  <Link href="/areas-we-serve/santa-cruz">See Santa Cruz visit details</Link>
+                </Button>
               </div>
             </div>
           </div>

@@ -23,6 +23,7 @@ Implemented App Router pages:
 - `/patient-info/flossing`
 - `/patient-info/nutrition`
 - `/contact`
+- `/areas-we-serve/santa-cruz`
 - `/book-appointment`
 - `/tmj`
 - `/privacy-policy`
@@ -94,6 +95,7 @@ Configured in `next.config.ts` and middleware:
 ## SEO Validation Checklist
 
 1. Check route metadata in page source for title/description/canonical tags.
+   Include `/areas-we-serve/santa-cruz`.
 2. Verify OpenGraph/Twitter image and text values.
 3. Confirm `/robots.txt`, `/sitemap.xml`, and `/llms.txt` return `200`.
 4. Verify redirect targets and status codes for all legacy routes.

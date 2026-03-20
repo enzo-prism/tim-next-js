@@ -14,6 +14,7 @@ export const staticSiteRoutes = [
   "/patient-info/flossing",
   "/patient-info/nutrition",
   "/contact",
+  "/areas-we-serve/santa-cruz",
   "/book-appointment",
   "/privacy-policy",
   "/sitemap",

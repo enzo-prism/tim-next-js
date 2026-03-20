@@ -38,6 +38,11 @@ export default function SiteMap() {
               <li><Link href="/patient-info" className="hover:text-primary transition-colors">Patient Info</Link></li>
               <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li>
+                <Link href="/areas-we-serve/santa-cruz" className="hover:text-primary transition-colors">
+                  Santa Cruz Families
+                </Link>
+              </li>
               <li><Link href="/book-appointment" className="hover:text-primary transition-colors">Book Appointment</Link></li>
               <li><Link href="/tmj" className="hover:text-primary transition-colors">TMJ Treatment</Link></li>
               <li>

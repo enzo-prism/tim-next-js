@@ -624,15 +624,33 @@ export default function Home() {
               >
                 Take a Virtual Tour of Our Office
               </motion.h2>
-              <motion.p 
-                className="text-xl text-gray-600 mb-8"
-                variants={fadeInUp}
-              >
-                Step inside our welcoming Los Gatos location and see why families choose us for their dental care. From our comfortable waiting area to our state-of-the-art treatment rooms.
-              </motion.p>
-              <motion.div variants={scaleIn}>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
+            <motion.p 
+              className="text-xl text-gray-600 mb-8"
+              variants={fadeInUp}
+            >
+              Step inside our welcoming Los Gatos location and see why families choose us for their dental care. From our comfortable waiting area to our state-of-the-art treatment rooms.
+            </motion.p>
+            <motion.div
+              className="mb-8 rounded-2xl border border-secondary/20 bg-white/90 p-5 shadow-sm"
+              variants={fadeInUp}
+            >
+              <h3 className="text-lg font-semibold text-gray-800">Serving Santa Cruz families</h3>
+              <p className="mt-2 text-base text-gray-600">
+                Many families from Santa Cruz choose our Los Gatos office for gentle care, family
+                dentistry, and help verifying major PPO benefits before the visit. We are just off
+                Highway 17, so getting here is straightforward when you want a practice that feels
+                worth the drive.
+              </p>
+              <Button asChild variant="link" className="mt-3 h-auto p-0 text-primary">
+                <Link href="/areas-we-serve/santa-cruz">
+                  Learn why Santa Cruz families visit us
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </motion.div>
+            <motion.div variants={scaleIn}>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
                     asChild
                     className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold px-8 py-3 transition-colors duration-200"
                   >

@@ -3,7 +3,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,6 @@ type ContactFormValues = InsertContact;
 
 export default function Contact() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(insertContactSchema),
@@ -96,6 +95,16 @@ export default function Contact() {
                     >
                       Get Directions
                     </a>
+                    <p className="mt-3 text-sm text-gray-600">
+                      We serve families from Santa Cruz who want a gentle family dentist and are
+                      comfortable making the easy trip over Highway 17 to Los Gatos.
+                    </p>
+                    <Link
+                      href="/areas-we-serve/santa-cruz"
+                      className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors inline-block mt-2"
+                    >
+                      See Santa Cruz visit info
+                    </Link>
                   </div>
                 </div>
                 
@@ -309,6 +318,14 @@ export default function Contact() {
         
         {/* Map Section */}
         <div className="mt-16">
+          <div className="mb-6 rounded-2xl border border-primary/15 bg-primary/5 p-5 text-center">
+            <h2 className="text-2xl font-bold text-gray-800">Easy to reach from Santa Cruz</h2>
+            <p className="mt-2 text-gray-600">
+              Our office is just off Highway 17 in Los Gatos, which makes visits simple for many
+              Santa Cruz patients who want family-focused care and help verifying PPO benefits
+              before they come in.
+            </p>
+          </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Find Us</h2>
           <div className="bg-white rounded-2xl overflow-hidden shadow-xl">
             {/* Map Container */}
@@ -331,6 +348,9 @@ export default function Contact() {
                 <div className="text-white text-center md:text-left">
                   <h3 className="font-semibold text-lg mb-1">Family First Smile Care</h3>
                   <p className="text-white">15251 National Ave, Suite 102, Los Gatos, CA 95032</p>
+                  <p className="mt-1 text-sm text-white/85">
+                    Convenient for Los Gatos and Santa Cruz families coming over Highway 17.
+                  </p>
                 </div>
                 <div className="flex gap-3">
                   <a 

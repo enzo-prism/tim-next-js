@@ -28,6 +28,27 @@ export const practiceInfo = {
     "https://www.google.com/maps/search/?api=1&query=15251+National+Ave+Suite+102+Los+Gatos+CA+95032",
 } as const;
 
+export const serviceAreas = [
+  {
+    "@type": "City",
+    name: "Los Gatos",
+    address: {
+      "@type": "PostalAddress",
+      addressRegion: "CA",
+      addressCountry: "US",
+    },
+  },
+  {
+    "@type": "City",
+    name: "Santa Cruz",
+    address: {
+      "@type": "PostalAddress",
+      addressRegion: "CA",
+      addressCountry: "US",
+    },
+  },
+] as const;
+
 export const buildLocalBusinessSchema = () => ({
   "@context": "https://schema.org",
   "@type": ["Dentist", "MedicalBusiness", "LocalBusiness"],
@@ -41,15 +62,7 @@ export const buildLocalBusinessSchema = () => ({
   address: practiceInfo.address,
   hasMap: practiceInfo.hasMap,
   medicalSpecialty: "Dentistry",
-  areaServed: {
-    "@type": "City",
-    name: "Los Gatos",
-    address: {
-      "@type": "PostalAddress",
-      addressRegion: "CA",
-      addressCountry: "US",
-    },
-  },
+  areaServed: serviceAreas,
   openingHoursSpecification: [
     {
       "@type": "OpeningHoursSpecification",

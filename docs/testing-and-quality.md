@@ -31,6 +31,7 @@ Validate these return `200`:
 - `/about`
 - `/services`
 - `/contact`
+- `/areas-we-serve/santa-cruz`
 - `/book-appointment`
 - `/team`
 - `/patient-info` and child pages
@@ -79,6 +80,7 @@ Validate these redirect as expected:
 Verify:
 
 - route metadata title/description/canonical
+- Santa Cruz route metadata title/description/canonical
 - `/robots.txt` reachable and correct
 - `/sitemap.xml` includes all canonical routes
 - `/llms.txt` reachable
