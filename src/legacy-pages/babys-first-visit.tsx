@@ -10,6 +10,8 @@ import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
+import PracticeAddressLink from "@/components/location/PracticeAddressLink";
+import { practiceInfo } from "@/content/structured-data";
 import type { RelatedLink } from "@/lib/internal-links";
 
 const fadeInUp = {
@@ -659,11 +661,11 @@ export default function BabysFirstVisit() {
                   className="w-full sm:w-auto bg-white/5 border-white/25 text-white hover:bg-white hover:text-primary"
                 >
                   <a
-                    href="https://maps.google.com/?q=Family+First+Smile+Care+Los+Gatos"
+                    href={practiceInfo.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Location - Los Gatos, CA
+                    Open in Google Maps
                   </a>
                 </Button>
               </div>
@@ -688,7 +690,9 @@ export default function BabysFirstVisit() {
                 </li>
                 <li className="flex items-start">
                   <MapPin className="w-4 h-4 text-white mt-0.5 mr-2" />
-                  15251 National Ave, Suite 102, Los Gatos, CA 95032
+                  <PracticeAddressLink className="text-white hover:text-white/85">
+                    {practiceInfo.addressText}
+                  </PracticeAddressLink>
                 </li>
               </ul>
               <div className="flex items-center mt-4 text-sm">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import HeadingMark from "@/components/brand/HeadingMark";
+import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import { Button } from "@/components/ui/button";
@@ -95,6 +97,10 @@ const relatedLinks: RelatedLink[] = [
 ];
 
 const pageUrl = `${practiceInfo.url}/areas-we-serve/santa-cruz`;
+const santaCruzHeroIllustration =
+  "https://res.cloudinary.com/dhqpqfw6w/image/upload/v1774033002/SC_wkb13o.webp";
+const highway17AccessIllustration =
+  "https://res.cloudinary.com/dhqpqfw6w/image/upload/v1774033154/17_bmtriu.webp";
 
 const santaCruzReviewHighlights = [
   testimonialSections.find((section) => section.id === "family-dentistry")?.reviews[0],
@@ -180,17 +186,106 @@ export default function SantaCruzServiceAreaPage() {
               </div>
             </aside>
           </div>
+
+          <figure className="mt-10 overflow-hidden rounded-[2rem] border border-white/70 bg-white/80 shadow-[0_32px_90px_-48px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+            <div className="relative aspect-[16/9]">
+              <Image
+                src={santaCruzHeroIllustration}
+                alt="Family-friendly dental office illustration with Santa Cruz coastal scenery and Highway 17 visible in the background."
+                fill
+                priority
+                sizes="(min-width: 1280px) 1200px, (min-width: 768px) 92vw, 100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-slate-950/10 to-transparent" />
+
+              <div className="absolute left-4 top-4 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/95 backdrop-blur-md sm:left-6 sm:top-6">
+                Easy Highway 17 access
+              </div>
+
+            </div>
+          </figure>
         </div>
       </section>
 
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-[2.25rem] border border-slate-200 bg-white shadow-[0_30px_80px_-44px_rgba(15,23,42,0.28)]">
+            <div className="grid xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
+              <article className="p-6 sm:p-8 xl:p-10">
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Route className="h-5 w-5" />
+                </div>
+                <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+                  Travel convenience matters
+                </p>
+                <h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.35rem] sm:leading-[1.08]">
+                  Simple access from Highway 17
+                </h2>
+                <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
+                  Our office is just off Highway 17 in Los Gatos, which makes the drive easier for
+                  many Santa Cruz patients. We offer a welcoming office, convenient parking, and a
+                  team that helps visits feel organized from the moment you arrive.
+                </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+                  <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                      <Route className="h-4 w-4 text-primary" />
+                      Just off 17
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Easy over-the-hill access without weaving through local streets after you exit.
+                    </p>
+                  </div>
+                  <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      Convenient parking
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      A simple arrival experience helps appointments feel easier for parents and kids.
+                    </p>
+                  </div>
+                  <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      Calm check-in
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Friendly staff and organized visits help the drive feel worthwhile from the start.
+                    </p>
+                  </div>
+                </div>
+              </article>
+
+              <div className="border-t border-slate-200 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(239,246,255,0.92))] p-4 sm:p-6 xl:border-t-0 xl:border-l xl:p-8">
+                <div className="rounded-full border border-primary/15 bg-white/75 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80 backdrop-blur w-fit">
+                  Santa Cruz to Los Gatos
+                </div>
+
+                <div className="mt-4 overflow-hidden rounded-[1.9rem] border border-white/80 bg-white/85 p-3 shadow-[0_24px_60px_-36px_rgba(15,23,42,0.38)] sm:p-4">
+                  <Image
+                    src={highway17AccessIllustration}
+                    alt="Illustration of Highway 17 connecting Santa Cruz to a welcoming family dental office in Los Gatos."
+                    width={2816}
+                    height={1536}
+                    sizes="(min-width: 1280px) 720px, (min-width: 768px) 92vw, 100vw"
+                    className="h-auto w-full rounded-[1.4rem]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
             <article className="rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <ShieldCheck className="h-5 w-5" />
               </div>
-              <h2 className="mt-5 text-xl font-bold text-slate-900">Insurance support before you visit</h2>
+              <h3 className="mt-5 text-xl font-bold text-slate-900">
+                Insurance support before you visit
+              </h3>
               <p className="mt-3 text-base leading-7 text-slate-600">
                 We accept many major plans including Delta Dental, Cigna, MetLife, Aetna, Blue
                 Cross Blue Shield, and most PPOs. If you are coming from Santa Cruz, our team can
@@ -202,23 +297,11 @@ export default function SantaCruzServiceAreaPage() {
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Users className="h-5 w-5" />
               </div>
-              <h2 className="mt-5 text-xl font-bold text-slate-900">Care for the whole family</h2>
+              <h3 className="mt-5 text-xl font-bold text-slate-900">Care for the whole family</h3>
               <p className="mt-3 text-base leading-7 text-slate-600">
                 Santa Cruz families often come to us for one office that can care for kids, adults,
-                and nervous first-timers alike. Our practice emphasizes gentle visits, child-friendly
-                care, clear communication, and long-term relationships.
-              </p>
-            </article>
-
-            <article className="rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Route className="h-5 w-5" />
-              </div>
-              <h2 className="mt-5 text-xl font-bold text-slate-900">Simple access from Highway 17</h2>
-              <p className="mt-3 text-base leading-7 text-slate-600">
-                Our office is just off Highway 17 in Los Gatos, which makes the drive easier for
-                many Santa Cruz patients. We offer a welcoming office, convenient parking, and a
-                team that helps visits feel organized from the moment you arrive.
+                and nervous first-timers alike. Our practice emphasizes gentle visits,
+                child-friendly care, clear communication, and long-term relationships.
               </p>
             </article>
           </div>
@@ -261,7 +344,9 @@ export default function SantaCruzServiceAreaPage() {
                   <MapPin className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Office address</div>
-                    <p>15251 National Ave, Suite 102, Los Gatos, CA 95032</p>
+                    <PracticeAddressLink className="text-inherit hover:text-primary">
+                      {practiceInfo.addressText}
+                    </PracticeAddressLink>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -281,11 +366,11 @@ export default function SantaCruzServiceAreaPage() {
               </div>
               <Button asChild className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90">
                 <a
-                  href="https://www.google.com/maps/dir/?api=1&destination=Tim+J+Chuang+DDS+Family+First+Smile+Care+15251+National+Ave+Suite+102+Los+Gatos+CA+95032"
+                  href={practiceInfo.mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Get directions
+                  Open in Google Maps
                 </a>
               </Button>
             </aside>

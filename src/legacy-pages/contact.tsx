@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram } from "lucide-react";
 import { Link } from "wouter";
+import PracticeAddressLink from "@/components/location/PracticeAddressLink";
+import { practiceInfo } from "@/content/structured-data";
 import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema, type InsertContact } from "@/server/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -86,14 +88,22 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Our Location</h3>
-                    <p className="text-gray-600">15251 National Ave, Suite 102<br />Los Gatos, CA 95032</p>
+                    <p className="text-gray-600">
+                      <PracticeAddressLink className="text-inherit hover:text-primary">
+                        <>
+                          {practiceInfo.addressLines[0]}
+                          <br />
+                          {practiceInfo.addressLines[1]}
+                        </>
+                      </PracticeAddressLink>
+                    </p>
                     <a
-                      href="https://www.google.com/maps/search/?api=1&query=15251+National+Ave+Suite+102+Los+Gatos+CA+95032"
+                      href={practiceInfo.mapUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors inline-block mt-2"
                     >
-                      Get Directions
+                      Open in Google Maps
                     </a>
                     <p className="mt-3 text-sm text-gray-600">
                       We serve families from Santa Cruz who want a gentle family dentist and are
@@ -347,20 +357,22 @@ export default function Contact() {
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-white text-center md:text-left">
                   <h3 className="font-semibold text-lg mb-1">Family First Smile Care</h3>
-                  <p className="text-white">15251 National Ave, Suite 102, Los Gatos, CA 95032</p>
+                  <PracticeAddressLink className="text-white hover:text-white/85">
+                    {practiceInfo.addressText}
+                  </PracticeAddressLink>
                   <p className="mt-1 text-sm text-white/85">
                     Convenient for Los Gatos and Santa Cruz families coming over Highway 17.
                   </p>
                 </div>
                 <div className="flex gap-3">
                   <a 
-                    href="https://www.google.com/maps/dir/?api=1&destination=Tim+J+Chuang+DDS+Family+First+Smile+Care+15251+National+Ave+Suite+102+Los+Gatos+CA+95032" 
+                    href={practiceInfo.mapUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-white text-primary px-6 py-2 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2"
                   >
                     <MapPin className="h-4 w-4" />
-                    Get Directions
+                    Open in Google Maps
                   </a>
                   <a 
                     href="tel:4083588100"

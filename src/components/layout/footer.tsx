@@ -2,6 +2,8 @@ import { Link } from "wouter";
 import { MapPin, Phone, Mail, Facebook, Instagram, CreditCard, Star } from "lucide-react";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import meshWarm from "@assets/brand/mesh-hero-warm.webp";
+import PracticeAddressLink from "@/components/location/PracticeAddressLink";
+import { practiceInfo } from "@/content/structured-data";
 
 export default function Footer() {
   return (
@@ -38,14 +40,9 @@ export default function Footer() {
             <div className="space-y-2 text-gray-300">
               <div className="flex items-center">
                 <MapPin className="mr-3 h-4 w-4" />
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=15251+National+Ave+Suite+102+Los+Gatos+CA+95032"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-300 transition-colors"
-                >
-                  15251 National Ave, Suite 102, Los Gatos, CA 95032
-                </a>
+                <PracticeAddressLink className="hover:text-blue-300 text-inherit">
+                  {practiceInfo.addressText}
+                </PracticeAddressLink>
               </div>
               <div className="flex items-center">
                 <Phone className="mr-3 h-4 w-4" />

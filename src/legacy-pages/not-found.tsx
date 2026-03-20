@@ -4,6 +4,8 @@ import { Link } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Home, Phone, MapPin } from "lucide-react";
+import PracticeAddressLink from "@/components/location/PracticeAddressLink";
+import { practiceInfo } from "@/content/structured-data";
 
 export default function NotFound() {
   return (
@@ -69,8 +71,13 @@ export default function NotFound() {
               <span className="text-gray-700 font-medium">Family First Smile Care</span>
             </div>
             <p className="text-gray-600">
-              15251 National Ave, Suite 102<br />
-              Los Gatos, CA 95032
+              <PracticeAddressLink className="text-inherit hover:text-primary">
+                <>
+                  {practiceInfo.addressLines[0]}
+                  <br />
+                  {practiceInfo.addressLines[1]}
+                </>
+              </PracticeAddressLink>
             </p>
             <p className="text-gray-600 mt-2">
               Monday - Thursday: 9:00 AM - 5:00 PM<br />

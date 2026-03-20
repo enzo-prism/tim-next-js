@@ -6,6 +6,9 @@ export const practiceInfo = {
   url: "https://famfirstsmile.com",
   telephone: "+1-408-358-8100",
   email: "hello@famfirstsmile.com",
+  addressText: "15251 National Ave, Suite 102, Los Gatos, CA 95032",
+  addressLines: ["15251 National Ave, Suite 102", "Los Gatos, CA 95032"],
+  mapUrl: "https://maps.app.goo.gl/RVPut9T6J8XDvHWi7",
   logo: "https://famfirstsmile.com/attached_assets/Logo_1753972987510.png",
   image: [
     "https://famfirstsmile.com/attached_assets/Frame%205_1753974553020.png",
@@ -24,8 +27,7 @@ export const practiceInfo = {
     "https://www.instagram.com/famfirstsmile/",
     "https://g.page/r/Cej0Xl18KcCyEAE",
   ],
-  hasMap:
-    "https://www.google.com/maps/search/?api=1&query=15251+National+Ave+Suite+102+Los+Gatos+CA+95032",
+  hasMap: "https://maps.app.goo.gl/RVPut9T6J8XDvHWi7",
 } as const;
 
 export const serviceAreas = [
