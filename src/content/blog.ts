@@ -22,6 +22,8 @@ export interface BlogPostSource {
   href: string;
 }
 
+import { additionalBlogPosts } from "./blog.generated";
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -51,7 +53,7 @@ export interface BlogPost {
 
 export const getBlogPostHref = (slug: string) => `/blog/${slug}`;
 
-const blogPosts: BlogPost[] = [
+const baseBlogPosts: BlogPost[] = [
   {
     slug: "when-should-kids-first-see-a-dentist-los-gatos",
     title: "When Should Kids First See a Dentist? A Los Gatos Parent Guide to the First Visit",
@@ -698,6 +700,8 @@ const blogPosts: BlogPost[] = [
     ctaLabel: "Book a preventive visit",
   },
 ];
+
+const blogPosts: BlogPost[] = [...baseBlogPosts, ...additionalBlogPosts];
 
 export function getAllBlogPosts() {
   return [...blogPosts].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
