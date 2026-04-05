@@ -29,6 +29,18 @@ type BlogPostRouteProps = {
   params: Promise<{ slug: string }>;
 };
 
+const renderSectionParagraph = (paragraph: string) => {
+  if (/^###\s+/.test(paragraph)) {
+    return (
+      <h3 key={paragraph} className="mt-8 text-xl font-semibold text-slate-900">
+        {paragraph.replace(/^###\s+/, "")}
+      </h3>
+    );
+  }
+
+  return <p key={paragraph}>{paragraph}</p>;
+};
+
 export function generateStaticParams() {
   return getAllBlogPosts().map((post) => ({ slug: post.slug }));
 }
@@ -210,7 +222,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                 {post.sections.map((section) => (
                   <section key={section.id} id={section.id} className="mt-12 first:mt-0">
                     <h2>{section.title}</h2>
-                    {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                    {section.paragraphs?.map((paragraph) => renderSectionParagraph(paragraph))}
                     {section.bullets?.length ? (
                       <ul>
                         {section.bullets.map((bullet) => (
