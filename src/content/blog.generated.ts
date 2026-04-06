@@ -2794,5 +2794,210 @@ export const additionalBlogPosts: BlogPost[] = [
     "ctaBody": "Family First Smile Care helps Los Gatos families sort out prevention questions early, with calm guidance and visits that feel straightforward instead of stressful.",
     "ctaHref": "/book-appointment",
     "ctaLabel": "Book an appointment"
+  },
+  {
+    "slug": "what-should-you-do-if-your-child-has-a-toothache-los-gatos",
+    "title": "What Should You Do if Your Child Has a Toothache in Los Gatos?",
+    "metaTitle": "What Should You Do if Your Child Has a Toothache in Los Gatos?",
+    "metaDescription": "Learn common causes of child tooth pain, what parents can do at home, and when to call a Los Gatos dentist for prompt evaluation.",
+    "excerpt": "Learn common causes of child tooth pain, what parents can do at home, and when to call a Los Gatos dentist for prompt evaluation.",
+    "category": "Children's Dentistry",
+    "primaryKeyword": "child toothache Los Gatos",
+    "secondaryKeywords": [
+      "what to do for child tooth pain",
+      "when to call dentist for child toothache",
+      "pediatric tooth pain Los Gatos",
+      "family dentist for kids Los Gatos"
+    ],
+    "publishedAt": "2026-04-05",
+    "updatedAt": "2026-04-05",
+    "readingTimeMinutes": 8,
+    "heroEyebrow": "Los Gatos Parents Guide",
+    "heroSummary": "Learn common causes of child tooth pain, what parents can do at home, and when to call a Los Gatos dentist for prompt evaluation.",
+    "quickAnswer": "A child toothache has a way of turning a normal day into chaos fast.",
+    "quickAnswerSupport": "Maybe it starts at breakfast. Maybe it shows up at bedtime. Maybe your kid points to one side of their mouth, looks miserable, and suddenly every parent instinct in your body starts sprinting laps.",
+    "intro": [
+      "A child toothache has a way of turning a normal day into chaos fast.",
+      "Maybe it starts at breakfast. Maybe it shows up at bedtime. Maybe your kid points to one side of their mouth, looks miserable, and suddenly every parent instinct in your body starts sprinting laps.",
+      "The hard part is that tooth pain in children does not always come with a giant flashing sign that explains what is happening. Sometimes there is a visible cavity. Sometimes food is stuck. Sometimes the tooth looks completely normal and your child still says it hurts.",
+      "That is exactly why this topic fits Family First Smile Care so well. The live site positions the practice as a gentle, family-focused dental home for children, adults, anxious patients, and even Santa Cruz families willing to drive to Los Gatos for a calmer experience. A practical guide on what parents should do when a child has tooth pain matches that promise perfectly."
+    ],
+    "sections": [
+      {
+        "id": "the-short-answer",
+        "title": "The short answer",
+        "paragraphs": [
+          "If your child has a toothache in Los Gatos, start by checking for obvious food debris, gently brushing and flossing the area, and using simple comfort steps like a warm saltwater rinse if your child is old enough to swish and spit, a cold compress for swelling, and an age-appropriate pain reliever as directed. Then call a dentist to have the tooth evaluated.",
+          "Fresh web research reviewed before writing showed a consistent pattern across pediatric and dental sources: child tooth pain is often tied to cavities, irritation, trauma, or infection, and red flags such as swelling, fever, worsening pain, or a child who feels generally unwell deserve prompt attention.",
+          "So the practical answer is simple. Help your child get comfortable, then get the cause checked. Toothaches usually do not solve themselves just because everybody wishes really hard."
+        ]
+      },
+      {
+        "id": "what-can-cause-a-toothache-in-a-child",
+        "title": "What can cause a toothache in a child?",
+        "paragraphs": [
+          "Tooth pain can come from several different problems.",
+          "Fresh guidance reviewed today from Nationwide Children's notes that a toothache often happens when the inner pulp becomes inflamed or infected, most commonly because of decay. Other dental sources reviewed today also pointed to a few everyday culprits parents should consider:",
+          "This is one reason parents should not assume that a child is exaggerating or that the pain will disappear by morning. Pain usually means something is irritating the tooth or nearby tissue."
+        ],
+        "bullets": [
+          "cavities",
+          "food stuck between teeth or under the gumline",
+          "a cracked or chipped tooth",
+          "irritation after biting something hard",
+          "inflamed gums",
+          "an infection or abscess",
+          "sensitivity to hot or cold foods"
+        ]
+      },
+      {
+        "id": "what-should-you-do-first-at-home",
+        "title": "What should you do first at home?",
+        "paragraphs": [
+          "### 1. Stay calm and ask what they feel",
+          "Children tend to borrow our emotional weather. If you look alarmed, they often get more upset.",
+          "Ask a few basic questions:",
+          "That quick check helps you explain the situation clearly when you call the dental office.",
+          "### 2. Gently clean the area",
+          "Fresh practical dental guidance reviewed today recommends starting with the simplest possibility first. Sometimes food trapped between teeth or around the gums can trigger real discomfort.",
+          "Use a soft toothbrush and floss gently around the sore area. If your child is old enough to swish and spit safely, a warm saltwater rinse may help soothe irritated tissue.",
+          "Do not poke around aggressively or jam objects between the teeth. This is dentistry, not medieval treasure hunting.",
+          "### 3. Use a cold compress if there is swelling",
+          "If the face looks puffy or the toothache feels throbbing, place a cold compress on the outside of the cheek for short intervals. That can help reduce swelling and make your child more comfortable.",
+          "Wrap the cold pack in a cloth rather than putting ice directly on the skin.",
+          "### 4. Offer soft foods and avoid temperature extremes",
+          "If chewing makes the pain worse, switch to softer foods and skip very hot, very cold, or very sugary foods until the tooth is evaluated.",
+          "Yogurt, applesauce, scrambled eggs, oatmeal, and smoothies are usually easier to manage than crunchy or sticky snacks.",
+          "### 5. Use child-appropriate pain relief if needed",
+          "If your child is still uncomfortable, an over-the-counter pain reliever may help while you arrange a dental visit. Use only age-appropriate medication and follow dosing instructions carefully. If you are unsure what is appropriate, check with your pediatrician or pharmacist."
+        ],
+        "bullets": [
+          "Which tooth hurts?",
+          "Is the pain sharp, throbbing, or only when chewing?",
+          "Did anything happen before it started?",
+          "Is it worse with cold or hot foods?",
+          "Is there swelling?"
+        ]
+      },
+      {
+        "id": "when-should-you-call-the-dentist-right-away",
+        "title": "When should you call the dentist right away?",
+        "paragraphs": [
+          "A toothache is worth a dental call even if the pain seems mild, but some symptoms should move the situation up the priority ladder.",
+          "Fresh pediatric guidance reviewed today highlighted symptoms such as fever, jaw tenderness, and a general sick feeling as signs that the problem may be more serious. Call promptly if your child has:",
+          "If your child looks very ill, has significant swelling, or is having trouble swallowing or breathing, seek urgent medical care immediately."
+        ],
+        "bullets": [
+          "visible swelling in the gums, cheek, or jaw",
+          "fever",
+          "throbbing pain that is getting worse",
+          "pain with facial swelling",
+          "trouble eating or sleeping because of the tooth",
+          "a cracked tooth or recent mouth injury",
+          "a bad taste in the mouth or drainage near the tooth",
+          "pain that does not improve after basic cleaning and comfort steps"
+        ]
+      },
+      {
+        "id": "why-getting-the-cause-checked-matters",
+        "title": "Why getting the cause checked matters",
+        "paragraphs": [
+          "One of the sneakiest things about tooth pain is that the symptoms can settle down for a bit even though the problem is still there.",
+          "A piece of food may come loose. Pain medicine may kick in. The child may fall asleep. None of that means the issue is fixed.",
+          "Nationwide Children's notes that treatment for a real toothache may include anything from a filling to antibiotics, drainage of an abscess, or other dental care depending on severity. In other words, the right treatment depends on the reason the tooth hurts.",
+          "Parents do not need to diagnose that at home. They just need to avoid the classic trap of waiting too long because the pain eased up for a few hours."
+        ]
+      },
+      {
+        "id": "why-this-topic-fits-family-first-smile-care",
+        "title": "Why this topic fits Family First Smile Care",
+        "paragraphs": [
+          "The live Family First Smile Care site consistently emphasizes gentle care, child-friendly visits, clear explanations, preventive dentistry, and a warm office experience for the whole family. That makes a toothache guide especially relevant.",
+          "Parents dealing with a hurting child are not just looking for technical treatment. They want a dentist who can stay calm, explain what is happening, and help the child feel safe.",
+          "That positioning also matches the Santa Cruz family pages and patient information pages on the site. The practice is clearly trying to be the kind of office families trust for both routine care and the stressful little moments that interrupt real life."
+        ]
+      },
+      {
+        "id": "what-parents-in-los-gatos-should-keep-in-mind",
+        "title": "What parents in Los Gatos should keep in mind",
+        "paragraphs": [
+          "If your child says a tooth hurts, do not wait for dramatic swelling before taking it seriously. Many toothaches start smaller than parents expect.",
+          "It is also worth remembering that children do not always describe pain precisely. A younger child may point to the wrong side, say the whole mouth hurts, or complain only when eating. That is normal. A gentle exam and clear explanation are often the fastest way to sort out what is actually going on.",
+          "For busy Los Gatos parents, the goal is not to become a home dentist overnight. It is to know the basics, make your child more comfortable, and get help before a small problem becomes a bigger one."
+        ]
+      },
+      {
+        "id": "comfort-first-then-answers",
+        "title": "Comfort first, then answers",
+        "paragraphs": [
+          "If your child has a toothache in Los Gatos, the best next move is not panic and it is not denial. It is calm triage. Clean the area gently, use simple comfort measures, and get the tooth checked before the problem has room to grow.",
+          "If you want a family dental office that focuses on gentle care, clear communication, and helping kids feel at ease, contact Family First Smile Care in Los Gatos. When a child is hurting, calm and competent beats guesswork every time."
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "question": "Can a child toothache go away on its own?",
+        "answer": "The discomfort may come and go, but the cause usually still needs attention. Tooth pain often points to decay, irritation, trauma, or infection."
+      },
+      {
+        "question": "What helps a child's toothache before the appointment?",
+        "answer": "Gentle brushing and flossing, a warm saltwater rinse if your child can swish and spit, a cold compress for swelling, soft foods, and age-appropriate pain relief may help temporarily."
+      },
+      {
+        "question": "When is a child's toothache an emergency?",
+        "answer": "It becomes more urgent when there is swelling, fever, worsening pain, drainage, significant injury, or your child seems sick overall."
+      },
+      {
+        "question": "Should I call the dentist even if I do not see a cavity?",
+        "answer": "Yes. A painful tooth does not need a visible hole to have a real problem. Sensitivity, gum irritation, cracks, or infection can all cause pain."
+      }
+    ],
+    "relatedLinks": [
+      {
+        "href": "/services",
+        "title": "All Dental Services",
+        "description": "Explore preventive, restorative, cosmetic, and family dental care in one place."
+      },
+      {
+        "href": "/contact",
+        "title": "Contact & Scheduling",
+        "description": "Ask a question, request an appointment, or get directions to our office."
+      },
+      {
+        "href": "/blog/child-knocked-out-tooth-los-gatos",
+        "title": "What Should You Do if Your Child Knocks Out a Tooth in Los Gatos?",
+        "description": "Learn what to do in the first minutes after a child knocks out a tooth and when to call a dentist."
+      },
+      {
+        "href": "/blog/when-should-kids-first-see-a-dentist-los-gatos",
+        "title": "When Should Kids First See a Dentist? A Los Gatos Parent Guide to the First Visit",
+        "description": "Learn the right timing, what happens at the first visit, and how Los Gatos parents can help kids feel comfortable."
+      },
+      {
+        "href": "/services/children-dentistry",
+        "title": "Children's Dentistry",
+        "description": "Explore our gentle, prevention-focused approach for kids of different ages."
+      },
+      {
+        "href": "/book-appointment",
+        "title": "Book an Appointment",
+        "description": "Request a visit with Family First Smile Care."
+      }
+    ],
+    "sources": [
+      {
+        "label": "American Academy of Pediatric Dentistry",
+        "href": "https://www.aapd.org/resources/parent/"
+      },
+      {
+        "label": "Nationwide Children's Hospital toothache guidance",
+        "href": "https://www.nationwidechildrens.org/conditions/toothache"
+      }
+    ],
+    "ctaTitle": "Get a clear answer before this gets uglier for your kid",
+    "ctaBody": "Family First Smile Care helps Los Gatos parents sort out tooth pain fast, with calm guidance and visits that feel manageable instead of chaotic.",
+    "ctaHref": "/book-appointment",
+    "ctaLabel": "Book an appointment"
   }
 ];
