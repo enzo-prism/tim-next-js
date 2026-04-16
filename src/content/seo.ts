@@ -38,9 +38,9 @@ const staticMeta: Record<string, PageMeta> = {
     description: "Meet Dr. Tim J. Chuang and our caring dental team providing gentle, comprehensive dentistry in Los Gatos, CA.",
   },
   "/testimonials": {
-    title: "Patient Testimonials & Google Reviews | Family First Smile Care",
+    title: "Patient Testimonials, Google Reviews & Yelp Reviews | Family First Smile Care",
     description:
-      "Read Google reviews for Family First Smile Care in Los Gatos, CA. Patients mention gentle care, thorough exams, family dentistry, Invisalign, and TMJ treatment.",
+      "Read patient testimonials plus public Google and Yelp reviews for Family First Smile Care in Los Gatos, CA. Patients mention gentle care, thorough exams, family dentistry, Invisalign, and TMJ treatment.",
   },
   "/patient-info": {
     title: "Patient Info | Los Gatos, CA Dentist",

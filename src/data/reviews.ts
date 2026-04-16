@@ -12,6 +12,8 @@ export interface ServiceReviews {
 }
 
 export const googleBusinessProfileUrl = "https://share.google/DP6ywkAGrYi3gCyEA";
+export const yelpBusinessProfileUrl =
+  "https://www.yelp.com/biz/tim-j-chuang-dds-family-first-smile-care-los-gatos-4";
 
 export const serviceReviews: ServiceReviews[] = [
   {

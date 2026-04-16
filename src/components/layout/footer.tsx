@@ -4,6 +4,7 @@ import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import meshWarm from "@assets/brand/mesh-hero-warm.webp";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
+import { yelpBusinessProfileUrl } from "@/data/reviews";
 
 export default function Footer() {
   return (
@@ -85,6 +86,17 @@ export default function Footer() {
                 >
                   <Star className="h-4 w-4 mr-2" />
                   Leave a Google Review
+                </a>
+              </li>
+              <li>
+                <a
+                  href={yelpBusinessProfileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-orange-400 transition-colors flex items-center"
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  Read Yelp Reviews
                 </a>
               </li>
               <li>

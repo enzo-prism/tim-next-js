@@ -1,4 +1,4 @@
-import { googleBusinessProfileUrl } from "@/data/reviews";
+import { googleBusinessProfileUrl, yelpBusinessProfileUrl } from "@/data/reviews";
 import type { Testimonial } from "@/lib/types";
 
 export type TestimonialLink = {
@@ -35,14 +35,133 @@ export type TestimonialSummary = {
   editorialNote: string;
 };
 
+export type ReviewLibrarySummary = {
+  averageRating: string;
+  reviewCountLabel: string;
+  sourceLabel: string;
+  editorialNote: string;
+};
+
+export type PublicReviewFeedItem = {
+  name: string;
+  rating: number;
+  dateLabel: string;
+  quote: string;
+};
+
+export type PublicReviewFeedSection = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  sourceLabel: string;
+  sourceUrl: string;
+  reviews: PublicReviewFeedItem[];
+};
+
 export const testimonialsPageSummary: TestimonialSummary = {
   averageRating: "5.0",
-  reviewCountLabel: "60+ Google reviews",
+  reviewCountLabel: "52 Google reviews",
   sourceLabel: "Public Google reviews",
   sourceUrl: googleBusinessProfileUrl,
   editorialNote:
     "Selected excerpts from publicly posted Google reviews shared by patients and families.",
 };
+
+export const testimonialsReviewLibrarySummary: ReviewLibrarySummary = {
+  averageRating: "5.0",
+  reviewCountLabel: "52 Google reviews + 6 Yelp reviews",
+  sourceLabel: "Public Google and Yelp review listings",
+  editorialNote:
+    "This page now includes the latest public Google review excerpts we verified online, plus Yelp excerpts currently surfaced through Yahoo Local's Yelp feed.",
+};
+
+export const publicReviewFeedSections: PublicReviewFeedSection[] = [
+  {
+    id: "latest-google-reviews",
+    eyebrow: "Latest Google reviews",
+    title: "Recent Google reviews that were not yet represented on the site",
+    description:
+      "These are the newest public Google review excerpts we verified online for Family First Smile Care. They add fresh feedback from recent patients without replacing the curated service-based testimonials above.",
+    sourceLabel: "Read all Google reviews",
+    sourceUrl: googleBusinessProfileUrl,
+    reviews: [
+      {
+        name: "Veronica Rajasekar",
+        rating: 5,
+        dateLabel: "Apr 08, 2026",
+        quote:
+          "I had a fantastic experience with Dr. Chuang and his team. Dr. Chuang is incredibly patient, knowledgeable, and gentle, taking the time to listen to my concerns and clearly explain all my options. Georgia at the front office is also wonderful—always friendly and helpful with the scheduling process. Highly recommend!",
+      },
+      {
+        name: "Js L",
+        rating: 5,
+        dateLabel: "Mar 26, 2026",
+        quote:
+          "Dr. Chuang is a true perfectionist who listens carefully and explains every step so I always feel at ease. His attention to detail is unmatched, and his staff is friendly, professional, and welcoming. I always know I’m in excellent hands here.",
+      },
+      {
+        name: "Thomas H",
+        rating: 5,
+        dateLabel: "Mar 17, 2026",
+        quote:
+          "Dr Tim, is one of the best dentist I have ever worked with. He is passionate about dental care and passionate about people. I have not been more excited to go to a dental appointment, until I started working with Dr. Tim. His staff is great, care is great, services are great not to mention he will find that week old piece of meat you left in your gums. Highly recommend!",
+      },
+      {
+        name: "LiZy CHaIrez",
+        rating: 5,
+        dateLabel: "Mar 03, 2026",
+        quote: "This patient left a 5-star Google rating without a written comment.",
+      },
+    ],
+  },
+  {
+    id: "yelp-reviews",
+    eyebrow: "Yelp reviews",
+    title: "Yelp feedback now visible alongside the Google testimonials",
+    description:
+      "The website previously focused on Google-only social proof. These Yelp excerpts broaden that picture for families who check more than one review source before booking.",
+    sourceLabel: "Read Yelp reviews",
+    sourceUrl: yelpBusinessProfileUrl,
+    reviews: [
+      {
+        name: "Peggy W.",
+        rating: 5,
+        dateLabel: "01/21/26",
+        quote:
+          "A friend of mine recommended Dr. Chuang and I am so glad I went to him. I had an emergency and he took me the same day. He has a great staff and they are all dedicated to your ease and comfort. I...",
+      },
+      {
+        name: "Tcchi M.",
+        rating: 5,
+        dateLabel: "01/18/25",
+        quote:
+          "I came in for a 3rd opinion for my sensitive teeth. I haven't received actual treatment yet, but during the consultation I was impressed with Dr. Chuang's knowledge, his polite staff, and his...",
+      },
+      {
+        name: "Thomas B.",
+        rating: 5,
+        dateLabel: "01/15/25",
+        quote:
+          "Doctor Tim was the best! I'm the kind of person that typically hates going to the dentist, but this was the most comfortable I've ever felt - I felt like Doctor Tim handled with care, gave me a...",
+      },
+      {
+        name: "Y E.",
+        rating: 5,
+        dateLabel: "05/13/25",
+        quote:
+          "Everyone there is super friendly, gentle, and caring. We received great care. It was nice that there was no other patient and we got all the personal attention. My daughter wants to go back, and...",
+      },
+      {
+        name: "Monica L.",
+        rating: 5,
+        dateLabel: "12/13/24",
+        quote:
+          "Dr. Chuang is stellar and provides great service! He was very patient and walked me through every step of my annual cleaning :) highly recommend, just wish I lived closer to his clinic!",
+      },
+    ],
+  },
+];
 
 export const featuredReview: TestimonialExcerpt = {
   name: "Priscilla Barajas",

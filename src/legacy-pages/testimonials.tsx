@@ -21,7 +21,9 @@ import {
 } from "@/content/structured-data";
 import {
   featuredReview,
+  publicReviewFeedSections,
   testimonialSections,
+  testimonialsReviewLibrarySummary,
   testimonialsPageRelatedLinks,
   testimonialsPageSummary,
   testimonialThemes,
@@ -59,9 +61,9 @@ const scaleIn = {
 
 export default function TestimonialsPage() {
   const pageUrl = `${practiceInfo.url}/testimonials`;
-  const pageTitle = "Patient Testimonials & Google Reviews";
+  const pageTitle = "Patient Testimonials, Google Reviews & Yelp Reviews";
   const pageDescription =
-    "Read what patients say about Family First Smile Care in Los Gatos, from gentle cleanings and thorough exams to family dentistry, Invisalign, and TMJ care.";
+    "Read what patients say about Family First Smile Care in Los Gatos, from gentle cleanings and thorough exams to family dentistry, Invisalign, TMJ care, and recent Yelp feedback.";
 
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "Home", item: practiceInfo.url },
@@ -108,12 +110,12 @@ export default function TestimonialsPage() {
               <p className="mt-6 max-w-3xl text-lg leading-8 text-gray-600 sm:text-xl">
                 Hear from Los Gatos patients and families who chose Family First Smile Care
                 for gentle preventive visits, child-friendly dentistry, Invisalign, TMJ
-                support, and clear treatment planning.
+                support, and clear treatment planning across both Google and Yelp.
               </p>
               <p className="mt-4 max-w-3xl text-base leading-7 text-gray-600">
                 This page is designed to help prospective patients understand the experience
-                of visiting our office through selected excerpts from publicly posted Google
-                reviews, alongside direct links to the services those reviews mention most.
+                of visiting our office through selected excerpts from publicly posted reviews,
+                alongside direct links to the services those reviews mention most.
               </p>
 
               <motion.div
@@ -149,10 +151,10 @@ export default function TestimonialsPage() {
                     Review volume
                   </div>
                   <div className="mt-3 text-2xl font-bold text-slate-900">
-                    {testimonialsPageSummary.reviewCountLabel}
+                    {testimonialsReviewLibrarySummary.reviewCountLabel}
                   </div>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Strong social proof from local patients and families.
+                    Verified public review coverage across the two platforms patients check most.
                   </p>
                 </motion.div>
 
@@ -164,10 +166,10 @@ export default function TestimonialsPage() {
                     Source
                   </div>
                   <div className="mt-3 text-2xl font-bold text-slate-900">
-                    {testimonialsPageSummary.sourceLabel}
+                    {testimonialsReviewLibrarySummary.sourceLabel}
                   </div>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
-                    {testimonialsPageSummary.editorialNote}
+                    {testimonialsReviewLibrarySummary.editorialNote}
                   </p>
                 </motion.div>
               </motion.div>
@@ -201,6 +203,20 @@ export default function TestimonialsPage() {
                   rel="noopener noreferrer"
                 >
                   View Google profile
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                className="mt-3 w-full text-primary hover:bg-primary/5 hover:text-primary"
+              >
+                <a
+                  href={publicReviewFeedSections[1].sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Yelp profile
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -295,6 +311,85 @@ export default function TestimonialsPage() {
                   <div className="mt-6 border-t border-slate-200 pt-4">
                     <p className="font-semibold text-slate-900">{review.name}</p>
                     <p className="mt-1 text-sm text-slate-500">{review.patientLabel}</p>
+                  </div>
+                </motion.article>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+      ))}
+
+      {publicReviewFeedSections.map((section) => (
+        <section key={section.id} className="py-10 sm:py-12">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+            >
+              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary/80">
+                {section.eyebrow}
+              </div>
+              <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <h2 className="max-w-3xl text-3xl font-bold text-gray-800 sm:text-4xl">
+                    {section.title}
+                  </h2>
+                  <p className="mt-4 max-w-4xl text-lg leading-8 text-gray-600">
+                    {section.description}
+                  </p>
+                </div>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  <a href={section.sourceUrl} target="_blank" rel="noopener noreferrer">
+                    {section.sourceLabel}
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="mt-8 grid gap-5 lg:grid-cols-2"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={staggerContainer}
+            >
+              {section.reviews.map((review) => (
+                <motion.article
+                  key={`${section.id}-${review.name}-${review.dateLabel}`}
+                  className="h-full rounded-[1.75rem] border border-slate-200/90 bg-white p-6 shadow-[0_18px_50px_-40px_rgba(15,23,42,0.8)]"
+                  variants={scaleIn}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                      <MessageSquareQuote className="h-3.5 w-3.5" />
+                      {section.id === "yelp-reviews" ? "Yelp Review" : "Google Review"}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 text-amber-500" aria-label="5 star review">
+                        {Array.from({ length: review.rating }).map((_, index) => (
+                          <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
+                        ))}
+                      </div>
+                      <span className="text-sm font-medium text-slate-500">{review.dateLabel}</span>
+                    </div>
+                  </div>
+
+                  <blockquote className="mt-5 text-base leading-7 text-slate-700">
+                    "{review.quote}"
+                  </blockquote>
+
+                  <div className="mt-6 border-t border-slate-200 pt-4">
+                    <p className="font-semibold text-slate-900">{review.name}</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {section.id === "yelp-reviews" ? "Yelp reviewer" : "Google reviewer"}
+                    </p>
                   </div>
                 </motion.article>
               ))}
