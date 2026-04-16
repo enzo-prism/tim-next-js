@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run --passWithNoTests",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -77,6 +78,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
+    "@playwright/test": "^1.54.2",
     "@types/node": "^20",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",

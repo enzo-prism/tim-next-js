@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import AppProviders from "@/components/app-providers";
+import ElevenLabsWidget from "@/components/elevenlabs-widget";
 import RouteAnalytics from "@/components/route-analytics";
 import VercelAnalytics from "@/components/vercel-analytics";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
@@ -56,6 +57,7 @@ gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });`}
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusinessSchema()) }}
           />
+          <ElevenLabsWidget />
         </AppProviders>
         <VercelAnalytics />
       </body>

@@ -10,6 +10,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 - Contact persistence: Postgres via Drizzle (`contacts` table)
 - Appointment relay: `POST /api/appointments` -> internal DB + Formspree relay
 - Admin auth: middleware Basic Auth (`/admin`, `/api/admin/*`)
+- ElevenLabs widget: pinned custom-element embed on public routes only
 - Analytics APIs:
   - GA4: `/api/admin/ga4/overview`
   - GSC: `/api/admin/gsc/overview`
@@ -23,6 +24,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 3. Submit one synthetic contact in non-production environment.
 4. Submit one synthetic appointment request in non-production environment.
 5. Verify Vercel deployment logs are clean.
+6. Confirm ElevenLabs launcher appears on `/`, `/contact`, `/book-appointment`, and `/blog`.
 
 ### Weekly
 
@@ -32,6 +34,34 @@ Provide a fast, repeatable response guide for production incidents and routine o
    - `/llms.txt`
 2. Verify admin analytics endpoints return healthy payloads.
 3. Confirm Vercel Analytics, GA4 Realtime, and Search Console data are flowing.
+4. Confirm the ElevenLabs widget still loads from the pinned `0.11.4` embed URL.
+
+## ElevenLabs Widget Notes
+
+- Agent ID: `agent_4801kn7ednjse6drbr2cnt62kkp2`
+- Bundle URL: `https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4`
+- Route scope: all public pages, excluded from `/admin`
+- Expected placement: bottom-right, collapsed by default, dismissible, text input enabled
+- Host-side text overrides are applied with the widget's supported `text-contents` JSON attribute.
+- Allowlist hosts must be exact hostnames in ElevenLabs. `localhost:3000`, `127.0.0.1:3000`, and the production domain should always be present.
+- Vercel preview hostnames are exact-match only. Add each preview hostname explicitly when a new preview alias needs live widget access.
+
+## Manual ElevenLabs QA
+
+Run these checks before a production release that touches the widget:
+
+1. Desktop Chrome:
+   - open the live site
+   - confirm the launcher is visible and collapsed on first load
+   - open the widget, start a real conversation, and confirm microphone permission flow works
+2. iOS Safari:
+   - confirm the launcher does not cover the primary CTA on home, contact, or booking
+   - confirm microphone permission prompt appears and a voice session can start
+3. Chrome on Android:
+   - confirm the launcher stays inside safe areas
+   - confirm text input and voice start controls are reachable without overlap
+4. Form coexistence:
+   - trigger a contact or booking form error and confirm the toast remains readable above the widget
 
 ## Incident Playbooks
 

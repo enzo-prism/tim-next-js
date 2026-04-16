@@ -139,6 +139,35 @@
 }
 
 @layer components {
+  elevenlabs-convai.elevenlabs-widget {
+    --el-base: #ffffff;
+    --el-base-border: #e7e5e4;
+    --el-base-primary: #0c0a09;
+    --el-base-subtle: #766f6a;
+    --el-accent: #2563eb;
+    --el-accent-hover: #1d4ed8;
+    --el-accent-active: #1e40af;
+    --el-accent-border: #1d4ed8;
+    --el-accent-primary: #ffffff;
+    --el-button-radius: 18px;
+    --el-input-radius: 12px;
+    --el-bubble-radius: 18px;
+    --el-sheet-radius: 28px;
+    --el-overlay-padding: max(16px, env(safe-area-inset-bottom));
+    display: block;
+    inset: 0;
+    max-width: none;
+    pointer-events: none;
+    position: fixed;
+    z-index: 90;
+  }
+
+  @screen sm {
+    elevenlabs-convai.elevenlabs-widget {
+      --el-overlay-padding: max(24px, env(safe-area-inset-bottom));
+    }
+  }
+
   .gradient-primary {
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   }

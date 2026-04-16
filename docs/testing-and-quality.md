@@ -11,6 +11,16 @@ CI workflow (`.github/workflows/ci.yml`) runs:
 
 `npm run test` currently uses Vitest with `--passWithNoTests`, so this repo relies heavily on static checks plus smoke testing.
 
+## ElevenLabs Widget Coverage
+
+- Widget bundle is pinned to `https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4`
+- Agent ID is `agent_4801kn7ednjse6drbr2cnt62kkp2`
+- Widget renders on all public routes and is intentionally excluded from `/admin`
+- Host-side launcher copy is applied through the widget's supported `text-contents` JSON attribute for `0.11.4`
+- Browser coverage lives in Playwright under `tests/e2e/elevenlabs-widget.spec.ts`
+- Automated browser tests stub the external widget script so layout, launcher behavior, and coexistence checks stay deterministic in CI
+- Manual QA still needs one live pass with the real ElevenLabs script before release
+
 ## Local Developer Workflow
 
 Run before opening a PR:
@@ -19,6 +29,8 @@ Run before opening a PR:
 npm ci
 npm run check
 npm run build
+npx playwright install --with-deps chromium
+npm run test:e2e
 ```
 
 ## Test Strategy (Parity-Focused)
@@ -96,6 +108,9 @@ Manual checks on desktop and mobile:
 4. Contact form has clear validation messaging.
 5. Booking form has clear delivered/fallback success states.
 6. Admin interface remains protected and non-indexable.
+7. ElevenLabs launcher stays inside the viewport on `/`, `/contact`, `/book-appointment`, and `/blog`.
+8. ElevenLabs launcher does not introduce horizontal overflow on any supported viewport.
+9. ElevenLabs widget stays below Radix toasts and does not block the sticky header or mobile sheet.
 
 ## Suggested Automated Test Additions
 
@@ -105,6 +120,7 @@ Priority order:
 2. Redirect integration tests.
 3. Metadata snapshot tests for key routes.
 4. Playwright smoke tests for primary user journeys.
+5. Playwright smoke tests for ElevenLabs widget placement, expand/collapse behavior, and toast coexistence.
 
 ## Release Readiness Checklist
 
@@ -115,3 +131,4 @@ A release is ready when:
 3. Route and redirect parity checklist passes.
 4. Contact submit + admin access verified.
 5. GA4 script and pageview flow verified on preview or production.
+6. ElevenLabs widget smoke tests pass across desktop, tablet, and mobile viewports.
