@@ -35,14 +35,19 @@ export const metadata: Metadata = buildRouteMetadata("/areas-we-serve/santa-cruz
 
 const faqs = [
   {
+    question: "Is your dental office located in Santa Cruz?",
+    answer:
+      "No. Family First Smile Care is physically located in Los Gatos at 15251 National Ave, Suite 102. This page is for Santa Cruz patients who are considering the trip over Highway 17 for gentle family dentistry.",
+  },
+  {
     question: "Do you accept insurance if I live in Santa Cruz?",
     answer:
-      "Yes. We accept many major insurance plans and most PPOs, and our team can help verify your benefits before your visit so you know what to expect before coming over from Santa Cruz.",
+      "Yes. We accept many major insurance plans and most PPOs, and our team can help verify your benefits before your visit so you know what to expect before coming over Highway 17 from Santa Cruz.",
   },
   {
     question: "Is it worth driving from Santa Cruz to Los Gatos for a family dentist?",
     answer:
-      "For many families, yes. Patients who want gentle care, family dentistry, and clear explanations are often happy to make the trip to our office in Los Gatos, especially because we are just off Highway 17.",
+      "For many families, yes. Patients who want gentle care, family dentistry, and clear explanations are often happy to make the trip to our Los Gatos office, especially because we are just off Highway 17.",
   },
   {
     question: "Do you see children and adults?",
@@ -140,24 +145,25 @@ export default function SantaCruzServiceAreaPage() {
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
-                Santa Cruz families welcome
+                Los Gatos office serving Santa Cruz patients
               </div>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
                 <span className="inline-flex flex-wrap items-center gap-3">
                   <HeadingMark />
-                  <span>Family dentistry for Santa Cruz patients who want care worth the drive.</span>
+                  <span>Los Gatos family dentist serving Santa Cruz patients over Highway 17.</span>
                 </span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
-                Family First Smile Care serves families from Santa Cruz who want gentle care,
-                family-focused dentistry, and help using many major PPO plans. Our Los Gatos office
-                is just off Highway 17, so the trip is straightforward for patients who prefer a
-                practice that feels calm, clear, and easy to trust.
+                Family First Smile Care is physically located in Los Gatos, not Santa Cruz. We
+                welcome Santa Cruz patients who want gentle, family-focused dentistry and help using
+                many major PPO plans. Our office is just off Highway 17, so the trip is
+                straightforward for patients who prefer a practice that feels calm, clear, and easy
+                to trust.
               </p>
               <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-                Whether you are looking for a new family dentist, a child-friendly first visit, or
-                a team that explains options without rushing, many patients are happy to come over
-                the hill for an office that feels like a long-term dental home.
+                Whether you are looking for a child-friendly first visit, a new long-term dental
+                home, or a team that explains options without rushing, many patients are happy to
+                come over the hill to our Los Gatos office.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -177,6 +183,12 @@ export default function SantaCruzServiceAreaPage() {
                 Why families make the trip
               </div>
               <div className="mt-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <MapPin className="mt-0.5 h-5 w-5 text-primary" />
+                  <p className="text-sm leading-6 text-slate-700">
+                    Office address: 15251 National Ave, Suite 102, Los Gatos, CA.
+                  </p>
+                </div>
                 {reasons.map((reason) => (
                   <div key={reason} className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
@@ -220,19 +232,19 @@ export default function SantaCruzServiceAreaPage() {
                   Travel convenience matters
                 </p>
                 <h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.35rem] sm:leading-[1.08]">
-                  Simple access from Highway 17
+                  Simple access from Highway 17 to our Los Gatos office
                 </h2>
                 <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
-                  Our office is just off Highway 17 in Los Gatos, which makes the drive easier for
-                  many Santa Cruz patients. We offer a welcoming office, convenient parking, and a
-                  team that helps visits feel organized from the moment you arrive.
+                  Our dental office is in Los Gatos, just off Highway 17, which makes the drive
+                  easier for many Santa Cruz patients. We offer a welcoming office, convenient
+                  parking, and a team that helps visits feel organized from the moment you arrive.
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
                   <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                       <Route className="h-4 w-4 text-primary" />
-                      Just off 17
+                      Just off Highway 17
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       Easy over-the-hill access without weaving through local streets after you exit.
@@ -241,10 +253,10 @@ export default function SantaCruzServiceAreaPage() {
                   <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                       <MapPin className="h-4 w-4 text-primary" />
-                      Convenient parking
+                      Los Gatos address
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
-                      A simple arrival experience helps appointments feel easier for parents and kids.
+                      Visits happen at 15251 National Ave, Suite 102, not at a Santa Cruz office.
                     </p>
                   </div>
                   <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
@@ -329,8 +341,9 @@ export default function SantaCruzServiceAreaPage() {
                 </p>
                 <p>
                   For Santa Cruz families, that combination of family-focused care and easy Highway
-                  17 access makes the visit feel practical as well as worthwhile. If you want help
-                  understanding insurance before you book, our team can walk through that too.
+                  17 access makes a Los Gatos visit feel practical as well as worthwhile. If you
+                  want help understanding insurance before you book, our team can walk through that
+                  too.
                 </p>
               </div>
             </article>
@@ -353,7 +366,7 @@ export default function SantaCruzServiceAreaPage() {
                   <Route className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Access</div>
-                    <p>Convenient for patients coming over Highway 17 from Santa Cruz.</p>
+                    <p>Convenient for patients coming over Highway 17 from Santa Cruz to Los Gatos.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

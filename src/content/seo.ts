@@ -56,9 +56,9 @@ const staticMeta: Record<string, PageMeta> = {
     description: "Contact Family First Smile Care in Los Gatos, CA to schedule an appointment. Call (408) 358-8100 or visit 15251 National Ave, Suite 102.",
   },
   "/areas-we-serve/santa-cruz": {
-    title: "Family Dentist for Santa Cruz Families | Family First Smile Care",
+    title: "Los Gatos Family Dentist Serving Santa Cruz | Family First Smile Care",
     description:
-      "Looking for a family dentist near Santa Cruz who accepts many major PPO plans? Family First Smile Care in Los Gatos serves Santa Cruz families and is just off Highway 17.",
+      "Family First Smile Care is physically located in Los Gatos, just off Highway 17, and serves Santa Cruz patients who want gentle family dentistry.",
   },
   "/book-appointment": {
     title: "Book Appointment | Family First Smile Care",

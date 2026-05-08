@@ -85,7 +85,7 @@ export default function Header() {
                 <span className="block">Smile Care</span>
               </span>
               <span className="hidden text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 2xl:block">
-                Los Gatos Family Dentistry
+                Los Gatos Family Dentist
               </span>
             </div>
           </Link>

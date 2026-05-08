@@ -240,6 +240,14 @@ const widgetStubScript = `
 })();
 `;
 
+function getFutureDateInputValue(daysFromNow = 14) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysFromNow);
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 async function installWidgetStub(page: Page) {
   await page.route(WIDGET_SCRIPT_URL, async (route) => {
     await route.fulfill({
@@ -401,7 +409,7 @@ test.describe("ElevenLabs widget integration", () => {
     await page.getByLabel("Phone *").fill("4083588100");
     await page.getByLabel("Service *").click();
     await page.getByRole("option", { name: /Dental Exams/i }).click();
-    await page.getByLabel("Preferred Date *").fill("2026-04-20");
+    await page.getByLabel("Preferred Date *").fill(getFutureDateInputValue());
     await page.getByLabel("Preferred Time *").fill("10:30");
     await page.getByRole("button", { name: "Request Appointment" }).click();
 
