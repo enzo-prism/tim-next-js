@@ -1,3 +1,5 @@
+"use client";
+
 import { Link } from "wouter";
 import { MapPin, Phone, Mail, Facebook, Instagram, CreditCard, Star } from "lucide-react";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
@@ -5,6 +7,12 @@ import meshWarm from "@assets/brand/mesh-hero-warm.webp";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
 import { yelpBusinessProfileUrl } from "@/data/reviews";
+import {
+  trackPayBillClick,
+  trackPhoneClick,
+  trackReviewLinkClick,
+  trackSocialClick,
+} from "@/lib/analytics";
 
 export default function Footer() {
   return (
@@ -41,13 +49,20 @@ export default function Footer() {
             <div className="space-y-2 text-gray-300">
               <div className="flex items-center">
                 <MapPin className="mr-3 h-4 w-4" />
-                <PracticeAddressLink className="hover:text-blue-300 text-inherit">
+                <PracticeAddressLink
+                  className="hover:text-blue-300 text-inherit"
+                  trackingLocation="footer"
+                >
                   {practiceInfo.addressText}
                 </PracticeAddressLink>
               </div>
               <div className="flex items-center">
                 <Phone className="mr-3 h-4 w-4" />
-                <a href="tel:4083588100" className="hover:text-blue-300 transition-colors">
+                <a
+                  href="tel:4083588100"
+                  onClick={() => trackPhoneClick("footer")}
+                  className="hover:text-blue-300 transition-colors"
+                >
                   (408) 358-8100
                 </a>
               </div>
@@ -82,6 +97,7 @@ export default function Footer() {
                   href="https://g.page/r/Cej0Xl18KcCyEAE/review" 
                   target="_blank" 
                   rel="noopener noreferrer"
+                  onClick={() => trackReviewLinkClick("google", "footer")}
                   className="hover:text-orange-400 transition-colors flex items-center"
                 >
                   <Star className="h-4 w-4 mr-2" />
@@ -93,6 +109,7 @@ export default function Footer() {
                   href={yelpBusinessProfileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackReviewLinkClick("yelp", "footer")}
                   className="hover:text-orange-400 transition-colors flex items-center"
                 >
                   <Star className="h-4 w-4 mr-2" />
@@ -104,6 +121,7 @@ export default function Footer() {
                   href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce" 
                   target="_blank" 
                   rel="noopener noreferrer"
+                  onClick={() => trackPayBillClick("footer")}
                   className="hover:text-blue-300 transition-colors flex items-center"
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
@@ -156,6 +174,7 @@ export default function Footer() {
                 href="https://www.facebook.com/famfirstsmile/" 
                 target="_blank" 
                 rel="noopener noreferrer"
+                onClick={() => trackSocialClick("facebook", "footer")}
                 className="text-gray-300 hover:text-blue-300 transition-colors" 
                 aria-label="Facebook"
               >
@@ -165,6 +184,7 @@ export default function Footer() {
                 href="https://www.instagram.com/famfirstsmile/" 
                 target="_blank" 
                 rel="noopener noreferrer"
+                onClick={() => trackSocialClick("instagram", "footer")}
                 className="text-gray-300 hover:text-blue-300 transition-colors" 
                 aria-label="Instagram"
               >

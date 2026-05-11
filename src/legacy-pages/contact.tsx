@@ -1,6 +1,6 @@
 "use client";
 
-
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -18,11 +18,21 @@ import { insertContactSchema, type InsertContact } from "@/server/schema";
 import { apiRequest } from "@/lib/queryClient";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
+import {
+  trackContactSubmitSuccess,
+  trackFormStart,
+  trackFormSubmitAttempt,
+  trackFormSubmitError,
+  trackMapClick,
+  trackPhoneClick,
+  trackSocialClick,
+} from "@/lib/analytics";
 
 type ContactFormValues = InsertContact;
 
 export default function Contact() {
   const { toast } = useToast();
+  const hasStartedForm = useRef(false);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(insertContactSchema),
@@ -40,14 +50,22 @@ export default function Contact() {
     mutationFn: async (values: ContactFormValues) => {
       return apiRequest("POST", "/api/contacts", values);
     },
-    onSuccess: () => {
+    onSuccess: (_data, values) => {
+      trackContactSubmitSuccess(values.service || undefined);
       toast({
         title: "Message sent successfully!",
         description: "Thank you for contacting us. We will get back to you soon.",
       });
       form.reset();
+      hasStartedForm.current = false;
     },
-    onError: (error: any) => {
+    onError: (error: any, values) => {
+      trackFormSubmitError({
+        errorType: "request_failed",
+        formType: "contact",
+        location: "contact_page",
+        serviceId: values?.service || undefined,
+      });
       toast({
         title: "Error sending message",
         description: error.message || "Please try again later.",
@@ -57,7 +75,31 @@ export default function Contact() {
   });
 
   const onSubmit = (values: ContactFormValues) => {
+    trackFormSubmitAttempt({
+      formType: "contact",
+      location: "contact_page",
+      serviceId: values.service || undefined,
+    });
     contactMutation.mutate(values);
+  };
+
+  const onInvalidSubmit = () => {
+    trackFormSubmitError({
+      errorType: "validation",
+      formType: "contact",
+      location: "contact_page",
+      serviceId: form.getValues("service") || undefined,
+    });
+  };
+
+  const handleFormStart = () => {
+    if (hasStartedForm.current) return;
+    hasStartedForm.current = true;
+    trackFormStart({
+      formType: "contact",
+      location: "contact_page",
+      serviceId: form.getValues("service") || undefined,
+    });
   };
 
   return (
@@ -89,7 +131,10 @@ export default function Contact() {
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Our Location</h3>
                     <p className="text-gray-600">
-                      <PracticeAddressLink className="text-inherit hover:text-primary">
+                      <PracticeAddressLink
+                        className="text-inherit hover:text-primary"
+                        trackingLocation="contact_info"
+                      >
                         <>
                           {practiceInfo.addressLines[0]}
                           <br />
@@ -101,6 +146,7 @@ export default function Contact() {
                       href={practiceInfo.mapUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackMapClick("contact_info")}
                       className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors inline-block mt-2"
                     >
                       Open in Google Maps
@@ -124,7 +170,13 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Phone Number</h3>
-                    <p className="text-gray-600">(408) 358-8100</p>
+                    <a
+                      href="tel:4083588100"
+                      onClick={() => trackPhoneClick("contact_info")}
+                      className="text-gray-600 hover:text-primary transition-colors"
+                    >
+                      (408) 358-8100
+                    </a>
                   </div>
                 </div>
                 
@@ -161,6 +213,7 @@ export default function Contact() {
                   href="https://www.facebook.com/famfirstsmile/" 
                   target="_blank" 
                   rel="noopener noreferrer"
+                  onClick={() => trackSocialClick("facebook", "contact_page")}
                   className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors" 
                   aria-label="Visit our Facebook page"
                 >
@@ -170,6 +223,7 @@ export default function Contact() {
                   href="https://www.instagram.com/famfirstsmile/" 
                   target="_blank" 
                   rel="noopener noreferrer"
+                  onClick={() => trackSocialClick("instagram", "contact_page")}
                   className="bg-pink-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-pink-700 transition-colors" 
                   aria-label="Visit our Instagram page"
                 >
@@ -208,7 +262,11 @@ export default function Contact() {
             <div className="bg-gray-50 rounded-2xl p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Send Us a Message</h2>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
+                  onFocusCapture={handleFormStart}
+                  className="space-y-4"
+                >
                   <div className="grid md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -357,7 +415,10 @@ export default function Contact() {
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-white text-center md:text-left">
                   <h3 className="font-semibold text-lg mb-1">Family First Smile Care</h3>
-                  <PracticeAddressLink className="text-white hover:text-white/85">
+                  <PracticeAddressLink
+                    className="text-white hover:text-white/85"
+                    trackingLocation="contact_map_bar"
+                  >
                     {practiceInfo.addressText}
                   </PracticeAddressLink>
                   <p className="mt-1 text-sm text-white/85">
@@ -369,6 +430,7 @@ export default function Contact() {
                     href={practiceInfo.mapUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
+                    onClick={() => trackMapClick("contact_map_bar")}
                     className="bg-white text-primary px-6 py-2 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2"
                   >
                     <MapPin className="h-4 w-4" />
@@ -376,6 +438,7 @@ export default function Contact() {
                   </a>
                   <a 
                     href="tel:4083588100"
+                    onClick={() => trackPhoneClick("contact_map_bar")}
                     className="bg-white/5 backdrop-blur text-white px-6 py-2 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold flex items-center gap-2 border border-white/25"
                   >
                     <Phone className="h-4 w-4" />

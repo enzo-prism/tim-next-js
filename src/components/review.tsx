@@ -3,7 +3,11 @@ import { motion } from "framer-motion";
 import type { Review } from "@/data/reviews";
 import { googleBusinessProfileUrl } from "@/data/reviews";
 import { Link } from "wouter";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import {
+  APPOINTMENT_FORM_URL,
+  trackAppointmentCtaClick,
+  trackReviewLinkClick,
+} from "@/lib/analytics";
 
 interface ReviewProps {
   review: Review;
@@ -41,6 +45,7 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackReviewLinkClick("google", "review_card")}
             className="text-primary hover:text-primary/80 transition-colors"
             aria-label="Read full review on Google"
           >
@@ -56,6 +61,7 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackReviewLinkClick("google", "review_card")}
             className="text-primary hover:text-primary/80 ml-2 text-sm font-medium transition-colors"
           >
             Read full review →
@@ -83,7 +89,7 @@ interface ReviewsSectionProps {
 export function ReviewsSection({ reviews, title = "What Our Patients Say", showCTA = true }: ReviewsSectionProps) {
   if (!reviews || reviews.length === 0) return null;
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("reviews");
+    trackAppointmentCtaClick("reviews_section");
   };
 
   return (
@@ -117,6 +123,7 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
                 href={googleBusinessProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackReviewLinkClick("google", "reviews_section")}
                 className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-2"
               >
                 Read More Reviews

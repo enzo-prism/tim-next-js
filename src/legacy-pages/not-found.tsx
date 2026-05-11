@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Home, Phone, MapPin } from "lucide-react";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
+import { trackPhoneClick } from "@/lib/analytics";
 
 export default function NotFound() {
   return (
@@ -39,7 +40,7 @@ export default function NotFound() {
             </Button>
 
             <Button asChild variant="outline" className="text-lg font-semibold px-6 py-3 flex items-center gap-2">
-              <a href="tel:4083588100">
+              <a href="tel:4083588100" onClick={() => trackPhoneClick("not_found_page")}>
                 <Phone className="h-5 w-5" />
                 Call Us: (408) 358-8100
               </a>
@@ -71,7 +72,10 @@ export default function NotFound() {
               <span className="text-gray-700 font-medium">Family First Smile Care</span>
             </div>
             <p className="text-gray-600">
-              <PracticeAddressLink className="text-inherit hover:text-primary">
+              <PracticeAddressLink
+                className="text-inherit hover:text-primary"
+                trackingLocation="not_found_page"
+              >
                 <>
                   {practiceInfo.addressLines[0]}
                   <br />

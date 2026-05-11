@@ -3,7 +3,11 @@ import { Check } from "lucide-react";
 import { Link } from "wouter";
 import type { Service } from "@/lib/types";
 import BrandIcon, { type BrandIconName } from "@/components/brand/BrandIcon";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import {
+  APPOINTMENT_FORM_URL,
+  trackAppointmentCtaClick,
+  trackServiceLearnMoreClick,
+} from "@/lib/analytics";
 import { getServiceHref } from "@/lib/routes";
 
 interface ServiceCardProps {
@@ -13,7 +17,14 @@ interface ServiceCardProps {
 
 export default function ServiceCard({ service, featured = false }: ServiceCardProps) {
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick(`service_card:${service.id}`);
+    trackAppointmentCtaClick("service_card", {
+      ctaType: featured ? "consultation" : "appointment",
+      serviceId: service.id,
+    });
+  };
+
+  const handleLearnMoreClick = (serviceId: string) => {
+    trackServiceLearnMoreClick(serviceId, "service_card");
   };
 
   const normalizeIconName = (iconName: string): BrandIconName => {
@@ -88,7 +99,10 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
                           <BrandIcon name={normalizeIconName(subService.icon)} className="h-5 w-5" />
                         </div>
                         <div className="flex-1">
-                          <Link href={getServiceHref(subService.id)}>
+                          <Link
+                            href={getServiceHref(subService.id)}
+                            onClick={() => handleLearnMoreClick(subService.id)}
+                          >
                             <h5 className="font-semibold text-gray-800 text-sm hover:text-primary transition-colors cursor-pointer">{subService.title}</h5>
                             <p className="text-xs text-gray-600">{subService.description}</p>
                           </Link>
@@ -106,7 +120,12 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
               asChild
               className="w-full rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3 font-semibold text-white shadow-lg transition duration-200 hover:from-blue-600 hover:to-primary hover:shadow-xl hover:scale-[1.02] motion-reduce:hover:scale-100 motion-reduce:transition-none"
             >
-              <Link href={getServiceHref(service.id)}>Learn More About {service.title}</Link>
+              <Link
+                href={getServiceHref(service.id)}
+                onClick={() => handleLearnMoreClick(service.id)}
+              >
+                Learn More About {service.title}
+              </Link>
             </Button>
             
             {(featured || (service.subServices && service.subServices.some(sub => sub.featured))) && (

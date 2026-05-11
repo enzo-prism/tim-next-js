@@ -15,7 +15,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ChevronDown, CreditCard, Menu } from "lucide-react";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import { services } from "@/data/services";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import {
+  APPOINTMENT_FORM_URL,
+  trackAppointmentCtaClick,
+  trackPayBillClick,
+  trackServiceLearnMoreClick,
+} from "@/lib/analytics";
 import { getServiceHref } from "@/lib/routes";
 
 const navigation: Array<{ name: string; href: string; dropdown?: boolean }> = [
@@ -29,8 +34,9 @@ const navigation: Array<{ name: string; href: string; dropdown?: boolean }> = [
 ];
 
 const serviceMenuItems = services.flatMap((service) => [
-  { title: service.title, href: getServiceHref(service.id) },
+  { id: service.id, title: service.title, href: getServiceHref(service.id) },
   ...(service.subServices?.map((subService) => ({
+    id: subService.id,
     title: subService.title,
     href: getServiceHref(subService.id),
   })) ?? []),
@@ -39,8 +45,14 @@ const serviceMenuItems = services.flatMap((service) => [
 export default function Header() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("header");
+  const handleAppointmentClick = (trackingLocation = "header") => {
+    trackAppointmentCtaClick(trackingLocation);
+  };
+  const handlePayBillClick = (trackingLocation = "header") => {
+    trackPayBillClick(trackingLocation);
+  };
+  const handleServiceLinkClick = (serviceId: string, trackingLocation = "header_menu") => {
+    trackServiceLearnMoreClick(serviceId, trackingLocation);
   };
   const isServicesActive =
     location === "/services" ||
@@ -118,7 +130,12 @@ export default function Header() {
                         asChild
                         className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
                       >
-                        <Link href="/services">View all services</Link>
+                        <Link
+                          href="/services"
+                          onClick={() => trackServiceLearnMoreClick("all_services", "header_menu")}
+                        >
+                          View all services
+                        </Link>
                       </DropdownMenuItem>
                       <div className="space-y-1">
                         {serviceMenuItems.map((service) => (
@@ -127,7 +144,12 @@ export default function Header() {
                             asChild
                             className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
                           >
-                            <Link href={service.href}>{service.title}</Link>
+                            <Link
+                              href={service.href}
+                              onClick={() => handleServiceLinkClick(service.id)}
+                            >
+                              {service.title}
+                            </Link>
                           </DropdownMenuItem>
                         ))}
                       </div>
@@ -139,7 +161,12 @@ export default function Header() {
                         asChild
                         className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
                       >
-                        <Link href="/technology/itero-digital-scanner">iTero Digital Scanner</Link>
+                        <Link
+                          href="/technology/itero-digital-scanner"
+                          onClick={() => handleServiceLinkClick("itero-digital-scanner")}
+                        >
+                          iTero Digital Scanner
+                        </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -175,13 +202,14 @@ export default function Header() {
                 href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => handlePayBillClick("header_desktop")}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
                 Pay Bill
               </a>
             </Button>
             <Button asChild className="h-10 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+              <Link href={APPOINTMENT_FORM_URL} onClick={() => handleAppointmentClick("header_desktop")}>
                 Book Appointment
               </Link>
             </Button>
@@ -198,13 +226,14 @@ export default function Header() {
                 href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => handlePayBillClick("header_compact")}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
                 Pay Bill
               </a>
             </Button>
             <Button asChild className="hidden sm:inline-flex h-9 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+              <Link href={APPOINTMENT_FORM_URL} onClick={() => handleAppointmentClick("header_compact")}>
                 Book
               </Link>
             </Button>
@@ -237,7 +266,10 @@ export default function Header() {
                       <Link
                         href="/services"
                         className="text-gray-800 font-semibold hover:text-primary"
-                        onClick={() => setIsOpen(false)}
+                        onClick={() => {
+                          trackServiceLearnMoreClick("all_services", "mobile_menu");
+                          setIsOpen(false);
+                        }}
                       >
                         View all services
                       </Link>
@@ -246,7 +278,10 @@ export default function Header() {
                           key={service.href}
                           href={service.href}
                           className="text-gray-800 font-semibold hover:text-primary"
-                          onClick={() => setIsOpen(false)}
+                          onClick={() => {
+                            handleServiceLinkClick(service.id, "mobile_menu");
+                            setIsOpen(false);
+                          }}
                         >
                           {service.title}
                         </Link>
@@ -258,7 +293,10 @@ export default function Header() {
                         <Link
                           href="/technology/itero-digital-scanner"
                           className="text-gray-800 font-semibold hover:text-primary"
-                          onClick={() => setIsOpen(false)}
+                          onClick={() => {
+                            handleServiceLinkClick("itero-digital-scanner", "mobile_menu");
+                            setIsOpen(false);
+                          }}
                         >
                           iTero Digital Scanner
                         </Link>
@@ -270,7 +308,10 @@ export default function Header() {
                       href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {
+                        handlePayBillClick("mobile_menu");
+                        setIsOpen(false);
+                      }}
                     >
                       <CreditCard className="h-4 w-4 mr-2" />
                       Pay Bill Online
@@ -281,7 +322,7 @@ export default function Header() {
                       href={APPOINTMENT_FORM_URL}
                       onClick={() => {
                         setIsOpen(false);
-                        handleAppointmentClick();
+                        handleAppointmentClick("mobile_menu");
                       }}
                     >
                       Book Appointment

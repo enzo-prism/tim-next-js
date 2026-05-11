@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -8,6 +10,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { trackSocialClick } from "@/lib/analytics";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
@@ -100,6 +103,7 @@ export default function SocialMediaSection() {
               href={post.href}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackSocialClick("instagram", "social_highlight")}
               variants={fadeInUp}
               className="group block h-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1.5 hover:border-primary/25 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
@@ -136,6 +140,7 @@ export default function SocialMediaSection() {
               href="https://www.instagram.com/famfirstsmilecare/"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackSocialClick("instagram", "social_follow_cta")}
               className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-secondary px-6 py-3 font-semibold text-white transition duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-auto"
               data-testid="button-follow-instagram"
             >
@@ -146,6 +151,7 @@ export default function SocialMediaSection() {
               href="https://www.xiaohongshu.com/user/profile/6787d0fa000000000801e7e7"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackSocialClick("xiaohongshu", "social_follow_cta")}
               className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 font-semibold text-white transition duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-auto"
               data-testid="button-follow-xiaohongshu"
             >

@@ -49,7 +49,10 @@ export default function Invisalign() {
     .find((item) => item.id === "invisalign");
 
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("invisalign");
+    trackAppointmentCtaClick("invisalign_page", {
+      ctaType: "consultation",
+      serviceId: "invisalign",
+    });
   };
 
   const reviewData = serviceReviews.find((review) => review.serviceId === "invisalign");

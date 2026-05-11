@@ -11,7 +11,10 @@ import type { RelatedLink } from "@/lib/internal-links";
 
 export default function TMJ() {
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("tmj");
+    trackAppointmentCtaClick("tmj_page", {
+      ctaType: "consultation",
+      serviceId: "tmj",
+    });
   };
 
   const relatedLinks: RelatedLink[] = [

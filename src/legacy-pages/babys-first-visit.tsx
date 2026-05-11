@@ -6,7 +6,13 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Baby, Shield, Sparkles, Heart, NotebookPen, PhoneCall, Smile, Star, MapPin, Phone, BookOpen, Expand } from "lucide-react";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import {
+  APPOINTMENT_FORM_URL,
+  trackAppointmentCtaClick,
+  trackMapClick,
+  trackPhoneClick,
+  trackSocialClick,
+} from "@/lib/analytics";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -26,7 +32,9 @@ const scaleIn = {
 
 export default function BabysFirstVisit() {
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("babys_first_visit");
+    trackAppointmentCtaClick("babys_first_visit_page", {
+      serviceId: "babys-first-visit",
+    });
   };
 
   // Ensure the Instagram embed script is available when the page loads
@@ -451,7 +459,12 @@ export default function BabysFirstVisit() {
                     data-instgrm-permalink="https://www.instagram.com/reel/DNrGJb4ZMXi/?utm_source=ig_embed&amp;utm_campaign=loading"
                     data-instgrm-version="14"
                   >
-                    <a href="https://www.instagram.com/reel/DNrGJb4ZMXi/?utm_source=ig_embed&amp;utm_campaign=loading" target="_blank" rel="noreferrer">
+                    <a
+                      href="https://www.instagram.com/reel/DNrGJb4ZMXi/?utm_source=ig_embed&amp;utm_campaign=loading"
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => trackSocialClick("instagram", "babys_first_visit_embed")}
+                    >
                       View this post on Instagram
                     </a>
                   </blockquote>
@@ -465,7 +478,12 @@ export default function BabysFirstVisit() {
                     data-instgrm-permalink="https://www.instagram.com/reel/DE8HuqhStM9/?utm_source=ig_embed&amp;utm_campaign=loading"
                     data-instgrm-version="14"
                   >
-                    <a href="https://www.instagram.com/reel/DE8HuqhStM9/?utm_source=ig_embed&amp;utm_campaign=loading" target="_blank" rel="noreferrer">
+                    <a
+                      href="https://www.instagram.com/reel/DE8HuqhStM9/?utm_source=ig_embed&amp;utm_campaign=loading"
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => trackSocialClick("instagram", "babys_first_visit_embed")}
+                    >
                       View this post on Instagram
                     </a>
                   </blockquote>
@@ -653,7 +671,9 @@ export default function BabysFirstVisit() {
                   variant="outline"
                   className="w-full sm:w-auto bg-white/5 border-white/25 text-white hover:bg-white hover:text-primary"
                 >
-                  <a href="tel:+14083588100">Call Us</a>
+                  <a href="tel:+14083588100" onClick={() => trackPhoneClick("babys_first_visit_cta")}>
+                    Call Us
+                  </a>
                 </Button>
                 <Button
                   asChild
@@ -664,6 +684,7 @@ export default function BabysFirstVisit() {
                     href={practiceInfo.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackMapClick("babys_first_visit_cta")}
                   >
                     Open in Google Maps
                   </a>
@@ -690,7 +711,10 @@ export default function BabysFirstVisit() {
                 </li>
                 <li className="flex items-start">
                   <MapPin className="w-4 h-4 text-white mt-0.5 mr-2" />
-                  <PracticeAddressLink className="text-white hover:text-white/85">
+                  <PracticeAddressLink
+                    className="text-white hover:text-white/85"
+                    trackingLocation="babys_first_visit_details"
+                  >
                     {practiceInfo.addressText}
                   </PracticeAddressLink>
                 </li>

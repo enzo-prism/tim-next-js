@@ -41,7 +41,10 @@ const scaleIn = {
 
 export default function IteroDigitalScanner() {
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("itero");
+    trackAppointmentCtaClick("itero_page", {
+      ctaType: "consultation",
+      serviceId: "itero-digital-scanner",
+    });
   };
 
   const faqSchema = buildFaqSchema(iteroContent.faqs);

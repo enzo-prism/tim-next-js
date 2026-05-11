@@ -28,7 +28,11 @@ import {
   testimonialsPageSummary,
   testimonialThemes,
 } from "@/content/testimonials";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import {
+  APPOINTMENT_FORM_URL,
+  trackAppointmentCtaClick,
+  trackReviewLinkClick,
+} from "@/lib/analytics";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -201,6 +205,7 @@ export default function TestimonialsPage() {
                   href={testimonialsPageSummary.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackReviewLinkClick("google", "testimonials_page")}
                 >
                   View Google profile
                   <ExternalLink className="ml-2 h-4 w-4" />
@@ -215,6 +220,7 @@ export default function TestimonialsPage() {
                   href={publicReviewFeedSections[1].sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackReviewLinkClick("yelp", "testimonials_page")}
                 >
                   View Yelp profile
                   <ExternalLink className="ml-2 h-4 w-4" />
@@ -345,7 +351,17 @@ export default function TestimonialsPage() {
                   variant="outline"
                   className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
                 >
-                  <a href={section.sourceUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={section.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() =>
+                      trackReviewLinkClick(
+                        section.id === "yelp-reviews" ? "yelp" : "google",
+                        "testimonials_review_section",
+                      )
+                    }
+                  >
                     {section.sourceLabel}
                     <ExternalLink className="ml-2 h-4 w-4" />
                   </a>

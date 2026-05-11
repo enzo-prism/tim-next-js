@@ -12,6 +12,36 @@
 
 This does not replace GA4. It gives a first-party Vercel traffic view alongside the existing Google-based reporting stack.
 
+### Custom event tracking
+
+1. `src/lib/analytics.ts` is the single event emitter for custom events.
+2. `trackSiteEvent(...)` sends the same sanitized event payload to:
+   - GA4 through `gtag("event", eventName, ...)`
+   - Vercel Web Analytics through `track(eventName, ...)`
+3. Custom events are skipped on `/admin*`.
+4. Payloads are allowlisted, flat, and intentionally low-cardinality. Do not send names, emails, phone numbers, message text, preferred dates, free-form search text, or any other patient-identifying data.
+
+Current event dictionary:
+
+| Event | When it fires | Safe parameters |
+| --- | --- | --- |
+| `cta_click` | Appointment/consultation CTAs | `location`, `cta_type`, `destination`, `service_id` |
+| `form_start` | First meaningful form interaction | `form_type`, `location`, `service_id` |
+| `form_submit_attempt` | Form submit before the request resolves | `form_type`, `location`, `service_id` |
+| `generate_lead` | Successful appointment/contact submission | `form_type`, `lead_source`, `location`, `service_id` |
+| `form_submit_fallback` | Appointment saved but delivery fallback is shown | `form_type`, `location`, `service_id` |
+| `form_submit_error` | Appointment/contact submission fails | `form_type`, `location`, `service_id`, `error_type` |
+| `phone_click` | Phone links | `location`, `destination` |
+| `map_click` | Google Maps links | `location`, `destination`, `provider` |
+| `pay_bill_click` | SwipeSimple payment links | `location`, `destination`, `provider` |
+| `review_link_click` | Google/Yelp review profile links | `location`, `destination`, `provider` |
+| `social_click` | Social profile/post links | `location`, `destination`, `provider` |
+| `service_learn_more_click` | Service discovery links | `location`, `destination`, `service_id` |
+
+GA4 uses `generate_lead` because it is a recommended lead event. If parameter breakdowns are needed in GA4 reports, create custom dimensions/metrics for the custom parameters such as `form_type`, `location`, `service_id`, `provider`, and `cta_type`.
+
+Vercel custom events require a Vercel plan that supports custom events. Pageview analytics can work even if custom-event dashboards are unavailable.
+
 ### GA4 page tracking
 
 1. `src/app/layout.tsx` loads `gtag.js` and initializes GA4 using:
@@ -94,7 +124,11 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 6. In GA4 Realtime, verify active users and route page views appear.
 7. Confirm admin route `/admin` does not emit normal public pageview tracking in either Vercel Analytics or GA4.
 8. Verify Google Ads conversion fires by clicking an appointment CTA wired to `triggerGoogleAdsConversion`.
-9. Verify admin API connectivity:
+9. Confirm representative custom events fire without exposing form data:
+   - appointment CTA: `cta_click`
+   - appointment/contact submit success: `generate_lead`
+   - phone/map/pay/review/social links: corresponding click event
+10. Verify admin API connectivity:
    - `GET /api/admin/ga4/overview?days=30`
    - `GET /api/admin/gsc/overview?days=30`
 
@@ -110,6 +144,10 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
    - `RouteAnalytics` removed or `trackPageView` not firing on pathname change.
 5. Vercel Analytics stays blank after deploy:
    - Web Analytics is not enabled in the Vercel project, an ad/content blocker is suppressing the script, or nobody has visited the deployed site since the change.
+6. Custom events appear in GA4 but not as breakdowns:
+   - GA4 custom parameters need matching custom dimensions/metrics before they appear in standard reports.
+7. Vercel pageviews appear but custom events do not:
+   - the Vercel project plan may not include custom events, or the event has not been triggered in production yet.
 
 ## Hardening Recommendations
 

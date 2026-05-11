@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,7 +23,14 @@ import { services } from "@/content/services";
 import { insertAppointmentSchema } from "@/server/schema";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
-import { trackAppointmentSubmitFallback, trackAppointmentSubmitSuccess } from "@/lib/analytics";
+import {
+  trackAppointmentSubmitFallback,
+  trackAppointmentSubmitSuccess,
+  trackFormStart,
+  trackFormSubmitAttempt,
+  trackFormSubmitError,
+  trackPhoneClick,
+} from "@/lib/analytics";
 
 const officePhone = "(408) 358-8100";
 const officePhoneHref = "tel:+14083588100";
@@ -65,6 +72,7 @@ export default function BookAppointment() {
     delivered: boolean;
     fallbackMessage?: string;
   } | null>(null);
+  const hasStartedForm = useRef(false);
 
   const minDate = useMemo(() => {
     const now = new Date();
@@ -124,21 +132,21 @@ export default function BookAppointment() {
 
       return payload;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, values) => {
       setSubmission({
         delivered: data.delivered,
         fallbackMessage: data.fallbackMessage,
       });
 
       if (data.delivered) {
-        trackAppointmentSubmitSuccess();
+        trackAppointmentSubmitSuccess(values.service || undefined);
         toast({
           title: "Appointment request received",
           description:
             "Thanks! We received your request and our team will contact you shortly to confirm.",
         });
       } else {
-        trackAppointmentSubmitFallback();
+        trackAppointmentSubmitFallback(values.service || undefined);
         toast({
           title: "Request saved with backup notice",
           description:
@@ -158,8 +166,19 @@ export default function BookAppointment() {
         message: "",
         company: "",
       });
+      hasStartedForm.current = false;
     },
-    onError: (error: Error & { details?: { errors?: Array<{ path: Array<string | number>; message: string }>; message?: string } }) => {
+    onError: (
+      error: Error & { details?: { errors?: Array<{ path: Array<string | number>; message: string }>; message?: string } },
+      values,
+    ) => {
+      trackFormSubmitError({
+        errorType: "request_failed",
+        formType: "appointment",
+        location: "book_appointment_page",
+        serviceId: values?.service || undefined,
+      });
+
       const issues = error.details?.errors ?? [];
       for (const issue of issues) {
         const path = issue.path?.[0];
@@ -181,7 +200,31 @@ export default function BookAppointment() {
 
   const onSubmit = (values: AppointmentFormValues) => {
     setSubmission(null);
+    trackFormSubmitAttempt({
+      formType: "appointment",
+      location: "book_appointment_page",
+      serviceId: values.service || undefined,
+    });
     appointmentMutation.mutate(values);
+  };
+
+  const onInvalidSubmit = () => {
+    trackFormSubmitError({
+      errorType: "validation",
+      formType: "appointment",
+      location: "book_appointment_page",
+      serviceId: form.getValues("service") || undefined,
+    });
+  };
+
+  const handleFormStart = () => {
+    if (hasStartedForm.current) return;
+    hasStartedForm.current = true;
+    trackFormStart({
+      formType: "appointment",
+      location: "book_appointment_page",
+      serviceId: form.getValues("service") || undefined,
+    });
   };
 
   return (
@@ -228,7 +271,11 @@ export default function BookAppointment() {
                 </p>
                 <p className="text-amber-900 text-sm mt-2">
                   Please call us now at{" "}
-                  <a href={officePhoneHref} className="font-semibold underline">
+                  <a
+                    href={officePhoneHref}
+                    onClick={() => trackPhoneClick("appointment_fallback_notice")}
+                    className="font-semibold underline"
+                  >
                     {officePhone}
                   </a>{" "}
                   so we can prioritize your appointment.
@@ -237,7 +284,11 @@ export default function BookAppointment() {
             ) : null}
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
+                onFocusCapture={handleFormStart}
+                className="space-y-4"
+              >
                 <input
                   type="text"
                   tabIndex={-1}
@@ -420,6 +471,7 @@ export default function BookAppointment() {
               </p>
               <a
                 href={officePhoneHref}
+                onClick={() => trackPhoneClick("appointment_sidebar")}
                 className="inline-flex items-center text-primary font-semibold hover:text-primary/80 transition-colors"
               >
                 <Phone className="h-4 w-4 mr-2" />

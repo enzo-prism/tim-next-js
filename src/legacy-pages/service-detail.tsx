@@ -68,7 +68,10 @@ export default function ServiceDetail() {
   }
 
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("service_detail");
+    trackAppointmentCtaClick("service_detail", {
+      ctaType: service.featured ? "consultation" : "appointment",
+      serviceId: service.id,
+    });
   };
 
   const normalizeIconName = (iconName: string): BrandIconName => {

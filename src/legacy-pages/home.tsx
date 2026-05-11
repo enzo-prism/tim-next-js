@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import TestimonialCarousel from "@/components/testimonial-carousel";
 import SocialMediaSection from "@/components/social-media";
 import { ArrowRight, Heart, Microscope, Users, Star } from "lucide-react";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import {
+  APPOINTMENT_FORM_URL,
+  trackAppointmentCtaClick,
+  trackReviewLinkClick,
+  trackServiceLearnMoreClick,
+} from "@/lib/analytics";
 import BrandIcon from "@/components/brand/BrandIcon";
 import HeadingMark from "@/components/brand/HeadingMark";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
@@ -161,6 +166,11 @@ const patientResources = [
 export default function Home() {
   const handleAppointmentClick = () => {
     trackAppointmentCtaClick("home_hero");
+  };
+
+  const handleServiceClick = (href: string, location: string) => {
+    const serviceId = href.split("/").filter(Boolean).pop() || href;
+    trackServiceLearnMoreClick(serviceId, location);
   };
 
   return (
@@ -488,7 +498,10 @@ export default function Home() {
                     variant="link"
                     className="mt-auto w-fit p-0 text-primary transition-colors duration-200 group-hover:text-primary/80"
                   >
-                    <Link href={service.href}>
+                    <Link
+                      href={service.href}
+                      onClick={() => handleServiceClick(service.href, "home_featured_services")}
+                    >
                       Learn More
                       <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </Link>
@@ -538,6 +551,7 @@ export default function Home() {
               >
                 <Link
                   href={service.href}
+                  onClick={() => handleServiceClick(service.href, "home_more_services")}
                   className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <div className="h-full rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-lg transition-shadow duration-200">
@@ -728,7 +742,12 @@ export default function Home() {
           </motion.p>
           <motion.div variants={scaleIn} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button asChild className="bg-orange-700 text-white hover:bg-orange-800 text-lg font-semibold px-8 py-3">
-              <a href="https://g.page/r/Cej0Xl18KcCyEAE/review" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://g.page/r/Cej0Xl18KcCyEAE/review"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackReviewLinkClick("google", "home_review_cta")}
+              >
                 <Star className="h-5 w-5 mr-2" />
                 Leave a Google Review
               </a>
