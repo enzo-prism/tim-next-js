@@ -137,7 +137,7 @@ export default function SocialMediaSection() {
           </p>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <a
-              href="https://www.instagram.com/famfirstsmilecare/"
+              href="https://www.instagram.com/famfirstsmile/"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackSocialClick("instagram", "social_follow_cta")}
@@ -145,7 +145,7 @@ export default function SocialMediaSection() {
               data-testid="button-follow-instagram"
             >
               <Instagram className="h-5 w-5" />
-              Follow @famfirstsmilecare
+              Follow @famfirstsmile
             </a>
             <a
               href="https://www.xiaohongshu.com/user/profile/6787d0fa000000000801e7e7"
