@@ -1,7 +1,7 @@
 "use client";
 
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import type { ReactNode } from "react";
-import { ExternalLink } from "lucide-react";
 import { practiceInfo } from "@/content/structured-data";
 import { trackMapClick } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ export default function PracticeAddressLink({
     >
       <span>{children ?? practiceInfo.addressText}</span>
       {showExternalIcon ? (
-        <ExternalLink className={cn("mt-0.5 h-4 w-4 shrink-0 opacity-70", iconClassName)} />
+        <MinimalGlyph name="external-link" className={cn("mt-0.5 h-4 w-4 shrink-0 opacity-70", iconClassName)} />
       ) : null}
     </a>
   );

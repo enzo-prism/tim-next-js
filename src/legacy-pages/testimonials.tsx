@@ -2,16 +2,9 @@
 
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  ExternalLink,
-  MessageSquareQuote,
-  ShieldCheck,
-  Star,
-} from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { Button } from "@/components/ui/button";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import HeadingMark from "@/components/brand/HeadingMark";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import {
@@ -101,13 +94,13 @@ export default function TestimonialsPage() {
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
             <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
-                <ShieldCheck className="h-3.5 w-3.5" />
+              <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+                <MinimalGlyph name="shield-check" className="h-3.5 w-3.5" />
                 Verified patient feedback
               </div>
               <h1 className="max-w-3xl text-4xl font-bold leading-tight text-gray-800 sm:text-5xl">
                 <span className="inline-flex flex-wrap items-center gap-3">
-                  <HeadingMark />
+                  
                   <span>{pageTitle}</span>
                 </span>
               </h1>
@@ -129,26 +122,22 @@ export default function TestimonialsPage() {
                 animate="visible"
               >
                 <motion.div
-                  className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm"
+                  className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm"
                   variants={scaleIn}
                 >
                   <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Average rating
                   </div>
-                  <div className="mt-3 flex items-center gap-3">
+                  <div className="mt-3 flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-slate-900">
                       {testimonialsPageSummary.averageRating}
                     </span>
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
-                      ))}
-                    </div>
+                    <span className="text-sm font-semibold text-slate-500">out of 5</span>
                   </div>
                 </motion.div>
 
                 <motion.div
-                  className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm"
+                  className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm"
                   variants={scaleIn}
                 >
                   <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -163,7 +152,7 @@ export default function TestimonialsPage() {
                 </motion.div>
 
                 <motion.div
-                  className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm"
+                  className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm"
                   variants={scaleIn}
                 >
                   <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -180,13 +169,12 @@ export default function TestimonialsPage() {
             </motion.div>
 
             <motion.aside
-              className="rounded-[2rem] border border-slate-200/90 bg-white/95 p-6 shadow-[0_30px_80px_-50px_rgba(15,23,42,0.8)]"
+              className="rounded-xl border border-slate-200/90 bg-white/95 p-6 shadow-sm"
               initial="hidden"
               animate="visible"
               variants={scaleIn}
             >
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
-                <MessageSquareQuote className="h-4 w-4" />
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
                 Featured Google review
               </div>
               <blockquote className="mt-5 text-lg leading-8 text-slate-700">
@@ -205,10 +193,10 @@ export default function TestimonialsPage() {
                   href={testimonialsPageSummary.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackReviewLinkClick("google", "testimonials_page")}
+                  onClick={() => trackReviewLinkClick("google", "testimonials_featured")}
                 >
                   View Google profile
-                  <ExternalLink className="ml-2 h-4 w-4" />
+                  <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
                 </a>
               </Button>
               <Button
@@ -220,10 +208,10 @@ export default function TestimonialsPage() {
                   href={publicReviewFeedSections[1].sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackReviewLinkClick("yelp", "testimonials_page")}
+                  onClick={() => trackReviewLinkClick("yelp", "testimonials_featured")}
                 >
                   View Yelp profile
-                  <ExternalLink className="ml-2 h-4 w-4" />
+                  <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
                 </a>
               </Button>
             </motion.aside>
@@ -243,7 +231,7 @@ export default function TestimonialsPage() {
             {testimonialThemes.map((theme) => (
               <motion.article
                 key={theme.title}
-                className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5"
+                className="rounded-xl border border-slate-200 bg-slate-50/80 p-5"
                 variants={scaleIn}
               >
                 <h2 className="text-lg font-semibold text-slate-900">{theme.title}</h2>
@@ -277,7 +265,7 @@ export default function TestimonialsPage() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                    className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
                     {link.label}
                   </Link>
@@ -295,18 +283,15 @@ export default function TestimonialsPage() {
               {section.reviews.map((review) => (
                 <motion.article
                   key={`${section.id}-${review.name}`}
-                  className="h-full rounded-[1.75rem] border border-slate-200/90 bg-white p-6 shadow-[0_18px_50px_-40px_rgba(15,23,42,0.8)]"
+                  className="h-full rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm"
                   variants={scaleIn}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      <MessageSquareQuote className="h-3.5 w-3.5" />
+                    <div className="inline-flex rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
                       Google Review
                     </div>
-                    <div className="flex items-center gap-1 text-amber-500" aria-label="5 star review">
-                      {Array.from({ length: review.rating }).map((_, index) => (
-                        <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
-                      ))}
+                    <div className="text-sm font-semibold text-slate-600" aria-label={`${review.rating} star review`}>
+                      {review.rating}.0 rating
                     </div>
                   </div>
 
@@ -363,7 +348,7 @@ export default function TestimonialsPage() {
                     }
                   >
                     {section.sourceLabel}
-                    <ExternalLink className="ml-2 h-4 w-4" />
+                    <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
               </div>
@@ -379,19 +364,16 @@ export default function TestimonialsPage() {
               {section.reviews.map((review) => (
                 <motion.article
                   key={`${section.id}-${review.name}-${review.dateLabel}`}
-                  className="h-full rounded-[1.75rem] border border-slate-200/90 bg-white p-6 shadow-[0_18px_50px_-40px_rgba(15,23,42,0.8)]"
+                  className="h-full rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm"
                   variants={scaleIn}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      <MessageSquareQuote className="h-3.5 w-3.5" />
+                    <div className="inline-flex rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
                       {section.id === "yelp-reviews" ? "Yelp Review" : "Google Review"}
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 text-amber-500" aria-label="5 star review">
-                        {Array.from({ length: review.rating }).map((_, index) => (
-                          <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
-                        ))}
+                      <div className="text-sm font-semibold text-slate-600" aria-label={`${review.rating} star review`}>
+                        {review.rating}.0 rating
                       </div>
                       <span className="text-sm font-medium text-slate-500">{review.dateLabel}</span>
                     </div>
@@ -417,7 +399,7 @@ export default function TestimonialsPage() {
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
-            className="rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/5 via-white to-secondary/10 p-8 sm:p-10"
+            className="rounded-xl border border-primary/10 bg-muted/40 p-8 sm:p-10"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -439,7 +421,7 @@ export default function TestimonialsPage() {
               >
                 <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
                   Book an appointment
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button
@@ -451,9 +433,10 @@ export default function TestimonialsPage() {
                   href={testimonialsPageSummary.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackReviewLinkClick("google", "testimonials_bottom_cta")}
                 >
                   Read more reviews on Google
-                  <ExternalLink className="ml-2 h-4 w-4" />
+                  <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
                 </a>
               </Button>
             </div>

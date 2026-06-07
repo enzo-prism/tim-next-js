@@ -3,7 +3,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle, Smile } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { Button } from "@/components/ui/button";
 import { ReviewsSection } from "@/components/review";
 import { services } from "@/data/services";
@@ -11,7 +11,6 @@ import { serviceReviews } from "@/data/reviews";
 import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { invisalignContent } from "@shared/marketing-pages";
 import { buildFaqSchema, buildServiceSchema } from "@shared/structured-data";
-import HeadingMark from "@/components/brand/HeadingMark";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import illustrationAligners from "@assets/brand/illustration-aligners.webp";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
@@ -49,7 +48,7 @@ export default function Invisalign() {
     .find((item) => item.id === "invisalign");
 
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("invisalign_page", {
+    trackAppointmentCtaClick("invisalign", {
       ctaType: "consultation",
       serviceId: "invisalign",
     });
@@ -65,7 +64,7 @@ export default function Invisalign() {
           <p className="text-gray-600 mb-8">The service you're looking for doesn't exist.</p>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/services">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
               Back to Services
             </Link>
           </Button>
@@ -133,17 +132,17 @@ export default function Invisalign() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
               <motion.div
-                className="bg-primary text-white w-20 h-20 rounded-2xl flex items-center justify-center mx-auto lg:mx-0 mb-6 shadow-lg"
+                className="bg-primary text-white w-20 h-20 rounded-xl flex items-center justify-center mx-auto lg:mx-0 mb-6 shadow-sm"
                 variants={scaleIn}
               >
-                <Smile className="w-8 h-8" />
+                <MinimalGlyph name="smile-aligner" className="w-8 h-8" />
               </motion.div>
               <motion.h1
                 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
                 variants={fadeInUp}
               >
                 <span className="inline-flex items-center gap-3 flex-wrap justify-center lg:justify-start">
-                  <HeadingMark />
+                  
                   <span>{invisalignContent.hero.title}</span>
                 </span>
               </motion.h1>
@@ -162,7 +161,7 @@ export default function Invisalign() {
               <img
                 src={illustrationAligners.src}
                 alt="Clear aligner trays illustration"
-                className="w-full max-w-xl rounded-2xl bg-white/60 p-6 shadow-2xl"
+                className="w-full max-w-xl rounded-xl bg-white/60 p-6 shadow-sm"
                 loading="eager"
                 decoding="async"
               />
@@ -207,11 +206,11 @@ export default function Invisalign() {
                 {" "}and how it supports Invisalign planning.
               </p>
             </div>
-            <div className="bg-gray-50 rounded-2xl p-8 shadow-sm">
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm">
               <ul className="space-y-3 text-gray-700">
                 {invisalignContent.iteroSection.bullets.map((item) => (
                   <li key={item} className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                    <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -250,7 +249,7 @@ export default function Invisalign() {
         >
           <Button asChild variant="ghost" className="text-primary hover:bg-primary/5">
             <Link href="/services">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
               Back to All Services
             </Link>
           </Button>
@@ -271,11 +270,11 @@ export default function Invisalign() {
               </p>
             </motion.div>
             <motion.div
-              className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-8"
+              className="bg-muted/40 rounded-xl p-8"
               variants={scaleIn}
             >
-              <div className="bg-primary text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="h-8 w-8" />
+              <div className="bg-primary text-white w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6">
+                <MinimalGlyph name="check-circle" className="h-8 w-8" />
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
                 What's Included
@@ -283,7 +282,7 @@ export default function Invisalign() {
               <ul className="space-y-3 text-gray-600">
                 {service.details.map((detail) => (
                   <li key={detail} className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
+                    <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
                     {detail}
                   </li>
                 ))}
@@ -339,12 +338,12 @@ export default function Invisalign() {
             {benefits.map((benefit) => (
               <motion.div
                 key={benefit}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
+                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300"
                 variants={scaleIn}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
-                <div className="bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle className="h-6 w-6" />
+                <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <MinimalGlyph name="check-circle" className="h-6 w-6" />
                 </div>
                 <p className="text-gray-700 font-medium">{benefit}</p>
               </motion.div>
@@ -373,10 +372,10 @@ export default function Invisalign() {
             {processSteps.map((step, index) => (
               <motion.div
                 key={step}
-                className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 text-center"
+                className="bg-muted/50 rounded-xl p-6 text-center"
                 variants={scaleIn}
               >
-                <div className="bg-secondary text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <span className="font-bold">{index + 1}</span>
                 </div>
                 <p className="text-gray-700 font-medium">{step}</p>
@@ -400,7 +399,7 @@ export default function Invisalign() {
           </div>
           <div className="space-y-6">
             {invisalignContent.faqs.map((faq) => (
-              <div key={faq.question} className="border border-gray-200 rounded-2xl p-6">
+              <div key={faq.question} className="border border-gray-200 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">{faq.question}</h3>
                 <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
               </div>
@@ -411,7 +410,7 @@ export default function Invisalign() {
         <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
 
         <motion.div
-          className="bg-gradient-to-r from-primary to-secondary rounded-3xl p-8 lg:p-12 text-center text-white"
+          className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
@@ -436,7 +435,7 @@ export default function Invisalign() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href={APPOINTMENT_FORM_URL}
-                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-lg ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
+                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                 onClick={handleAppointmentClick}
               >
                 Book Your Appointment

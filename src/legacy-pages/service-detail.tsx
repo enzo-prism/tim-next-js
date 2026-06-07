@@ -3,13 +3,12 @@
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "wouter";
-import { CheckCircle, ArrowLeft } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { motion } from "framer-motion";
 import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
 import { serviceReviews } from "@/data/reviews";
 import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
-import BrandIcon, { type BrandIconName } from "@/components/brand/BrandIcon";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -58,7 +57,7 @@ export default function ServiceDetail() {
           <p className="text-gray-600 mb-8">The service you're looking for doesn't exist.</p>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/services">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
               Back to Services
             </Link>
           </Button>
@@ -69,34 +68,9 @@ export default function ServiceDetail() {
 
   const handleAppointmentClick = () => {
     trackAppointmentCtaClick("service_detail", {
-      ctaType: service.featured ? "consultation" : "appointment",
+      ctaType: "consultation",
       serviceId: service.id,
     });
-  };
-
-  const normalizeIconName = (iconName: string): BrandIconName => {
-    if (
-      iconName === "tooth" ||
-      iconName === "child" ||
-      iconName === "sparkles" ||
-      iconName === "smile" ||
-      iconName === "activity"
-    ) {
-      return iconName;
-    }
-    return "tooth";
-  };
-
-  const getIconColor = (iconName: string) => {
-    const colorMap: { [key: string]: string } = {
-      tooth: "bg-primary",
-      child: "bg-secondary", 
-      sparkles: "bg-accent",
-      smile: "bg-primary",
-      activity: "bg-secondary",
-    };
-    
-    return colorMap[iconName] || "bg-primary";
   };
 
   const serviceUrl =
@@ -174,12 +148,6 @@ export default function ServiceDetail() {
         <HeroBackdrop variant="default" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <motion.div 
-              className={`${getIconColor(service.icon)} text-white w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}
-              variants={scaleIn}
-            >
-              <BrandIcon name={normalizeIconName(service.icon)} className="h-12 w-12" />
-            </motion.div>
             <motion.h1 
               className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
               variants={fadeInUp}
@@ -231,7 +199,7 @@ export default function ServiceDetail() {
         >
           <Button asChild variant="ghost" className="text-primary hover:bg-primary/5">
             <Link href="/services">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
               Back to All Services
             </Link>
           </Button>
@@ -253,17 +221,14 @@ export default function ServiceDetail() {
               </p>
             </motion.div>
             <motion.div 
-              className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-8"
+              className="bg-muted/40 rounded-xl p-8"
               variants={scaleIn}
             >
-              <div className={`${getIconColor(service.icon)} text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6`}>
-                <CheckCircle className="h-8 w-8" />
-              </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">What's Included</h3>
               <ul className="space-y-3 text-gray-600">
                 {service.details.map((detail: string, index: number) => (
                   <li key={index} className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
+                    <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
                     {detail}
                   </li>
                 ))}
@@ -295,13 +260,10 @@ export default function ServiceDetail() {
               {service.benefits.map((benefit: string, index: number) => (
                 <motion.div
                   key={index}
-                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
+                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300"
                   variants={scaleIn}
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 >
-                  <div className="bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                    <CheckCircle className="h-6 w-6" />
-                  </div>
                   <p className="text-gray-700 font-medium">{benefit}</p>
                 </motion.div>
               ))}
@@ -332,10 +294,10 @@ export default function ServiceDetail() {
               {service.process.map((step: string, index: number) => (
                 <motion.div
                   key={index}
-                  className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 text-center"
+                  className="bg-muted/50 rounded-xl p-6 text-center"
                   variants={scaleIn}
                 >
-                  <div className="bg-secondary text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                     <span className="font-bold">{index + 1}</span>
                   </div>
                   <p className="text-gray-700 font-medium">{step}</p>
@@ -349,7 +311,7 @@ export default function ServiceDetail() {
 
         {/* Call to Action */}
         <motion.div 
-          className="bg-gradient-to-r from-primary to-secondary rounded-3xl p-8 lg:p-12 text-center text-white mt-16"
+          className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white mt-16"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
@@ -374,7 +336,7 @@ export default function ServiceDetail() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href={APPOINTMENT_FORM_URL}
-                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-lg ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
+                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                 onClick={handleAppointmentClick}
               >
                 Book Your Appointment

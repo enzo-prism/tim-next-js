@@ -1,6 +1,6 @@
+import { Slot as SlotPrimitive } from "radix-ui"
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -45,7 +45,7 @@ const BreadcrumbLink = React.forwardRef<
     asChild?: boolean
   }
 >(({ asChild, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a"
+  const Comp = asChild ? SlotPrimitive.Slot : "a"
 
   return (
     <Comp
@@ -80,10 +80,13 @@ const BreadcrumbSeparator = ({
   <li
     role="presentation"
     aria-hidden="true"
-    className={cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
+    className={cn(
+      "inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-muted-foreground/70 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>span]:h-3.5 [&>span]:w-3.5",
+      className
+    )}
     {...props}
   >
-    {children ?? <ChevronRight />}
+    {children ?? <MinimalGlyph name="chevron-right" className="h-3.5 w-3.5" />}
   </li>
 )
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
@@ -98,7 +101,7 @@ const BreadcrumbEllipsis = ({
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <MoreHorizontal className="h-4 w-4" />
+    <MinimalGlyph name="more-horizontal" className="h-4 w-4" />
     <span className="sr-only">More</span>
   </span>
 )

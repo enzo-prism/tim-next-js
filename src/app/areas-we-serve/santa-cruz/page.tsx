@@ -1,19 +1,8 @@
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  CheckCircle2,
-  ExternalLink,
-  MapPin,
-  MessageSquareQuote,
-  Route,
-  ShieldCheck,
-  Star,
-  Users,
-} from "lucide-react";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import HeadingMark from "@/components/brand/HeadingMark";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -144,12 +133,12 @@ export default function SantaCruzServiceAreaPage() {
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
                 Los Gatos office serving Santa Cruz patients
               </div>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
                 <span className="inline-flex flex-wrap items-center gap-3">
-                  <HeadingMark />
+                  
                   <span>Los Gatos family dentist serving Santa Cruz patients over Highway 17.</span>
                 </span>
               </h1>
@@ -169,7 +158,7 @@ export default function SantaCruzServiceAreaPage() {
                 <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <Link href="/book-appointment">
                     Book an appointment
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground">
@@ -178,20 +167,20 @@ export default function SantaCruzServiceAreaPage() {
               </div>
             </div>
 
-            <aside className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-sm">
+            <aside className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
                 Why families make the trip
               </div>
               <div className="mt-5 space-y-4">
                 <div className="flex items-start gap-3">
-                  <MapPin className="mt-0.5 h-5 w-5 text-primary" />
+                  <MinimalGlyph name="map-pin" className="mt-0.5 h-5 w-5 text-primary" />
                   <p className="text-sm leading-6 text-slate-700">
                     Office address: 15251 National Ave, Suite 102, Los Gatos, CA.
                   </p>
                 </div>
                 {reasons.map((reason) => (
                   <div key={reason} className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
+                    <MinimalGlyph name="check-circle" className="mt-0.5 h-5 w-5 text-primary" />
                     <p className="text-sm leading-6 text-slate-700">{reason}</p>
                   </div>
                 ))}
@@ -199,7 +188,7 @@ export default function SantaCruzServiceAreaPage() {
             </aside>
           </div>
 
-          <figure className="mt-10 overflow-hidden rounded-[2rem] border border-white/70 bg-white/80 shadow-[0_32px_90px_-48px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+          <figure className="mt-10 overflow-hidden rounded-xl border border-white/70 bg-white/80 shadow-sm ">
             <div className="relative aspect-[16/9]">
               <Image
                 src={santaCruzHeroIllustration}
@@ -211,7 +200,7 @@ export default function SantaCruzServiceAreaPage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-slate-950/10 to-transparent" />
 
-              <div className="absolute left-4 top-4 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/95 backdrop-blur-md sm:left-6 sm:top-6">
+              <div className="absolute left-4 top-4 rounded-lg border border-white/30 bg-white/20 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/95 backdrop- sm:left-6 sm:top-6">
                 Easy Highway 17 access
               </div>
 
@@ -222,11 +211,11 @@ export default function SantaCruzServiceAreaPage() {
 
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2.25rem] border border-slate-200 bg-white shadow-[0_30px_80px_-44px_rgba(15,23,42,0.28)]">
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="grid xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
               <article className="p-6 sm:p-8 xl:p-10">
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Route className="h-5 w-5" />
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <MinimalGlyph name="route" className="h-5 w-5" />
                 </div>
                 <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
                   Travel convenience matters
@@ -241,27 +230,27 @@ export default function SantaCruzServiceAreaPage() {
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
-                  <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <Route className="h-4 w-4 text-primary" />
+                      <MinimalGlyph name="route" className="h-4 w-4 text-primary" />
                       Just off Highway 17
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       Easy over-the-hill access without weaving through local streets after you exit.
                     </p>
                   </div>
-                  <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <MapPin className="h-4 w-4 text-primary" />
+                      <MinimalGlyph name="map-pin" className="h-4 w-4 text-primary" />
                       Los Gatos address
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       Visits happen at 15251 National Ave, Suite 102, not at a Santa Cruz office.
                     </p>
                   </div>
-                  <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 px-4 py-4">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <MinimalGlyph name="check-circle" className="h-4 w-4 text-primary" />
                       Calm check-in
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -272,18 +261,18 @@ export default function SantaCruzServiceAreaPage() {
               </article>
 
               <div className="border-t border-slate-200 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(239,246,255,0.92))] p-4 sm:p-6 xl:border-t-0 xl:border-l xl:p-8">
-                <div className="rounded-full border border-primary/15 bg-white/75 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80 backdrop-blur w-fit">
+                <div className="rounded-lg border border-primary/15 bg-white/75 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80 w-fit">
                   Santa Cruz to Los Gatos
                 </div>
 
-                <div className="mt-4 overflow-hidden rounded-[1.9rem] border border-white/80 bg-white/85 p-3 shadow-[0_24px_60px_-36px_rgba(15,23,42,0.38)] sm:p-4">
+                <div className="mt-4 overflow-hidden rounded-xl border border-white/80 bg-white/85 p-3 shadow-sm sm:p-4">
                   <Image
                     src={highway17AccessIllustration}
                     alt="Illustration of Highway 17 connecting Santa Cruz to a welcoming family dental office in Los Gatos."
                     width={2816}
                     height={1536}
                     sizes="(min-width: 1280px) 720px, (min-width: 768px) 92vw, 100vw"
-                    className="h-auto w-full rounded-[1.4rem]"
+                    className="h-auto w-full rounded-xl"
                   />
                 </div>
               </div>
@@ -291,9 +280,9 @@ export default function SantaCruzServiceAreaPage() {
           </div>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <article className="rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <ShieldCheck className="h-5 w-5" />
+            <article className="rounded-xl border border-slate-200 bg-slate-50/80 p-6">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <MinimalGlyph name="shield-check" className="h-5 w-5" />
               </div>
               <h3 className="mt-5 text-xl font-bold text-slate-900">
                 Insurance support before you visit
@@ -305,9 +294,9 @@ export default function SantaCruzServiceAreaPage() {
               </p>
             </article>
 
-            <article className="rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Users className="h-5 w-5" />
+            <article className="rounded-xl border border-slate-200 bg-slate-50/80 p-6">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <MinimalGlyph name="users-family" className="h-5 w-5" />
               </div>
               <h3 className="mt-5 text-xl font-bold text-slate-900">Care for the whole family</h3>
               <p className="mt-3 text-base leading-7 text-slate-600">
@@ -323,7 +312,7 @@ export default function SantaCruzServiceAreaPage() {
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-            <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-3xl font-bold text-slate-900">Why Santa Cruz families choose our Los Gatos office</h2>
               <div className="mt-6 space-y-5 text-base leading-8 text-slate-700">
                 <p>
@@ -348,13 +337,13 @@ export default function SantaCruzServiceAreaPage() {
               </div>
             </article>
 
-            <aside className="rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6 shadow-sm">
+            <aside className="rounded-xl border border-slate-200 bg-slate-50/80 p-6 shadow-sm">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
                 Quick office details
               </div>
               <div className="mt-5 space-y-4 text-sm leading-6 text-slate-700">
                 <div className="flex items-start gap-3">
-                  <MapPin className="mt-0.5 h-5 w-5 text-primary" />
+                  <MinimalGlyph name="map-pin" className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Office address</div>
                     <PracticeAddressLink className="text-inherit hover:text-primary">
@@ -363,14 +352,14 @@ export default function SantaCruzServiceAreaPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Route className="mt-0.5 h-5 w-5 text-primary" />
+                  <MinimalGlyph name="route" className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Access</div>
                     <p>Convenient for patients coming over Highway 17 from Santa Cruz to Los Gatos.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <ShieldCheck className="mt-0.5 h-5 w-5 text-primary" />
+                  <MinimalGlyph name="shield-check" className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Insurance help</div>
                     <p>Call ahead and we can help verify many major PPO benefits before your visit.</p>
@@ -393,11 +382,10 @@ export default function SantaCruzServiceAreaPage() {
 
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
-                  <MessageSquareQuote className="h-3.5 w-3.5" />
+                <div className="inline-flex rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
                   Reviews and testimonials
                 </div>
                 <h2 className="mt-5 text-3xl font-bold text-slate-900">
@@ -411,19 +399,15 @@ export default function SantaCruzServiceAreaPage() {
                 </p>
               </div>
 
-              <aside className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm">
+              <aside className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Review snapshot
                 </div>
-                <div className="mt-4 flex items-center gap-3">
+                <div className="mt-4 flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-slate-900">
                     {testimonialsPageSummary.averageRating}
                   </span>
-                  <div className="flex items-center gap-1 text-amber-500" aria-label="5 star rating">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
-                    ))}
-                  </div>
+                  <span className="text-sm font-semibold text-slate-500">out of 5</span>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-slate-600">
                   {testimonialsPageSummary.reviewCountLabel} from {testimonialsPageSummary.sourceLabel.toLowerCase()}.
@@ -436,13 +420,13 @@ export default function SantaCruzServiceAreaPage() {
                       rel="noopener noreferrer"
                     >
                       Read Google reviews
-                      <ExternalLink className="ml-2 h-4 w-4" />
+                      <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
                   <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Link href="/testimonials">
                       View all testimonials
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
@@ -453,12 +437,10 @@ export default function SantaCruzServiceAreaPage() {
               {santaCruzReviewHighlights.map((review) => (
                 <article
                   key={`${review.name}-${review.patientLabel}`}
-                  className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm"
+                  className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
                 >
-                  <div className="flex items-center gap-1 text-amber-500" aria-label={`${review.rating} star review`}>
-                    {Array.from({ length: review.rating }).map((_, index) => (
-                      <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
-                    ))}
+                  <div className="text-sm font-semibold text-slate-600" aria-label={`${review.rating} star review`}>
+                    {review.rating}.0 rating
                   </div>
                   <blockquote className="mt-4 text-base leading-7 text-slate-700">
                     "{review.quote}"
@@ -476,11 +458,11 @@ export default function SantaCruzServiceAreaPage() {
 
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
             <h2 className="text-3xl font-bold text-slate-900">Frequently asked by Santa Cruz patients</h2>
             <div className="mt-6 space-y-4">
               {faqs.map((item) => (
-                <details key={item.question} className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
+                <details key={item.question} className="rounded-xl border border-slate-200 bg-white px-5 py-4">
                   <summary className="cursor-pointer list-none font-semibold text-slate-900">
                     {item.question}
                   </summary>
@@ -494,7 +476,7 @@ export default function SantaCruzServiceAreaPage() {
 
       <section className="py-10 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2.5rem] bg-gradient-to-r from-primary to-secondary px-8 py-10 text-white shadow-[0_32px_90px_-48px_rgba(15,23,42,0.7)] sm:px-10">
+          <div className="rounded-xl bg-primary px-8 py-10 text-white shadow-sm sm:px-10">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
               <div>
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
@@ -512,7 +494,7 @@ export default function SantaCruzServiceAreaPage() {
               <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
                 <Link href="/contact">
                   Contact our office
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>

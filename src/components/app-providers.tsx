@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "framer-motion";
 import { HelmetProvider } from "react-helmet-async";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { queryClient } from "@/lib/queryClient";
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {

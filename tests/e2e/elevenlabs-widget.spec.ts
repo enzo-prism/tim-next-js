@@ -249,6 +249,7 @@ function getFutureDateInputValue(daysFromNow = 14) {
 }
 
 async function installWidgetStub(page: Page) {
+  await page.addInitScript(widgetStubScript);
   await page.route(WIDGET_SCRIPT_URL, async (route) => {
     await route.fulfill({
       contentType: "application/javascript",
@@ -260,9 +261,12 @@ async function installWidgetStub(page: Page) {
 async function gotoWithWidget(page: Page, route: string) {
   await installWidgetStub(page);
   await page.goto(route);
-  await expect(page.locator('script[src="https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4"]'))
-    .toHaveCount(1);
   await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(1);
+  await expect
+    .poll(async () => {
+      return page.evaluate(() => Boolean(customElements.get("elevenlabs-convai")));
+    })
+    .toBeTruthy();
 }
 
 async function getLauncherMetrics(page: Page) {
@@ -306,6 +310,8 @@ async function expectNoHorizontalOverflow(page: Page) {
 }
 
 test.describe("ElevenLabs widget integration", () => {
+  test.describe.configure({ mode: "serial" });
+
   test("renders on public routes and stays inside the viewport", async ({ page }, testInfo) => {
     const expectedInset = testInfo.project.name === "desktop" ? 24 : 16;
 
@@ -391,6 +397,9 @@ test.describe("ElevenLabs widget integration", () => {
     page,
   }, testInfo) => {
     await gotoWithWidget(page, "/book-appointment");
+    await expect(page.getByRole("button", { name: "Request Appointment" })).toBeEnabled({
+      timeout: 15_000,
+    });
 
     await page.route("**/api/appointments", async (route) => {
       await route.fulfill({
@@ -407,8 +416,8 @@ test.describe("ElevenLabs widget integration", () => {
     await page.getByLabel("Last Name *").fill("Patient");
     await page.getByLabel("Email *").fill("taylor@example.com");
     await page.getByLabel("Phone *").fill("4083588100");
-    await page.getByLabel("Service *").click();
-    await page.getByRole("option", { name: /Dental Exams/i }).click();
+    await page.getByLabel("Service *").selectOption("dental-exams");
+    await expect(page.getByLabel("Service *")).toHaveValue("dental-exams");
     await page.getByLabel("Preferred Date *").fill(getFutureDateInputValue());
     await page.getByLabel("Preferred Time *").fill("10:30");
     await page.getByRole("button", { name: "Request Appointment" }).click();

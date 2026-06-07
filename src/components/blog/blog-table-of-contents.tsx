@@ -1,4 +1,4 @@
-import { ListTree } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { cn } from "@/lib/utils";
 
 type TocItem = {
@@ -16,9 +16,9 @@ export default function BlogTableOfContents({
   if (!items.length) return null;
 
   return (
-    <aside className={cn("rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm", className)}>
+    <aside className={cn("rounded-xl border border-slate-200 bg-white p-6 shadow-sm", className)}>
       <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
-        <ListTree className="h-4 w-4" />
+        <MinimalGlyph name="list-tree" className="h-4 w-4" />
         On this page
       </div>
       <nav aria-label="Table of contents" className="mt-5">

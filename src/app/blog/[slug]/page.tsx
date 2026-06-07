@@ -1,17 +1,9 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import {
-  ArrowRight,
-  CalendarDays,
-  Clock3,
-  ExternalLink,
-  MapPin,
-  MessageSquareText,
-} from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+import type { Metadata } from "next";
+import Link from "next/link";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import HeadingMark from "@/components/brand/HeadingMark";
 import BlogTableOfContents from "@/components/blog/blog-table-of-contents";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -166,12 +158,12 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
                 {post.heroEyebrow}
               </div>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
                 <span className="inline-flex flex-wrap items-center gap-3">
-                  <HeadingMark />
+                  
                   <span>{post.title}</span>
                 </span>
               </h1>
@@ -181,21 +173,21 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
 
               <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-500">
                 <span className="inline-flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4" />
+                  <MinimalGlyph name="calendar-days" className="h-4 w-4" />
                   Published {format(new Date(post.publishedAt), "MMMM d, yyyy")}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Clock3 className="h-4 w-4" />
+                  <MinimalGlyph name="clock" className="h-4 w-4" />
                   {post.readingTimeMinutes} min read
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
+                  <MinimalGlyph name="map-pin" className="h-4 w-4" />
                   Los Gatos, CA
                 </span>
               </div>
             </div>
 
-            <aside className="rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-sm">
+            <aside className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
                 Short answer
               </div>
@@ -213,7 +205,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-            <article className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+            <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
               <div className="prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:leading-8 prose-li:text-slate-700 prose-strong:text-slate-900 prose-a:text-primary prose-a:no-underline hover:prose-a:text-primary/80">
                 {post.intro.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
@@ -231,7 +223,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                       </ul>
                     ) : null}
                     {section.callout ? (
-                      <div className="not-prose mt-6 rounded-3xl border border-primary/15 bg-primary/5 p-5 text-sm leading-7 text-slate-700">
+                      <div className="not-prose mt-6 rounded-xl border border-primary/15 bg-primary/5 p-5 text-sm leading-7 text-slate-700">
                         {section.callout}
                       </div>
                     ) : null}
@@ -239,16 +231,16 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                 ))}
               </div>
 
-              <section className="mt-14 rounded-[2rem] border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
+              <section className="mt-14 rounded-xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
                 <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
-                  <MessageSquareText className="h-4 w-4" />
+                  <MinimalGlyph name="message-text" className="h-4 w-4" />
                   FAQ
                 </div>
                 <div className="mt-5 space-y-4">
                   {post.faq.map((item) => (
                     <details
                       key={item.question}
-                      className="rounded-2xl border border-slate-200 bg-white px-5 py-4"
+                      className="rounded-xl border border-slate-200 bg-white px-5 py-4"
                     >
                       <summary className="cursor-pointer list-none font-semibold text-slate-900">
                         {item.question}
@@ -259,7 +251,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                 </div>
               </section>
 
-              <section className="mt-14 rounded-[2rem] bg-gradient-to-r from-primary to-secondary px-8 py-8 text-white shadow-[0_28px_90px_-48px_rgba(15,23,42,0.8)]">
+              <section className="mt-14 rounded-xl bg-primary px-8 py-8 text-white shadow-sm">
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                   <div>
                     <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
@@ -272,7 +264,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                   <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
                     <Link href={post.ctaHref}>
                       {post.ctaLabel}
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
@@ -290,7 +282,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                         className="inline-flex items-center gap-2 text-base font-semibold text-primary hover:text-primary/80"
                       >
                         {source.label}
-                        <ExternalLink className="h-4 w-4" />
+                        <MinimalGlyph name="external-link" className="h-4 w-4" />
                       </a>
                     </li>
                   ))}
@@ -301,7 +293,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
             <div className="space-y-6 lg:sticky lg:top-24">
               <BlogTableOfContents items={tableOfContents} />
 
-              <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <aside className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
                   Helpful next steps
                 </div>

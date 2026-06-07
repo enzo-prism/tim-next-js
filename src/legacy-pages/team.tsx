@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { GraduationCap, Stethoscope, Heart, UserRound, HandHeart } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import drChuangPhoto from "@assets/Dr. Chuang_1753977515693.png";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
@@ -58,13 +58,13 @@ export default function Team() {
         />
         
         {/* Dr. Chuang Bio */}
-        <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-8 lg:p-12 mb-16">
+        <div className="bg-muted/40 rounded-xl p-8 lg:p-12 mb-16">
           <div className="grid lg:grid-cols-3 gap-12 items-center">
             <div className="lg:col-span-1">
               <img 
                 src={drChuangPhoto.src} 
                 alt="Dr. Tim J. Chuang professional headshot" 
-                className="rounded-2xl shadow-lg w-full max-w-md mx-auto"
+                className="rounded-xl shadow-sm w-full max-w-md mx-auto"
                 loading="lazy"
                 decoding="async"
               />
@@ -86,21 +86,21 @@ export default function Team() {
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center">
                   <div className="bg-primary text-white feature-icon mx-auto mb-3">
-                    <GraduationCap />
+                    <MinimalGlyph name="graduation-cap" />
                   </div>
                   <h3 className="font-semibold text-gray-800 mb-1">Education</h3>
                   <p className="text-sm text-gray-600">University of the Pacific School of Dentistry</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-secondary text-white feature-icon mx-auto mb-3">
-                    <Stethoscope />
+                    <MinimalGlyph name="stethoscope" />
                   </div>
                   <h3 className="font-semibold text-gray-800 mb-1">Experience</h3>
                   <p className="text-sm text-gray-600">5+ Years in Practice</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-accent text-white feature-icon mx-auto mb-3">
-                    <Heart />
+                    <MinimalGlyph name="heart-care" />
                   </div>
                   <h3 className="font-semibold text-gray-800 mb-1">Specialty</h3>
                   <p className="text-sm text-gray-600">Gentle, Family-Centered Care</p>
@@ -122,14 +122,14 @@ export default function Team() {
         </div>
         
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white rounded-xl shadow-sm p-6 text-center transition-shadow duration-300">
             <div className="mb-4">
               <img 
                 src={officeManagerPhoto.src} 
                 alt="Office Manager team member" 
                 width={128}
                 height={128}
-                className="w-32 h-32 rounded-full mx-auto object-cover shadow-md"
+                className="w-32 h-32 rounded-lg mx-auto object-cover shadow-md"
                 loading="lazy"
                 decoding="async"
               />
@@ -138,14 +138,14 @@ export default function Team() {
             <p className="text-gray-600">Our welcoming office manager handles scheduling, insurance, and ensures your visit runs smoothly from start to finish.</p>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white rounded-xl shadow-sm p-6 text-center transition-shadow duration-300">
             <div className="mb-4">
               <img 
                 src={trangAssistantPhoto.src} 
                 alt="Dental Assistant team member" 
                 width={128}
                 height={128}
-                className="w-32 h-32 rounded-full mx-auto object-cover shadow-md"
+                className="w-32 h-32 rounded-lg mx-auto object-cover shadow-md"
                 loading="lazy"
                 decoding="async"
               />
@@ -157,7 +157,7 @@ export default function Team() {
         
         <RelatedLinksSection title="Explore More" links={relatedLinks} />
 
-        <div className="bg-gray-50 rounded-2xl p-8 mt-16 text-center">
+        <div className="bg-gray-50 rounded-xl p-8 mt-16 text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Join Our Dental Family</h2>
           <p className="text-gray-600 mb-6">Experience the difference that compassionate, personalized dental care can make for you and your family.</p>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 py-3">

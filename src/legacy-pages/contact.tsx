@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -9,15 +9,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Phone, Mail, Clock, Facebook, Instagram } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+
 import { Link } from "wouter";
+import { toast } from "sonner";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
-import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema, type InsertContact } from "@/server/schema";
 import { apiRequest } from "@/lib/queryClient";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import {
   trackContactSubmitSuccess,
   trackFormStart,
@@ -27,12 +26,13 @@ import {
   trackPhoneClick,
   trackSocialClick,
 } from "@/lib/analytics";
+import HeroBackdrop from "@/components/brand/HeroBackdrop";
+import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 
 type ContactFormValues = InsertContact;
 
 export default function Contact() {
-  const { toast } = useToast();
-  const hasStartedForm = useRef(false);
+  const [hasStartedForm, setHasStartedForm] = useState(false);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(insertContactSchema),
@@ -50,26 +50,22 @@ export default function Contact() {
     mutationFn: async (values: ContactFormValues) => {
       return apiRequest("POST", "/api/contacts", values);
     },
-    onSuccess: (_data, values) => {
-      trackContactSubmitSuccess(values.service || undefined);
-      toast({
-        title: "Message sent successfully!",
+    onSuccess: (_data, variables) => {
+      trackContactSubmitSuccess(variables.service || undefined);
+      toast.success("Message sent successfully!", {
         description: "Thank you for contacting us. We will get back to you soon.",
       });
       form.reset();
-      hasStartedForm.current = false;
     },
-    onError: (error: any, values) => {
+    onError: (error: any) => {
       trackFormSubmitError({
-        errorType: "request_failed",
+        errorType: "request_error",
         formType: "contact",
         location: "contact_page",
-        serviceId: values?.service || undefined,
+        serviceId: form.getValues("service") || undefined,
       });
-      toast({
-        title: "Error sending message",
+      toast.error("Error sending message", {
         description: error.message || "Please try again later.",
-        variant: "destructive",
       });
     },
   });
@@ -85,7 +81,7 @@ export default function Contact() {
 
   const onInvalidSubmit = () => {
     trackFormSubmitError({
-      errorType: "validation",
+      errorType: "validation_error",
       formType: "contact",
       location: "contact_page",
       serviceId: form.getValues("service") || undefined,
@@ -93,8 +89,8 @@ export default function Contact() {
   };
 
   const handleFormStart = () => {
-    if (hasStartedForm.current) return;
-    hasStartedForm.current = true;
+    if (hasStartedForm) return;
+    setHasStartedForm(true);
     trackFormStart({
       formType: "contact",
       location: "contact_page",
@@ -121,20 +117,14 @@ export default function Contact() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Information */}
           <div>
-            <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-8 mb-8">
+            <div className="rounded-xl border border-border bg-card p-8 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Get in Touch</h2>
               <div className="space-y-6">
                 <div className="flex items-start">
-                  <div className="bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center mr-4 mt-1">
-                    <MapPin className="h-5 w-5" />
-                  </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Our Location</h3>
                     <p className="text-gray-600">
-                      <PracticeAddressLink
-                        className="text-inherit hover:text-primary"
-                        trackingLocation="contact_info"
-                      >
+                      <PracticeAddressLink className="text-inherit hover:text-primary" trackingLocation="contact_info">
                         <>
                           {practiceInfo.addressLines[0]}
                           <br />
@@ -146,8 +136,8 @@ export default function Contact() {
                       href={practiceInfo.mapUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => trackMapClick("contact_info")}
                       className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors inline-block mt-2"
+                      onClick={() => trackMapClick("contact_info")}
                     >
                       Open in Google Maps
                     </a>
@@ -165,25 +155,13 @@ export default function Contact() {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-secondary text-white w-12 h-12 rounded-full flex items-center justify-center mr-4 mt-1">
-                    <Phone className="h-5 w-5" />
-                  </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Phone Number</h3>
-                    <a
-                      href="tel:4083588100"
-                      onClick={() => trackPhoneClick("contact_info")}
-                      className="text-gray-600 hover:text-primary transition-colors"
-                    >
-                      (408) 358-8100
-                    </a>
+                    <p className="text-gray-600">(408) 358-8100</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-accent text-white w-12 h-12 rounded-full flex items-center justify-center mr-4 mt-1">
-                    <Mail className="h-5 w-5" />
-                  </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Email Address</h3>
                     <p className="text-gray-600">hello@famfirstsmile.com</p>
@@ -191,9 +169,6 @@ export default function Contact() {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center mr-4 mt-1">
-                    <Clock className="h-5 w-5" />
-                  </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Office Hours</h3>
                     <div className="text-gray-600">
@@ -208,31 +183,31 @@ export default function Contact() {
             {/* Social Links */}
             <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Connect With Us</h3>
-              <div className="flex justify-center space-x-4">
+              <div className="flex justify-center gap-3">
                 <a 
                   href="https://www.facebook.com/famfirstsmile/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  onClick={() => trackSocialClick("facebook", "contact_page")}
-                  className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors" 
+                  className="inline-flex rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground" 
                   aria-label="Visit our Facebook page"
+                  onClick={() => trackSocialClick("facebook", "contact_page")}
                 >
-                  <Facebook className="h-6 w-6" />
+                  Facebook
                 </a>
                 <a 
                   href="https://www.instagram.com/famfirstsmile/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  onClick={() => trackSocialClick("instagram", "contact_page")}
-                  className="bg-pink-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-pink-700 transition-colors" 
+                  className="inline-flex rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground" 
                   aria-label="Visit our Instagram page"
+                  onClick={() => trackSocialClick("instagram", "contact_page")}
                 >
-                  <Instagram className="h-6 w-6" />
+                  Instagram
                 </a>
               </div>
             </div>
 
-            <div className="mt-10 bg-gray-50 rounded-2xl p-6">
+            <div className="mt-10 rounded-xl border border-border bg-muted/40 p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Explore</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <Link href="/services" className="text-primary font-semibold hover:text-primary/80 transition-colors">
@@ -259,7 +234,7 @@ export default function Contact() {
           
           {/* Contact Form */}
           <div>
-            <div className="bg-gray-50 rounded-2xl p-8">
+            <div className="bg-gray-50 rounded-xl p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Send Us a Message</h2>
               <Form {...form}>
                 <form
@@ -386,7 +361,7 @@ export default function Contact() {
         
         {/* Map Section */}
         <div className="mt-16">
-          <div className="mb-6 rounded-2xl border border-primary/15 bg-primary/5 p-5 text-center">
+          <div className="mb-6 rounded-xl border border-primary/15 bg-primary/5 p-5 text-center">
             <h2 className="text-2xl font-bold text-gray-800">Easy to reach from Santa Cruz</h2>
             <p className="mt-2 text-gray-600">
               Our office is just off Highway 17 in Los Gatos, which makes visits simple for many
@@ -395,7 +370,7 @@ export default function Contact() {
             </p>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Find Us</h2>
-          <div className="bg-white rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-white rounded-xl overflow-hidden shadow-sm">
             {/* Map Container */}
             <div className="relative h-[500px]">
               <iframe
@@ -411,14 +386,11 @@ export default function Contact() {
               />
             </div>
             {/* Info Bar */}
-            <div className="bg-gradient-to-r from-primary to-secondary p-6">
+            <div className="bg-primary p-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-white text-center md:text-left">
                   <h3 className="font-semibold text-lg mb-1">Family First Smile Care</h3>
-                  <PracticeAddressLink
-                    className="text-white hover:text-white/85"
-                    trackingLocation="contact_map_bar"
-                  >
+                  <PracticeAddressLink className="text-white hover:text-white/85" trackingLocation="contact_map_bar">
                     {practiceInfo.addressText}
                   </PracticeAddressLink>
                   <p className="mt-1 text-sm text-white/85">
@@ -430,18 +402,18 @@ export default function Contact() {
                     href={practiceInfo.mapUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    onClick={() => trackMapClick("contact_map_bar")}
                     className="bg-white text-primary px-6 py-2 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2"
+                    onClick={() => trackMapClick("contact_map_bar")}
                   >
-                    <MapPin className="h-4 w-4" />
+                    <MinimalGlyph name="map-pin" className="h-4 w-4" />
                     Open in Google Maps
                   </a>
                   <a 
                     href="tel:4083588100"
+                    className="bg-white/5 text-white px-6 py-2 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold flex items-center gap-2 border border-white/25"
                     onClick={() => trackPhoneClick("contact_map_bar")}
-                    className="bg-white/5 backdrop-blur text-white px-6 py-2 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold flex items-center gap-2 border border-white/25"
                   >
-                    <Phone className="h-4 w-4" />
+                    <MinimalGlyph name="phone" className="h-4 w-4" />
                     Call Now
                   </a>
                 </div>

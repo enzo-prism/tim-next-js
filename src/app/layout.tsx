@@ -39,7 +39,7 @@ gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });`}
           <RouteAnalytics />
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 z-[60] rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 z-[60] rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-primary/40"
           >
             Skip to content
           </a>

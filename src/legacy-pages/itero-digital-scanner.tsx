@@ -3,12 +3,11 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { CheckCircle, ScanLine } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import IteroScannerImage from "@/components/itero-scanner-image";
 import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { iteroContent } from "@shared/marketing-pages";
 import { buildFaqSchema, buildServiceSchema } from "@shared/structured-data";
-import HeadingMark from "@/components/brand/HeadingMark";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -41,8 +40,8 @@ const scaleIn = {
 
 export default function IteroDigitalScanner() {
   const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("itero_page", {
-      ctaType: "consultation",
+    trackAppointmentCtaClick("itero", {
+      ctaType: "appointment",
       serviceId: "itero-digital-scanner",
     });
   };
@@ -94,17 +93,17 @@ export default function IteroDigitalScanner() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <motion.div
-                className="bg-secondary text-white w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg"
+                className="bg-secondary text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 shadow-sm"
                 variants={scaleIn}
               >
-                <ScanLine className="w-7 h-7" />
+                <MinimalGlyph name="digital-scan" className="w-7 h-7" />
               </motion.div>
               <motion.h1
                 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
                 variants={fadeInUp}
               >
                 <span className="inline-flex items-center gap-3 flex-wrap">
-                  <HeadingMark />
+                  
                   <span>{iteroContent.hero.title}</span>
                 </span>
               </motion.h1>
@@ -149,14 +148,14 @@ export default function IteroDigitalScanner() {
               </h2>
               <p className="text-gray-600 leading-relaxed">{iteroContent.whatIs.body}</p>
             </div>
-            <div className="bg-gray-50 rounded-2xl p-8 shadow-sm">
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">
                 {iteroContent.whyUse.heading}
               </h3>
               <ul className="space-y-3 text-gray-700">
                 {iteroContent.whyUse.bullets.map((item) => (
                   <li key={item} className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                    <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -184,10 +183,10 @@ export default function IteroDigitalScanner() {
             {iteroContent.whatToExpect.steps.map((step, index) => (
               <motion.div
                 key={step}
-                className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 text-center"
+                className="bg-muted/50 rounded-xl p-6 text-center"
                 variants={scaleIn}
               >
-                <div className="bg-secondary text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <span className="font-bold">{index + 1}</span>
                 </div>
                 <p className="text-gray-700 font-medium">{step}</p>
@@ -211,7 +210,7 @@ export default function IteroDigitalScanner() {
           </div>
           <div className="space-y-6">
             {iteroContent.faqs.map((faq) => (
-              <div key={faq.question} className="border border-gray-200 rounded-2xl p-6">
+              <div key={faq.question} className="border border-gray-200 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">{faq.question}</h3>
                 <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
               </div>
@@ -222,7 +221,7 @@ export default function IteroDigitalScanner() {
         <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
 
         <motion.section
-          className="bg-gradient-to-r from-primary to-secondary rounded-3xl p-8 lg:p-12 text-center text-white"
+          className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
@@ -247,7 +246,7 @@ export default function IteroDigitalScanner() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href={APPOINTMENT_FORM_URL}
-                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-lg ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
+                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                 onClick={handleAppointmentClick}
               >
                 Book Your Appointment

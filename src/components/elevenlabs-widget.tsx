@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import Script from "next/script";
 
 const ELEVENLABS_WIDGET_SCRIPT_SRC =
   "https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4";
@@ -20,30 +20,44 @@ function isPrivateRoute(pathname: string | null) {
 
 export default function ElevenLabsWidget() {
   const pathname = usePathname();
+  const isPrivate = isPrivateRoute(pathname);
 
-  if (isPrivateRoute(pathname)) {
+  useEffect(() => {
+    if (isPrivate) {
+      return;
+    }
+
+    const existingScript =
+      document.getElementById("elevenlabs-convai-widget-script") ||
+      document.querySelector(`script[src="${ELEVENLABS_WIDGET_SCRIPT_SRC}"]`);
+
+    if (existingScript) {
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "elevenlabs-convai-widget-script";
+    script.src = ELEVENLABS_WIDGET_SCRIPT_SRC;
+    script.async = true;
+    document.body.appendChild(script);
+  }, [isPrivate]);
+
+  if (isPrivate) {
     return null;
   }
 
   return (
-    <>
-      <Script
-        id="elevenlabs-convai-widget-script"
-        src={ELEVENLABS_WIDGET_SCRIPT_SRC}
-        strategy="lazyOnload"
-      />
-      <elevenlabs-convai
-        agent-id={ELEVENLABS_AGENT_ID}
-        dismissible="true"
-        action-text="Need help?"
-        start-call-text="Talk with us"
-        expand-text="Open assistant"
-        text-contents={ELEVENLABS_TEXT_CONTENTS}
-        avatar-orb-color-1="#2563eb"
-        avatar-orb-color-2="#047857"
-        className="elevenlabs-widget"
-        data-widget="elevenlabs-convai"
-      />
-    </>
+    <elevenlabs-convai
+      agent-id={ELEVENLABS_AGENT_ID}
+      dismissible="true"
+      action-text="Need help?"
+      start-call-text="Talk with us"
+      expand-text="Open assistant"
+      text-contents={ELEVENLABS_TEXT_CONTENTS}
+      avatar-orb-color-1="#0369a1"
+      avatar-orb-color-2="#7dd3fc"
+      className="elevenlabs-widget"
+      data-widget="elevenlabs-convai"
+    />
   );
 }

@@ -1,4 +1,4 @@
-import { Star, ExternalLink } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { motion } from "framer-motion";
 import type { Review } from "@/data/reviews";
 import { googleBusinessProfileUrl } from "@/data/reviews";
@@ -26,18 +26,8 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
       <div className="flex items-start justify-between mb-3">
         <div>
           <h4 className="font-semibold text-gray-900">{review.name}</h4>
-          <div className="flex items-center mt-1">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < review.rating
-                    ? "fill-yellow-400 text-yellow-400"
-                    : "fill-gray-200 text-gray-200"
-                }`}
-              />
-            ))}
-            <span className="ml-2 text-sm text-gray-500">Google Review</span>
+          <div className="mt-1 text-sm text-gray-500">
+            {review.rating}.0 rating · Google Review
           </div>
         </div>
         {!review.isComplete && (
@@ -45,11 +35,11 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackReviewLinkClick("google", "review_card")}
             className="text-primary hover:text-primary/80 transition-colors"
             aria-label="Read full review on Google"
+            onClick={() => trackReviewLinkClick("google", "review_card_icon")}
           >
-            <ExternalLink className="w-4 h-4" />
+            <MinimalGlyph name="external-link" className="w-4 h-4" />
           </a>
         )}
       </div>
@@ -61,8 +51,8 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackReviewLinkClick("google", "review_card")}
             className="text-primary hover:text-primary/80 ml-2 text-sm font-medium transition-colors"
+            onClick={() => trackReviewLinkClick("google", "review_card_excerpt")}
           >
             Read full review →
           </a>
@@ -100,7 +90,7 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
     >
-      <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-3xl p-8 lg:p-12">
+      <div className="bg-muted/40 rounded-xl p-8 lg:p-12">
         <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">{title}</h3>
         <p className="text-gray-600 text-center mb-8">Real experiences from our valued patients</p>
         
@@ -123,11 +113,11 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
                 href={googleBusinessProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => trackReviewLinkClick("google", "reviews_section")}
                 className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-2"
+                onClick={() => trackReviewLinkClick("google", "reviews_section")}
               >
                 Read More Reviews
-                <ExternalLink className="w-4 h-4" />
+                <MinimalGlyph name="external-link" className="w-4 h-4" />
               </a>
               <span className="text-gray-500">•</span>
               <Link

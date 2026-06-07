@@ -25,7 +25,7 @@ export type SiteEventName =
   | "service_learn_more_click"
   | (string & {});
 
-type SiteEventValue = string | number | boolean;
+type SiteEventValue = string | number | boolean | null;
 export type SiteEventPayload = Record<string, unknown>;
 export type SanitizedSiteEventPayload = Record<string, SiteEventValue>;
 
@@ -78,7 +78,7 @@ const isAdminPath = () => {
 };
 
 const sanitizeEventValue = (value: unknown): SiteEventValue | undefined => {
-  if (value === null) return undefined;
+  if (value === null) return null;
   if (typeof value === "boolean") return value;
   if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
   if (typeof value !== "string") return undefined;

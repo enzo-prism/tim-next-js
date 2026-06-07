@@ -2,7 +2,7 @@
 
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { Heart, User, Shield } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -205,7 +205,7 @@ export default function About() {
             variants={slideInRight}
           >
             <motion.div 
-              className="rounded-2xl shadow-xl w-full h-96 relative overflow-hidden bg-white"
+              className="rounded-xl shadow-sm w-full h-96 relative overflow-hidden bg-white"
               variants={scaleIn}
               whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
             >
@@ -225,7 +225,7 @@ export default function About() {
         </div>
         
         <motion.div 
-          className="bg-gray-50 rounded-2xl p-8 lg:p-12"
+          className="bg-gray-50 rounded-xl p-8 lg:p-12"
           initial={false}
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
@@ -250,7 +250,7 @@ export default function About() {
                 className="bg-primary text-white feature-icon mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
                 whileHover={{ rotate: 5 }}
               >
-                <Heart />
+                <MinimalGlyph name="heart-care" />
               </motion.div>
               <h3 className="text-xl font-semibold mb-3">Compassion</h3>
               <p className="text-gray-600">We treat every patient with empathy, understanding, and respect, ensuring a comfortable experience for all.</p>
@@ -264,7 +264,7 @@ export default function About() {
                 className="bg-secondary text-white feature-icon mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
                 whileHover={{ rotate: 5 }}
               >
-                <User />
+                <MinimalGlyph name="user" />
               </motion.div>
               <h3 className="text-xl font-semibold mb-3">Personalization</h3>
               <p className="text-gray-600">Every treatment plan is tailored to your unique needs, goals, and comfort level.</p>
@@ -278,7 +278,7 @@ export default function About() {
                 className="bg-accent text-white feature-icon mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
                 whileHover={{ rotate: 5 }}
               >
-                <Shield />
+                <MinimalGlyph name="shield" />
               </motion.div>
               <h3 className="text-xl font-semibold mb-3">Prevention</h3>
               <p className="text-gray-600">We focus on preventive care and education to help you maintain optimal oral health for life.</p>
@@ -302,7 +302,7 @@ export default function About() {
           
           {/* Featured Office Videos */}
           <motion.div 
-            className="mb-12 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-8"
+            className="mb-12 bg-muted/40 rounded-xl p-8"
             variants={scaleIn}
           >
             <div className="max-w-6xl mx-auto">
@@ -323,7 +323,7 @@ export default function About() {
               <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
                 {/* First Vimeo Video */}
                 <motion.div 
-                  className="relative rounded-xl overflow-hidden shadow-lg bg-black"
+                  className="relative rounded-xl overflow-hidden shadow-sm bg-black"
                   variants={scaleIn}
                   whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
                 >
@@ -345,7 +345,7 @@ export default function About() {
 
                 {/* Second Vimeo Video */}
                 <motion.div 
-                  className="relative rounded-xl overflow-hidden shadow-lg bg-black"
+                  className="relative rounded-xl overflow-hidden shadow-sm bg-black"
                   variants={scaleIn}
                   whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
                 >
@@ -383,7 +383,7 @@ export default function About() {
               <img 
                 src={officePhoto11.src} 
                 alt="Family First Smile Care welcoming front entrance with practice branding" 
-                className="rounded-xl w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -396,7 +396,7 @@ export default function About() {
               <img 
                 src={officePhoto12.src} 
                 alt="Family First Smile Care professional office exterior showing Suite 102" 
-                className="rounded-xl w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -409,7 +409,7 @@ export default function About() {
               <img 
                 src={officePhoto1.src} 
                 alt="Modern dental office reception area with comfortable seating" 
-                className="rounded-xl w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -432,7 +432,7 @@ export default function About() {
               <img 
                 src={officePhoto2.src} 
                 alt="Modern dental treatment room with state-of-the-art equipment" 
-                className="rounded-lg w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -445,7 +445,7 @@ export default function About() {
               <img 
                 src={officePhoto3.src} 
                 alt="Advanced dental technology and equipment" 
-                className="rounded-lg w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -458,7 +458,7 @@ export default function About() {
               <img 
                 src={officePhoto4.src} 
                 alt="Professional dental consultation space" 
-                className="rounded-lg w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -471,7 +471,7 @@ export default function About() {
               <img 
                 src={officePhoto5.src} 
                 alt="Clean and organized dental office environment" 
-                className="rounded-lg w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -494,7 +494,7 @@ export default function About() {
               <img 
                 src={officePhoto6.src} 
                 alt="Dental office equipment and workspace" 
-                className="rounded-lg w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -507,7 +507,7 @@ export default function About() {
               <img 
                 src={officePhoto7.src} 
                 alt="Professional dental workspace setup" 
-                className="rounded-lg w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -520,7 +520,7 @@ export default function About() {
               <img 
                 src={officePhoto8.src} 
                 alt="Modern dental facility interior" 
-                className="rounded-lg w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -533,7 +533,7 @@ export default function About() {
               <img 
                 src={officePhoto9.src} 
                 alt="Additional office space and amenities" 
-                className="rounded-lg w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />
@@ -546,7 +546,7 @@ export default function About() {
               <img 
                 src={officePhoto10.src} 
                 alt="Complete view of dental practice facilities" 
-                className="rounded-lg w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
                 loading="lazy"
                 decoding="async"
               />

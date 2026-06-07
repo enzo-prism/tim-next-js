@@ -1,0 +1,113 @@
+{
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#0369a1",
+        "primary-hover": "#075985",
+        "secondary": "#38bdf8",
+        "secondary-soft": "#e0f2fe",
+        "accent": "#7dd3fc",
+        "accent-soft": "#f0f9ff",
+        "accent-foreground": "#082f49",
+        "background": "#f8fcff",
+        "surface": "#ffffff",
+        "surface-soft": "#f0f9ff",
+        "neutral": "#eff6ff",
+        "text": "#0f172a",
+        "text-muted": "#475569",
+        "border": "#bae6fd",
+        "destructive": "#075985"
+      },
+      "fontFamily": {
+        "headline-display": [
+          "Raleway"
+        ],
+        "headline-lg": [
+          "Raleway"
+        ],
+        "headline-md": [
+          "Raleway"
+        ],
+        "body-lg": [
+          "Raleway"
+        ],
+        "body-md": [
+          "Raleway"
+        ],
+        "body-sm": [
+          "Raleway"
+        ],
+        "label-sm": [
+          "Raleway"
+        ]
+      },
+      "fontSize": {
+        "headline-display": [
+          "60px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "800"
+          }
+        ],
+        "headline-lg": [
+          "42px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "800"
+          }
+        ],
+        "headline-md": [
+          "30px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "700"
+          }
+        ],
+        "body-lg": [
+          "20px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "500"
+          }
+        ],
+        "body-md": [
+          "16px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "500"
+          }
+        ],
+        "body-sm": [
+          "14px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "500"
+          }
+        ],
+        "label-sm": [
+          "12px",
+          {
+            "letterSpacing": "0.08em",
+            "fontWeight": "700"
+          }
+        ]
+      },
+      "borderRadius": {
+        "sm": "4px",
+        "md": "6px",
+        "lg": "8px",
+        "xl": "12px",
+        "pill": "999px"
+      },
+      "spacing": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "16px",
+        "lg": "24px",
+        "xl": "40px",
+        "xxl": "64px"
+      }
+    }
+  }
+}
+

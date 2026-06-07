@@ -3,14 +3,14 @@
 import { Link } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
-import { Home, Phone, MapPin } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
 import { trackPhoneClick } from "@/lib/analytics";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-white to-gray-50 pt-16">
+    <div className="min-h-screen w-full bg-background pt-16">
       <Helmet>
         <meta name="robots" content="noindex,follow" />
       </Helmet>
@@ -34,14 +34,14 @@ export default function NotFound() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold px-6 py-3 flex items-center gap-2">
               <Link href="/">
-                <Home className="h-5 w-5" />
+                <MinimalGlyph name="home" className="h-5 w-5" />
                 Back to Homepage
               </Link>
             </Button>
 
             <Button asChild variant="outline" className="text-lg font-semibold px-6 py-3 flex items-center gap-2">
               <a href="tel:4083588100" onClick={() => trackPhoneClick("not_found_page")}>
-                <Phone className="h-5 w-5" />
+                <MinimalGlyph name="phone" className="h-5 w-5" />
                 Call Us: (408) 358-8100
               </a>
             </Button>
@@ -68,14 +68,11 @@ export default function NotFound() {
           {/* Office Info */}
           <div className="mt-8 p-6 bg-gray-100 rounded-lg">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <MapPin className="h-5 w-5 text-primary" />
+              <MinimalGlyph name="map-pin" className="h-5 w-5 text-primary" />
               <span className="text-gray-700 font-medium">Family First Smile Care</span>
             </div>
             <p className="text-gray-600">
-              <PracticeAddressLink
-                className="text-inherit hover:text-primary"
-                trackingLocation="not_found_page"
-              >
+              <PracticeAddressLink className="text-inherit hover:text-primary" trackingLocation="not_found_page">
                 <>
                   {practiceInfo.addressLines[0]}
                   <br />

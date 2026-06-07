@@ -1,6 +1,68 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Raleway", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
 
 @font-face {
   font-family: "Raleway";
@@ -67,50 +129,76 @@
 }
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44%);
+  --background: hsl(204, 100%, 99%);
+  --foreground: hsl(222.2, 47.4%, 11.2%);
+  --muted: hsl(204, 100%, 97%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(222.2, 47.4%, 11.2%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(221.2, 83.2%, 53.3%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(162.9, 93.5%, 24.3%);
-  --secondary-foreground: hsl(60, 9.1%, 97.8%);
-  --accent: hsl(26, 90.5%, 37.1%);
-  --accent-foreground: hsl(60, 9.1%, 97.8%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
+  --card-foreground: hsl(222.2, 47.4%, 11.2%);
+  --border: hsl(201, 94%, 86%);
+  --input: hsl(201, 94%, 86%);
+  --primary: hsl(201, 96%, 32%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(199, 95%, 61%);
+  --secondary-foreground: hsl(201, 90%, 27%);
+  --accent: hsl(198, 93%, 72%);
+  --accent-foreground: hsl(202, 80%, 16%);
+  --destructive: hsl(200, 98%, 39%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(199, 95%, 61%);
+  --chart-1: hsl(201, 96%, 32%);
+  --chart-2: hsl(199, 95%, 61%);
+  --chart-3: hsl(198, 93%, 72%);
+  --chart-4: hsl(204, 100%, 97%);
+  --chart-5: hsl(215, 20%, 65%);
+  --sidebar-background: hsl(0, 0%, 100%);
+  --sidebar-foreground: hsl(222.2, 47.4%, 11.2%);
+  --sidebar-primary: hsl(201, 96%, 32%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(204, 100%, 97%);
+  --sidebar-accent-foreground: hsl(201, 90%, 27%);
+  --sidebar-border: hsl(201, 94%, 86%);
+  --sidebar-ring: hsl(199, 95%, 61%);
   --radius: 0.5rem;
-  --neutral: hsl(210, 40%, 98%);
+  --neutral: hsl(214, 100%, 97%);
   --cool-gray: hsl(215, 20%, 65%);
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(221.2, 83.2%, 53.3%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(162.9, 93.5%, 24.3%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(26, 90.5%, 37.1%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
+  --background: hsl(222.2, 47.4%, 11.2%);
+  --foreground: hsl(204, 100%, 97%);
+  --muted: hsl(215, 27.9%, 16.9%);
+  --muted-foreground: hsl(213, 26.8%, 83.9%);
+  --popover: hsl(222.2, 47.4%, 11.2%);
+  --popover-foreground: hsl(204, 100%, 97%);
+  --card: hsl(222.2, 47.4%, 11.2%);
+  --card-foreground: hsl(204, 100%, 97%);
+  --border: hsl(201, 90%, 27%);
+  --input: hsl(201, 90%, 27%);
+  --primary: hsl(199, 95%, 61%);
+  --primary-foreground: hsl(202, 80%, 16%);
+  --secondary: hsl(198, 93%, 72%);
+  --secondary-foreground: hsl(202, 80%, 16%);
+  --accent: hsl(204, 100%, 97%);
+  --accent-foreground: hsl(201, 90%, 27%);
+  --destructive: hsl(201, 96%, 32%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(198, 93%, 72%);
+  --chart-1: hsl(199, 95%, 61%);
+  --chart-2: hsl(198, 93%, 72%);
+  --chart-3: hsl(204, 100%, 97%);
+  --chart-4: hsl(201, 96%, 32%);
+  --chart-5: hsl(215, 27.9%, 16.9%);
+  --sidebar-background: hsl(222.2, 47.4%, 11.2%);
+  --sidebar-foreground: hsl(204, 100%, 97%);
+  --sidebar-primary: hsl(199, 95%, 61%);
+  --sidebar-primary-foreground: hsl(202, 80%, 16%);
+  --sidebar-accent: hsl(215, 27.9%, 16.9%);
+  --sidebar-accent-foreground: hsl(204, 100%, 97%);
+  --sidebar-border: hsl(201, 90%, 27%);
+  --sidebar-ring: hsl(198, 93%, 72%);
 }
 
 @layer base {
@@ -141,13 +229,13 @@
 @layer components {
   elevenlabs-convai.elevenlabs-widget {
     --el-base: #ffffff;
-    --el-base-border: #e7e5e4;
-    --el-base-primary: #0c0a09;
-    --el-base-subtle: #766f6a;
-    --el-accent: #2563eb;
-    --el-accent-hover: #1d4ed8;
-    --el-accent-active: #1e40af;
-    --el-accent-border: #1d4ed8;
+    --el-base-border: #bae6fd;
+    --el-base-primary: #0f172a;
+    --el-base-subtle: #475569;
+    --el-accent: #0369a1;
+    --el-accent-hover: #075985;
+    --el-accent-active: #075985;
+    --el-accent-border: #38bdf8;
     --el-accent-primary: #ffffff;
     --el-button-radius: 18px;
     --el-input-radius: 12px;
@@ -162,14 +250,14 @@
     z-index: 90;
   }
 
-  @screen sm {
+  @media (width >= 40rem) {
     elevenlabs-convai.elevenlabs-widget {
       --el-overlay-padding: max(24px, env(safe-area-inset-bottom));
     }
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    background: var(--primary);
   }
 
   .nav-link {
@@ -181,15 +269,15 @@
   }
 
   .service-card {
-    @apply bg-white rounded-xl shadow-md hover:shadow-xl transition-[transform,box-shadow] duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0;
+    @apply border border-border bg-card rounded-xl shadow-sm transition-colors duration-200 hover:border-primary/30 motion-reduce:transition-none;
   }
 
   .testimonial-card {
-    @apply bg-gradient-to-br from-blue-50 to-green-50 rounded-2xl;
+    @apply border border-border bg-card rounded-xl;
   }
 
   .feature-icon {
-    @apply w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl [&_svg]:h-8 [&_svg]:w-8;
+    @apply hidden;
   }
 }
 

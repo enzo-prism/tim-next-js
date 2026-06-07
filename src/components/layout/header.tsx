@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ChevronDown, CreditCard, Menu } from "lucide-react";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import { services } from "@/data/services";
 import {
@@ -48,12 +48,6 @@ export default function Header() {
   const handleAppointmentClick = (trackingLocation = "header") => {
     trackAppointmentCtaClick(trackingLocation);
   };
-  const handlePayBillClick = (trackingLocation = "header") => {
-    trackPayBillClick(trackingLocation);
-  };
-  const handleServiceLinkClick = (serviceId: string, trackingLocation = "header_menu") => {
-    trackServiceLearnMoreClick(serviceId, trackingLocation);
-  };
   const isServicesActive =
     location === "/services" ||
     location.startsWith("/services/") ||
@@ -63,7 +57,7 @@ export default function Header() {
     href === "/blog" ? location === "/blog" || location.startsWith("/blog/") : location === href;
   return (
     <nav
-      className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl shadow-sm"
+      className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/70 bg-white/95 shadow-sm"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -71,7 +65,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between gap-3">
           {/* Logo */}
           <Link href="/" className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
-            <div className="h-10 w-10 shrink-0 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 group-hover:scale-[1.02]">
+            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200">
               <img
                 src={familyFirstLogo.src}
                 alt="Family First Smile Care Logo"
@@ -104,7 +98,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden xl:flex flex-1 items-center justify-center">
-            <div className="flex items-center gap-1 rounded-full border border-gray-200/90 bg-white/95 p-1 shadow-sm">
+            <div className="flex items-center gap-1 rounded-lg border border-gray-200/90 bg-white/95 p-1 shadow-sm">
               {navigation.map((item) =>
                 item.dropdown ? (
                   <DropdownMenu key={item.name}>
@@ -112,27 +106,31 @@ export default function Header() {
                       <button
                         type="button"
                         aria-current={isServicesActive ? "page" : undefined}
-                        className={`inline-flex h-9 items-center gap-1 rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
+                        className={`inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
                           isServicesActive
                             ? "bg-primary/10 text-primary"
                             : "text-gray-700 hover:bg-primary/5 hover:text-primary"
                         } data-[state=open]:bg-primary/10 data-[state=open]:text-primary`}
                       >
                         Services
-                        <ChevronDown className="h-4 w-4" />
+                        <MinimalGlyph name="chevron-down" className="h-3.5 w-3.5 opacity-70" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-80 p-3">
-                      <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    <DropdownMenuContent
+                      align="start"
+                      sideOffset={6}
+                      className="w-80 border-sky-200 bg-white p-3 text-slate-950 shadow-sm"
+                    >
+                      <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Services
                       </DropdownMenuLabel>
                       <DropdownMenuItem
                         asChild
-                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
+                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-slate-950 focus:bg-primary/10 focus:text-primary"
                       >
                         <Link
                           href="/services"
-                          onClick={() => trackServiceLearnMoreClick("all_services", "header_menu")}
+                          onClick={() => trackServiceLearnMoreClick("all-services", "header_services_menu")}
                         >
                           View all services
                         </Link>
@@ -142,28 +140,28 @@ export default function Header() {
                           <DropdownMenuItem
                             key={service.href}
                             asChild
-                            className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
+                            className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-slate-950 focus:bg-primary/10 focus:text-primary"
                           >
                             <Link
                               href={service.href}
-                              onClick={() => handleServiceLinkClick(service.id)}
+                              onClick={() => trackServiceLearnMoreClick(service.id, "header_services_menu")}
                             >
                               {service.title}
                             </Link>
                           </DropdownMenuItem>
                         ))}
                       </div>
-                      <DropdownMenuSeparator className="my-2" />
-                      <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      <DropdownMenuSeparator className="my-2 bg-sky-100" />
+                      <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Technology
                       </DropdownMenuLabel>
                       <DropdownMenuItem
                         asChild
-                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-gray-900 focus:bg-primary/10 focus:text-primary"
+                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-slate-950 focus:bg-primary/10 focus:text-primary"
                       >
                         <Link
                           href="/technology/itero-digital-scanner"
-                          onClick={() => handleServiceLinkClick("itero-digital-scanner")}
+                          onClick={() => trackServiceLearnMoreClick("itero-digital-scanner", "header_services_menu")}
                         >
                           iTero Digital Scanner
                         </Link>
@@ -175,7 +173,7 @@ export default function Header() {
                     key={item.name}
                     href={item.href}
                     aria-current={isItemActive(item.href) ? "page" : undefined}
-                    className={`inline-flex h-9 items-center rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
+                    className={`inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
                       isItemActive(item.href)
                         ? "bg-primary/10 text-primary"
                         : "text-gray-700 hover:bg-primary/5 hover:text-primary"
@@ -202,9 +200,9 @@ export default function Header() {
                 href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => handlePayBillClick("header_desktop")}
+                onClick={() => trackPayBillClick("header_desktop")}
               >
-                <CreditCard className="mr-2 h-4 w-4" />
+                <MinimalGlyph name="credit-card" className="mr-2 h-4 w-4" />
                 Pay Bill
               </a>
             </Button>
@@ -226,9 +224,9 @@ export default function Header() {
                 href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => handlePayBillClick("header_compact")}
+                onClick={() => trackPayBillClick("header_compact")}
               >
-                <CreditCard className="mr-2 h-4 w-4" />
+                <MinimalGlyph name="credit-card" className="mr-2 h-4 w-4" />
                 Pay Bill
               </a>
             </Button>
@@ -240,7 +238,7 @@ export default function Header() {
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Toggle mobile menu" className="shrink-0">
-                  <Menu className="h-6 w-6" />
+                  <MinimalGlyph name="menu" className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
@@ -267,7 +265,7 @@ export default function Header() {
                         href="/services"
                         className="text-gray-800 font-semibold hover:text-primary"
                         onClick={() => {
-                          trackServiceLearnMoreClick("all_services", "mobile_menu");
+                          trackServiceLearnMoreClick("all-services", "mobile_menu");
                           setIsOpen(false);
                         }}
                       >
@@ -279,7 +277,7 @@ export default function Header() {
                           href={service.href}
                           className="text-gray-800 font-semibold hover:text-primary"
                           onClick={() => {
-                            handleServiceLinkClick(service.id, "mobile_menu");
+                            trackServiceLearnMoreClick(service.id, "mobile_menu");
                             setIsOpen(false);
                           }}
                         >
@@ -294,7 +292,7 @@ export default function Header() {
                           href="/technology/itero-digital-scanner"
                           className="text-gray-800 font-semibold hover:text-primary"
                           onClick={() => {
-                            handleServiceLinkClick("itero-digital-scanner", "mobile_menu");
+                            trackServiceLearnMoreClick("itero-digital-scanner", "mobile_menu");
                             setIsOpen(false);
                           }}
                         >
@@ -309,11 +307,11 @@ export default function Header() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => {
-                        handlePayBillClick("mobile_menu");
+                        trackPayBillClick("mobile_menu");
                         setIsOpen(false);
                       }}
                     >
-                      <CreditCard className="h-4 w-4 mr-2" />
+                      <MinimalGlyph name="credit-card" className="h-4 w-4 mr-2" />
                       Pay Bill Online
                     </a>
                   </Button>
@@ -336,7 +334,7 @@ export default function Header() {
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/35 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-border"
       />
     </nav>
   );

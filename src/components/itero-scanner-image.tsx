@@ -13,7 +13,7 @@ export default function IteroScannerImage({
   if (hasError) {
     return (
       <div
-        className={`flex items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-8 text-sm text-gray-500 ${className}`}
+        className={`flex items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-sm text-gray-500 ${className}`}
       >
         Digital scan illustration coming soon.
       </div>
@@ -24,7 +24,7 @@ export default function IteroScannerImage({
     <img
       src={illustrationDigitalScan.src}
       alt="Digital dental scan illustration (3D wireframe)"
-      className={`h-full w-full rounded-2xl object-contain bg-white/70 p-4 shadow-lg ${className}`}
+      className={`h-full w-full rounded-xl object-contain bg-white/70 p-4 shadow-sm ${className}`}
       loading="lazy"
       onError={() => setHasError(true)}
     />

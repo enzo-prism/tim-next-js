@@ -48,7 +48,7 @@ export const services: Service[] = [
         id: "childrens-dentistry/babys-first-visit",
         title: "Baby's First Visit",
         description: "Gentle, parent-involved dental visits for infants and toddlers",
-        icon: "child",
+        icon: "baby",
         details: [
           "Knee-to-knee exams with parents present",
           "Teething and feeding guidance",
@@ -76,7 +76,7 @@ export const services: Service[] = [
     id: "dental-exams",
     title: "Dental Exams",
     description: "Comprehensive oral health evaluations",
-    icon: "tooth",
+    icon: "dental-exam",
     details: [
       "Thorough oral health examinations",
       "Digital X-rays and imaging",
@@ -105,7 +105,7 @@ export const services: Service[] = [
     id: "dental-hygiene",
     title: "Dental Hygiene",
     description: "Professional cleanings and education",
-    icon: "sparkles",
+    icon: "hygiene-sparkle",
     details: [
       "Professional dental cleanings",
       "Plaque and tartar removal",
@@ -134,7 +134,7 @@ export const services: Service[] = [
     id: "family-dentistry",
     title: "General & Family Dentistry",
     description: "Comprehensive care for all ages",
-    icon: "tooth",
+    icon: "family-dentistry",
     details: [
       "Routine dental examinations",
       "Professional dental cleanings",
@@ -163,7 +163,7 @@ export const services: Service[] = [
     id: "night-guards",
     title: "Night Guards",
     description: "Protection against teeth grinding",
-    icon: "tooth",
+    icon: "night-guard",
     details: [
       "Custom-fitted night guards",
       "Protection against bruxism",
@@ -192,7 +192,7 @@ export const services: Service[] = [
     id: "restorative-dentistry",
     title: "Restorative Dentistry",
     description: "Restore damaged teeth to full function",
-    icon: "tooth",
+    icon: "restorative-tooth",
     details: [
       "Composite fillings",
       "Dental bonding",
@@ -221,7 +221,7 @@ export const services: Service[] = [
         id: "invisalign",
         title: "Invisalign",
         description: "Clear aligners for a perfect smile",
-        icon: "smile",
+        icon: "smile-aligner",
         featured: true,
         details: [
           "Virtually invisible clear aligners",
@@ -253,7 +253,7 @@ export const services: Service[] = [
         id: "teeth-whitening",
         title: "Teeth Whitening",
         description: "Professional whitening for brighter smiles",
-        icon: "sparkles",
+        icon: "whitening-sparkle",
         details: [
           "Professional-grade whitening treatments",
           "Safe and effective bleaching agents",
@@ -282,7 +282,7 @@ export const services: Service[] = [
         id: "dental-crowns",
         title: "Dental Crowns",
         description: "Restore and protect damaged teeth",
-        icon: "tooth",
+        icon: "crown",
         details: [
           "Custom-fitted porcelain crowns",
           "Natural-looking tooth restoration",
@@ -313,7 +313,7 @@ export const services: Service[] = [
     id: "tmj",
     title: "TMJ Treatment",
     description: "Relief for jaw pain and dysfunction",
-    icon: "activity",
+    icon: "jaw-tmj",
     details: [
       "Comprehensive TMJ/TMD evaluation and diagnosis",
       "Custom night guards to prevent teeth grinding",

@@ -757,7 +757,7 @@ export default function Admin() {
                               {formatDateTime(row.createdAt)}
                             </TableCell>
                             <TableCell>
-                              <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700">
+                              <span className="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700">
                                 {row.requestType || "contact"}
                               </span>
                             </TableCell>
@@ -786,10 +786,10 @@ export default function Admin() {
                             <TableCell className="text-sm">
                               {row.requestType === "appointment" ? (
                                 <span
-                                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                  className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${
                                     row.formspreeStatus === "delivered"
-                                      ? "bg-green-100 text-green-700"
-                                      : "bg-amber-100 text-amber-700"
+                                      ? "bg-sky-100 text-sky-800"
+                                      : "bg-blue-100 text-blue-800"
                                   }`}
                                 >
                                   {row.formspreeStatus || "failed"}

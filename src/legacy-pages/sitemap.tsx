@@ -80,7 +80,7 @@ export default function SiteMap() {
           <h2 className="text-2xl font-bold mb-4">All Services</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {services.map((service) => (
-              <div key={service.id} className="rounded-2xl border border-gray-200 bg-white p-6">
+              <div key={service.id} className="rounded-xl border border-gray-200 bg-white p-6">
                 <Link
                   href={getServiceHref(service.id)}
                   className="text-lg font-semibold text-gray-900 hover:text-primary transition-colors"

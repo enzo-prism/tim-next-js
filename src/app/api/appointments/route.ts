@@ -8,6 +8,10 @@ export const runtime = "nodejs";
 const fallbackMessage =
   "Your request was saved, but online scheduling delivery is delayed. Please call (408) 358-8100 and we will prioritize your appointment.";
 
+const FORMSPREE_OPS_SITE = "tim";
+const FORMSPREE_OPS_FORM_KEY = "appointments";
+const FORMSPREE_OPS_QA_FIELD = "_codex_test";
+
 const relayToFormspree = async (payload: {
   firstName: string;
   lastName: string;
@@ -17,6 +21,7 @@ const relayToFormspree = async (payload: {
   preferredDate: string;
   preferredTime: string;
   message?: string;
+  codexTest?: string;
 }) => {
   const endpoint =
     process.env.FORMSPREE_APPOINTMENT_ENDPOINT?.trim() ||
@@ -32,6 +37,12 @@ const relayToFormspree = async (payload: {
       ...payload,
       source: "famfirstsmile.com",
       requestType: "appointment",
+      site: FORMSPREE_OPS_SITE,
+      form_key: FORMSPREE_OPS_FORM_KEY,
+      page_path: "/book-appointment",
+      referrer: "",
+      environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "production",
+      [FORMSPREE_OPS_QA_FIELD]: payload.codexTest === "true" ? "true" : "false",
     }),
   });
 
@@ -44,6 +55,10 @@ const relayToFormspree = async (payload: {
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as Record<string, unknown>;
+    const codexTest =
+      String(body[FORMSPREE_OPS_QA_FIELD] ?? body.codex_test ?? "").toLowerCase() === "true"
+        ? "true"
+        : "false";
     const honeypot = typeof body.company === "string" ? body.company.trim() : "";
     if (honeypot) {
       return NextResponse.json(
@@ -83,6 +98,7 @@ export async function POST(req: Request) {
         preferredDate: validatedData.preferredDate,
         preferredTime: validatedData.preferredTime,
         message: validatedData.message ?? undefined,
+        codexTest,
       });
 
       const deliveredAppointment = await storage.updateContactFormspreeStatus(
