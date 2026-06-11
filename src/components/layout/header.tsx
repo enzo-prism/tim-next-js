@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,20 +67,13 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200">
-              <img
-                src={familyFirstLogo.src}
+              <Image
+                src={familyFirstLogo}
                 alt="Family First Smile Care Logo"
                 width={40}
                 height={40}
+                priority
                 className="h-full w-full object-cover"
-                onError={(e) => {
-                  console.error("ES module logo failed, trying fallback path:", familyFirstLogo.src);
-                  e.currentTarget.src = "/attached_assets/Logo_1753972987510.png";
-                  e.currentTarget.onerror = () => {
-                    console.error("All logo paths failed");
-                    e.currentTarget.parentElement?.setAttribute("style", "display:none");
-                  };
-                }}
               />
             </div>
             <div className="min-w-0">

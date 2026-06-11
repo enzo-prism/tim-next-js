@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { services } from "@/content/services";
-import { insertAppointmentSchema } from "@/server/schema";
+import { insertAppointmentSchema } from "@/content/form-schemas";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import {

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "wouter";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
@@ -20,14 +21,12 @@ export default function Footer() {
           {/* Practice Info */}
           <div className="md:col-span-2">
             <div className="flex items-center mb-4">
-              <img 
-                src={familyFirstLogo.src} 
-                alt="Family First Smile Care Logo" 
+              <Image
+                src={familyFirstLogo}
+                alt="Family First Smile Care Logo"
                 width={32}
                 height={32}
                 className="h-8 w-8 mr-3"
-                loading="lazy"
-                decoding="async"
               />
               <span className="text-xl font-bold">Family First Smile Care</span>
             </div>

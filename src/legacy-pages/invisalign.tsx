@@ -1,6 +1,6 @@
 "use client";
 
-import { Helmet } from "react-helmet-async";
+import Image from "next/image";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
@@ -10,7 +10,6 @@ import { services } from "@/data/services";
 import { serviceReviews } from "@/data/reviews";
 import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { invisalignContent } from "@shared/marketing-pages";
-import { buildFaqSchema, buildServiceSchema } from "@shared/structured-data";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import illustrationAligners from "@assets/brand/illustration-aligners.webp";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
@@ -73,12 +72,6 @@ export default function Invisalign() {
     );
   }
 
-  const faqSchema = buildFaqSchema(invisalignContent.faqs);
-  const serviceSchema = buildServiceSchema(
-    "Invisalign Clear Aligners",
-    invisalignContent.hero.subtitle,
-    "https://famfirstsmile.com/services/invisalign",
-  );
   const processSteps = service.process ?? [];
   const benefits = service.benefits ?? [];
   const relatedLinks: RelatedLink[] = [
@@ -116,11 +109,6 @@ export default function Invisalign() {
 
   return (
     <div className="pt-16 pb-20 bg-white">
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
-
       <motion.section
         className="relative overflow-hidden py-20 lg:py-32"
         initial="hidden"
@@ -158,12 +146,12 @@ export default function Invisalign() {
               className="flex justify-center lg:justify-end"
               variants={scaleIn}
             >
-              <img
-                src={illustrationAligners.src}
+              <Image
+                src={illustrationAligners}
                 alt="Clear aligner trays illustration"
-                className="w-full max-w-xl rounded-xl bg-white/60 p-6 shadow-sm"
-                loading="eager"
-                decoding="async"
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="w-full max-w-xl rounded-xl bg-white/60 p-6 shadow-sm h-auto"
               />
             </motion.div>
           </div>

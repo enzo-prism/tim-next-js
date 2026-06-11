@@ -25,6 +25,7 @@ const pathGlyphs = {
   "chevron-left": "M12.5 5l-5 5 5 5",
   "chevron-right": "M7.5 5l5 5-5 5",
   "chevron-up": "M5 12.5l5-5 5 5",
+  play: "M7.5 5.25v9.5l8-4.75z",
 } as const;
 
 type FunctionalGlyphName = keyof typeof functionalGlyphs;

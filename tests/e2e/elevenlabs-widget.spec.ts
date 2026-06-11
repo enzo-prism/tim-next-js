@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const PUBLIC_ROUTES = ["/", "/contact", "/book-appointment", "/blog"];
 const WIDGET_SCRIPT_URL =
-  "https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4";
+  "https://cdn.jsdelivr.net/npm/@elevenlabs/convai-widget-embed@0.11.4";
 
 const widgetStubScript = `
 (() => {

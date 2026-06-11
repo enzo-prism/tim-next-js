@@ -1,7 +1,21 @@
 import type { MetadataRoute } from "next";
 import { allCanonicalRoutes } from "@/content/routes";
+import { getAllBlogPosts, getBlogPostHref } from "@/content/blog";
 
 const baseUrl = (process.env.CANONICAL_HOST || "https://famfirstsmile.com").replace(/\/$/, "");
+
+// Noindexed utility pages should not be advertised to crawlers.
+const excludedRoutes = new Set<string>(["/sitemap"]);
+
+// Real content dates. Routes without a known date omit lastModified instead
+// of stamping every URL with the build time, which search engines learn to
+// ignore.
+const blogLastModified = new Map(
+  getAllBlogPosts().map((post) => [
+    getBlogPostHref(post.slug),
+    new Date(post.updatedAt || post.publishedAt),
+  ]),
+);
 
 const routePriorityMap: Partial<Record<string, number>> = {
   "/": 1,
@@ -30,36 +44,36 @@ const routePriorityMap: Partial<Record<string, number>> = {
   "/patient-info/flossing": 0.5,
   "/patient-info/nutrition": 0.5,
   "/privacy-policy": 0.3,
-  "/sitemap": 0.3,
 };
 
 const routeFrequencyMap: Partial<Record<string, MetadataRoute.Sitemap[number]["changeFrequency"]>> = {
   "/": "weekly",
   "/services": "weekly",
   "/blog": "weekly",
+  "/book-appointment": "weekly",
   "/about": "monthly",
   "/contact": "monthly",
   "/areas-we-serve/santa-cruz": "monthly",
-  "/book-appointment": "weekly",
   "/team": "monthly",
   "/testimonials": "monthly",
   "/patient-info": "monthly",
   "/patient-info/brushing": "monthly",
   "/patient-info/flossing": "monthly",
   "/patient-info/nutrition": "monthly",
-  "/blog/when-should-kids-first-see-a-dentist-los-gatos": "monthly",
-  "/blog/how-often-dental-cleaning-los-gatos": "monthly",
   "/privacy-policy": "yearly",
-  "/sitemap": "yearly",
 };
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
+  return allCanonicalRoutes
+    .filter((route) => !excludedRoutes.has(route))
+    .map((route) => {
+      const lastModified = blogLastModified.get(route);
 
-  return allCanonicalRoutes.map((route) => ({
-    url: `${baseUrl}${route === "/" ? "" : route}`,
-    lastModified,
-    changeFrequency: routeFrequencyMap[route] ?? "monthly",
-    priority: routePriorityMap[route] ?? (route.startsWith("/blog/") ? 0.65 : 0.6),
-  }));
+      return {
+        url: `${baseUrl}${route === "/" ? "" : route}`,
+        ...(lastModified ? { lastModified } : {}),
+        changeFrequency: routeFrequencyMap[route] ?? "monthly",
+        priority: routePriorityMap[route] ?? (route.startsWith("/blog/") ? 0.65 : 0.6),
+      };
+    });
 }

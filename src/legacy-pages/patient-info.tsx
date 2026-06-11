@@ -2,39 +2,10 @@
 
 import { useState } from "react";
 import { Link } from "wouter";
-import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import type { FAQItem } from "@/lib/types";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
-
-const faqs: FAQItem[] = [
-  {
-    id: "insurance",
-    question: "Do you accept insurance?",
-    answer: "Yes, we accept many major insurance plans including Delta Dental, Cigna, MetLife, Aetna, and Blue Cross Blue Shield, and we also work with most PPO plans. If you're coming from Santa Cruz, call ahead and our team can help verify your benefits before your visit and explain what to expect."
-  },
-  {
-    id: "frequency",
-    question: "How often should I visit the dentist?",
-    answer: "We recommend visiting every six months for routine cleanings and check-ups. However, some patients may need more frequent visits based on their individual oral health needs. Dr. Chuang will recommend the best schedule for you."
-  },
-  {
-    id: "children",
-    question: "Do you see children?",
-    answer: "Absolutely! We specialize in family dentistry and love working with children of all ages. We use gentle techniques and child-friendly approaches to make dental visits fun and stress-free for your little ones."
-  },
-  {
-    id: "first-visit",
-    question: "What should I expect during my first visit?",
-    answer: "Your first visit will include a comprehensive examination, digital X-rays if needed, and a discussion of your oral health goals. We'll create a personalized treatment plan and answer any questions you have about your dental health."
-  },
-  {
-    id: "emergency",
-    question: "Do you offer emergency dental services?",
-    answer: "Yes, we provide emergency dental care for urgent situations. If you have a dental emergency, please call our office immediately and we'll do our best to see you the same day."
-  }
-];
+import { patientInfoFaqs } from "@/content/patient-info-faqs";
 
 const popularServices = [
   {
@@ -76,26 +47,8 @@ export default function PatientInfo() {
     setExpandedFAQ(expandedFAQ === id ? null : id);
   };
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
-  };
-
   return (
     <div className="pt-16 pb-20 bg-gray-50">
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(faqSchema)}
-        </script>
-      </Helmet>
       {/* Hero Section */}
       <section className="relative bg-muted/40 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -263,7 +216,7 @@ export default function PatientInfo() {
         <div className="mt-16 bg-white rounded-xl shadow-sm p-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Frequently Asked Questions</h2>
           <div className="space-y-4">
-            {faqs.map((faq) => (
+            {patientInfoFaqs.map((faq) => (
               <div key={faq.id} className="border-b border-gray-200 pb-4 last:border-b-0">
                 <Button
                   variant="ghost"

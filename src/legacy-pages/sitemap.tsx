@@ -1,7 +1,4 @@
-"use client";
-
-import { Helmet } from "react-helmet-async";
-import { Link } from "wouter";
+import Link from "next/link";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import { services } from "@/data/services";
 import { getAllBlogPosts, getBlogPostHref } from "@/content/blog";
@@ -12,10 +9,6 @@ export default function SiteMap() {
 
   return (
     <div className="pt-16 pb-20 bg-white">
-      <Helmet>
-        <meta name="robots" content="noindex,follow" />
-      </Helmet>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Site Map" }]} />
 

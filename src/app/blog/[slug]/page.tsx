@@ -76,9 +76,9 @@ export async function generateMetadata({
       tags: keywords,
       images: [
         {
-          url: practiceInfo.image[1],
-          width: 1600,
-          height: 1067,
+          url: practiceInfo.image[0],
+          width: 1200,
+          height: 630,
           alt: post.title,
         },
       ],
@@ -87,7 +87,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: post.metaTitle,
       description: post.metaDescription,
-      images: [practiceInfo.image[1]],
+      images: [practiceInfo.image[0]],
     },
   };
 }
@@ -114,7 +114,6 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
     dateModified: post.updatedAt,
     keywords: [post.primaryKeyword, ...post.secondaryKeywords],
     articleSection: post.category,
-    image: practiceInfo.image[1],
   });
   const faqSchema = post.faq.length ? buildFaqSchema(post.faq) : null;
   const tableOfContents = post.sections.map((section) => ({
@@ -162,10 +161,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                 {post.heroEyebrow}
               </div>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
-                <span className="inline-flex flex-wrap items-center gap-3">
-                  
-                  <span>{post.title}</span>
-                </span>
+                {post.title}
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
                 {post.heroSummary}

@@ -1,7 +1,6 @@
 "use client";
 
 import { Link } from "wouter";
-import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
@@ -11,10 +10,6 @@ import { trackPhoneClick } from "@/lib/analytics";
 export default function NotFound() {
   return (
     <div className="min-h-screen w-full bg-background pt-16">
-      <Helmet>
-        <meta name="robots" content="noindex,follow" />
-      </Helmet>
-      
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4">
         <div className="text-center max-w-2xl mx-auto">
           {/* Error Code */}

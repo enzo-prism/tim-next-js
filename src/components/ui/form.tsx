@@ -157,10 +157,19 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-medium text-destructive", className)}
+      role="alert"
+      className={cn("flex items-start gap-1.5 text-sm font-medium text-destructive", className)}
       {...props}
     >
-      {body}
+      {/* Non-color affordance: the brand palette renders destructive states in
+          blue, so errors need a shape cue to be identifiable without color. */}
+      <span
+        aria-hidden="true"
+        className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[10px] font-bold leading-none"
+      >
+        !
+      </span>
+      <span>{body}</span>
     </p>
   )
 })

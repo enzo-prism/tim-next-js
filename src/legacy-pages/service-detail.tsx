@@ -1,6 +1,5 @@
 "use client";
 
-import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "wouter";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
@@ -13,7 +12,6 @@ import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import { getRelatedLinksForService } from "@/lib/internal-links";
-import { getServiceHref } from "@/lib/routes";
 
 // Animation variants
 const fadeInUp = {
@@ -73,41 +71,6 @@ export default function ServiceDetail() {
     });
   };
 
-  const serviceUrl =
-    `https://famfirstsmile.com${getServiceHref(service.id)}`;
-
-  const serviceSchema = {
-    "@context": "https://schema.org",
-    "@type": "MedicalProcedure",
-    name: service.title,
-    description: service.heroDescription || service.description,
-    url: serviceUrl,
-    provider: {
-      "@type": "Dentist",
-      name: "Family First Smile Care",
-      url: "https://famfirstsmile.com/",
-      telephone: "+1-408-358-8100",
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "15251 National Ave, Suite 102",
-        addressLocality: "Los Gatos",
-        addressRegion: "CA",
-        postalCode: "95032",
-        addressCountry: "US",
-      },
-    },
-    areaServed: {
-      "@type": "City",
-      name: "Los Gatos",
-      address: {
-        "@type": "PostalAddress",
-        addressRegion: "CA",
-        addressCountry: "US",
-      },
-    },
-    medicalSpecialty: "Dentistry",
-  };
-
   const findReviewData = () => {
     let reviewData = serviceReviews.find((sr) => sr.serviceId === service.id);
 
@@ -132,12 +95,6 @@ export default function ServiceDetail() {
 
   return (
     <div className="pt-16 pb-20 bg-white">
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(serviceSchema)}
-        </script>
-      </Helmet>
-      
       {/* Hero Section */}
       <motion.section 
         className="relative overflow-hidden py-20 lg:py-32"

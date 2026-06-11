@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Raleway } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -10,6 +11,13 @@ import VercelAnalytics from "@/components/vercel-analytics";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
 import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
 import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
+
+const raleway = Raleway({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-raleway",
+});
 
 export const metadata: Metadata = {
   ...buildRouteMetadata("/"),
@@ -22,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={raleway.variable}>
       <body>
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}

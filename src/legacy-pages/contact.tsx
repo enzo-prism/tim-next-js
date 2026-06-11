@@ -15,7 +15,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
-import { insertContactSchema, type InsertContact } from "@/server/schema";
+import { insertContactSchema, type InsertContact } from "@/content/form-schemas";
 import { apiRequest } from "@/lib/queryClient";
 import {
   trackContactSubmitSuccess,

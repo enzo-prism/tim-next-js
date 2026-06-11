@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import illustrationDigitalScan from "@assets/brand/illustration-digital-scan.webp";
 
 interface IteroScannerImageProps {
@@ -21,11 +22,11 @@ export default function IteroScannerImage({
   }
 
   return (
-    <img
-      src={illustrationDigitalScan.src}
+    <Image
+      src={illustrationDigitalScan}
       alt="Digital dental scan illustration (3D wireframe)"
+      sizes="(max-width: 1024px) 100vw, 50vw"
       className={`h-full w-full rounded-xl object-contain bg-white/70 p-4 shadow-sm ${className}`}
-      loading="lazy"
       onError={() => setHasError(true)}
     />
   );

@@ -11,7 +11,7 @@ export const practiceInfo = {
   mapUrl: "https://maps.app.goo.gl/RVPut9T6J8XDvHWi7",
   logo: "https://famfirstsmile.com/attached_assets/Logo_1753972987510.png",
   image: [
-    "https://famfirstsmile.com/attached_assets/Frame%205_1753974553020.png",
+    "https://famfirstsmile.com/og-image.jpg",
     "https://famfirstsmile.com/attached_assets/Office%20Photo%201_1753972057110.jpeg",
   ],
   address: {
@@ -62,6 +62,12 @@ export const buildLocalBusinessSchema = () => ({
   telephone: practiceInfo.telephone,
   email: practiceInfo.email,
   address: practiceInfo.address,
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 37.246289,
+    longitude: -121.950504,
+  },
+  priceRange: "$$",
   hasMap: practiceInfo.hasMap,
   medicalSpecialty: "Dentistry",
   areaServed: serviceAreas,
@@ -150,6 +156,71 @@ export const buildServiceSchema = (
       addressCountry: "US",
     },
   },
+});
+
+export const buildDentistPersonSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "@id": `${practiceInfo.url}/team#dr-tim-chuang`,
+  name: "Dr. Tim J. Chuang",
+  honorificSuffix: "DDS",
+  jobTitle: "Lead Dentist & Practice Owner",
+  url: `${practiceInfo.url}/team`,
+  image: `${practiceInfo.url}/attached_assets/Dr.%20Chuang_1753977515693.png`,
+  worksFor: {
+    "@id": `${practiceInfo.url}/#dentist`,
+  },
+  alumniOf: [
+    {
+      "@type": "CollegeOrUniversity",
+      name: "University of the Pacific School of Dentistry",
+    },
+    {
+      "@type": "CollegeOrUniversity",
+      name: "University of California, San Diego",
+    },
+  ],
+  knowsAbout: [
+    "Family dentistry",
+    "Children's dentistry",
+    "Invisalign",
+    "TMJ treatment",
+    "Restorative dentistry",
+  ],
+});
+
+export const buildMedicalProcedureSchema = (service: {
+  id: string;
+  title: string;
+  description: string;
+  heroDescription?: string;
+}) => ({
+  "@context": "https://schema.org",
+  "@type": "MedicalProcedure",
+  name: service.title,
+  description: service.heroDescription || service.description,
+  url:
+    service.id === "tmj"
+      ? `${practiceInfo.url}/tmj`
+      : `${practiceInfo.url}/services/${service.id}`,
+  provider: {
+    "@type": "Dentist",
+    "@id": `${practiceInfo.url}/#dentist`,
+    name: practiceInfo.name,
+    url: practiceInfo.url,
+    telephone: practiceInfo.telephone,
+    address: practiceInfo.address,
+  },
+  areaServed: {
+    "@type": "City",
+    name: "Los Gatos",
+    address: {
+      "@type": "PostalAddress",
+      addressRegion: "CA",
+      addressCountry: "US",
+    },
+  },
+  medicalSpecialty: "Dentistry",
 });
 
 export const buildFaqSchema = (faqs: ReadonlyArray<FaqItem>) => ({

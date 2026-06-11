@@ -1,16 +1,17 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import drChuangPhoto from "@assets/Dr. Chuang_1753977515693.png";
+import drChuangPhoto from "@assets/Dr. Chuang_1753977515693.jpg";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import type { RelatedLink } from "@/lib/internal-links";
 
 import officeManagerPhoto from "@assets/Office Manager_1753977345657.jpeg";
-import trangAssistantPhoto from "@assets/Trang Assistant Headshot_1756845643362.png";
+import trangAssistantPhoto from "@assets/Trang Assistant Headshot_1756845643362.jpg";
 
 export default function Team() {
   const relatedLinks: RelatedLink[] = [
@@ -61,12 +62,11 @@ export default function Team() {
         <div className="bg-muted/40 rounded-xl p-8 lg:p-12 mb-16">
           <div className="grid lg:grid-cols-3 gap-12 items-center">
             <div className="lg:col-span-1">
-              <img 
-                src={drChuangPhoto.src} 
-                alt="Dr. Tim J. Chuang professional headshot" 
-                className="rounded-xl shadow-sm w-full max-w-md mx-auto"
-                loading="lazy"
-                decoding="async"
+              <Image
+                src={drChuangPhoto}
+                alt="Dr. Tim J. Chuang professional headshot"
+                sizes="(max-width: 1024px) 100vw, 33vw"
+                className="rounded-xl shadow-sm w-full max-w-md mx-auto h-auto"
               />
             </div>
             <div className="lg:col-span-2">
@@ -124,14 +124,13 @@ export default function Team() {
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <div className="bg-white rounded-xl shadow-sm p-6 text-center transition-shadow duration-300">
             <div className="mb-4">
-              <img 
-                src={officeManagerPhoto.src} 
-                alt="Office Manager team member" 
+              <Image
+                src={officeManagerPhoto}
+                alt="Office Manager team member"
                 width={128}
                 height={128}
+                sizes="128px"
                 className="w-32 h-32 rounded-lg mx-auto object-cover shadow-md"
-                loading="lazy"
-                decoding="async"
               />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Office Manager</h3>
@@ -140,14 +139,13 @@ export default function Team() {
           
           <div className="bg-white rounded-xl shadow-sm p-6 text-center transition-shadow duration-300">
             <div className="mb-4">
-              <img 
-                src={trangAssistantPhoto.src} 
-                alt="Dental Assistant team member" 
+              <Image
+                src={trangAssistantPhoto}
+                alt="Dental Assistant team member"
                 width={128}
                 height={128}
+                sizes="128px"
                 className="w-32 h-32 rounded-lg mx-auto object-cover shadow-md"
-                loading="lazy"
-                decoding="async"
               />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Dental Assistant</h3>

@@ -12,6 +12,8 @@ import {
   trackReviewLinkClick,
 } from "@/lib/analytics";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
+import VideoFacade from "@/components/video-facade";
+import officeTourPoster from "@assets/Office Photo 1_1753972057110.jpeg";
 
 // Animation variants for reusable patterns
 const fadeInUp = {
@@ -225,12 +227,14 @@ export default function Home() {
               >
                 <div className="relative rounded-xl border border-border bg-card p-2 shadow-sm">
                   <div className="relative aspect-[9/16] overflow-hidden rounded-xl bg-slate-900">
-                    <iframe
-                      src={OFFICE_TOUR_VIDEO_SRC}
-                      className="absolute inset-0 h-full w-full"
-                      frameBorder="0"
-                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                    <VideoFacade
+                      videoSrc={OFFICE_TOUR_VIDEO_SRC}
                       title="Family First Smile Care Office Tour"
+                      poster={officeTourPoster}
+                      posterAlt="Inside the Family First Smile Care office in Los Gatos"
+                      posterSizes="(max-width: 640px) 320px, 390px"
+                      posterPriority
+                      playLabel="Play office tour"
                     />
                   </div>
                 </div>
@@ -617,19 +621,16 @@ export default function Home() {
                 variants={scaleIn}
                 whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
               >
-                <iframe
-                  className="w-full h-96 sm:h-[28rem] md:h-[32rem]"
-                  src={OFFICE_TOUR_VIDEO_SRC}
-                  title="Family First Smile Care Virtual Office Tour"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                  loading="lazy"
-                  style={{ 
-                    border: 'none', 
-                    outline: 'none',
-                    objectFit: 'cover'
-                  }}
-                />
+                <div className="relative w-full h-96 sm:h-[28rem] md:h-[32rem]">
+                  <VideoFacade
+                    videoSrc={OFFICE_TOUR_VIDEO_SRC}
+                    title="Family First Smile Care Virtual Office Tour"
+                    poster={officeTourPoster}
+                    posterAlt="Inside the Family First Smile Care office in Los Gatos"
+                    posterSizes="(max-width: 640px) 100vw, 384px"
+                    playLabel="Play office tour"
+                  />
+                </div>
               </motion.div>
             </motion.div>
           </div>

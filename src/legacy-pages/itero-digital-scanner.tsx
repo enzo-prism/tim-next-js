@@ -1,13 +1,11 @@
 "use client";
 
-import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import IteroScannerImage from "@/components/itero-scanner-image";
 import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
 import { iteroContent } from "@shared/marketing-pages";
-import { buildFaqSchema, buildServiceSchema } from "@shared/structured-data";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -46,12 +44,6 @@ export default function IteroDigitalScanner() {
     });
   };
 
-  const faqSchema = buildFaqSchema(iteroContent.faqs);
-  const serviceSchema = buildServiceSchema(
-    "Digital impressions with iTero scanner",
-    iteroContent.hero.subtitle,
-    "https://famfirstsmile.com/technology/itero-digital-scanner",
-  );
   const relatedLinks: RelatedLink[] = [
     {
       href: "/services/invisalign",
@@ -77,11 +69,6 @@ export default function IteroDigitalScanner() {
 
   return (
     <div className="pt-16 pb-20 bg-white">
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
-
       <motion.section
         className="relative overflow-hidden py-20 lg:py-32"
         initial="hidden"

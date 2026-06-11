@@ -27,9 +27,9 @@ export function buildRouteMetadata(path: string): Metadata {
       type: "website",
       images: [
         {
-          url: `${defaultHost}/attached_assets/Frame%205_1753974553020.png`,
-          width: 1024,
-          height: 512,
+          url: `${defaultHost}/og-image.jpg`,
+          width: 1200,
+          height: 630,
           alt: "Family First Smile Care - Gentle dental care for the whole family",
         },
       ],
@@ -38,6 +38,7 @@ export function buildRouteMetadata(path: string): Metadata {
       card: "summary_large_image",
       title: meta.title,
       description: meta.description,
+      images: [`${defaultHost}/og-image.jpg`],
     },
   };
 }

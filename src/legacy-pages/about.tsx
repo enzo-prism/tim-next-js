@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
+import VideoFacade from "@/components/video-facade";
 import type { RelatedLink } from "@/lib/internal-links";
 
 // Animation variants for reusable patterns
@@ -77,8 +79,8 @@ import officePhoto7 from "@assets/Office Photo 7_1753972057109.jpeg";
 import officePhoto8 from "@assets/Office Photo 8_1753972057109.jpeg";
 import officePhoto9 from "@assets/Office Photo 9_1753972057108.jpeg";
 import officePhoto10 from "@assets/Office Photo 10_1753972057108.jpeg";
-import officePhoto11 from "@assets/Office Photo 11_1753972057108.png";
-import officePhoto12 from "@assets/Office Photo 12_1753972057108.png";
+import officePhoto11 from "@assets/Office Photo 11_1753972057108.jpg";
+import officePhoto12 from "@assets/Office Photo 12_1753972057108.jpg";
 
 export default function About() {
   const relatedLinks: RelatedLink[] = [
@@ -210,15 +212,14 @@ export default function About() {
               whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
             >
               <div className="absolute inset-2 rounded-xl overflow-hidden">
-                <iframe
-                  src="https://player.vimeo.com/video/1106163189?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;autoplay=1&amp;loop=1&amp;muted=1&amp;background=1"
-                  className="absolute w-full h-full scale-110"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                  loading="lazy"
+                <VideoFacade
+                  videoSrc="https://player.vimeo.com/video/1106163189?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&background=1"
                   title="Family First Smile Care Patient Experience"
-                  style={{ border: 'none', outline: 'none' }}
-                ></iframe>
+                  poster={officePhoto5}
+                  posterAlt="Patients welcomed at the Family First Smile Care front desk"
+                  posterSizes="(max-width: 1024px) 100vw, 50vw"
+                  playLabel="Play patient experience"
+                />
               </div>
             </motion.div>
           </motion.div>
@@ -380,12 +381,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto11.src} 
-                alt="Family First Smile Care welcoming front entrance with practice branding" 
+              <Image
+                src={officePhoto11}
+                alt="Family First Smile Care welcoming front entrance with practice branding"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -393,12 +393,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto12.src} 
-                alt="Family First Smile Care professional office exterior showing Suite 102" 
+              <Image
+                src={officePhoto12}
+                alt="Family First Smile Care professional office exterior showing Suite 102"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -406,12 +405,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto1.src} 
-                alt="Modern dental office reception area with comfortable seating" 
+              <Image
+                src={officePhoto1}
+                alt="Modern dental office reception area with comfortable seating"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
           </motion.div>
@@ -429,12 +427,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto2.src} 
-                alt="Modern dental treatment room with state-of-the-art equipment" 
+              <Image
+                src={officePhoto2}
+                alt="Modern dental treatment room with state-of-the-art equipment"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -442,12 +439,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto3.src} 
-                alt="Advanced dental technology and equipment" 
+              <Image
+                src={officePhoto3}
+                alt="Advanced dental technology and equipment"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -455,12 +451,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto4.src} 
-                alt="Professional dental consultation space" 
+              <Image
+                src={officePhoto4}
+                alt="Professional dental consultation space"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -468,12 +463,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto5.src} 
-                alt="Clean and organized dental office environment" 
+              <Image
+                src={officePhoto5}
+                alt="Clean and organized dental office environment"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
           </motion.div>
@@ -491,12 +485,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto6.src} 
-                alt="Dental office equipment and workspace" 
+              <Image
+                src={officePhoto6}
+                alt="Dental office equipment and workspace"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -504,12 +497,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto7.src} 
-                alt="Professional dental workspace setup" 
+              <Image
+                src={officePhoto7}
+                alt="Professional dental workspace setup"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -517,12 +509,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto8.src} 
-                alt="Modern dental facility interior" 
+              <Image
+                src={officePhoto8}
+                alt="Modern dental facility interior"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -530,12 +521,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto9.src} 
-                alt="Additional office space and amenities" 
+              <Image
+                src={officePhoto9}
+                alt="Additional office space and amenities"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
             <motion.div 
@@ -543,12 +533,11 @@ export default function About() {
               variants={photoGalleryVariant}
               whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
             >
-              <img 
-                src={officePhoto10.src} 
-                alt="Complete view of dental practice facilities" 
+              <Image
+                src={officePhoto10}
+                alt="Complete view of dental practice facilities"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
               />
             </motion.div>
           </motion.div>
