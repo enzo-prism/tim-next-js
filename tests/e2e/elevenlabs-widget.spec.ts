@@ -397,7 +397,7 @@ test.describe("ElevenLabs widget integration", () => {
     page,
   }, testInfo) => {
     await gotoWithWidget(page, "/book-appointment");
-    await expect(page.getByRole("button", { name: "Request Appointment" })).toBeEnabled({
+    await expect(page.getByRole("button", { name: "Continue" })).toBeEnabled({
       timeout: 15_000,
     });
 
@@ -412,15 +412,20 @@ test.describe("ElevenLabs widget integration", () => {
       });
     });
 
-    await page.getByLabel("First Name *").fill("Taylor");
-    await page.getByLabel("Last Name *").fill("Patient");
-    await page.getByLabel("Email *").fill("taylor@example.com");
-    await page.getByLabel("Phone *").fill("4083588100");
-    await page.getByLabel("Service *").selectOption("dental-exams");
-    await expect(page.getByLabel("Service *")).toHaveValue("dental-exams");
-    await page.getByLabel("Preferred Date *").fill(getFutureDateInputValue());
-    await page.getByLabel("Preferred Time *").fill("10:30");
-    await page.getByRole("button", { name: "Request Appointment" }).click();
+    await page.getByLabel("First name").fill("Taylor");
+    await page.getByLabel("Last name").fill("Patient");
+    await page.getByLabel("Email").fill("taylor@example.com");
+    await page.getByLabel("Phone").fill("4083588100");
+    await page.getByLabel("What can we help with?").selectOption("dental-exams");
+    await expect(page.getByLabel("What can we help with?")).toHaveValue("dental-exams");
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "Add any preferences" })).toBeFocused();
+    await page.getByLabel("Preferred date (optional)").fill(getFutureDateInputValue());
+    await page.getByLabel("Preferred time (optional)").selectOption("morning");
+    await page
+      .getByLabel(/I agree that Family First Smile Care may contact me/i)
+      .check();
+    await page.getByRole("button", { name: "Send Appointment Request" }).click();
 
     const toastViewport = page.locator('[data-testid="toast-viewport"]');
     await expect(
@@ -438,7 +443,7 @@ test.describe("ElevenLabs widget integration", () => {
     expect(toastZIndex).toBe("100");
 
     if (testInfo.project.name === "desktop") {
-      await expect(page.getByRole("link", { name: "Book Appointment" }).first()).toBeVisible();
+      await expect(page.getByRole("link", { name: "Request Appointment" }).first()).toBeVisible();
     } else {
       await page.getByRole("button", { name: "Toggle mobile menu" }).click();
       await expect(page.getByRole("navigation").getByRole("link", { name: "Contact" })).toBeVisible();

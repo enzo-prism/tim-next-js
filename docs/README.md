@@ -12,12 +12,13 @@
 1. [Deployment on Vercel](./deployment-vercel.md)
 2. [Operations Runbook](./operations-runbook.md)
 3. [Migration Parity Checklist](./parity-checklist.md)
-4. Release command: `npm run release:prod`
+4. Release command after schema migration/read-back: `npm run release:prod -- --schema-synced`
 
 ## Quality and Analytics
 
 1. [Testing and Quality](./testing-and-quality.md)
 2. [Analytics Setup (Vercel + GA4 + Ads + GSC)](./analytics-setup.md)
+3. [Growth and Lead Measurement](./growth-and-lead-measurement.md)
 
 ## Suggested Reading Order for New Engineers
 

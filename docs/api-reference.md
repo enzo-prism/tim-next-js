@@ -26,8 +26,12 @@ Defined by `insertContactSchema` in `src/server/schema.ts`:
 - `lastName`: string, required
 - `email`: string, required
 - `phone`: string, optional
-- `service`: string, optional
+- `service`: closed service ID or empty, optional
 - `message`: string, optional
+- `consentToContact`: boolean `true`, required
+- `consentVersion`: current version string, required
+- `submissionId`: UUID, required for duplicate protection
+- first-touch attribution fields: optional (`landingPage`, `referrer`, `ctaSource`, UTM fields, and Google click IDs)
 
 ### Appointment Payload (`InsertAppointment`)
 
@@ -37,7 +41,7 @@ Defined by `insertAppointmentSchema` in `src/server/schema.ts`:
 - `lastName`: string, required
 - `email`: string, required
 - `phone`: string, required
-- `service`: string, required
+- `service`: closed service ID, required
 - `preferredDate`: `YYYY-MM-DD`, optional
 - `preferredTime`: `"morning" | "afternoon" | "flexible"`, optional
 - `message`: string, optional
@@ -57,6 +61,7 @@ The `contacts` table now also includes:
 - `submissionId`: unique browser-generated UUID
 - campaign, landing-page, referrer, and CTA attribution fields
 - contact consent and consent-version fields
+- lifecycle fields: `leadStatus`, `contactedAt`, `bookedAt`, `arrivedAt`, `lostReason`, and private `staffNotes`
 
 ## Endpoints
 
@@ -72,7 +77,7 @@ Request body:
   "lastName": "Doe",
   "email": "jane@example.com",
   "phone": "555-123-4567",
-  "service": "Invisalign",
+  "service": "invisalign",
   "message": "Interested in a consult",
   "consentToContact": true,
   "consentVersion": "2026-07-15",
@@ -92,6 +97,10 @@ Responses:
   - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
 - `400`
   - `{ "success": false, "message": "Invalid form data", "errors": [...] }`
+- `403`: untrusted browser origin
+- `413`: request body exceeds 32,000 bytes
+- `415`: content type is not JSON
+- `429`: per-instance submission limit exceeded
 - `500`
   - `{ "success": false, "message": "Failed to submit contact form" }`
 
@@ -127,6 +136,10 @@ Responses:
   - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
 - `400`
   - `{ "success": false, "message": "Invalid appointment data", "errors": [...] }`
+- `403`: untrusted browser origin
+- `413`: request body exceeds 32,000 bytes
+- `415`: content type is not JSON
+- `429`: per-instance submission limit exceeded
 - `500`
   - `{ "success": false, "message": "Failed to submit appointment request" }`
 
@@ -162,7 +175,7 @@ Error responses:
 - `503` when changelog cannot be generated
 - `500` on read/parse failures
 
-## `GET /api/admin/contacts?limit=&offset=&q=`
+## `GET /api/admin/contacts?limit=&offset=&q=&status=&source=`
 
 Query paginated contact submissions.
 
@@ -177,6 +190,8 @@ Query params:
 - `q`:
   - optional search string
   - trimmed and truncated to 200 chars
+- `status`: optional lifecycle value (`new`, `contacted`, `booked`, `arrived`, `no-show`, `lost`)
+- `source`: optional normalized stored acquisition source
 
 Search fields:
 
@@ -204,21 +219,33 @@ Success response:
       "lastName": "Test",
       "email": "smoke@example.com",
       "phone": "555-111-2222",
-      "service": "Dental Exams",
+      "service": "dental-exams",
       "message": "Deployment smoke test",
       "requestType": "appointment",
-      "preferredDate": "2026-03-10",
-      "preferredTime": "10:00",
-      "formspreeStatus": "delivered"
+      "preferredDate": "2026-08-10",
+      "preferredTime": "morning",
+      "formspreeStatus": "delivered",
+      "leadStatus": "booked",
+      "contactedAt": "2026-07-16T16:00:00.000Z",
+      "bookedAt": "2026-07-16T16:10:00.000Z",
+      "arrivedAt": null,
+      "lostReason": null,
+      "staffNotes": "Confirmed by phone"
     }
   ]
 }
 ```
 
+The response also includes `sourceSummary`, an array of source-level `leads`, `booked`, `arrived`, `bookingRate`, and `arrivalRate` values.
+
 Error response:
 
 - `500`
   - `{ "ok": false, "error": "server_error", "message": "..." }`
+
+## `PATCH /api/admin/contacts/:id`
+
+Update a protected lead lifecycle record. The JSON body accepts `leadStatus`, `lostReason`, and `staffNotes`; at least one is required. `lostReason` is required when setting `leadStatus` to `lost`. The server sets lifecycle timestamps rather than trusting client timestamps.
 
 ## `GET /api/admin/ga4/overview?days=7|30|90`
 
@@ -275,7 +302,9 @@ Success shape:
   "totals": { "clicks": 123, "impressions": 4567, "ctr": 0.0269, "position": 18.2 },
   "series": [{ "date": "2026-03-01", "clicks": 5, "impressions": 140, "ctr": 0.035, "position": 17.8 }],
   "topQueries": [{ "query": "family dentist los gatos", "clicks": 10, "impressions": 120, "ctr": 0.083, "position": 5.2 }],
-  "topPages": [{ "page": "https://www.famfirstsmile.com/services", "clicks": 20, "impressions": 300, "ctr": 0.066, "position": 7.5 }]
+  "topPages": [{ "page": "https://www.famfirstsmile.com/services", "clicks": 20, "impressions": 300, "ctr": 0.066, "position": 7.5 }],
+  "queryPageRows": [{ "page": "https://www.famfirstsmile.com/services/invisalign", "query": "invisalign los gatos", "clicks": 4, "impressions": 300, "ctr": 0.013, "position": 8 }],
+  "searchOpportunities": [{ "page": "https://www.famfirstsmile.com/services/invisalign", "query": "invisalign los gatos", "clicks": 4, "impressions": 300, "ctr": 0.013, "position": 8, "opportunityScore": 226.41 }]
 }
 ```
 

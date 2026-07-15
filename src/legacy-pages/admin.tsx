@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CartesianGrid,
   Line,
@@ -14,6 +14,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -24,7 +32,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type {
+  AdminContactItem,
+  AdminContactsResponse,
+  UpdateAdminContactInput,
+  UpdateAdminContactResponse,
+} from "@/app/api/admin/contacts/types";
+import type { LeadStatus } from "@/server/schema";
 
 type DaysOption = 7 | 30 | 90;
 
@@ -84,30 +100,21 @@ type GSCOverviewResponse = {
     ctr: number;
     position: number;
   }>;
-};
-
-type AdminContactsResponse = {
-  total: number;
-  items: Array<{
-    id: string;
-    createdAt: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string | null;
-    service: string | null;
-    message: string | null;
-    requestType: string;
-    preferredDate: string | null;
-    preferredTime: string | null;
-    formspreeStatus: string | null;
-    landingPage: string | null;
-    referrer: string | null;
-    ctaSource: string | null;
-    utmSource: string | null;
-    utmMedium: string | null;
-    utmCampaign: string | null;
+  searchOpportunities: Array<{
+    page: string;
+    query: string;
+    clicks: number;
+    impressions: number;
+    ctr: number;
+    position: number;
+    opportunityScore: number;
   }>;
+  opportunityCriteria: {
+    minPosition: number;
+    maxPosition: number;
+    limit: number;
+    score: string;
+  };
 };
 
 type FetchJsonError = Error & {
@@ -160,13 +167,163 @@ async function fetchJson<T>(url: string): Promise<T> {
   return payload as T;
 }
 
+async function patchJson<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await res.json().catch(() => null)) as unknown;
+  if (!res.ok) {
+    const error: FetchJsonError = new Error(getPayloadMessage(payload) || res.statusText);
+    error.status = res.status;
+    error.payload = payload;
+    throw error;
+  }
+  return payload as T;
+}
+
 const formatInt = (value: number) => value.toLocaleString();
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const formatPosition = (value: number) => value.toFixed(1);
+const formatSearchPage = (value: string) => {
+  try {
+    const path = new URL(value).pathname;
+    return path || "/";
+  } catch {
+    return value || "(not set)";
+  }
+};
 const formatDateTime = (value: string) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 };
+
+const leadStatusOptions: Array<{ value: LeadStatus; label: string }> = [
+  { value: "new", label: "New" },
+  { value: "contacted", label: "Contacted" },
+  { value: "booked", label: "Booked" },
+  { value: "arrived", label: "Arrived" },
+  { value: "no-show", label: "No-show" },
+  { value: "lost", label: "Lost" },
+];
+
+const statusLabel = (value: LeadStatus) =>
+  leadStatusOptions.find((option) => option.value === value)?.label ?? value;
+
+function LeadLifecycleEditor({
+  row,
+  saving,
+  onSave,
+}: {
+  row: AdminContactItem;
+  saving: boolean;
+  onSave: (input: UpdateAdminContactInput) => Promise<void>;
+}) {
+  const [leadStatus, setLeadStatus] = useState<LeadStatus>(row.leadStatus);
+  const [lostReason, setLostReason] = useState(row.lostReason ?? "");
+  const [staffNotes, setStaffNotes] = useState(row.staffNotes ?? "");
+  const [error, setError] = useState<string | null>(null);
+
+  const isDirty =
+    leadStatus !== row.leadStatus ||
+    lostReason.trim() !== (row.lostReason ?? "") ||
+    staffNotes.trim() !== (row.staffNotes ?? "");
+  const lostReasonMissing = leadStatus === "lost" && !lostReason.trim();
+
+  const save = async () => {
+    setError(null);
+    try {
+      await onSave({
+        leadStatus,
+        lostReason: leadStatus === "lost" ? lostReason.trim() : null,
+        staffNotes: staffNotes.trim() || null,
+      });
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Update failed.");
+    }
+  };
+
+  return (
+    <div className="min-w-[300px] space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor={`lead-status-${row.id}`} className="text-xs">
+          Patient stage
+        </Label>
+        <Select
+          value={leadStatus}
+          onValueChange={(value) => setLeadStatus(value as LeadStatus)}
+          disabled={saving}
+        >
+          <SelectTrigger id={`lead-status-${row.id}`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {leadStatusOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {leadStatus === "lost" ? (
+        <div className="space-y-1.5">
+          <Label htmlFor={`lost-reason-${row.id}`} className="text-xs">
+            Lost reason
+          </Label>
+          <Input
+            id={`lost-reason-${row.id}`}
+            value={lostReason}
+            onChange={(event) => setLostReason(event.target.value)}
+            maxLength={500}
+            placeholder="Insurance, timing, unreachable..."
+            disabled={saving}
+            aria-invalid={lostReasonMissing}
+          />
+        </div>
+      ) : null}
+
+      <div className="space-y-1.5">
+        <Label htmlFor={`staff-notes-${row.id}`} className="text-xs">
+          Private staff notes
+        </Label>
+        <Textarea
+          id={`staff-notes-${row.id}`}
+          value={staffNotes}
+          onChange={(event) => setStaffNotes(event.target.value)}
+          maxLength={4000}
+          rows={3}
+          placeholder="Follow-up details visible only in admin"
+          disabled={saving}
+        />
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <Button
+          type="button"
+          size="sm"
+          onClick={save}
+          disabled={!isDirty || lostReasonMissing || saving}
+        >
+          {saving ? "Saving..." : "Save stage"}
+        </Button>
+        <span className="text-xs text-muted-foreground" aria-live="polite">
+          {error || (isDirty ? "Unsaved changes" : "Saved")}
+        </span>
+      </div>
+
+      <div className="space-y-1 text-xs text-muted-foreground">
+        {row.contactedAt ? <div>Contacted {formatDateTime(row.contactedAt)}</div> : null}
+        {row.bookedAt ? <div>Booked {formatDateTime(row.bookedAt)}</div> : null}
+        {row.arrivedAt ? <div>Arrived {formatDateTime(row.arrivedAt)}</div> : null}
+      </div>
+    </div>
+  );
+}
 
 function QueryErrorCard({ error }: { error: unknown }) {
   const err = error as FetchJsonError;
@@ -232,6 +389,8 @@ export default function Admin() {
   );
   const [days, setDays] = useState<DaysOption>(30);
   const [contactsSearch, setContactsSearch] = useState("");
+  const [contactsStatus, setContactsStatus] = useState<"all" | LeadStatus>("all");
+  const [contactsSource, setContactsSource] = useState("all");
   const [contactsPage, setContactsPage] = useState(0);
   const contactsLimit = 25;
 
@@ -267,12 +426,34 @@ export default function Admin() {
     });
     const q = contactsSearch.trim();
     if (q) params.set("q", q);
+    if (contactsStatus !== "all") params.set("status", contactsStatus);
+    if (contactsSource !== "all") params.set("source", contactsSource);
     return `/api/admin/contacts?${params.toString()}`;
-  }, [contactsLimit, contactsPage, contactsSearch]);
+  }, [contactsLimit, contactsPage, contactsSearch, contactsSource, contactsStatus]);
   const contactsQuery = useQuery({
     queryKey: [contactsQueryKey],
     queryFn: () => fetchJson<AdminContactsResponse>(contactsQueryKey),
     enabled: tab === "contacts",
+  });
+  const updateContactMutation = useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: UpdateAdminContactInput;
+    }) =>
+      patchJson<UpdateAdminContactResponse>(
+        `/api/admin/contacts/${encodeURIComponent(id)}`,
+        input,
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        predicate: (query) =>
+          typeof query.queryKey[0] === "string" &&
+          query.queryKey[0].startsWith("/api/admin/contacts?"),
+      });
+    },
   });
 
   const isRefreshing =
@@ -291,6 +472,21 @@ export default function Admin() {
   const showRange = tab === "ga4" || tab === "gsc";
   const contactsTotal = contactsQuery.data?.total ?? 0;
   const contactsItems = contactsQuery.data?.items ?? [];
+  const sourceSummary = contactsQuery.data?.sourceSummary ?? [];
+  const pipelineTotals = sourceSummary.reduce(
+    (totals, source) => ({
+      leads: totals.leads + source.leads,
+      booked: totals.booked + source.booked,
+      arrived: totals.arrived + source.arrived,
+    }),
+    { leads: 0, booked: 0, arrived: 0 },
+  );
+  const pipelineBookingRate = pipelineTotals.leads
+    ? pipelineTotals.booked / pipelineTotals.leads
+    : 0;
+  const pipelineArrivalRate = pipelineTotals.leads
+    ? pipelineTotals.arrived / pipelineTotals.leads
+    : 0;
   const contactsStart = contactsTotal > 0 ? contactsPage * contactsLimit + 1 : 0;
   const contactsEnd =
     contactsTotal > 0 ? Math.min(contactsStart + contactsItems.length - 1, contactsTotal) : 0;
@@ -593,6 +789,70 @@ export default function Admin() {
                   </CardContent>
                 </Card>
 
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Search Growth Opportunities</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Query-page pairs ranking in positions 4-20, prioritized by impressions,
+                      ranking potential, and CTR headroom. This is a work queue, not a traffic
+                      forecast.
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Query</TableHead>
+                          <TableHead>Ranking page</TableHead>
+                          <TableHead className="text-right">Impressions</TableHead>
+                          <TableHead className="text-right">CTR</TableHead>
+                          <TableHead className="text-right">Position</TableHead>
+                          <TableHead className="text-right">Priority</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {gscQuery.data?.searchOpportunities?.length ? (
+                          gscQuery.data.searchOpportunities.map((row) => (
+                            <TableRow key={`${row.page}:${row.query}`}>
+                              <TableCell className="max-w-[280px] text-sm font-medium">
+                                {row.query}
+                              </TableCell>
+                              <TableCell className="max-w-[320px] font-mono text-xs">
+                                <a
+                                  href={row.page}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  {formatSearchPage(row.page)}
+                                </a>
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-xs">
+                                {formatInt(row.impressions)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-xs">
+                                {formatPercent(row.ctr)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-xs">
+                                {formatPosition(row.position)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-xs">
+                                {row.opportunityScore.toFixed(1)}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-sm text-muted-foreground">
+                              No position 4-20 opportunities were found for this period.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
                 <div className="grid gap-6 lg:grid-cols-2">
                   <Card>
                     <CardHeader>
@@ -677,25 +937,162 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="contacts" className="mt-6 space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Captured leads</CardTitle>
+                </CardHeader>
+                <CardContent className="text-3xl font-bold">
+                  {formatInt(pipelineTotals.leads)}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Booked</CardTitle>
+                </CardHeader>
+                <CardContent className="text-3xl font-bold">
+                  {formatInt(pipelineTotals.booked)}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Lead to booking</CardTitle>
+                </CardHeader>
+                <CardContent className="text-3xl font-bold">
+                  {formatPercent(pipelineBookingRate)}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm text-muted-foreground">Lead to arrival</CardTitle>
+                </CardHeader>
+                <CardContent className="text-3xl font-bold">
+                  {formatPercent(pipelineArrivalRate)}
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Source to New Patient Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Source</TableHead>
+                      <TableHead className="text-right">Leads</TableHead>
+                      <TableHead className="text-right">Booked</TableHead>
+                      <TableHead className="text-right">Arrived</TableHead>
+                      <TableHead className="text-right">Booking rate</TableHead>
+                      <TableHead className="text-right">Arrival rate</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sourceSummary.length ? (
+                      sourceSummary.map((source) => (
+                        <TableRow key={source.source}>
+                          <TableCell className="font-medium">{source.source}</TableCell>
+                          <TableCell className="text-right font-mono text-xs">
+                            {formatInt(source.leads)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs">
+                            {formatInt(source.booked)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs">
+                            {formatInt(source.arrived)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs">
+                            {formatPercent(source.bookingRate)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-xs">
+                            {formatPercent(source.arrivalRate)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-sm text-muted-foreground">
+                          Source results will appear after leads are captured.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Website Leads</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      Search
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <div className="grid flex-1 gap-3 sm:grid-cols-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="contacts-search" className="text-xs">
+                        Search
+                      </Label>
+                      <Input
+                        id="contacts-search"
+                        value={contactsSearch}
+                        onChange={(event) => {
+                          setContactsSearch(event.target.value);
+                          setContactsPage(0);
+                        }}
+                        placeholder="Name, service, campaign..."
+                      />
                     </div>
-                    <Input
-                      value={contactsSearch}
-                      onChange={(e) => {
-                        setContactsSearch(e.target.value);
-                        setContactsPage(0);
-                      }}
-                      placeholder="Name, service, campaign, landing page..."
-                      className="sm:w-[320px]"
-                    />
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="contacts-status" className="text-xs">
+                        Patient stage
+                      </Label>
+                      <Select
+                        value={contactsStatus}
+                        onValueChange={(value) => {
+                          setContactsStatus(value as "all" | LeadStatus);
+                          setContactsPage(0);
+                        }}
+                      >
+                        <SelectTrigger id="contacts-status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All stages</SelectItem>
+                          {leadStatusOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="contacts-source" className="text-xs">
+                        Source
+                      </Label>
+                      <Select
+                        value={contactsSource}
+                        onValueChange={(value) => {
+                          setContactsSource(value);
+                          setContactsPage(0);
+                        }}
+                      >
+                        <SelectTrigger id="contacts-source">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All sources</SelectItem>
+                          {sourceSummary.map((source) => (
+                            <SelectItem key={source.source} value={source.source}>
+                              {source.source}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
@@ -752,6 +1149,7 @@ export default function Admin() {
                         <TableHead className="w-[180px]">Service</TableHead>
                         <TableHead className="w-[220px]">Preferred Time</TableHead>
                         <TableHead className="w-[220px]">Source</TableHead>
+                        <TableHead className="w-[340px]">Patient Lifecycle</TableHead>
                         <TableHead className="w-[160px]">Notification</TableHead>
                         <TableHead>Message</TableHead>
                       </TableRow>
@@ -759,7 +1157,7 @@ export default function Admin() {
                     <TableBody>
                       {contactsItems.length ? (
                         contactsItems.map((row) => (
-                          <TableRow key={row.id}>
+                          <TableRow key={`${row.id}:${row.updatedAt}`}>
                             <TableCell className="font-mono text-xs">
                               {formatDateTime(row.createdAt)}
                             </TableCell>
@@ -802,6 +1200,21 @@ export default function Admin() {
                                 </div>
                               </div>
                             </TableCell>
+                            <TableCell className="align-top">
+                              <div className="mb-3 inline-flex rounded-lg bg-secondary/20 px-2.5 py-1 text-xs font-semibold text-accent-foreground">
+                                {statusLabel(row.leadStatus)}
+                              </div>
+                              <LeadLifecycleEditor
+                                row={row}
+                                saving={
+                                  updateContactMutation.isPending &&
+                                  updateContactMutation.variables?.id === row.id
+                                }
+                                onSave={async (input) => {
+                                  await updateContactMutation.mutateAsync({ id: row.id, input });
+                                }}
+                              />
+                            </TableCell>
                             <TableCell className="text-sm">
                               <span
                                 className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${
@@ -820,7 +1233,7 @@ export default function Admin() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={10} className="text-sm text-muted-foreground">
+                          <TableCell colSpan={11} className="text-sm text-muted-foreground">
                             No contacts found.
                           </TableCell>
                         </TableRow>

@@ -6,9 +6,14 @@ import { motion } from "framer-motion";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { Button } from "@/components/ui/button";
 import { ReviewsSection } from "@/components/review";
+import { ServiceHeroConversion } from "@/components/service-growth/service-hero-conversion";
 import { services } from "@/data/services";
 import { serviceReviews } from "@/data/reviews";
-import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
+import {
+  buildAppointmentUrl,
+  trackAppointmentCtaClick,
+  trackSiteEvent,
+} from "@/lib/analytics";
 import { invisalignContent } from "@shared/marketing-pages";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import illustrationAligners from "@assets/brand/illustration-aligners.webp";
@@ -50,6 +55,14 @@ export default function Invisalign() {
     trackAppointmentCtaClick("invisalign", {
       ctaType: "consultation",
       serviceId: "invisalign",
+    });
+  };
+
+  const handlePhoneClick = () => {
+    trackSiteEvent("phone_click", {
+      destination: "tel:+14083588100",
+      location: "invisalign_page_final",
+      service_id: "invisalign",
     });
   };
 
@@ -110,7 +123,7 @@ export default function Invisalign() {
   return (
     <div className="pt-16 pb-20 bg-white">
       <motion.section
-        className="relative overflow-hidden py-20 lg:py-32"
+        className="relative overflow-hidden py-16 lg:py-24"
         initial="hidden"
         animate="visible"
         variants={fadeInUp}
@@ -134,6 +147,15 @@ export default function Invisalign() {
               >
                 {invisalignContent.hero.subtitle}
               </motion.p>
+              <motion.div variants={fadeInUp}>
+                <ServiceHeroConversion
+                  className="mt-8"
+                  serviceId="invisalign"
+                  serviceName="Invisalign"
+                  source="invisalign_hero"
+                  review={reviewData?.reviews[0]}
+                />
+              </motion.div>
             </div>
 
             <motion.div
@@ -423,7 +445,13 @@ export default function Invisalign() {
                 Book Your Appointment
               </Link>
             </motion.div>
-            <span className="text-white text-sm">or call (408) 358-8100</span>
+            <a
+              href="tel:+14083588100"
+              className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-white underline decoration-white/60 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+              onClick={handlePhoneClick}
+            >
+              Call (408) 358-8100
+            </a>
           </motion.div>
         </motion.div>
 

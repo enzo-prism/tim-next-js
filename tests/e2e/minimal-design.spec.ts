@@ -60,10 +60,11 @@ test.describe("minimal clinical design guard", () => {
 
   test("primary appointment paths remain visible", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("link", { name: /schedule appointment/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /request an appointment/i }).first()).toBeVisible();
 
     await page.goto("/book-appointment");
-    await expect(page.getByRole("heading", { name: /appointment request form/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /start with the essentials/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continue" })).toBeEnabled();
 
     await page.goto("/contact");
     await expect(page.getByRole("heading", { name: /send us a message/i })).toBeVisible();

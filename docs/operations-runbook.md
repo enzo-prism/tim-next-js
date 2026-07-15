@@ -35,6 +35,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 2. Verify admin analytics endpoints return healthy payloads.
 3. Confirm Vercel Analytics, GA4 Realtime, and Search Console data are flowing.
 4. Confirm the ElevenLabs widget still loads from the pinned `0.11.4` embed URL.
+5. Review unworked `new` leads, failed notification rows, source booking rates, and Search Console opportunity candidates.
 
 ## ElevenLabs Widget Notes
 
@@ -124,6 +125,15 @@ Actions:
 2. Check Postgres connectivity and table existence.
 3. Verify no schema mismatch in `contacts` columns.
 4. Confirm environment has correct `DATABASE_URL`.
+5. Run `npm run db:verify` to confirm lifecycle columns, constraints, and indexes are present.
+
+## Lead lifecycle operating rule
+
+1. Move a new lead to `contacted` after a real outreach attempt.
+2. Use `booked` only after the office confirms an appointment; a website request alone is not booked.
+3. Use `arrived` after the first confirmed visit occurs.
+4. Use `no-show` when the confirmed first visit is missed.
+5. Use `lost` only with a short operational reason. Keep clinical details out of staff notes.
 
 ## Incident: GA4/GSC cards show missing config
 
@@ -153,7 +163,7 @@ Actions:
 
 1. Verify redirect rules in `next.config.ts`.
 2. Verify middleware redirects for:
-   - `www` host to apex
+   - apex/noncanonical custom host to `https://www.famfirstsmile.com`
    - `/?page_id=1073` to `/patient-info`
 3. Deploy fix and run redirect smoke tests.
 
@@ -168,12 +178,11 @@ Actions:
 
 1. Verify GitHub default branch:
    - `gh repo view enzo-prism/tim-next-js --json defaultBranchRef`
-2. If not `main`, reset immediately:
-   - `gh api -X PATCH repos/enzo-prism/tim-next-js -f default_branch=main`
+2. If not `main`, stop and correct the repository setting as a separate explicit administrative action.
 3. Reconnect Vercel Git integration:
    - `vercel git connect https://github.com/enzo-prism/tim-next-js.git`
 4. Run guarded release:
-   - `npm run release:prod`
+   - `npm run release:prod -- --schema-synced`
 5. Confirm new production deployment is Ready:
    - `vercel ls tim-next-js`
 

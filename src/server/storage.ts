@@ -1,11 +1,12 @@
 import { randomUUID } from "crypto";
-import { desc, eq, ilike, or, sql as dsql } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql as dsql } from "drizzle-orm";
 import {
   contacts,
   users,
   type Contact,
   type InsertContactRecord,
   type InsertUser,
+  type LeadStatus,
   type User,
 } from "@/server/schema";
 import { db } from "@/server/db";
@@ -14,6 +15,8 @@ type ListContactsOptions = {
   limit: number;
   offset: number;
   q?: string;
+  status?: LeadStatus;
+  source?: string;
 };
 
 export type ListContactsResult = {
@@ -21,10 +24,80 @@ export type ListContactsResult = {
   items: Contact[];
 };
 
+export type LeadSourceSummary = {
+  source: string;
+  leads: number;
+  booked: number;
+  arrived: number;
+  bookingRate: number;
+  arrivalRate: number;
+};
+
+export type UpdateContactLifecycleInput = {
+  leadStatus?: LeadStatus;
+  lostReason?: string | null;
+  staffNotes?: string | null;
+};
+
+export const normalizeLeadSource = (contact: {
+  utmSource?: string | null;
+  gclid?: string | null;
+  gbraid?: string | null;
+  wbraid?: string | null;
+  referrer?: string | null;
+}) => {
+  const utmSource = contact.utmSource?.trim();
+  if (utmSource) return utmSource;
+  if (contact.gclid || contact.gbraid || contact.wbraid) return "Google Ads";
+  if (contact.referrer?.trim()) return "Referral";
+  return "Direct / unknown";
+};
+
+type ContactLifecycleFields = Pick<
+  Contact,
+  "leadStatus" | "contactedAt" | "bookedAt" | "arrivedAt" | "lostReason" | "staffNotes"
+>;
+
+export const buildContactLifecycleUpdate = (
+  existing: ContactLifecycleFields,
+  update: UpdateContactLifecycleInput,
+  now: Date,
+): ContactLifecycleFields => {
+  const leadStatus = update.leadStatus ?? existing.leadStatus;
+  const reachedContacted = ["contacted", "booked", "arrived", "no-show"].includes(
+    leadStatus,
+  );
+  const reachedBooked = ["booked", "arrived", "no-show"].includes(leadStatus);
+  const reachedArrived = leadStatus === "arrived";
+
+  return {
+    leadStatus,
+    contactedAt: existing.contactedAt ?? (reachedContacted ? now : null),
+    bookedAt: existing.bookedAt ?? (reachedBooked ? now : null),
+    arrivedAt: existing.arrivedAt ?? (reachedArrived ? now : null),
+    lostReason:
+      leadStatus === "lost" ? (update.lostReason ?? existing.lostReason) : null,
+    staffNotes:
+      update.staffNotes === undefined ? existing.staffNotes : update.staffNotes,
+  };
+};
+
+const leadSourceSql = dsql<string>`CASE
+  WHEN NULLIF(BTRIM(${contacts.utmSource}), '') IS NOT NULL THEN BTRIM(${contacts.utmSource})
+  WHEN COALESCE(
+    NULLIF(BTRIM(${contacts.gclid}), ''),
+    NULLIF(BTRIM(${contacts.gbraid}), ''),
+    NULLIF(BTRIM(${contacts.wbraid}), '')
+  ) IS NOT NULL THEN 'Google Ads'
+  WHEN NULLIF(BTRIM(${contacts.referrer}), '') IS NOT NULL THEN 'Referral'
+  ELSE 'Direct / unknown'
+END`;
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getContact(id: string): Promise<Contact | undefined>;
   getContactBySubmissionId(submissionId: string): Promise<Contact | undefined>;
   createContact(contact: InsertContactRecord): Promise<Contact>;
   updateContactFormspreeStatus(
@@ -32,6 +105,11 @@ export interface IStorage {
     status: "delivered" | "failed",
   ): Promise<Contact | undefined>;
   listContacts(options: ListContactsOptions): Promise<ListContactsResult>;
+  getLeadSourceSummary(): Promise<LeadSourceSummary[]>;
+  updateContactLifecycle(
+    id: string,
+    update: UpdateContactLifecycleInput,
+  ): Promise<Contact | undefined>;
 }
 
 type DrizzleDatabase = NonNullable<typeof db>;
@@ -65,6 +143,15 @@ export class DatabaseStorage implements IStorage {
     return contact;
   }
 
+  async getContact(id: string): Promise<Contact | undefined> {
+    const [contact] = await this.database
+      .select()
+      .from(contacts)
+      .where(eq(contacts.id, id))
+      .limit(1);
+    return contact || undefined;
+  }
+
   async getContactBySubmissionId(submissionId: string): Promise<Contact | undefined> {
     const [contact] = await this.database
       .select()
@@ -89,7 +176,7 @@ export class DatabaseStorage implements IStorage {
   async listContacts(options: ListContactsOptions): Promise<ListContactsResult> {
     const q = options.q?.trim();
     const pattern = q ? `%${q}%` : null;
-    const where = pattern
+    const searchWhere = pattern
       ? or(
           ilike(contacts.firstName, pattern),
           ilike(contacts.lastName, pattern),
@@ -104,8 +191,16 @@ export class DatabaseStorage implements IStorage {
           ilike(contacts.utmSource, pattern),
           ilike(contacts.utmCampaign, pattern),
           ilike(contacts.landingPage, pattern),
+          ilike(contacts.leadStatus, pattern),
+          ilike(contacts.lostReason, pattern),
+          ilike(contacts.staffNotes, pattern),
         )
       : undefined;
+    const where = and(
+      searchWhere,
+      options.status ? eq(contacts.leadStatus, options.status) : undefined,
+      options.source ? eq(leadSourceSql, options.source) : undefined,
+    );
 
     const [countRow] = await this.database
       .select({ count: dsql<number>`count(*)` })
@@ -124,6 +219,54 @@ export class DatabaseStorage implements IStorage {
       total: Number(countRow?.count ?? 0),
       items,
     };
+  }
+
+  async getLeadSourceSummary(): Promise<LeadSourceSummary[]> {
+    const rows = await this.database
+      .select({
+        source: leadSourceSql,
+        leads: dsql<number>`count(*)::int`,
+        booked: dsql<number>`count(*) FILTER (WHERE ${contacts.bookedAt} IS NOT NULL)::int`,
+        arrived: dsql<number>`count(*) FILTER (WHERE ${contacts.arrivedAt} IS NOT NULL)::int`,
+      })
+      .from(contacts)
+      .groupBy(leadSourceSql)
+      .orderBy(desc(dsql`count(*)`));
+
+    return rows.map((row) => {
+      const leads = Number(row.leads);
+      const booked = Number(row.booked);
+      const arrived = Number(row.arrived);
+      return {
+        source: row.source,
+        leads,
+        booked,
+        arrived,
+        bookingRate: leads ? booked / leads : 0,
+        arrivalRate: leads ? arrived / leads : 0,
+      };
+    });
+  }
+
+  async updateContactLifecycle(
+    id: string,
+    update: UpdateContactLifecycleInput,
+  ): Promise<Contact | undefined> {
+    const existing = await this.getContact(id);
+    if (!existing) return undefined;
+
+    const now = new Date();
+    const lifecycle = buildContactLifecycleUpdate(existing, update, now);
+
+    const [contact] = await this.database
+      .update(contacts)
+      .set({
+        ...lifecycle,
+        updatedAt: now,
+      })
+      .where(eq(contacts.id, id))
+      .returning();
+    return contact || undefined;
   }
 }
 
@@ -177,9 +320,19 @@ class InMemoryStorage implements IStorage {
       wbraid: insertContact.wbraid ?? null,
       consentToContact: insertContact.consentToContact ?? false,
       consentVersion: insertContact.consentVersion ?? null,
+      leadStatus: insertContact.leadStatus ?? "new",
+      contactedAt: insertContact.contactedAt ?? null,
+      bookedAt: insertContact.bookedAt ?? null,
+      arrivedAt: insertContact.arrivedAt ?? null,
+      lostReason: insertContact.lostReason ?? null,
+      staffNotes: insertContact.staffNotes ?? null,
     };
     this.contacts.set(contact.id, contact);
     return contact;
+  }
+
+  async getContact(id: string): Promise<Contact | undefined> {
+    return this.contacts.get(id);
   }
 
   async getContactBySubmissionId(submissionId: string): Promise<Contact | undefined> {
@@ -221,6 +374,9 @@ class InMemoryStorage implements IStorage {
         contact.utmSource,
         contact.utmCampaign,
         contact.landingPage,
+        contact.leadStatus,
+        contact.lostReason,
+        contact.staffNotes,
       ]
         .filter(Boolean)
         .join(" ")
@@ -229,11 +385,53 @@ class InMemoryStorage implements IStorage {
     };
 
     const all = Array.from(this.contacts.values())
-      .filter(matches)
+      .filter(
+        (contact) =>
+          matches(contact) &&
+          (!options.status || contact.leadStatus === options.status) &&
+          (!options.source || normalizeLeadSource(contact) === options.source),
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     const items = all.slice(options.offset, options.offset + options.limit);
     return { total: all.length, items };
+  }
+
+  async getLeadSourceSummary(): Promise<LeadSourceSummary[]> {
+    const buckets = new Map<string, { leads: number; booked: number; arrived: number }>();
+    for (const contact of this.contacts.values()) {
+      const source = normalizeLeadSource(contact);
+      const bucket = buckets.get(source) ?? { leads: 0, booked: 0, arrived: 0 };
+      bucket.leads += 1;
+      if (contact.bookedAt) bucket.booked += 1;
+      if (contact.arrivedAt) bucket.arrived += 1;
+      buckets.set(source, bucket);
+    }
+
+    return Array.from(buckets, ([source, value]) => ({
+      source,
+      ...value,
+      bookingRate: value.leads ? value.booked / value.leads : 0,
+      arrivalRate: value.leads ? value.arrived / value.leads : 0,
+    })).sort((a, b) => b.leads - a.leads || a.source.localeCompare(b.source));
+  }
+
+  async updateContactLifecycle(
+    id: string,
+    update: UpdateContactLifecycleInput,
+  ): Promise<Contact | undefined> {
+    const existing = this.contacts.get(id);
+    if (!existing) return undefined;
+
+    const now = new Date();
+    const lifecycle = buildContactLifecycleUpdate(existing, update, now);
+    const updated: Contact = {
+      ...existing,
+      ...lifecycle,
+      updatedAt: now,
+    };
+    this.contacts.set(id, updated);
+    return updated;
   }
 }
 
@@ -257,6 +455,10 @@ class UnavailableStorage implements IStorage {
     throw new Error(this.message);
   }
 
+  async getContact(): Promise<Contact | undefined> {
+    throw new Error(this.message);
+  }
+
   async getContactBySubmissionId(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
@@ -266,6 +468,14 @@ class UnavailableStorage implements IStorage {
   }
 
   async listContacts(): Promise<ListContactsResult> {
+    throw new Error(this.message);
+  }
+
+  async getLeadSourceSummary(): Promise<LeadSourceSummary[]> {
+    throw new Error(this.message);
+  }
+
+  async updateContactLifecycle(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
 }

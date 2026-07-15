@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  appointmentDetailsStepSchema,
   appointmentFormSchema,
+  appointmentPreferencesStepSchema,
   contactFormSchema,
   insertAppointmentSchema,
   leadServiceIds,
@@ -82,6 +84,44 @@ describe("public lead schemas", () => {
     ).toBe(false);
     expect(
       appointmentFormSchema.safeParse({ ...base, service: "invisalign", preferredDate: "2020-01-01" }).success,
+    ).toBe(false);
+  });
+
+  it("validates required details before optional appointment preferences", () => {
+    expect(
+      appointmentDetailsStepSchema.safeParse({
+        firstName: "Jamie",
+        lastName: "Lee",
+        email: "jamie@example.com",
+        phone: "(408) 555-1212",
+        service: "invisalign",
+      }).success,
+    ).toBe(true);
+    expect(
+      appointmentDetailsStepSchema.safeParse({
+        firstName: "Jamie",
+        lastName: "Lee",
+        email: "not-an-email",
+        phone: "123",
+        service: "",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      appointmentPreferencesStepSchema.safeParse({
+        preferredDate: "",
+        preferredTime: "",
+        message: "",
+        consentToContact: true,
+      }).success,
+    ).toBe(true);
+    expect(
+      appointmentPreferencesStepSchema.safeParse({
+        preferredDate: "",
+        preferredTime: "",
+        message: "",
+        consentToContact: false,
+      }).success,
     ).toBe(false);
   });
 });

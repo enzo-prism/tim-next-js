@@ -3,6 +3,13 @@ import { google } from "googleapis";
 import { getAdminDateRange } from "@/server/admin/dates";
 import { buildMissingConfigPayload, getGoogleAuth } from "@/server/admin/google";
 import { getFromCache, setCache } from "@/server/admin/cache";
+import {
+  buildSearchOpportunityCandidates,
+  mapQueryPageRows,
+  OPPORTUNITY_LIMIT,
+  OPPORTUNITY_MAX_POSITION,
+  OPPORTUNITY_MIN_POSITION,
+} from "@/app/api/admin/gsc/overview/opportunities";
 
 export const runtime = "nodejs";
 
@@ -57,12 +64,11 @@ export async function GET(req: NextRequest) {
       searchType: "web",
     } as const;
 
-    const seriesRes = await searchconsole.searchanalytics.query({
-      siteUrl,
-      requestBody: { ...requestBase, dimensions: ["date"], rowLimit: 1000 },
-    });
-
-    const [queriesRes, pagesRes] = await Promise.all([
+    const [seriesRes, queriesRes, pagesRes, queryPagesRes] = await Promise.all([
+      searchconsole.searchanalytics.query({
+        siteUrl,
+        requestBody: { ...requestBase, dimensions: ["date"], rowLimit: 1000 },
+      }),
       searchconsole.searchanalytics
         .query({
           siteUrl,
@@ -79,6 +85,22 @@ export async function GET(req: NextRequest) {
         })
         .catch((error: any) => {
           console.warn("GSC top pages query failed; continuing without it.", error?.message);
+          return null;
+        }),
+      searchconsole.searchanalytics
+        .query({
+          siteUrl,
+          requestBody: {
+            ...requestBase,
+            dimensions: ["page", "query"],
+            rowLimit: 5000,
+          },
+        })
+        .catch((error: any) => {
+          console.warn(
+            "GSC query-by-page query failed; continuing without opportunities.",
+            error?.message,
+          );
           return null;
         }),
     ]);
@@ -125,12 +147,24 @@ export async function GET(req: NextRequest) {
       position: row.position ?? 0,
     }));
 
+    const queryPageRows = mapQueryPageRows(queryPagesRes?.data?.rows ?? []);
+    const searchOpportunities = buildSearchOpportunityCandidates(queryPageRows);
+
     const payload = {
       range,
       totals,
       series,
       topQueries,
       topPages,
+      queryPageRows,
+      searchOpportunities,
+      opportunityCriteria: {
+        minPosition: OPPORTUNITY_MIN_POSITION,
+        maxPosition: OPPORTUNITY_MAX_POSITION,
+        limit: OPPORTUNITY_LIMIT,
+        score:
+          "Impressions weighted by proximity to position 4 and remaining CTR headroom; use for prioritization, not traffic forecasting.",
+      },
     };
 
     setCache(cacheKey, payload, 10 * 60_000);

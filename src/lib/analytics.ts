@@ -11,6 +11,9 @@ export { APPOINTMENT_FORM_URL, buildAppointmentUrl };
 
 export type SiteEventName =
   | "cta_click"
+  | "appointment_step_view"
+  | "appointment_step_complete"
+  | "appointment_form_abandon"
   | "form_start"
   | "form_submit_attempt"
   | "generate_lead"
@@ -29,15 +32,18 @@ export type SiteEventPayload = Record<string, unknown>;
 export type SanitizedSiteEventPayload = Record<string, SiteEventValue>;
 
 const ALLOWED_EVENT_KEYS = new Set([
+  "abandonment_reason",
   "cta_type",
   "destination",
   "error_type",
+  "form_step",
   "form_type",
   "lead_source",
   "location",
   "page_path",
   "provider",
   "service_id",
+  "step_name",
   "value",
 ]);
 
@@ -233,6 +239,58 @@ export const trackFormStart = (details: {
     form_type: details.formType,
     location: details.location,
     service_id: details.serviceId,
+  });
+};
+
+export type AppointmentBookingStep = 1 | 2;
+
+const appointmentStepName = (step: AppointmentBookingStep) =>
+  step === 1 ? "contact_details" : "appointment_preferences";
+
+const trackAppointmentBookingStep = (
+  eventName:
+    | "appointment_step_view"
+    | "appointment_step_complete"
+    | "appointment_form_abandon",
+  details: {
+    step: AppointmentBookingStep;
+    serviceId?: string;
+    abandonmentReason?: "page_exit" | "route_change";
+  },
+) => {
+  trackSiteEvent(eventName, {
+    abandonment_reason: details.abandonmentReason,
+    form_step: details.step,
+    form_type: "appointment",
+    location: "book_appointment_page",
+    service_id: details.serviceId,
+    step_name: appointmentStepName(details.step),
+  });
+};
+
+export const trackAppointmentBookingStepView = (
+  step: AppointmentBookingStep,
+  serviceId?: string,
+) => {
+  trackAppointmentBookingStep("appointment_step_view", { step, serviceId });
+};
+
+export const trackAppointmentBookingStepComplete = (
+  step: AppointmentBookingStep,
+  serviceId?: string,
+) => {
+  trackAppointmentBookingStep("appointment_step_complete", { step, serviceId });
+};
+
+export const trackAppointmentBookingAbandonment = (
+  step: AppointmentBookingStep,
+  serviceId?: string,
+  abandonmentReason: "page_exit" | "route_change" = "page_exit",
+) => {
+  trackAppointmentBookingStep("appointment_form_abandon", {
+    step,
+    serviceId,
+    abandonmentReason,
   });
 };
 

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -16,8 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 import { services } from "@/content/services";
 import {
   appointmentFormSchema,
@@ -25,20 +24,24 @@ import {
   LEAD_CONSENT_VERSION,
   type AppointmentFormValues,
 } from "@/content/form-schemas";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import {
+  trackAppointmentBookingAbandonment,
+  trackAppointmentBookingStepComplete,
+  trackAppointmentBookingStepView,
   trackAppointmentSubmitFallback,
   trackAppointmentSubmitSuccess,
   trackFormStart,
   trackFormSubmitAttempt,
   trackFormSubmitError,
   trackPhoneClick,
+  type AppointmentBookingStep,
 } from "@/lib/analytics";
 import { captureLeadAttribution, createSubmissionId } from "@/lib/lead-attribution";
+import { toast } from "sonner";
 
 const officePhone = "(408) 358-8100";
 const officePhoneHref = "tel:+14083588100";
+const requiredDetailsFields = ["service", "firstName", "lastName", "phone", "email"] as const;
 
 type AppointmentResponse = {
   success: boolean;
@@ -52,8 +55,15 @@ type AppointmentResponse = {
 export default function BookAppointment() {
   const searchParams = useSearchParams();
   const submissionIdRef = useRef<string | null>(null);
+  const formStartedRef = useRef(false);
+  const completedRef = useRef(false);
+  const abandonmentTrackedRef = useRef(false);
+  const completedStepsRef = useRef(new Set<AppointmentBookingStep>());
+  const activeStepRef = useRef<AppointmentBookingStep>(1);
+  const shouldFocusStepHeadingRef = useRef(false);
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const [isFormReady, setIsFormReady] = useState(false);
-  const [hasStartedForm, setHasStartedForm] = useState(false);
+  const [step, setStep] = useState<AppointmentBookingStep>(1);
   const [submission, setSubmission] = useState<{
     delivered: boolean;
     fallbackMessage?: string;
@@ -115,6 +125,44 @@ export default function BookAppointment() {
     }
   }, [appointmentServiceOptions, form, searchParams]);
 
+  useEffect(() => {
+    if (!isFormReady || submission) return;
+    activeStepRef.current = step;
+    trackAppointmentBookingStepView(step, form.getValues("service") || undefined);
+  }, [form, isFormReady, step, submission]);
+
+  useEffect(() => {
+    if (!shouldFocusStepHeadingRef.current) return;
+    shouldFocusStepHeadingRef.current = false;
+    stepHeadingRef.current?.focus();
+  }, [step]);
+
+  useEffect(() => {
+    const trackAbandonment = (reason: "page_exit" | "route_change") => {
+      if (
+        !formStartedRef.current ||
+        completedRef.current ||
+        abandonmentTrackedRef.current
+      ) {
+        return;
+      }
+
+      abandonmentTrackedRef.current = true;
+      trackAppointmentBookingAbandonment(
+        activeStepRef.current,
+        form.getValues("service") || undefined,
+        reason,
+      );
+    };
+    const handlePageHide = () => trackAbandonment("page_exit");
+
+    window.addEventListener("pagehide", handlePageHide);
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+      trackAbandonment("route_change");
+    };
+  }, [form]);
+
   const appointmentMutation = useMutation({
     mutationFn: async (values: AppointmentFormValues) => {
       submissionIdRef.current ||= createSubmissionId();
@@ -133,13 +181,16 @@ export default function BookAppointment() {
       });
 
       const payload = (await res.json().catch(() => null)) as
-        | (AppointmentResponse & { errors?: Array<{ path: Array<string | number>; message: string }>; message?: string })
+        | (AppointmentResponse & {
+            errors?: Array<{ path: Array<string | number>; message: string }>;
+            message?: string;
+          })
         | null;
 
       if (!res.ok || !payload?.success) {
-        const error = new Error(payload?.message || "Failed to submit appointment request.") as Error & {
-          details?: typeof payload;
-        };
+        const error = new Error(
+          payload?.message || "Failed to submit appointment request.",
+        ) as Error & { details?: typeof payload };
         error.details = payload ?? undefined;
         throw error;
       }
@@ -147,6 +198,7 @@ export default function BookAppointment() {
       return payload;
     },
     onSuccess: (data) => {
+      completedRef.current = true;
       setSubmission({
         delivered: data.delivered,
         fallbackMessage: data.fallbackMessage,
@@ -162,33 +214,30 @@ export default function BookAppointment() {
       if (data.delivered) {
         toast.success("Appointment request received", {
           description:
-            "Thanks! We received your request and our team will contact you shortly to confirm.",
+            "Thanks. Our team will contact you to confirm an appointment time.",
         });
       } else {
         trackAppointmentSubmitFallback(data.serviceId || undefined);
         toast("Request saved with backup notice", {
           description:
             data.fallbackMessage ||
-            "Your request is saved. Please call us so we can prioritize your appointment.",
+            "Your request is saved. Please call us so we can prioritize it.",
         });
       }
 
-      form.reset({
-        company: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        service: "",
-        preferredDate: "",
-        preferredTime: "",
-        message: "",
-        consentToContact: false,
-      });
+      form.reset();
       submissionIdRef.current = null;
     },
-    onError: (error: Error & { details?: { errors?: Array<{ path: Array<string | number>; message: string }>; message?: string } }) => {
+    onError: (
+      error: Error & {
+        details?: {
+          errors?: Array<{ path: Array<string | number>; message: string }>;
+          message?: string;
+        };
+      },
+    ) => {
       const issues = error.details?.errors ?? [];
+      let hasDetailsError = false;
       trackFormSubmitError({
         errorType: issues.length > 0 ? "validation_error" : "request_error",
         formType: "appointment",
@@ -203,7 +252,16 @@ export default function BookAppointment() {
             type: "server",
             message: issue.message,
           });
+          hasDetailsError ||= requiredDetailsFields.includes(
+            path as (typeof requiredDetailsFields)[number],
+          );
         }
+      }
+
+      if (hasDetailsError) {
+        activeStepRef.current = 1;
+        shouldFocusStepHeadingRef.current = true;
+        setStep(1);
       }
 
       toast.error("Unable to submit request", {
@@ -212,8 +270,45 @@ export default function BookAppointment() {
     },
   });
 
+  const handleFormStart = () => {
+    if (formStartedRef.current) return;
+    formStartedRef.current = true;
+    trackFormStart({
+      formType: "appointment",
+      location: "book_appointment_page",
+      serviceId: form.getValues("service") || undefined,
+    });
+  };
+
+  const trackStepCompleteOnce = (completedStep: AppointmentBookingStep) => {
+    if (completedStepsRef.current.has(completedStep)) return;
+    completedStepsRef.current.add(completedStep);
+    trackAppointmentBookingStepComplete(
+      completedStep,
+      form.getValues("service") || undefined,
+    );
+  };
+
+  const advanceToPreferences = async () => {
+    handleFormStart();
+    const isValid = await form.trigger(requiredDetailsFields, { shouldFocus: true });
+    if (!isValid) return;
+
+    trackStepCompleteOnce(1);
+    activeStepRef.current = 2;
+    shouldFocusStepHeadingRef.current = true;
+    setStep(2);
+  };
+
+  const returnToDetails = () => {
+    activeStepRef.current = 1;
+    shouldFocusStepHeadingRef.current = true;
+    setStep(1);
+  };
+
   const onSubmit = (values: AppointmentFormValues) => {
     setSubmission(null);
+    trackStepCompleteOnce(2);
     trackFormSubmitAttempt({
       formType: "appointment",
       location: "book_appointment_page",
@@ -231,306 +326,406 @@ export default function BookAppointment() {
     });
   };
 
-  const handleFormStart = () => {
-    if (hasStartedForm) return;
-    setHasStartedForm(true);
-    trackFormStart({
-      formType: "appointment",
-      location: "book_appointment_page",
-      serviceId: form.getValues("service") || undefined,
-    });
-  };
-
   return (
-    <div className="pt-16 pb-20 bg-white">
-      <section className="relative overflow-hidden py-20 lg:py-28">
-        <HeroBackdrop variant="warm" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
-              Request an Appointment
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Request your preferred date and time. We will follow up to confirm your visit.
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="bg-background px-4 pb-20 pt-24 sm:px-6 sm:pt-28 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-8 max-w-2xl sm:mb-10">
+          <p className="mb-2 text-sm font-bold uppercase tracking-wider text-primary">
+            Appointment request
+          </p>
+          <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
+            Tell us how we can help
+          </h1>
+          <p id="request-expectation" className="mt-3 text-base text-muted-foreground sm:text-lg">
+            Send a short request and our team will contact you to confirm a time. Your visit is
+            not booked until we confirm it with you.
+          </p>
+          <p className="mt-3 text-sm text-foreground">
+            Prefer to talk now?{" "}
+            <a
+              href={officePhoneHref}
+              className="font-semibold text-primary underline underline-offset-4"
+              onClick={() => trackPhoneClick("appointment_intro")}
+            >
+              Call {officePhone}
+            </a>
+            .
+          </p>
+        </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Book Appointment" }]} />
-
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <section className="bg-gray-50 rounded-xl p-6 sm:p-8 shadow-sm border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">Appointment Request Form</h2>
-            <p className="text-gray-600 mb-6">
-              Complete the form below and our team will reach out quickly to finalize your appointment.
-            </p>
-
-            {submission?.delivered ? (
-              <div role="status" aria-live="polite" className="mb-6 rounded-xl border border-sky-200 bg-sky-50 p-4">
-                <p className="font-semibold text-sky-900">Appointment request received.</p>
-                <p className="text-sky-800 text-sm mt-1">
-                  Thank you. We will contact you soon to confirm your date and time.
-                </p>
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <section
+            aria-labelledby="appointment-form-heading"
+            className="rounded-xl border border-border bg-card p-5 sm:p-8"
+          >
+            <div className="mb-7 border-b border-border pb-6">
+              <div className="flex items-center justify-between gap-4 text-sm font-semibold">
+                <span className="text-foreground">Step {step} of 2</span>
+                <span className="text-muted-foreground">
+                  {step === 1 ? "Your details" : "Preferences"}
+                </span>
               </div>
-            ) : null}
-
-            {submission && !submission.delivered ? (
-              <div role="status" aria-live="polite" className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
-                <p className="font-semibold text-blue-900">Request saved with backup notice.</p>
-                <p className="text-blue-800 text-sm mt-1">
-                  {submission.fallbackMessage ||
-                    "Your request was saved, but online delivery is delayed."}
-                </p>
-                <p className="text-blue-900 text-sm mt-2">
-                  Please call us now at{" "}
-                  <a
-                    href={officePhoneHref}
-                    className="font-semibold underline"
-                    onClick={() => trackPhoneClick("appointment_fallback_notice")}
-                  >
-                    {officePhone}
-                  </a>{" "}
-                  so we can prioritize your appointment.
-                </p>
-              </div>
-            ) : null}
-
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
-                onFocusCapture={handleFormStart}
-                className="space-y-4"
-                data-hydrated={isFormReady ? "true" : "false"}
+              <div
+                className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"
+                role="progressbar"
+                aria-label="Appointment request progress"
+                aria-valuemin={1}
+                aria-valuemax={2}
+                aria-valuenow={step}
+                aria-valuetext={`Step ${step} of 2: ${step === 1 ? "Your details" : "Preferences"}`}
               >
-                <input
-                  type="text"
-                  {...form.register("company")}
-                  tabIndex={-1}
-                  autoComplete="off"
+                <div
                   aria-hidden="true"
-                  className="hidden"
+                  className="h-full rounded-full bg-primary transition-[width]"
+                  style={{ width: step === 1 ? "50%" : "100%" }}
                 />
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name *</FormLabel>
-                        <FormControl>
-                          <Input {...field} autoComplete="given-name" required aria-required="true" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
-                        <FormControl>
-                          <Input {...field} autoComplete="family-name" required aria-required="true" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email *</FormLabel>
-                      <FormControl>
-                        <Input type="email" autoComplete="email" required aria-required="true" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone *</FormLabel>
-                      <FormControl>
-                        <Input type="tel" inputMode="tel" autoComplete="tel" required aria-required="true" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="service"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Service *</FormLabel>
-                      <FormControl>
-                        <select
-                          {...field}
-                          required
-                          aria-required="true"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <option value="" disabled>
-                            Select a service
-                          </option>
-                          {appointmentServiceOptions.map((service) => (
-                            <option key={service.value} value={service.value}>
-                              {service.label}
-                            </option>
-                          ))}
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="preferredDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Preferred Date (optional)</FormLabel>
-                        <FormControl>
-                          <Input type="date" min={minDate} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="preferredTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Preferred Time (optional)</FormLabel>
-                        <FormControl>
-                          <select
-                            {...field}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                          >
-                            <option value="">No preference</option>
-                            <option value="morning">Morning (9 AM–12 PM)</option>
-                            <option value="afternoon">Afternoon (12–5 PM)</option>
-                            <option value="flexible">Flexible</option>
-                          </select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notes (optional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          rows={4}
-                          placeholder="Share scheduling details or accessibility needs."
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="consentToContact"
-                  render={({ field }) => (
-                    <FormItem className="rounded-lg border border-border bg-background p-4">
-                      <div className="flex items-start gap-3">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={(checked) => field.onChange(checked === true)}
-                            aria-required="true"
-                          />
-                        </FormControl>
-                        <div>
-                          <FormLabel className="leading-relaxed">
-                            I agree that Family First Smile Care may contact me about this request. *
-                          </FormLabel>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            Please do not include private medical details. Call us if you need to discuss a health concern.
-                          </p>
-                        </div>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 text-base font-semibold"
-                  disabled={!isFormReady || appointmentMutation.isPending}
-                >
-                  {appointmentMutation.isPending ? "Submitting..." : "Request Appointment"}
-                </Button>
-              </form>
-            </Form>
-          </section>
-
-          <aside className="space-y-6">
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">What Happens Next</h3>
-              <ul className="space-y-4 text-gray-700">
-                <li>
-                  We review your preferred date and service details.
-                </li>
-                <li>
-                  Our team contacts you to confirm the best appointment time.
-                </li>
-                <li>
-                  You receive a confirmed visit plan and arrival instructions.
-                </li>
-              </ul>
+              </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Need Immediate Help?</h3>
-              <p className="text-gray-600 mb-4">
-                For urgent concerns or same-day availability, call our office directly.
+            {submission ? (
+              <div role="status" aria-live="polite" className="rounded-xl border border-border bg-accent p-5">
+                <h2 id="appointment-form-heading" className="text-xl font-bold text-accent-foreground">
+                  {submission.delivered
+                    ? "Your appointment request was received"
+                    : "Your request was saved"}
+                </h2>
+                <p className="mt-2 text-sm text-accent-foreground">
+                  {submission.delivered
+                    ? "Our team will contact you to confirm a date and time."
+                    : submission.fallbackMessage ||
+                      "Online delivery is delayed. Please call us so we can prioritize your request."}
+                </p>
+                {!submission.delivered ? (
+                  <a
+                    href={officePhoneHref}
+                    className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
+                    onClick={() => trackPhoneClick("appointment_fallback_notice")}
+                  >
+                    Call {officePhone}
+                  </a>
+                ) : null}
+              </div>
+            ) : (
+              <Form {...form}>
+                <form
+                  noValidate
+                  aria-describedby="request-expectation"
+                  aria-busy={appointmentMutation.isPending}
+                  onSubmit={(event) => {
+                    if (step === 1) {
+                      event.preventDefault();
+                      void advanceToPreferences();
+                      return;
+                    }
+                    void form.handleSubmit(onSubmit, onInvalidSubmit)(event);
+                  }}
+                  onFocusCapture={handleFormStart}
+                  className="space-y-5"
+                  data-hydrated={isFormReady ? "true" : "false"}
+                >
+                  <input
+                    type="text"
+                    {...form.register("company")}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="hidden"
+                  />
+
+                  {step === 1 ? (
+                    <fieldset className="space-y-5">
+                      <legend className="sr-only">Your contact details</legend>
+                      <div>
+                        <h2
+                          id="appointment-form-heading"
+                          ref={stepHeadingRef}
+                          tabIndex={-1}
+                          className="text-2xl font-bold text-foreground outline-none"
+                        >
+                          Start with the essentials
+                        </h2>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          All fields in this step are required. We use them only to respond to your
+                          request.
+                        </p>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="service"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>What can we help with?</FormLabel>
+                            <FormControl>
+                              <select
+                                {...field}
+                                required
+                                aria-required="true"
+                                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <option value="" disabled>
+                                  Select a service
+                                </option>
+                                {appointmentServiceOptions.map((service) => (
+                                  <option key={service.value} value={service.value}>
+                                    {service.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name="firstName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>First name</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  autoComplete="given-name"
+                                  required
+                                  aria-required="true"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="lastName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Last name</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  autoComplete="family-name"
+                                  required
+                                  aria-required="true"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="tel"
+                                  inputMode="tel"
+                                  autoComplete="tel"
+                                  required
+                                  aria-required="true"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="email"
+                                  autoComplete="email"
+                                  required
+                                  aria-required="true"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        size="lg"
+                        className="w-full text-base font-semibold"
+                        disabled={!isFormReady}
+                        onClick={() => void advanceToPreferences()}
+                      >
+                        Continue
+                      </Button>
+                    </fieldset>
+                  ) : (
+                    <fieldset className="space-y-5">
+                      <legend className="sr-only">Appointment preferences</legend>
+                      <div>
+                        <h2
+                          id="appointment-form-heading"
+                          ref={stepHeadingRef}
+                          tabIndex={-1}
+                          className="text-2xl font-bold text-foreground outline-none"
+                        >
+                          Add any preferences
+                        </h2>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Date, time, and notes are optional. We will confirm availability with you.
+                        </p>
+                      </div>
+
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name="preferredDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Preferred date (optional)</FormLabel>
+                              <FormControl>
+                                <Input type="date" min={minDate} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="preferredTime"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Preferred time (optional)</FormLabel>
+                              <FormControl>
+                                <select
+                                  {...field}
+                                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                >
+                                  <option value="">No preference</option>
+                                  <option value="morning">Morning (9 AM–12 PM)</option>
+                                  <option value="afternoon">Afternoon (12–5 PM)</option>
+                                  <option value="flexible">Flexible</option>
+                                </select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="message"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notes (optional)</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                rows={3}
+                                placeholder="Share scheduling details or accessibility needs."
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                ref={field.ref}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="consentToContact"
+                        render={({ field }) => (
+                          <FormItem className="rounded-lg border border-border bg-muted/40 p-4">
+                            <div className="flex items-start gap-3">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                                  aria-required="true"
+                                />
+                              </FormControl>
+                              <div>
+                                <FormLabel className="leading-relaxed">
+                                  I agree that Family First Smile Care may contact me about this
+                                  request.
+                                </FormLabel>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  Please do not include private medical details. Call us to discuss a
+                                  health concern.
+                                </p>
+                              </div>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)]">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="lg"
+                          className="sm:px-6"
+                          disabled={appointmentMutation.isPending}
+                          onClick={returnToDetails}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          type="submit"
+                          size="lg"
+                          className="text-base font-semibold"
+                          disabled={!isFormReady || appointmentMutation.isPending}
+                        >
+                          {appointmentMutation.isPending
+                            ? "Sending request…"
+                            : "Send Appointment Request"}
+                        </Button>
+                      </div>
+                    </fieldset>
+                  )}
+                </form>
+              </Form>
+            )}
+          </section>
+
+          <aside className="space-y-5 lg:sticky lg:top-24">
+            <section className="rounded-xl border border-border bg-accent p-5">
+              <h2 className="text-lg font-bold text-accent-foreground">What happens next</h2>
+              <ol className="mt-4 space-y-3 text-sm text-accent-foreground">
+                <li>1. We review your request.</li>
+                <li>2. Our team contacts you about availability.</li>
+                <li>3. We confirm your visit and arrival details.</li>
+              </ol>
+            </section>
+
+            <section className="rounded-xl border border-border bg-card p-5">
+              <h2 className="text-lg font-bold text-foreground">Need help sooner?</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Call the office for time-sensitive scheduling questions.
               </p>
               <a
                 href={officePhoneHref}
-                className="inline-flex items-center text-primary font-semibold hover:text-primary transition-colors"
+                className="mt-3 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
                 onClick={() => trackPhoneClick("appointment_sidebar")}
               >
                 {officePhone}
               </a>
-            </div>
-
-            <div className="rounded-xl border border-border bg-muted/40 p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Your Privacy</h3>
-              <p className="text-gray-700">
-                We use your details only to respond and coordinate care. Please avoid sharing sensitive medical information online.
-              </p>
-            </div>
+            </section>
           </aside>
         </div>
       </div>

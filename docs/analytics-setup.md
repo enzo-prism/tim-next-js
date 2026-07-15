@@ -26,6 +26,9 @@ Current event dictionary:
 | Event | When it fires | Safe parameters |
 | --- | --- | --- |
 | `cta_click` | Appointment/consultation CTAs | `location`, `cta_type`, `destination`, `service_id` |
+| `appointment_step_view` | A booking step is shown | `form_type`, `form_step`, `step_name`, `location`, `service_id` |
+| `appointment_step_complete` | A booking step passes validation | `form_type`, `form_step`, `step_name`, `location`, `service_id` |
+| `appointment_form_abandon` | A started booking flow exits before success | `form_type`, `form_step`, `step_name`, `abandonment_reason`, `location`, `service_id` |
 | `form_start` | First meaningful form interaction | `form_type`, `location`, `service_id` |
 | `form_submit_attempt` | Form submit before the request resolves | `form_type`, `location`, `service_id` |
 | `generate_lead` | Successful appointment/contact submission | `form_type`, `lead_source`, `location`, `service_id` |
@@ -67,6 +70,7 @@ This pattern is intentional for App Router SPA navigation accuracy.
   - reads GA4 data through Google Analytics Data API
 - `GET /api/admin/gsc/overview`
   - reads Search Console data through Google Search Console API
+  - returns query-by-page rows plus ranked positions 4-20 opportunities
 - both return `503 missing_config` when credentials/env are incomplete
 
 ## Required Variables
@@ -118,7 +122,7 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 5. Navigate to a second route and confirm another GA hit is sent.
 6. In GA4 Realtime, verify active users and route page views appear.
 7. Confirm admin route `/admin` does not emit normal public pageview tracking in either Vercel Analytics or GA4.
-8. Verify Google Ads conversion fires by clicking an appointment CTA wired to `triggerGoogleAdsConversion`.
+8. Verify appointment CTAs emit only `cta_click`; the Google Ads conversion must fire only after the API confirms a newly created durable appointment lead.
 9. Confirm representative custom events fire without exposing form data:
    - appointment CTA: `cta_click`
    - appointment/contact submit success: `generate_lead`
@@ -126,6 +130,7 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 10. Verify admin API connectivity:
    - `GET /api/admin/ga4/overview?days=30`
    - `GET /api/admin/gsc/overview?days=30`
+11. Start, advance, and exit the appointment flow; verify step events contain no form values or patient identifiers.
 
 ## Common Failure Modes
 

@@ -51,7 +51,7 @@ Configured in `next.config.ts` and middleware:
 - `/articles/premium_education/category/47367` -> `/services`
 - `/services/tmj` -> `/tmj`
 - `/?page_id=1073` -> `/patient-info` (middleware)
-- `www.*` host -> apex host (middleware)
+- apex and other noncanonical custom hosts -> `https://www.famfirstsmile.com` (middleware)
 
 ## Metadata Strategy
 

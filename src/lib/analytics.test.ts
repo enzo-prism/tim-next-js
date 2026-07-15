@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GA_MEASUREMENT_ID, GOOGLE_ADS_CONVERSION_EVENT } from "@/lib/tracking-config";
 import {
   sanitizeSiteEventPayload,
+  trackAppointmentBookingAbandonment,
+  trackAppointmentBookingStepComplete,
+  trackAppointmentBookingStepView,
   trackAppointmentSubmitSuccess,
   trackSiteEvent,
 } from "@/lib/analytics";
@@ -156,5 +159,48 @@ describe("analytics custom events", () => {
         service_id: "dental-exams",
       }),
     );
+  });
+
+  it("tracks the two-step appointment funnel without patient details", () => {
+    const { gtagMock } = setupBrowserGlobals("/book-appointment");
+
+    trackAppointmentBookingStepView(1, "invisalign");
+    trackAppointmentBookingStepComplete(1, "invisalign");
+    trackAppointmentBookingAbandonment(2, "invisalign", "route_change");
+
+    expect(gtagMock).toHaveBeenCalledWith(
+      "event",
+      "appointment_step_view",
+      expect.objectContaining({
+        form_step: 1,
+        form_type: "appointment",
+        location: "book_appointment_page",
+        service_id: "invisalign",
+        step_name: "contact_details",
+      }),
+    );
+    expect(vercelTrackMock).toHaveBeenCalledWith(
+      "appointment_step_complete",
+      expect.objectContaining({
+        form_step: 1,
+        step_name: "contact_details",
+      }),
+    );
+    expect(vercelTrackMock).toHaveBeenCalledWith(
+      "appointment_form_abandon",
+      expect.objectContaining({
+        abandonment_reason: "route_change",
+        form_step: 2,
+        step_name: "appointment_preferences",
+      }),
+    );
+
+    const payloads = vercelTrackMock.mock.calls.map((call) => call[1]);
+    expect(payloads).toHaveLength(3);
+    for (const payload of payloads) {
+      expect(payload).not.toHaveProperty("email");
+      expect(payload).not.toHaveProperty("firstName");
+      expect(payload).not.toHaveProperty("phone");
+    }
   });
 });

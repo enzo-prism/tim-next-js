@@ -92,6 +92,25 @@ export const appointmentFormSchema = contactFormSchema.extend({
   preferredTime: z.enum(["", "morning", "afternoon", "flexible"]).optional(),
 });
 
+/**
+ * Step-level schemas keep the client flow aligned with the final API contract.
+ * The API still validates the complete `appointmentFormSchema` in one pass.
+ */
+export const appointmentDetailsStepSchema = appointmentFormSchema.pick({
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  service: true,
+});
+
+export const appointmentPreferencesStepSchema = appointmentFormSchema.pick({
+  preferredDate: true,
+  preferredTime: true,
+  message: true,
+  consentToContact: true,
+});
+
 export const insertContactSchema = contactFormSchema.merge(leadAttributionSchema);
 
 export const insertAppointmentSchema = appointmentFormSchema.merge(leadAttributionSchema).extend({

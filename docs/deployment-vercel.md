@@ -31,14 +31,14 @@ The most common failure mode is branch/config drift:
 - GitHub default branch is not `main`
 - Vercel project is not connected to the GitHub repo
 
-Verify and fix before release:
+Verify before release:
 
 ```bash
 gh repo view enzo-prism/tim-next-js --json defaultBranchRef
-gh api -X PATCH repos/enzo-prism/tim-next-js -f default_branch=main
 vercel git connect https://github.com/enzo-prism/tim-next-js.git
 ```
 
+If the default branch is not `main`, stop and correct the repository setting as a separate, explicit administrative action.
 `vercel git connect` is safe to run repeatedly; it will report if already connected.
 
 ## One-Time Project Linking
@@ -49,7 +49,7 @@ If not already linked:
 vercel link
 ```
 
-This repo currently contains `.vercel/project.json`, so it is already linked unless intentionally reset.
+`.vercel/project.json` is local and intentionally ignored. The guarded release script runs `vercel link --yes` when the checkout is not linked.
 
 ## Pre-Deploy Local Checks
 
@@ -57,8 +57,8 @@ Run from repo root:
 
 ```bash
 npm ci
-npm run check
-npm run build
+npm run quality:all
+npm run test:e2e
 ```
 
 If any command fails, do not deploy.
@@ -94,10 +94,18 @@ vercel env ls
 ## Database Provisioning and Schema
 
 1. Ensure `DATABASE_URL` points to the intended Vercel Postgres instance.
-2. Apply schema:
+2. Apply the checked-in migration (preferred for this release) or reconcile with Drizzle:
 
 ```bash
+psql "$DATABASE_URL" -f drizzle/0001_growth_lead_attribution.sql
+psql "$DATABASE_URL" -f drizzle/0002_closed_loop_lead_pipeline.sql
+# Or, after reviewing the generated diff:
 npm run db:push
+```
+
+3. Read the production schema back before deployment:
+
+```bash
 npm run db:verify
 ```
 
@@ -137,7 +145,7 @@ Validate preview URL before production promotion.
 vercel --prod
 ```
 
-If you already ran `npm run release:prod`, do not run `vercel --prod` again unless intentionally creating another deployment.
+If you already ran `npm run release:prod -- --schema-synced`, do not run `vercel --prod` again unless intentionally creating another deployment.
 
 ## Post-Deploy Smoke Tests
 
@@ -177,19 +185,21 @@ curl -I https://www.famfirstsmile.com/llms.txt
 3. Wait roughly 30-60 seconds and confirm traffic appears in the Vercel Analytics dashboard.
 4. If no data appears, disable content blockers and retry navigation between pages.
 
-### API checks
+### Non-mutating API checks
 
-Public:
+These deliberately invalid payloads verify the live guards without creating a lead or triggering an office notification. Submit realistic synthetic leads only in preview/non-production.
 
 ```bash
-curl -X POST https://www.famfirstsmile.com/api/contacts \
+curl -i -X POST https://www.famfirstsmile.com/api/contacts \
   -H "Content-Type: application/json" \
-  -d '{"firstName":"Deploy","lastName":"Test","email":"deploy@example.com"}'
+  -d '{}'
 
-curl -X POST https://www.famfirstsmile.com/api/appointments \
+curl -i -X POST https://www.famfirstsmile.com/api/appointments \
   -H "Content-Type: application/json" \
-  -d '{"firstName":"Deploy","lastName":"Test","email":"deploy@example.com","phone":"555-111-2222","service":"dental-exams","preferredDate":"2026-03-10","preferredTime":"10:00"}'
+  -d '{}'
 ```
+
+Both should return `400` and must not create a database row.
 
 Admin unauthorized check:
 
@@ -200,8 +210,12 @@ curl -i https://www.famfirstsmile.com/api/admin/contacts
 Admin authorized check:
 
 ```bash
-curl -i -u "${ADMIN_USERNAME}:${ADMIN_PASSWORD}" "https://www.famfirstsmile.com/api/admin/contacts?limit=5&offset=0"
+curl -sS -o /dev/null -w '%{http_code}\n' \
+  -u "${ADMIN_USERNAME}:${ADMIN_PASSWORD}" \
+  "https://www.famfirstsmile.com/api/admin/contacts?limit=1&offset=0"
 ```
+
+The authorized status-only check should print `200` without placing patient records in terminal output or logs.
 
 ## Rollback Strategy
 
@@ -215,7 +229,7 @@ curl -i -u "${ADMIN_USERNAME}:${ADMIN_PASSWORD}" "https://www.famfirstsmile.com/
 Recommended deployment discipline:
 
 1. open PR from `codex/*` -> `main`
-2. require CI success (`typecheck`, `lint`, `test`, `build`)
+2. require CI success (`typecheck`, `lint`, `test`, design/minimal guards, `build`, E2E)
 3. squash merge
 4. deploy from clean `main`
 

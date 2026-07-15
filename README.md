@@ -6,9 +6,9 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 
 - Full public website route parity
 - Admin dashboard protected with Basic Auth
-- Contact and appointment persistence using Postgres via Drizzle ORM
+- Contact and appointment persistence plus new-patient lifecycle reporting using Postgres via Drizzle ORM
 - First-party forms with duplicate protection, campaign attribution, consent records, and Formspree office notifications
-- Vercel Web Analytics + GA4 + Google Search Console admin reporting APIs
+- Vercel Web Analytics + GA4 + query-by-page Google Search Console opportunity reporting
 - Canonical SEO + schema.org JSON-LD + sitemap/robots/llms assets
 - Vercel-ready routing, headers, and deployment flow
 
@@ -50,6 +50,7 @@ npm run quality:all
 - [API Reference](docs/api-reference.md)
 - [Environment Variables](docs/environment-variables.md)
 - [Analytics Setup (Vercel + GA4 + Ads + GSC)](docs/analytics-setup.md)
+- [Growth and Lead Measurement](docs/growth-and-lead-measurement.md)
 - [Deployment on Vercel](docs/deployment-vercel.md)
 - [Operations Runbook](docs/operations-runbook.md)
 - [Testing and Quality](docs/testing-and-quality.md)
@@ -76,9 +77,11 @@ npm run lint
 npm run test
 npm run build
 npm run check
+npm run test:e2e
 
-# Database schema review/push (requires the intended DATABASE_URL)
+# Database schema review/push and production read-back (requires the intended DATABASE_URL)
 npm run db:push
+npm run db:verify
 ```
 
 ## Deployment Summary
@@ -86,7 +89,7 @@ npm run db:push
 1. Keep GitHub default branch set to `main`.
 2. Ensure Vercel Git integration is connected to `enzo-prism/tim-next-js`.
 3. Ensure required env vars are configured.
-4. Run `npm run db:push` against production database.
+4. Apply both checked-in database migrations, then run `npm run db:verify` against production.
 5. Verify the migration succeeded, then run the guarded release:
 
 ```bash
@@ -108,3 +111,4 @@ Checks run on PRs and pushes to `main` / `codex/**`:
 - test
 - design contract and minimal design checks
 - production build
+- Playwright E2E
