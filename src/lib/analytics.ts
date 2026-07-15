@@ -1,14 +1,13 @@
 import { track as trackVercelEvent } from "@vercel/analytics";
 import {
   APPOINTMENT_FORM_URL,
+  buildAppointmentUrl,
   GA_MEASUREMENT_ID,
   GOOGLE_ADS_CONVERSION_EVENT,
   GOOGLE_ADS_TAG_ID,
-  HOTJAR_ID,
-  HOTJAR_SNIPPET_VERSION,
 } from "@/lib/tracking-config";
 
-export { APPOINTMENT_FORM_URL };
+export { APPOINTMENT_FORM_URL, buildAppointmentUrl };
 
 export type SiteEventName =
   | "cta_click"
@@ -44,21 +43,15 @@ const ALLOWED_EVENT_KEYS = new Set([
 
 const MAX_EVENT_VALUE_LENGTH = 120;
 
-// Define the gtag and hotjar functions globally
+// Define the Google tag queue globally for typed client-side event calls.
 declare global {
   interface Window {
     dataLayer: any[];
     gtag: (...args: any[]) => void;
-    hj: (...args: any[]) => void;
-    _hjSettings: {
-      hjid: number;
-      hjsv: number;
-    };
   }
 }
 
 let gtagInitialized = false;
-let hotjarInitialized = false;
 
 const sanitizePath = (path: string) => {
   const [pathWithoutHash] = path.split("#");
@@ -129,13 +122,21 @@ const ensureGtag = () => {
   return true;
 };
 
-export const triggerGoogleAdsConversion = (url?: string, target: "_self" | "_blank" = "_self") => {
+export const triggerGoogleAdsConversion = (
+  url?: string,
+  target: "_self" | "_blank" = "_self",
+  transactionId?: string,
+) => {
   if (typeof window === "undefined") return;
 
   initGA();
   if (!window.gtag) return;
 
-  window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT);
+  if (transactionId) {
+    window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT, { transaction_id: transactionId });
+  } else {
+    window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT);
+  }
 
   if (!url) return;
   if (target === "_blank") {
@@ -176,28 +177,6 @@ export const initGA = () => {
   gtagInitialized = true;
 };
 
-// Initialize Hotjar
-export const initHotjar = () => {
-  if (typeof window === "undefined") return;
-  if (hotjarInitialized) return;
-  if (window.location.pathname.startsWith("/admin")) return;
-
-  // Hotjar Tracking Code for Family First Smile Care
-  const script = document.createElement('script');
-  script.textContent = `
-    (function(h,o,t,j,a,r){
-        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-        h._hjSettings={hjid:${HOTJAR_ID},hjsv:${HOTJAR_SNIPPET_VERSION}};
-        a=o.getElementsByTagName('head')[0];
-        r=o.createElement('script');r.async=1;
-        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-        a.appendChild(r);
-    })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-  `;
-  document.head.appendChild(script);
-  hotjarInitialized = true;
-};
-
 // Track page views - useful for single-page applications
 export const trackPageView = (url: string) => {
   if (typeof window === "undefined") return;
@@ -210,7 +189,7 @@ export const trackPageView = (url: string) => {
   window.gtag("event", "page_view", {
     send_to: GA_MEASUREMENT_ID,
     page_path: pagePath,
-    page_location: window.location.href,
+    page_location: `${window.location.origin}${pagePath}`,
     page_title: document.title
   });
 };
@@ -297,8 +276,8 @@ export const trackFormSubmitError = (details: {
   });
 };
 
-export const trackAppointmentSubmitSuccess = (serviceId?: string) => {
-  triggerGoogleAdsConversion();
+export const trackAppointmentSubmitSuccess = (serviceId?: string, transactionId?: string) => {
+  triggerGoogleAdsConversion(undefined, "_self", transactionId);
   trackGenerateLead({
     formType: "appointment",
     leadSource: "appointment_form",

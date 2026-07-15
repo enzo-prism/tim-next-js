@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ReviewsSection } from "@/components/review";
 import { services } from "@/data/services";
 import { serviceReviews } from "@/data/reviews";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
 import { invisalignContent } from "@shared/marketing-pages";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import illustrationAligners from "@assets/brand/illustration-aligners.webp";
@@ -119,12 +119,6 @@ export default function Invisalign() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
-              <motion.div
-                className="bg-primary text-white w-20 h-20 rounded-xl flex items-center justify-center mx-auto lg:mx-0 mb-6 shadow-sm"
-                variants={scaleIn}
-              >
-                <MinimalGlyph name="smile-aligner" className="w-8 h-8" />
-              </motion.div>
               <motion.h1
                 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
                 variants={fadeInUp}
@@ -363,7 +357,7 @@ export default function Invisalign() {
                 className="bg-muted/50 rounded-xl p-6 text-center"
                 variants={scaleIn}
               >
-                <div className="bg-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <span className="font-bold">{index + 1}</span>
                 </div>
                 <p className="text-gray-700 font-medium">{step}</p>
@@ -422,7 +416,7 @@ export default function Invisalign() {
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
-                href={APPOINTMENT_FORM_URL}
+                href={buildAppointmentUrl({ serviceId: "invisalign", source: "invisalign_page" })}
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                 onClick={handleAppointmentClick}
               >

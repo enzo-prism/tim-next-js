@@ -66,6 +66,23 @@ const nextConfig: NextConfig = {
           key: "Referrer-Policy",
           value: "strict-origin-when-cross-origin",
         },
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=63072000",
+        },
+        {
+          key: "Permissions-Policy",
+          value: "geolocation=(), payment=(), usb=(), browsing-topics=()",
+        },
+      ],
+    },
+    {
+      source: "/api/(.*)",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "no-store, max-age=0",
+        },
       ],
     },
     {

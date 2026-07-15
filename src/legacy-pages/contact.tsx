@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -8,17 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 
 import { Link } from "wouter";
 import { toast } from "sonner";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
-import { insertContactSchema, type InsertContact } from "@/content/form-schemas";
-import { apiRequest } from "@/lib/queryClient";
+import {
+  contactFormSchema,
+  LEAD_CONSENT_VERSION,
+  type ContactFormValues,
+} from "@/content/form-schemas";
+import { services } from "@/content/services";
 import {
   trackContactSubmitSuccess,
+  trackAppointmentCtaClick,
   trackFormStart,
   trackFormSubmitAttempt,
   trackFormSubmitError,
@@ -26,44 +31,106 @@ import {
   trackPhoneClick,
   trackSocialClick,
 } from "@/lib/analytics";
+import { captureLeadAttribution, createSubmissionId } from "@/lib/lead-attribution";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 
-type ContactFormValues = InsertContact;
+type ContactResponse = {
+  success: boolean;
+  created: boolean;
+  delivered: boolean;
+  leadId: string;
+  serviceId: string | null;
+  fallbackMessage?: string;
+  message?: string;
+  errors?: Array<{ path: Array<string | number>; message: string }>;
+};
 
 export default function Contact() {
   const [hasStartedForm, setHasStartedForm] = useState(false);
+  const [submission, setSubmission] = useState<{ delivered: boolean; fallbackMessage?: string } | null>(null);
+  const submissionIdRef = useRef<string | null>(null);
+  const serviceOptions = useMemo(
+    () => services.flatMap((service) => [service, ...(service.subServices ?? [])]),
+    [],
+  );
 
   const form = useForm<ContactFormValues>({
-    resolver: zodResolver(insertContactSchema),
+    resolver: zodResolver(contactFormSchema),
     defaultValues: {
+      company: "",
       firstName: "",
       lastName: "",
       email: "",
       phone: "",
       service: "",
       message: "",
+      consentToContact: false,
     },
   });
 
   const contactMutation = useMutation({
     mutationFn: async (values: ContactFormValues) => {
-      return apiRequest("POST", "/api/contacts", values);
-    },
-    onSuccess: (_data, variables) => {
-      trackContactSubmitSuccess(variables.service || undefined);
-      toast.success("Message sent successfully!", {
-        description: "Thank you for contacting us. We will get back to you soon.",
+      submissionIdRef.current ||= createSubmissionId();
+      const response = await fetch("/api/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          ...values,
+          submissionId: submissionIdRef.current,
+          consentVersion: LEAD_CONSENT_VERSION,
+          ...captureLeadAttribution(),
+        }),
       });
-      form.reset();
+      const payload = (await response.json().catch(() => null)) as ContactResponse | null;
+      if (!response.ok || !payload?.success) {
+        const error = new Error(payload?.message || "Unable to send your message.") as Error & {
+          details?: ContactResponse;
+        };
+        error.details = payload || undefined;
+        throw error;
+      }
+      return payload;
     },
-    onError: (error: any) => {
+    onSuccess: (data, variables) => {
+      setSubmission({ delivered: data.delivered, fallbackMessage: data.fallbackMessage });
+      if (data.created) trackContactSubmitSuccess(variables.service || undefined);
+      if (data.delivered) {
+        toast.success("Message received", {
+          description: "Thank you. Our team will get back to you soon.",
+        });
+      } else {
+        toast("Message saved with backup notice", {
+          description: data.fallbackMessage,
+        });
+      }
+      form.reset({
+        company: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        service: "",
+        message: "",
+        consentToContact: false,
+      });
+      submissionIdRef.current = null;
+    },
+    onError: (error: Error & { details?: ContactResponse }) => {
+      const issues = error.details?.errors ?? [];
       trackFormSubmitError({
-        errorType: "request_error",
+        errorType: issues.length ? "validation_error" : "request_error",
         formType: "contact",
         location: "contact_page",
         serviceId: form.getValues("service") || undefined,
       });
+      for (const issue of issues) {
+        const path = issue.path?.[0];
+        if (typeof path === "string") {
+          form.setError(path as keyof ContactFormValues, { type: "server", message: issue.message });
+        }
+      }
       toast.error("Error sending message", {
         description: error.message || "Please try again later.",
       });
@@ -71,6 +138,7 @@ export default function Contact() {
   });
 
   const onSubmit = (values: ContactFormValues) => {
+    setSubmission(null);
     trackFormSubmitAttempt({
       formType: "contact",
       location: "contact_page",
@@ -106,7 +174,19 @@ export default function Contact() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">Contact Us</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Ready to schedule your appointment? We're here to help and answer any questions you may have.</p>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Request an appointment, call our Los Gatos office, or send a general question.</p>
+            <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button asChild>
+                <Link href="/book-appointment?source=contact_hero" onClick={() => trackAppointmentCtaClick("contact_hero")}>
+                  Request an Appointment
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="tel:+14083588100" onClick={() => trackPhoneClick("contact_hero")}>
+                  Call (408) 358-8100
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -136,7 +216,7 @@ export default function Contact() {
                       href={practiceInfo.mapUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors inline-block mt-2"
+                      className="text-sm font-semibold text-primary hover:text-primary transition-colors inline-block mt-2"
                       onClick={() => trackMapClick("contact_info")}
                     >
                       Open in Google Maps
@@ -147,7 +227,7 @@ export default function Contact() {
                     </p>
                     <Link
                       href="/areas-we-serve/santa-cruz"
-                      className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors inline-block mt-2"
+                      className="text-sm font-semibold text-primary hover:text-primary transition-colors inline-block mt-2"
                     >
                       See Santa Cruz visit info
                     </Link>
@@ -157,14 +237,22 @@ export default function Contact() {
                 <div className="flex items-start">
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Phone Number</h3>
-                    <p className="text-gray-600">(408) 358-8100</p>
+                    <a
+                      href="tel:+14083588100"
+                      className="font-semibold text-primary hover:underline"
+                      onClick={() => trackPhoneClick("contact_info")}
+                    >
+                      (408) 358-8100
+                    </a>
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-1">Email Address</h3>
-                    <p className="text-gray-600">hello@famfirstsmile.com</p>
+                    <a href="mailto:hello@famfirstsmile.com" className="font-semibold text-primary hover:underline">
+                      hello@famfirstsmile.com
+                    </a>
                   </div>
                 </div>
                 
@@ -210,22 +298,22 @@ export default function Contact() {
             <div className="mt-10 rounded-xl border border-border bg-muted/40 p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Explore</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <Link href="/services" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                <Link href="/services" className="text-primary font-semibold hover:text-primary transition-colors">
                   Services
                 </Link>
-                <Link href="/patient-info" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                <Link href="/patient-info" className="text-primary font-semibold hover:text-primary transition-colors">
                   Patient Info
                 </Link>
-                <Link href="/services/invisalign" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                <Link href="/services/invisalign" className="text-primary font-semibold hover:text-primary transition-colors">
                   Invisalign
                 </Link>
-                <Link href="/tmj" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                <Link href="/tmj" className="text-primary font-semibold hover:text-primary transition-colors">
                   TMJ Treatment
                 </Link>
-                <Link href="/technology/itero-digital-scanner" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                <Link href="/technology/itero-digital-scanner" className="text-primary font-semibold hover:text-primary transition-colors">
                   iTero Scanner
                 </Link>
-                <Link href="/team" className="text-primary font-semibold hover:text-primary/80 transition-colors">
+                <Link href="/team" className="text-primary font-semibold hover:text-primary transition-colors">
                   Our Team
                 </Link>
               </div>
@@ -236,12 +324,34 @@ export default function Contact() {
           <div>
             <div className="bg-gray-50 rounded-xl p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Send Us a Message</h2>
+              {submission ? (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="mb-6 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900"
+                >
+                  <p className="font-semibold">Your message was saved.</p>
+                  <p className="mt-1">
+                    {submission.delivered
+                      ? "Thank you. Our team will get back to you soon."
+                      : submission.fallbackMessage}
+                  </p>
+                </div>
+              ) : null}
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
                   onFocusCapture={handleFormStart}
                   className="space-y-4"
                 >
+                  <input
+                    type="text"
+                    {...form.register("company")}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="hidden"
+                  />
                   <div className="grid md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -250,7 +360,7 @@ export default function Contact() {
                         <FormItem>
                           <FormLabel>First Name *</FormLabel>
                           <FormControl>
-                            <Input {...field} autoComplete="given-name" />
+                            <Input {...field} autoComplete="given-name" required aria-required="true" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -263,7 +373,7 @@ export default function Contact() {
                         <FormItem>
                           <FormLabel>Last Name *</FormLabel>
                           <FormControl>
-                            <Input {...field} autoComplete="family-name" />
+                            <Input {...field} autoComplete="family-name" required aria-required="true" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -278,7 +388,7 @@ export default function Contact() {
                       <FormItem>
                         <FormLabel>Email Address *</FormLabel>
                         <FormControl>
-                          <Input type="email" autoComplete="email" {...field} />
+                          <Input type="email" autoComplete="email" required aria-required="true" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -292,7 +402,7 @@ export default function Contact() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input type="tel" autoComplete="tel" {...field} value={field.value ?? ""} />
+                          <Input type="tel" inputMode="tel" autoComplete="tel" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -315,10 +425,11 @@ export default function Contact() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="general-checkup">General Checkup & Cleaning</SelectItem>
-                            <SelectItem value="children-dentistry">Children's Dentistry</SelectItem>
-                            <SelectItem value="invisalign">Invisalign Consultation</SelectItem>
-                            <SelectItem value="emergency">Emergency Care</SelectItem>
+                            {serviceOptions.map((service) => (
+                              <SelectItem key={service.id} value={service.id}>
+                                {service.title}
+                              </SelectItem>
+                            ))}
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
@@ -336,11 +447,38 @@ export default function Contact() {
                         <FormControl>
                           <Textarea 
                             rows={4} 
-                            placeholder="Tell us about your dental concerns or questions..."
+                            placeholder="Share a general question or scheduling detail."
                             {...field}
                             value={field.value ?? ""}
                           />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="consentToContact"
+                    render={({ field }) => (
+                      <FormItem className="rounded-lg border border-border bg-background p-4">
+                        <div className="flex items-start gap-3">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={(checked) => field.onChange(checked === true)}
+                              aria-required="true"
+                            />
+                          </FormControl>
+                          <div>
+                            <FormLabel className="leading-relaxed">
+                              I agree that Family First Smile Care may contact me about this message. *
+                            </FormLabel>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              Please do not send private medical details through this form.
+                            </p>
+                          </div>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -365,27 +503,11 @@ export default function Contact() {
             <h2 className="text-2xl font-bold text-gray-800">Easy to reach from Santa Cruz</h2>
             <p className="mt-2 text-gray-600">
               Our office is just off Highway 17 in Los Gatos, which makes visits simple for many
-              Santa Cruz patients who want family-focused care and help verifying PPO benefits
-              before they come in.
+              Santa Cruz patients who want family-focused care.
             </p>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Find Us</h2>
-          <div className="bg-white rounded-xl overflow-hidden shadow-sm">
-            {/* Map Container */}
-            <div className="relative h-[500px]">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3174.8858269999997!2d-121.95269418469015!3d37.24628897985869!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808e3557c7180047%3A0xb2c0297c5d5ef4e8!2sTim%20J%20Chuang%2C%20DDS%20-%20Family%20First%20Smile%20Care!5e0!3m2!1sen!2sus!4v1735847521234!5m2!1sen!2sus"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Family First Smile Care Location"
-                className="absolute inset-0"
-              />
-            </div>
-            {/* Info Bar */}
+          <div className="bg-white rounded-xl overflow-hidden border border-border shadow-sm">
             <div className="bg-primary p-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="text-white text-center md:text-left">
@@ -405,7 +527,6 @@ export default function Contact() {
                     className="bg-white text-primary px-6 py-2 rounded-lg hover:bg-gray-100 transition-colors font-semibold flex items-center gap-2"
                     onClick={() => trackMapClick("contact_map_bar")}
                   >
-                    <MinimalGlyph name="map-pin" className="h-4 w-4" />
                     Open in Google Maps
                   </a>
                   <a 
@@ -413,7 +534,6 @@ export default function Contact() {
                     className="bg-white/5 text-white px-6 py-2 rounded-lg hover:bg-white hover:text-primary transition-colors font-semibold flex items-center gap-2 border border-white/25"
                     onClick={() => trackPhoneClick("contact_map_bar")}
                   >
-                    <MinimalGlyph name="phone" className="h-4 w-4" />
                     Call Now
                   </a>
                 </div>

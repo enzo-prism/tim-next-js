@@ -22,7 +22,7 @@ import {
   testimonialThemes,
 } from "@/content/testimonials";
 import {
-  APPOINTMENT_FORM_URL,
+  buildAppointmentUrl,
   trackAppointmentCtaClick,
   trackReviewLinkClick,
 } from "@/lib/analytics";
@@ -60,7 +60,7 @@ export default function TestimonialsPage() {
   const pageUrl = `${practiceInfo.url}/testimonials`;
   const pageTitle = "Patient Testimonials, Google Reviews & Yelp Reviews";
   const pageDescription =
-    "Read what patients say about Family First Smile Care in Los Gatos, from gentle cleanings and thorough exams to family dentistry, Invisalign, TMJ care, and recent Yelp feedback.";
+    "Read what patients say about Family First Smile Care in Los Gatos, from gentle cleanings and thorough exams to family dentistry, Invisalign, TMJ care, and public Yelp feedback.";
 
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "Home", item: practiceInfo.url },
@@ -94,8 +94,7 @@ export default function TestimonialsPage() {
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
             <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
-                <MinimalGlyph name="shield-check" className="h-3.5 w-3.5" />
+              <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Verified patient feedback
               </div>
               <h1 className="max-w-3xl text-4xl font-bold leading-tight text-gray-800 sm:text-5xl">
@@ -147,7 +146,7 @@ export default function TestimonialsPage() {
                     {testimonialsReviewLibrarySummary.reviewCountLabel}
                   </div>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Verified public review coverage across the two platforms patients check most.
+                    {testimonialsReviewLibrarySummary.verifiedAtLabel}
                   </p>
                 </motion.div>
 
@@ -174,7 +173,7 @@ export default function TestimonialsPage() {
               animate="visible"
               variants={scaleIn}
             >
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Featured Google review
               </div>
               <blockquote className="mt-5 text-lg leading-8 text-slate-700">
@@ -251,7 +250,7 @@ export default function TestimonialsPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeInUp}
             >
-              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary/80">
+              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
                 {section.eyebrow}
               </div>
               <h2 className="mt-3 max-w-3xl text-3xl font-bold text-gray-800 sm:text-4xl">
@@ -319,7 +318,7 @@ export default function TestimonialsPage() {
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeInUp}
             >
-              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary/80">
+              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
                 {section.eyebrow}
               </div>
               <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -419,7 +418,7 @@ export default function TestimonialsPage() {
                 asChild
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+                <Link href={buildAppointmentUrl({ source: "testimonials_final_cta" })} onClick={handleAppointmentClick}>
                   Book an appointment
                   <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
                 </Link>

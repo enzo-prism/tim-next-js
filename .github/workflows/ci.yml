@@ -32,6 +32,12 @@ jobs:
       - name: Test
         run: npm run test
 
+      - name: Design contract
+        run: npm run design:check
+
+      - name: Minimal design guard
+        run: npm run minimal:check
+
       - name: Build
         run: npm run build
 

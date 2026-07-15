@@ -101,6 +101,12 @@ type AdminContactsResponse = {
     preferredDate: string | null;
     preferredTime: string | null;
     formspreeStatus: string | null;
+    landingPage: string | null;
+    referrer: string | null;
+    ctaSource: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
   }>;
 };
 
@@ -673,7 +679,7 @@ export default function Admin() {
           <TabsContent value="contacts" className="mt-6 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Contact Submissions</CardTitle>
+                <CardTitle className="text-base">Website Leads</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -687,7 +693,7 @@ export default function Admin() {
                         setContactsSearch(e.target.value);
                         setContactsPage(0);
                       }}
-                      placeholder="Name, email, service, message..."
+                      placeholder="Name, service, campaign, landing page..."
                       className="sm:w-[320px]"
                     />
                   </div>
@@ -745,7 +751,8 @@ export default function Admin() {
                         <TableHead className="w-[160px]">Phone</TableHead>
                         <TableHead className="w-[180px]">Service</TableHead>
                         <TableHead className="w-[220px]">Preferred Time</TableHead>
-                        <TableHead className="w-[160px]">Formspree</TableHead>
+                        <TableHead className="w-[220px]">Source</TableHead>
+                        <TableHead className="w-[160px]">Notification</TableHead>
                         <TableHead>Message</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -784,19 +791,27 @@ export default function Admin() {
                                 : "-"}
                             </TableCell>
                             <TableCell className="text-sm">
-                              {row.requestType === "appointment" ? (
-                                <span
-                                  className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                                    row.formspreeStatus === "delivered"
-                                      ? "bg-sky-100 text-sky-800"
-                                      : "bg-blue-100 text-blue-800"
-                                  }`}
-                                >
-                                  {row.formspreeStatus || "failed"}
-                                </span>
-                              ) : (
-                                "-"
-                              )}
+                              <div className="space-y-1">
+                                <div className="font-medium text-gray-800">
+                                  {row.utmSource || row.referrer || "Direct / unknown"}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {[row.utmMedium, row.utmCampaign, row.ctaSource]
+                                    .filter(Boolean)
+                                    .join(" • ") || row.landingPage || "-"}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              <span
+                                className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                                  row.formspreeStatus === "delivered"
+                                    ? "bg-sky-100 text-sky-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {row.formspreeStatus || "pending"}
+                              </span>
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap">
                               {row.message || "-"}
@@ -805,7 +820,7 @@ export default function Admin() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={9} className="text-sm text-muted-foreground">
+                          <TableCell colSpan={10} className="text-sm text-muted-foreground">
                             No contacts found.
                           </TableCell>
                         </TableRow>

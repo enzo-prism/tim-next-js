@@ -1,4 +1,4 @@
-# Analytics Setup (Vercel Analytics + GA4 + Ads + Hotjar + Admin APIs)
+# Analytics Setup (Vercel Analytics + GA4 + Ads + Admin APIs)
 
 ## Tracking Architecture in This Codebase
 
@@ -57,12 +57,9 @@ This pattern is intentional for App Router SPA navigation accuracy.
 - `initGA()` configures Google Ads with `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`.
 - `triggerGoogleAdsConversion(...)` sends event name from:
   - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
-- Appointment CTA flows should call this helper before navigation.
-
-### Hotjar
-
-- Initialized client-side in `initHotjar()` from `src/lib/analytics.ts`.
-- Skips admin pages (`/admin*`) by design.
+- The appointment form calls this only after a lead is durably created.
+- The browser-generated submission ID is sent as the Ads transaction ID to prevent duplicate conversions.
+- CTA clicks remain non-conversion navigation events.
 
 ### Admin analytics APIs (server-side)
 
@@ -85,8 +82,6 @@ This pattern is intentional for App Router SPA navigation accuracy.
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (currently `G-L7MH47XYXL`)
 - `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`
 - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
-- `NEXT_PUBLIC_HOTJAR_ID`
-- `NEXT_PUBLIC_HOTJAR_SNIPPET_VERSION`
 
 ### Admin reporting vars
 
@@ -118,7 +113,7 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 
 1. Open the production deployment and verify `/_vercel/insights/script.js` loads.
 2. Navigate across two or more public routes and confirm page views begin appearing in the Vercel Analytics dashboard.
-3. Open [famfirstsmile.com](https://famfirstsmile.com) and verify `gtag/js?id=G-L7MH47XYXL` loads.
+3. Open [famfirstsmile.com](https://www.famfirstsmile.com) and verify `gtag/js?id=G-L7MH47XYXL` loads.
 4. In browser devtools Network tab, confirm `collect`/`g/collect` hits after page load.
 5. Navigate to a second route and confirm another GA hit is sent.
 6. In GA4 Realtime, verify active users and route page views appear.

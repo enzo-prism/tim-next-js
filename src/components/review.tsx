@@ -4,7 +4,7 @@ import type { Review } from "@/data/reviews";
 import { googleBusinessProfileUrl } from "@/data/reviews";
 import { Link } from "wouter";
 import {
-  APPOINTMENT_FORM_URL,
+  buildAppointmentUrl,
   trackAppointmentCtaClick,
   trackReviewLinkClick,
 } from "@/lib/analytics";
@@ -35,7 +35,7 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:text-primary/80 transition-colors"
+            className="text-primary hover:text-primary transition-colors"
             aria-label="Read full review on Google"
             onClick={() => trackReviewLinkClick("google", "review_card_icon")}
           >
@@ -51,7 +51,7 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:text-primary/80 ml-2 text-sm font-medium transition-colors"
+            className="text-primary hover:text-primary ml-2 text-sm font-medium transition-colors"
             onClick={() => trackReviewLinkClick("google", "review_card_excerpt")}
           >
             Read full review →
@@ -113,7 +113,7 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
                 href={googleBusinessProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-2"
+                className="text-primary hover:text-primary font-medium transition-colors flex items-center gap-2"
                 onClick={() => trackReviewLinkClick("google", "reviews_section")}
               >
                 Read More Reviews
@@ -121,7 +121,7 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
               </a>
               <span className="text-gray-500">•</span>
               <Link
-                href={APPOINTMENT_FORM_URL}
+                href={buildAppointmentUrl({ source: "reviews_cta" })}
                 className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 font-semibold transition-colors"
                 onClick={handleAppointmentClick}
               >

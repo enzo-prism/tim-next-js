@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -179,21 +178,21 @@ export default function About() {
               Meet our{" "}
               <Link
                 href="/team"
-                className="text-primary font-semibold hover:text-primary/80 transition-colors"
+                className="text-primary font-semibold hover:text-primary transition-colors"
               >
                 team
               </Link>
               , explore our{" "}
               <Link
                 href="/services"
-                className="text-primary font-semibold hover:text-primary/80 transition-colors"
+                className="text-primary font-semibold hover:text-primary transition-colors"
               >
                 services
               </Link>
               , or{" "}
               <Link
                 href="/contact"
-                className="text-primary font-semibold hover:text-primary/80 transition-colors"
+                className="text-primary font-semibold hover:text-primary transition-colors"
               >
                 contact us
               </Link>
@@ -247,12 +246,6 @@ export default function About() {
               variants={scaleIn}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
             >
-              <motion.div 
-                className="bg-primary text-white feature-icon mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
-                whileHover={{ rotate: 5 }}
-              >
-                <MinimalGlyph name="heart-care" />
-              </motion.div>
               <h3 className="text-xl font-semibold mb-3">Compassion</h3>
               <p className="text-gray-600">We treat every patient with empathy, understanding, and respect, ensuring a comfortable experience for all.</p>
             </motion.div>
@@ -261,12 +254,6 @@ export default function About() {
               variants={scaleIn}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
             >
-              <motion.div 
-                className="bg-secondary text-white feature-icon mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
-                whileHover={{ rotate: 5 }}
-              >
-                <MinimalGlyph name="user" />
-              </motion.div>
               <h3 className="text-xl font-semibold mb-3">Personalization</h3>
               <p className="text-gray-600">Every treatment plan is tailored to your unique needs, goals, and comfort level.</p>
             </motion.div>
@@ -275,12 +262,6 @@ export default function About() {
               variants={scaleIn}
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
             >
-              <motion.div 
-                className="bg-accent text-white feature-icon mx-auto mb-4 group-hover:scale-110 transition-transform duration-300"
-                whileHover={{ rotate: 5 }}
-              >
-                <MinimalGlyph name="shield" />
-              </motion.div>
               <h3 className="text-xl font-semibold mb-3">Prevention</h3>
               <p className="text-gray-600">We focus on preventive care and education to help you maintain optimal oral health for life.</p>
             </motion.div>
@@ -329,17 +310,13 @@ export default function About() {
                   whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
                 >
                   <div className="relative" style={{ paddingBottom: '177.78%' }}> {/* 9:16 aspect ratio */}
-                    <iframe
-                      className="absolute inset-0 w-full h-full"
-                      src="https://player.vimeo.com/video/1112347739?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;background=1&amp;muted=1&amp;loop=1&amp;autoplay=1"
+                    <VideoFacade
+                      videoSrc="https://player.vimeo.com/video/1112347739?title=0&byline=0&portrait=0&badge=0&autoplay=1"
                       title="Family First Smile Care Office Tour"
-                      frameBorder="0"
-                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                      loading="lazy"
-                      style={{ 
-                        border: 'none', 
-                        outline: 'none'
-                      }}
+                      poster={officePhoto1}
+                      posterAlt="Family First Smile Care office tour preview"
+                      posterSizes="(max-width: 768px) 100vw, 50vw"
+                      playLabel="Play office tour"
                     />
                   </div>
                 </motion.div>
@@ -351,17 +328,13 @@ export default function About() {
                   whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
                 >
                   <div className="relative" style={{ paddingBottom: '177.78%' }}> {/* 9:16 aspect ratio */}
-                    <iframe
-                      className="absolute inset-0 w-full h-full"
-                      src="https://player.vimeo.com/video/1106179818?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;background=1&amp;muted=1&amp;loop=1&amp;autoplay=1"
+                    <VideoFacade
+                      videoSrc="https://player.vimeo.com/video/1106179818?title=0&byline=0&portrait=0&badge=0&autoplay=1"
                       title="Family First Smile Care Facility Tour"
-                      frameBorder="0"
-                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-                      loading="lazy"
-                      style={{ 
-                        border: 'none', 
-                        outline: 'none'
-                      }}
+                      poster={officePhoto2}
+                      posterAlt="Family First Smile Care facility tour preview"
+                      posterSizes="(max-width: 768px) 100vw, 50vw"
+                      playLabel="Play facility tour"
                     />
                   </div>
                 </motion.div>

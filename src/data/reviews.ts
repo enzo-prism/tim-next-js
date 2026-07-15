@@ -148,7 +148,7 @@ export const serviceReviews: ServiceReviews[] = [
     ]
   },
   {
-    serviceId: "general-family-dentistry",
+    serviceId: "family-dentistry",
     reviews: [
       {
         name: "Jon Takagi",

@@ -74,10 +74,10 @@ Symptoms:
 
 Actions:
 
-1. Check `ADMIN_PASSWORD` exists in Vercel production env.
+1. Check `ADMIN_USERNAME` and `ADMIN_PASSWORD` exist in Vercel production env.
 2. Re-test using:
-   - `curl -i -u "admin:<password>" https://<domain>/api/admin/contacts`
-3. If `503 missing_config`, set `ADMIN_PASSWORD` and redeploy.
+   - `curl -i -u "<username>:<password>" https://<domain>/api/admin/contacts`
+3. If `503 missing_config`, set both admin credentials and redeploy.
 4. If still failing, rotate secret and update password manager entry.
 
 ## Incident: Contact form returns 500
@@ -93,7 +93,8 @@ Actions:
 3. Confirm database connectivity.
 4. Run schema push if table drift is suspected:
    - `npm run db:push`
-5. Re-test submit flow.
+   - `npm run db:verify`
+5. Re-test submit flow without using real patient information.
 
 ## Incident: Appointment relay degraded (Formspree down)
 

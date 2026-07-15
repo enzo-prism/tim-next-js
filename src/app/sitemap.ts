@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { allCanonicalRoutes } from "@/content/routes";
 import { getAllBlogPosts, getBlogPostHref } from "@/content/blog";
 
-const baseUrl = (process.env.CANONICAL_HOST || "https://famfirstsmile.com").replace(/\/$/, "");
+const baseUrl = (process.env.CANONICAL_HOST || "https://www.famfirstsmile.com").replace(/\/$/, "");
 
 // Noindexed utility pages should not be advertised to crawlers.
 const excludedRoutes = new Set<string>(["/sitemap"]);

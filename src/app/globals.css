@@ -76,7 +76,7 @@
   --card: hsl(0, 0%, 100%);
   --card-foreground: hsl(222.2, 47.4%, 11.2%);
   --border: hsl(201, 94%, 86%);
-  --input: hsl(201, 94%, 86%);
+  --input: hsl(198, 93%, 39%);
   --primary: hsl(201, 96%, 32%);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(199, 95%, 61%);
@@ -85,7 +85,7 @@
   --accent-foreground: hsl(202, 80%, 16%);
   --destructive: hsl(200, 98%, 39%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --ring: hsl(199, 95%, 61%);
+  --ring: hsl(201, 96%, 32%);
   --chart-1: hsl(201, 96%, 32%);
   --chart-2: hsl(199, 95%, 61%);
   --chart-3: hsl(198, 93%, 72%);

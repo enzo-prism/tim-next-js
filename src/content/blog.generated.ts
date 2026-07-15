@@ -1,6 +1,6 @@
 import type { BlogPost } from "./blog";
 
-// Generated from Family First daily SEO drafts that were not yet present in the live Next.js blog.
+// Patient education articles curated for the Family First Smile Care blog.
 export const additionalBlogPosts: BlogPost[] = [
   {
       "slug": "does-my-child-need-a-space-maintainer-los-gatos",
@@ -210,14 +210,14 @@ export const additionalBlogPosts: BlogPost[] = [
         "Parents usually know when it is time to replace outgrown shoes, swap the car seat, or stop cutting sandwiches into tiny geometric masterpieces. The dentist transition is less obvious.",
         "If your child has been seeing a pediatric dentist for years, you may wonder when it makes sense to switch to a family dentist. Is there a standard age? Should you wait until the teenage years? Does it depend on braces, comfort level, or whether they still have baby teeth hanging around like tiny tenants refusing to move out?",
         "For many families, the answer is not one exact birthday. It is more about readiness, dental development, and whether a family practice can continue care smoothly as your child grows.",
-        "That question fits Family First Smile Care especially well. The live site positions the practice as a warm, gentle dental home for the whole family, including children, teens, anxious patients, and adults who want one trusted office in Los Gatos. This topic sits right in the middle of that promise."
+        "A family dental office can make this transition easier by giving children, teens, and parents one familiar team and a consistent record of care."
       ],
       "sections": [
         {
           "id": "the-short-answer",
           "title": "The short answer",
           "paragraphs": [
-            "Many children transition from a pediatric dentist to a family or general dentist somewhere around ages 12 to 14, once most permanent teeth are in and their dental needs start looking more like teen or adult care. Fresh web research this morning showed that age range coming up consistently, but the best timing still depends on your child's comfort, oral health, independence, and any ongoing orthodontic or developmental issues.",
+            "Many children transition from a pediatric dentist to a family or general dentist in early adolescence, once most permanent teeth are in and their dental needs start looking more like teen or adult care. The best timing still depends on your child's comfort, oral health, independence, and any ongoing orthodontic or developmental issues.",
             "So the real answer is: often early adolescence, but not always. The right move is the one that keeps care consistent and comfortable."
           ]
         },
@@ -272,7 +272,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "id": "why-a-family-dentist-can-be-a-strong-next-step",
           "title": "Why a family dentist can be a strong next step",
           "paragraphs": [
-            "Family First Smile Care makes a compelling case for the transition because the live site emphasizes exactly what parents tend to want at this stage:",
+            "Family First Smile Care can support the transition with the things parents tend to value at this stage:",
             "That means a child who starts needing more teen focused conversations does not have to start over with a brand new clinical team that knows nothing about the family.",
             "For parents, that continuity matters. It is easier to keep appointments on track when one office can care for siblings, parents, and growing teens without the logistical circus."
           ],
@@ -303,9 +303,9 @@ export const additionalBlogPosts: BlogPost[] = [
           "id": "what-parents-in-los-gatos-should-consider",
           "title": "What parents in Los Gatos should consider",
           "paragraphs": [
-            "Local fit matters too. Family First Smile Care is not positioning itself as a high volume churn machine. The site reads like a practice for families who want warmth, calm communication, and a team that makes visits easier for both kids and adults.",
+            "Local fit matters too. Families often want warmth, calm communication, and a team that makes visits easier for both kids and adults.",
             "That matters when a child is in the in-between stage. They may not need a strictly pediatric environment anymore, but they still benefit from a dental office that knows how to speak to young patients gently and help parents stay informed.",
-            "The Santa Cruz angle on the site also says something useful: some families are willing to drive to Los Gatos for an office that feels trustworthy and organized. That is often exactly how parents think about this transition. They are not just choosing a provider. They are choosing the place they hope can handle the next several years well."
+            "Some families are willing to drive from Santa Cruz to Los Gatos for an office that feels trustworthy and organized. Parents are not just choosing a provider. They are choosing the place they hope can handle the next several years well."
           ]
         },
         {
@@ -384,12 +384,12 @@ export const additionalBlogPosts: BlogPost[] = [
     },
   {
       "slug": "what-happens-at-a-free-invisalign-consultation-los-gatos",
-      "title": "What Happens at a Free Invisalign Consultation in Los Gatos?",
-      "metaTitle": "What Happens at a Free Invisalign Consultation in Los Gatos?",
-      "metaDescription": "Learn what happens at a free Invisalign consultation in Los Gatos, from digital scanning and smile goals to treatment planning, timeline questions, and next steps.",
+      "title": "What Happens at an Invisalign Consultation in Los Gatos?",
+      "metaTitle": "What Happens at an Invisalign Consultation in Los Gatos?",
+      "metaDescription": "Learn what happens at an Invisalign consultation in Los Gatos, from digital scanning and smile goals to treatment planning, timeline questions, and next steps.",
       "excerpt": "If you have been thinking about straightening your teeth but keep wondering what the first appointment is actually like, you are not alone. A lot of Los Gatos patients are interested in Invisalign because it feels lower friction than braces, but they still want to know what happens before they commit.",
       "category": "Invisalign & Orthodontics",
-      "primaryKeyword": "free Invisalign consultation Los Gatos",
+      "primaryKeyword": "Invisalign consultation Los Gatos",
       "secondaryKeywords": [
         "what happens at Invisalign consultation",
         "Invisalign consult Los Gatos",
@@ -400,20 +400,20 @@ export const additionalBlogPosts: BlogPost[] = [
       "updatedAt": "2026-04-03",
       "readingTimeMinutes": 6,
       "heroEyebrow": "Smile Planning Guide",
-      "heroSummary": "Learn what happens at a free Invisalign consultation in Los Gatos, from digital scanning and smile goals to treatment planning, timeline questions, and next steps.",
+      "heroSummary": "Learn what happens at an Invisalign consultation in Los Gatos, from digital scanning and smile goals to treatment planning, timeline questions, and next steps.",
       "quickAnswer": "If you have been thinking about straightening your teeth but keep wondering what the first appointment is actually like, you are not alone.",
       "quickAnswerSupport": "A lot of Los Gatos patients are interested in Invisalign because it feels lower friction than braces, but they still want to know what happens before they commit.",
       "intro": [
         "If you have been thinking about straightening your teeth but keep wondering what the first appointment is actually like, you are not alone. A lot of Los Gatos patients are interested in Invisalign because it feels lower friction than braces, but they still want to know what happens before they commit.",
-        "That is exactly why this topic fits Family First Smile Care. The live site already highlights free Invisalign consultations, gentle family focused care, and digital tools like iTero scanning. It also speaks directly to Los Gatos families and Santa Cruz patients who are willing to drive over Highway 17 for a more comfortable experience. A clear guide to the first Invisalign visit is a natural next step."
+        "Knowing what to expect can make an Invisalign consultation feel much easier. The visit is a chance to discuss your goals, review your oral health, and understand the possible next steps before deciding whether treatment is right for you."
       ],
       "sections": [
         {
           "id": "the-short-answer",
           "title": "The short answer",
           "paragraphs": [
-            "A free Invisalign consultation usually includes a conversation about your smile goals, an exam, digital records such as scans or images, and a discussion about whether clear aligners are a good fit for your teeth and bite. It is generally a planning visit, not a procedure heavy visit.",
-            "Fresh web research this morning pointed to a consistent pattern across current Invisalign education articles: first appointments usually focus on goals, oral health, digital scanning, and treatment planning. Patients often do not leave with aligners that same day, because custom trays are typically designed after the records and treatment plan are reviewed."
+            "An Invisalign consultation usually includes a conversation about your smile goals, an exam, digital records such as scans or images, and a discussion about whether clear aligners are a good fit for your teeth and bite. It is generally a planning visit, not a procedure heavy visit.",
+            "First appointments usually focus on goals, oral health, digital scanning, and treatment planning. Patients often do not leave with aligners that same day because custom trays are typically designed after the records and treatment plan are reviewed."
           ]
         },
         {
@@ -422,7 +422,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "paragraphs": [
             "People usually are not nervous about the idea of straighter teeth. They are nervous about the unknowns.",
             "Common questions sound like this:",
-            "Those are good questions. And for a practice like Family First Smile Care, answering them clearly matters because the site consistently positions the office as calm, compassionate, and especially supportive for anxious patients and families."
+            "Those are good questions. A useful consultation should answer them clearly and help anxious patients and families understand the next step."
           ],
           "bullets": [
             "Will it hurt?",
@@ -446,7 +446,7 @@ export const additionalBlogPosts: BlogPost[] = [
             "Before starting Invisalign, your dentist needs to confirm that your mouth is healthy enough for tooth movement. That means checking for issues like cavities, gum inflammation, or other concerns that should be handled first.",
             "This is important because aligners move teeth, but they do not fix untreated decay or active gum problems.",
             "### 3. Digital scanning or imaging",
-            "This is one of the biggest reasons many patients prefer a modern Invisalign workflow. Family First Smile Care already features digital technology on the site, including iTero and advanced imaging tools. That matters because it helps create a cleaner, more comfortable first visit.",
+            "This is one reason many patients prefer a digital Invisalign workflow. An iTero scan can create records without traditional putty impressions and help the dentist explain the proposed plan.",
             "Instead of old fashioned impressions, many Invisalign consultations use digital scanning to capture a precise 3D model of your teeth. That helps with:",
             "For patients who hate messy impressions, this part alone is a small gift from the dental gods.",
             "### 4. A candidacy discussion",
@@ -494,7 +494,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "title": "Questions worth asking at the consultation",
           "paragraphs": [
             "If you want to get the most out of the visit, ask questions like:",
-            "This topic also fits Family First Smile Care because the practice emphasizes patient resources and a smoother, less stressful experience. A consultation guide gives people permission to show up informed instead of overwhelmed."
+            "A consultation guide helps you arrive informed instead of overwhelmed, with a clearer idea of what to ask and what decisions can wait until after the exam."
           ],
           "bullets": [
             "Am I a strong Invisalign candidate?",
@@ -511,20 +511,20 @@ export const additionalBlogPosts: BlogPost[] = [
           "title": "Why this matters for Los Gatos and Santa Cruz patients",
           "paragraphs": [
             "For busy families and working adults, uncertainty is often the real barrier. If you know the first visit is mostly a conversation, exam, and digital planning session, it becomes much easier to book.",
-            "That is especially true for patients coming from Santa Cruz. The site already points out how straightforward the drive can be for families who want gentle care and help verifying benefits. A clear explanation of the first Invisalign visit helps those patients decide whether the trip is worth it before they carve out time."
+            "That is especially true for patients coming from Santa Cruz. A clear explanation of the first Invisalign visit helps patients decide whether the trip is worth it before they carve out time."
           ]
         },
         {
           "id": "book-the-visit-that-turns-questions-into-a-real-plan",
           "title": "Book the visit that turns questions into a real plan",
           "paragraphs": [
-            "If you have been circling the idea of Invisalign but have not booked because the process feels vague, a consultation is the easiest next step. It should give you a clearer view of your teeth, your options, your likely timeline, and whether aligners are the right fit. If you are in Los Gatos or coming over from Santa Cruz, contact Family First Smile Care to schedule a free Invisalign consultation and get a calm, practical plan for what comes next."
+            "If you have been circling the idea of Invisalign but have not booked because the process feels vague, a consultation is the easiest next step. It should give you a clearer view of your teeth, your options, your likely timeline, and whether aligners are the right fit. If you are in Los Gatos or coming over from Santa Cruz, contact Family First Smile Care to request an Invisalign consultation and get a calm, practical plan for what comes next."
           ]
         }
       ],
       "faq": [
         {
-          "question": "Does a free Invisalign consultation hurt?",
+          "question": "Does an Invisalign consultation hurt?",
           "answer": "Usually no. It is typically a discussion, exam, and digital planning visit rather than an invasive procedure."
         },
         {
@@ -607,14 +607,14 @@ export const additionalBlogPosts: BlogPost[] = [
         "A lot of parents assume orthodontic concerns can wait until all the baby teeth are gone. Sometimes that works out. Sometimes it means a problem gets bigger, harder, or more expensive to correct.",
         "So when should a child have their first orthodontic evaluation?",
         "For many kids, the right time is around age 7. That does not mean braces start at 7. It means there is enough growth and tooth development happening by then to spot issues early and decide whether a child simply needs monitoring or could benefit from early guidance.",
-        "This topic fits Family First Smile Care well because the practice positions itself around gentle, family focused care, advanced imaging, and a free Invisalign consultation. Parents in Los Gatos are not always asking for treatment right away. Often they just want a calm answer about timing."
+        "Parents are not always asking for treatment right away. Often they simply want a calm answer about timing and whether their child's growth should be monitored."
       ],
       "sections": [
         {
           "id": "why-age-7-matters",
           "title": "Why age 7 matters",
           "paragraphs": [
-            "Fresh research this morning from the American Association of Orthodontists reinforced a long standing recommendation: children should be screened for orthodontic concerns around age 7.",
+            "The American Association of Orthodontists recommends that children have an orthodontic screening by age 7.",
             "Why that age?",
             "By then, many kids have a mix of baby teeth and permanent teeth. That stage gives dentists and orthodontic providers a useful window to identify:",
             "In other words, the first orthodontic evaluation is less about braces and more about catching direction early."
@@ -694,10 +694,10 @@ export const additionalBlogPosts: BlogPost[] = [
         },
         {
           "id": "why-this-topic-matters-in-los-gatos",
-          "title": "Why this topic matters in Los Gatos",
+          "title": "What thoughtful early planning looks like",
           "paragraphs": [
             "Los Gatos parents tend to be thoughtful planners. They want to stay ahead of problems without putting their kids through unnecessary treatment. They also want a practice that can explain things clearly and keep the experience calm.",
-            "That is why this blog topic works locally. It supports the practice's family first positioning, helps parents know when to ask about orthodontic development, and naturally ties into the site's free Invisalign consultation callout for families exploring future smile alignment options.",
+            "An early evaluation helps parents know when to ask about orthodontic development and whether monitoring is enough for now.",
             "It also speaks to Santa Cruz families who already travel to the office for care they feel is worth the drive."
           ]
         },
@@ -899,10 +899,10 @@ export const additionalBlogPosts: BlogPost[] = [
         },
         {
           "id": "why-this-topic-fits-family-first-smile-care",
-          "title": "Why this topic fits Family First Smile Care",
+          "title": "When a dental check can help",
           "paragraphs": [
-            "The live site speaks directly to compassionate care for children and anxious patients, plus practical guidance for families coming from Los Gatos and Santa Cruz. A blog about shark teeth answers a high-frequency parent concern with exactly the calm, educational tone the brand needs.",
-            "It also supports a strong conversion path. Parents searching this topic often want reassurance first, then a local office that can check whether the tooth is normal, stuck, or likely to need help. That is a very real appointment intent."
+            "Most shark teeth are not emergencies, but a dental check can show whether the baby tooth is loosening normally or whether the adult tooth needs more room.",
+            "Parents often need reassurance first, then a clear plan for whether to monitor the tooth or schedule treatment."
           ]
         },
         {
@@ -1003,7 +1003,7 @@ export const additionalBlogPosts: BlogPost[] = [
       "quickAnswerSupport": "Parents usually want the same three answers right away: Do we really need them, how often are they used, and are they safe?",
       "intro": [
         "If a dentist mentions X-rays for your child, it is completely normal to have questions. Parents usually want the same three answers right away: Do we really need them, how often are they used, and are they safe?",
-        "At Family First Smile Care, the live site consistently positions the practice around gentle, family-focused care, prevention, and clear communication for Los Gatos families. That makes this topic a strong fit. Dental X-rays are one of those things that can sound bigger and scarier than they actually are, especially when your child is young and you are trying to make good decisions without overdoing anything.",
+        "Dental X-rays can sound bigger and scarier than they are, especially when your child is young and you are trying to make good decisions without overdoing anything.",
         "The short answer is yes, kids often do need dental X-rays at certain points. Not at every visit. Not on some rigid one-size-fits-all schedule. But when they are recommended, they can help your dentist catch problems that are easy to miss during a visual exam alone."
       ],
       "sections": [
@@ -1094,7 +1094,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "id": "why-this-fits-a-prevention-first-practice",
           "title": "Why this fits a prevention-first practice",
           "paragraphs": [
-            "Family First Smile Care talks a lot on the live site about prevention, compassion, and making care feel manageable for families. X-rays are part of that approach when used well.",
+            "X-rays support prevention when they are recommended for a specific reason and used to answer a question that a visual exam cannot.",
             "They help dentists find:",
             "In other words, imaging is often part of keeping treatment smaller, not making it bigger."
           ],
@@ -1585,10 +1585,10 @@ export const additionalBlogPosts: BlogPost[] = [
         },
         {
           "id": "why-this-topic-fits-los-gatos-and-santa-cruz-families",
-          "title": "Why this topic fits Los Gatos and Santa Cruz families",
+          "title": "Why early attention matters",
           "paragraphs": [
-            "The live site already emphasizes prevention, gentle family care, oral health education, and practical guidance for Los Gatos and Santa Cruz families. A bleeding-gums article fits naturally into that mission because it answers a very common question at the moment when patients are deciding whether to book.",
-            "It also connects well with the site's flossing education, patient info pages, and broader message that families do better when dental care feels understandable instead of intimidating."
+            "Bleeding gums are common, but they are still worth paying attention to. Early guidance can help you improve home care and identify inflammation before it becomes harder to manage.",
+            "Families often do better when preventive care and flossing guidance feel understandable instead of intimidating."
           ]
         },
         {
@@ -1796,11 +1796,11 @@ export const additionalBlogPosts: BlogPost[] = [
         },
         {
           "id": "why-this-topic-fits-family-first-smile-care-especially-well",
-          "title": "Why this topic fits Family First Smile Care especially well",
+          "title": "Why a calm exam helps",
           "paragraphs": [
             "The Family First Smile Care site clearly speaks to families who want gentle, compassionate care, especially for children, anxious patients, and prevention-focused questions. The blog also says it is built around real questions families ask before they walk through the door.",
             "This is exactly that kind of topic.",
-            "It is seasonal, practical, family-centered, and local. It also fits the site’s audience well because many Los Gatos families are balancing school, sports, orthodontics, and busy schedules. For Santa Cruz families already making the drive to Los Gatos for care they trust, prevention topics like this are especially useful."
+            "Mouthguard planning is practical for families balancing school, sports, orthodontics, and busy schedules. Addressing it before the season begins can make protection easier to use consistently."
           ]
         },
         {
@@ -2106,10 +2106,10 @@ export const additionalBlogPosts: BlogPost[] = [
         },
         {
           "id": "how-this-fits-family-first-smile-care-s-approach",
-          "title": "How this fits Family First Smile Care's approach",
+          "title": "How a prevention-first approach helps",
           "paragraphs": [
-            "The live site emphasizes gentle care, family-focused dentistry, preventive education, and support for both children and anxious patients. This topic fits that voice well because it addresses a question parents genuinely ask when they are trying to do the right thing without overreacting.",
-            "It also builds naturally from the site's existing family message. Families want honest answers, not lectures. They want to know whether treatment is necessary, what happens if they wait, and how to make care easier on their child."
+            "A prevention-first visit addresses the question parents are really asking: what needs treatment now, what can be monitored, and how can we keep the experience manageable for the child?",
+            "Families want honest answers, not lectures. They want to know whether treatment is necessary, what happens if they wait, and how to make care easier on their child."
           ]
         },
         {
@@ -2577,7 +2577,7 @@ export const additionalBlogPosts: BlogPost[] = [
       "intro": [
         "If your child knocks out a tooth, the first minute feels chaotic.",
         "There may be tears, blood, panic, and a dozen questions all at once. Was it a baby tooth or a permanent tooth? Do you put it back? Should you use water? Can it be saved?",
-        "The good news is that what you do next can make a real difference, especially if the tooth is permanent. Family First Smile Care is well positioned for this kind of topic because the live site emphasizes gentle family care, children’s dentistry, patient comfort, and practical guidance for busy Los Gatos parents. This is exactly the kind of situation where calm, clear instructions matter."
+        "The good news is that what you do next can make a real difference, especially if the tooth is permanent. This is exactly the kind of situation where calm, clear instructions matter."
       ],
       "sections": [
         {
@@ -2677,7 +2677,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "id": "how-family-first-smile-care-fits-this-need",
           "title": "How Family First Smile Care fits this need",
           "paragraphs": [
-            "The live site already highlights children’s dentistry, family-focused care, and a calm approach for kids and anxious patients. That is a strong match for emergency guidance content because parents are not just searching for technical instructions. They are also searching for reassurance.",
+            "Parents facing a dental emergency need more than technical instructions. They also need calm guidance and a clear next step.",
             "A family dental office should feel like the place you call when your child is scared, bleeding, and looking at you like you are supposed to know exactly what to do."
           ]
         },
@@ -2807,7 +2807,7 @@ export const additionalBlogPosts: BlogPost[] = [
             "Many kids do brush. That does not always mean the brushing is effective.",
             "Back molars, gumline areas, and the spaces where food packs easily are often missed. Younger children also tend to move the toothbrush around without actually cleaning each surface long enough.",
             "Even parents who are very involved may overestimate how thoroughly a child is brushing independently.",
-            "At Family First Smile Care, the prevention-first message on the site is important here. Sometimes the fix is not a huge treatment change. It is better technique, parent assistance for a little longer, or a more realistic routine."
+            "Sometimes the next step is not a major treatment change. It may be better technique, parent assistance for a little longer, or a more realistic routine."
           ]
         },
         {
@@ -2887,7 +2887,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "paragraphs": [
             "If decay keeps recurring, it helps to move beyond general advice and look at the specific child in front of you.",
             "A dental exam can help answer questions like:",
-            "That personalized approach fits Family First Smile Care's tone well. The practice is not positioned as a high-pressure office. It is positioned as a calm, family-centered place that helps parents understand what is happening and what to do next."
+            "A personalized prevention plan helps parents understand what is happening and what to do next without adding pressure or blame."
           ],
           "bullets": [
             "Are the cavities showing up in the same areas each time?",
@@ -2898,10 +2898,10 @@ export const additionalBlogPosts: BlogPost[] = [
         },
         {
           "id": "why-this-topic-fits-family-first-smile-care-right-now",
-          "title": "Why this topic fits Family First Smile Care right now",
+          "title": "Why a personalized prevention plan matters",
           "paragraphs": [
-            "Recent site drafts focused on first visits, morning jaw pain, and how often to get cleanings. This cavity-prevention topic adds another high-frequency parent question while staying tightly aligned with the blog's stated purpose: clear, prevention-focused guidance for Los Gatos families.",
-            "It also connects directly to the site's services in children's dentistry, exams, and hygiene."
+            "Repeated cavities are a sign to look beyond generic advice and build a prevention plan around the child's diet, brushing habits, tooth anatomy, and risk factors.",
+            "A dental exam and hygiene visit can identify the places that need more protection and make the home routine more realistic."
           ]
         },
         {
@@ -3003,7 +3003,7 @@ export const additionalBlogPosts: BlogPost[] = [
         "A child toothache has a way of turning a normal day into chaos fast.",
         "Maybe it starts at breakfast. Maybe it shows up at bedtime. Maybe your kid points to one side of their mouth, looks miserable, and suddenly every parent instinct in your body starts sprinting laps.",
         "The hard part is that tooth pain in children does not always come with a giant flashing sign that explains what is happening. Sometimes there is a visible cavity. Sometimes food is stuck. Sometimes the tooth looks completely normal and your child still says it hurts.",
-        "That is exactly why this topic fits Family First Smile Care so well. The live site positions the practice as a gentle, family-focused dental home for children, adults, anxious patients, and even Santa Cruz families willing to drive to Los Gatos for a calmer experience. A practical guide on what parents should do when a child has tooth pain matches that promise perfectly."
+        "A practical plan can help parents respond calmly, make their child more comfortable, and recognize when tooth pain needs prompt attention."
       ],
       "sections": [
         {
@@ -3011,7 +3011,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "title": "The short answer",
           "paragraphs": [
             "If your child has a toothache in Los Gatos, start by checking for obvious food debris, gently brushing and flossing the area, and using simple comfort steps like a warm saltwater rinse if your child is old enough to swish and spit, a cold compress for swelling, and an age-appropriate pain reliever as directed. Then call a dentist to have the tooth evaluated.",
-            "Fresh web research reviewed before writing showed a consistent pattern across pediatric and dental sources: child tooth pain is often tied to cavities, irritation, trauma, or infection, and red flags such as swelling, fever, worsening pain, or a child who feels generally unwell deserve prompt attention.",
+            "Child tooth pain is often tied to cavities, irritation, trauma, or infection. Red flags such as swelling, fever, worsening pain, or a child who feels generally unwell deserve prompt attention.",
             "So the practical answer is simple. Help your child get comfortable, then get the cause checked. Toothaches usually do not solve themselves just because everybody wishes really hard."
           ]
         },
@@ -3020,7 +3020,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "title": "What can cause a toothache in a child?",
           "paragraphs": [
             "Tooth pain can come from several different problems.",
-            "Fresh guidance reviewed today from Nationwide Children's notes that a toothache often happens when the inner pulp becomes inflamed or infected, most commonly because of decay. Other dental sources reviewed today also pointed to a few everyday culprits parents should consider:",
+            "A toothache can happen when the inner pulp becomes inflamed or infected, often because of decay. Other everyday causes can include:",
             "This is one reason parents should not assume that a child is exaggerating or that the pain will disappear by morning. Pain usually means something is irritating the tooth or nearby tissue."
           ],
           "bullets": [
@@ -3042,7 +3042,7 @@ export const additionalBlogPosts: BlogPost[] = [
             "Ask a few basic questions:",
             "That quick check helps you explain the situation clearly when you call the dental office.",
             "### 2. Gently clean the area",
-            "Fresh practical dental guidance reviewed today recommends starting with the simplest possibility first. Sometimes food trapped between teeth or around the gums can trigger real discomfort.",
+            "Start with the simplest possibility first. Sometimes food trapped between teeth or around the gums can trigger real discomfort.",
             "Use a soft toothbrush and floss gently around the sore area. If your child is old enough to swish and spit safely, a warm saltwater rinse may help soothe irritated tissue.",
             "Do not poke around aggressively or jam objects between the teeth. This is dentistry, not medieval treasure hunting.",
             "### 3. Use a cold compress if there is swelling",
@@ -3067,7 +3067,7 @@ export const additionalBlogPosts: BlogPost[] = [
           "title": "When should you call the dentist right away?",
           "paragraphs": [
             "A toothache is worth a dental call even if the pain seems mild, but some symptoms should move the situation up the priority ladder.",
-            "Fresh pediatric guidance reviewed today highlighted symptoms such as fever, jaw tenderness, and a general sick feeling as signs that the problem may be more serious. Call promptly if your child has:",
+            "Symptoms such as fever, jaw tenderness, and a general sick feeling can mean the problem is more serious. Call promptly if your child has:",
             "If your child looks very ill, has significant swelling, or is having trouble swallowing or breathing, seek urgent medical care immediately."
           ],
           "bullets": [
@@ -3093,11 +3093,11 @@ export const additionalBlogPosts: BlogPost[] = [
         },
         {
           "id": "why-this-topic-fits-family-first-smile-care",
-          "title": "Why this topic fits Family First Smile Care",
+          "title": "Why a calm dental visit helps",
           "paragraphs": [
-            "The live Family First Smile Care site consistently emphasizes gentle care, child-friendly visits, clear explanations, preventive dentistry, and a warm office experience for the whole family. That makes a toothache guide especially relevant.",
+            "A child-friendly dental visit can identify the cause of pain while helping the child feel safe and informed.",
             "Parents dealing with a hurting child are not just looking for technical treatment. They want a dentist who can stay calm, explain what is happening, and help the child feel safe.",
-            "That positioning also matches the Santa Cruz family pages and patient information pages on the site. The practice is clearly trying to be the kind of office families trust for both routine care and the stressful little moments that interrupt real life."
+            "Families need an office they can trust for routine care and the stressful dental problems that interrupt real life."
           ]
         },
         {

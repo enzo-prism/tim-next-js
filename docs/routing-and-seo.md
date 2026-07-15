@@ -3,7 +3,7 @@
 ## Canonical Host
 
 - Primary canonical host is controlled by `CANONICAL_HOST`.
-- Public fallback in code is `https://famfirstsmile.com`.
+- Public fallback in code is `https://www.famfirstsmile.com`.
 - `NEXT_PUBLIC_CANONICAL_HOST` is used by some client-facing canonical logic.
 
 ## Public Routes

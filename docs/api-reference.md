@@ -38,9 +38,13 @@ Defined by `insertAppointmentSchema` in `src/server/schema.ts`:
 - `email`: string, required
 - `phone`: string, required
 - `service`: string, required
-- `preferredDate`: string, required
-- `preferredTime`: string, required
+- `preferredDate`: `YYYY-MM-DD`, optional
+- `preferredTime`: `"morning" | "afternoon" | "flexible"`, optional
 - `message`: string, optional
+- `consentToContact`: boolean `true`, required
+- `consentVersion`: current version string, required
+- `submissionId`: UUID, required for duplicate protection
+- first-touch attribution fields: optional (`landingPage`, `referrer`, `ctaSource`, UTM fields, and Google click IDs)
 
 ### Stored Contact Record Fields
 
@@ -50,12 +54,15 @@ The `contacts` table now also includes:
 - `preferredDate`: string or null
 - `preferredTime`: string or null
 - `formspreeStatus`: `"delivered" | "failed" | null`
+- `submissionId`: unique browser-generated UUID
+- campaign, landing-page, referrer, and CTA attribution fields
+- contact consent and consent-version fields
 
 ## Endpoints
 
 ## `POST /api/contacts`
 
-Create a contact submission.
+Persist a contact submission and notify the office through Formspree.
 
 Request body:
 
@@ -66,14 +73,23 @@ Request body:
   "email": "jane@example.com",
   "phone": "555-123-4567",
   "service": "Invisalign",
-  "message": "Interested in a consult"
+  "message": "Interested in a consult",
+  "consentToContact": true,
+  "consentVersion": "2026-07-15",
+  "submissionId": "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+  "landingPage": "/services/invisalign",
+  "utmSource": "google"
 }
 ```
 
 Responses:
 
-- `201`
-  - `{ "success": true, "contact": { ... } }`
+- `201` (new lead persisted and notification delivered)
+  - `{ "success": true, "created": true, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
+- `200` (duplicate already delivered)
+  - `{ "success": true, "created": false, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
+- `202` (lead persisted, notification delayed)
+  - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
 - `400`
   - `{ "success": false, "message": "Invalid form data", "errors": [...] }`
 - `500`
@@ -92,18 +108,23 @@ Request body:
   "email": "jane@example.com",
   "phone": "555-123-4567",
   "service": "invisalign",
-  "preferredDate": "2026-03-10",
-  "preferredTime": "10:30",
-  "message": "Morning is best"
+  "preferredDate": "2026-08-10",
+  "preferredTime": "morning",
+  "message": "Morning is best",
+  "consentToContact": true,
+  "consentVersion": "2026-07-15",
+  "submissionId": "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf"
 }
 ```
 
 Responses:
 
 - `201` (DB + Formspree delivered)
-  - `{ "success": true, "delivered": true, "appointment": { ... } }`
+  - `{ "success": true, "created": true, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
+- `200` (duplicate already delivered)
+  - `{ "success": true, "created": false, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
 - `202` (DB persisted, Formspree relay failed)
-  - `{ "success": true, "delivered": false, "appointment": { ... }, "fallbackMessage": "..." }`
+  - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
 - `400`
   - `{ "success": false, "message": "Invalid appointment data", "errors": [...] }`
 - `500`
@@ -254,7 +275,7 @@ Success shape:
   "totals": { "clicks": 123, "impressions": 4567, "ctr": 0.0269, "position": 18.2 },
   "series": [{ "date": "2026-03-01", "clicks": 5, "impressions": 140, "ctr": 0.035, "position": 17.8 }],
   "topQueries": [{ "query": "family dentist los gatos", "clicks": 10, "impressions": 120, "ctr": 0.083, "position": 5.2 }],
-  "topPages": [{ "page": "https://famfirstsmile.com/services", "clicks": 20, "impressions": 300, "ctr": 0.066, "position": 7.5 }]
+  "topPages": [{ "page": "https://www.famfirstsmile.com/services", "clicks": 20, "impressions": 300, "ctr": 0.066, "position": 7.5 }]
 }
 ```
 

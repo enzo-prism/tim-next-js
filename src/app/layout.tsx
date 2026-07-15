@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Raleway } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/header";
@@ -8,9 +7,9 @@ import AppProviders from "@/components/app-providers";
 import ElevenLabsWidget from "@/components/elevenlabs-widget";
 import RouteAnalytics from "@/components/route-analytics";
 import VercelAnalytics from "@/components/vercel-analytics";
+import GoogleAnalytics from "@/components/google-analytics";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
 import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
-import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
 
 const raleway = Raleway({
   subsets: ["latin"],
@@ -32,16 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable}>
       <body>
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="ga-init" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });`}
-        </Script>
+        <GoogleAnalytics />
 
         <AppProviders>
           <RouteAnalytics />

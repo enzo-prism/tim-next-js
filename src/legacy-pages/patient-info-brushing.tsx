@@ -11,7 +11,6 @@ export default function PatientInfoBrushing() {
       <section className="relative bg-muted/40 py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-primary mb-4">
-            <MinimalGlyph name="hygiene-sparkle" className="w-4 h-4 mr-2" />
             Oral Health Education
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
@@ -50,24 +49,18 @@ export default function PatientInfoBrushing() {
             {
               title: "Brush twice daily",
               description: "Aim for morning and night, about two minutes each time.",
-              icon: <MinimalGlyph name="clock" className="w-5 h-5 text-primary" />,
             },
             {
               title: "Use a soft brush",
               description: "Soft bristles protect gums while still removing plaque.",
-              icon: <MinimalGlyph name="heart-care" className="w-5 h-5 text-secondary" />,
             },
             {
               title: "Fluoride matters",
               description: "A smear or pea-sized amount strengthens enamel.",
-              icon: <MinimalGlyph name="shield" className="w-5 h-5 text-accent" />,
             },
           ].map((item) => (
             <div key={item.title} className="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-white rounded-lg w-10 h-10 flex items-center justify-center shadow-sm">
-                  {item.icon}
-                </div>
+              <div className="mb-3">
                 <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
               </div>
               <p className="text-gray-600">{item.description}</p>
@@ -99,15 +92,12 @@ export default function PatientInfoBrushing() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Age-Based Guidance</h2>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="smile-aligner" className="w-5 h-5 text-primary mt-1" />
                 <span>Under age 3: use a smear of fluoride toothpaste.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="smile-aligner" className="w-5 h-5 text-primary mt-1" />
                 <span>Ages 3-6: use a pea-sized amount and supervise.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="smile-aligner" className="w-5 h-5 text-primary mt-1" />
                 <span>Ages 7+: encourage independence but check for thoroughness.</span>
               </li>
             </ul>
@@ -116,15 +106,15 @@ export default function PatientInfoBrushing() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Common Mistakes to Avoid</h2>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-secondary mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Scrubbing too hard, which can irritate gums.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-secondary mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Skipping the gumline and back teeth.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-secondary mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Not replacing your brush every 3 months.</span>
               </li>
             </ul>

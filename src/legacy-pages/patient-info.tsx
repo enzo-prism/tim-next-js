@@ -66,38 +66,27 @@ export default function PatientInfo() {
           {/* Insurance Information */}
           <div className="bg-white rounded-xl shadow-sm p-8">
             <div className="text-center mb-6">
-              <div className="bg-secondary text-white feature-icon mx-auto mb-4">
-                <MinimalGlyph name="shield" />
-              </div>
               <h2 className="text-2xl font-bold text-gray-800">Insurance & Payment</h2>
             </div>
-            <p className="text-gray-600 mb-6">We accept many major insurance plans and offer flexible payment options to make dental care accessible for your family.</p>
+            <p className="text-gray-600 mb-6">Insurance participation, benefits, and payment options can vary. Call our office before your visit so we can review the details you provide and explain the next step.</p>
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Accepted Insurance</h3>
-                <ul className="text-gray-600 space-y-1">
-                  <li>• Delta Dental</li>
-                  <li>• Cigna</li>
-                  <li>• MetLife</li>
-                  <li>• Aetna</li>
-                  <li>• Blue Cross Blue Shield</li>
-                  <li>• Most PPO plans</li>
-                </ul>
+                <h3 className="font-semibold text-gray-800 mb-2">Insurance Questions</h3>
+                <p className="text-gray-600">
+                  Have your plan name and member information ready when you call. Coverage and
+                  benefits are determined by your insurer and specific plan.
+                </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Payment Options</h3>
-                <ul className="text-gray-600 space-y-1">
-                  <li>• Cash and Credit Cards</li>
-                  <li>• Flexible financing available</li>
-                  <li>• Payment plans</li>
-                </ul>
+                <h3 className="font-semibold text-gray-800 mb-2">Payment Questions</h3>
+                <p className="text-gray-600">Call the office to ask about current payment methods and options for your proposed care.</p>
               </div>
               <div className="rounded-xl border border-secondary/20 bg-secondary/5 p-4">
                 <h3 className="font-semibold text-gray-800 mb-2">Coming from Santa Cruz?</h3>
                 <p className="text-sm text-gray-600">
                   Many Santa Cruz families are happy to come over Highway 17 for care here. If you
-                  want to use PPO benefits at our office, call ahead and we will help verify your
-                  coverage before you make the trip.
+                  have insurance questions, call ahead with your plan details before you make the
+                  trip.
                 </p>
                 <Button asChild variant="link" className="mt-3 h-auto p-0 text-primary">
                   <Link href="/areas-we-serve/santa-cruz">See Santa Cruz visit details</Link>
@@ -109,9 +98,6 @@ export default function PatientInfo() {
           {/* What to Expect */}
           <div className="bg-white rounded-xl shadow-sm p-8">
             <div className="text-center mb-6">
-              <div className="bg-accent text-white feature-icon mx-auto mb-4">
-                <MinimalGlyph name="clock" />
-              </div>
               <h2 className="text-2xl font-bold text-gray-800">What to Expect</h2>
             </div>
             <p className="text-gray-600 mb-6">Your comfort and understanding are our priorities. Here's what you can expect during your visit.</p>

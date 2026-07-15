@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import {
-  APPOINTMENT_FORM_URL,
+  buildAppointmentUrl,
   trackAppointmentCtaClick,
   trackMapClick,
   trackPhoneClick,
@@ -31,25 +38,48 @@ const scaleIn = {
 };
 
 export default function BabysFirstVisit() {
+  const instagramSectionRef = useRef<HTMLElement | null>(null);
   const handleAppointmentClick = () => {
     trackAppointmentCtaClick("babys_first_visit");
   };
 
-  // Ensure the Instagram embed script is available when the page loads
+  // Load the third-party embed only when its section is near the viewport.
   useEffect(() => {
-    const existing = document.getElementById("instagram-embed-script");
-    if (existing) {
-      // Trigger a reparse of embeds if script already loaded
-      // @ts-expect-error instagram global is injected by the script
-      window.instgrm?.Embeds?.process?.();
+    const loadInstagram = () => {
+      const existing = document.getElementById("instagram-embed-script");
+      if (existing) {
+        // @ts-expect-error instagram global is injected by the script
+        window.instgrm?.Embeds?.process?.();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.id = "instagram-embed-script";
+      script.src = "https://www.instagram.com/embed.js";
+      script.async = true;
+      script.onload = () => {
+        // @ts-expect-error instagram global is injected by the script
+        window.instgrm?.Embeds?.process?.();
+      };
+      document.body.appendChild(script);
+    };
+
+    const section = instagramSectionRef.current;
+    if (!section || !("IntersectionObserver" in window)) {
+      loadInstagram();
       return;
     }
 
-    const script = document.createElement("script");
-    script.id = "instagram-embed-script";
-    script.src = "https://www.instagram.com/embed.js";
-    script.async = true;
-    document.body.appendChild(script);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        loadInstagram();
+        observer.disconnect();
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   const visitPhotos = [
@@ -126,8 +156,7 @@ export default function BabysFirstVisit() {
               viewport={{ once: true, margin: "-80px" }}
               variants={fadeInUp}
             >
-              <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-secondary mb-4">
-                <MinimalGlyph name="baby" className="w-4 h-4 mr-2" />
+              <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-primary mb-4">
                 Children&apos;s Dentistry
               </div>
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 leading-tight mb-4">Baby&apos;s First Dental Visit in Los Gatos, CA</h1>
@@ -139,7 +168,7 @@ export default function BabysFirstVisit() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+                  <Link href={buildAppointmentUrl({ serviceId: "childrens-dentistry/babys-first-visit", source: "baby_visit_hero" })} onClick={handleAppointmentClick}>
                     Schedule Baby&apos;s First Visit
                   </Link>
                 </Button>
@@ -153,15 +182,12 @@ export default function BabysFirstVisit() {
               </div>
               <div className="flex flex-wrap gap-4 mt-6 text-sm text-gray-600">
                 <div className="flex items-center">
-                  <MinimalGlyph name="shield" className="w-4 h-4 text-primary mr-2" />
                   Gentle, board-certified care
                 </div>
                 <div className="flex items-center">
-                  <MinimalGlyph name="hygiene-sparkle" className="w-4 h-4 text-secondary mr-2" />
                   Calm, kid-friendly rooms
                 </div>
                 <div className="flex items-center">
-                  <MinimalGlyph name="heart-care" className="w-4 h-4 text-primary mr-2" />
                   Parents welcome chairside
                 </div>
               </div>
@@ -189,12 +215,12 @@ export default function BabysFirstVisit() {
                     <p className="text-sm text-gray-600 mt-2">We go at your child&apos;s pace with breaks as needed.</p>
                   </div>
                   <div className="bg-muted/40 rounded-xl p-4 border border-secondary/10">
-                    <p className="text-xs uppercase text-secondary font-semibold mb-1">Parent role</p>
+                    <p className="text-xs uppercase text-primary font-semibold mb-1">Parent role</p>
                     <p className="text-lg font-bold text-gray-800">Stay involved</p>
                     <p className="text-sm text-gray-600 mt-2">Hold hands, ask questions, and help keep things familiar.</p>
                   </div>
                   <div className="bg-muted/40 rounded-xl p-4 border border-accent/10 sm:col-span-2">
-                    <p className="text-xs uppercase text-accent font-semibold mb-1">Take-home plan</p>
+                    <p className="text-xs uppercase text-primary font-semibold mb-1">Take-home plan</p>
                     <p className="text-sm text-gray-700">Customized tips on brushing, teething comfort, feeding routines, and pacifier use.</p>
                   </div>
                 </div>
@@ -237,15 +263,17 @@ export default function BabysFirstVisit() {
                   <CarouselItem key={photo.src}>
                     <div className="grid lg:grid-cols-[1.5fr,1fr] gap-6 items-center">
                       <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-                        <img
+                        <Image
                           src={photo.src}
                           alt={photo.title}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
+                          width={1200}
+                          height={800}
+                          sizes="(max-width: 1024px) 100vw, 60vw"
+                          className="h-auto w-full object-cover"
                         />
                       </div>
                       <div className="space-y-3">
-                        <p className="inline-flex items-center text-sm uppercase font-semibold text-secondary bg-secondary/10 px-3 py-1 rounded-lg w-fit">
+                        <p className="inline-flex items-center text-sm uppercase font-semibold text-primary bg-secondary/10 px-3 py-1 rounded-lg w-fit">
                           {photo.title}
                         </p>
                         <p className="text-gray-700 text-lg leading-relaxed">{photo.description}</p>
@@ -282,7 +310,6 @@ export default function BabysFirstVisit() {
                 "Builds a long-term positive relationship with dental care (less anxiety later)",
               ].map((benefit) => (
                 <div key={benefit} className="flex items-start bg-muted/40 rounded-xl p-4">
-                  <MinimalGlyph name="shield" className="w-5 h-5 text-primary mr-3 mt-0.5" />
                   <p className="text-gray-700">{benefit}</p>
                 </div>
               ))}
@@ -318,11 +345,13 @@ export default function BabysFirstVisit() {
                     className="group relative w-full overflow-hidden rounded-xl border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <img
+                    <Image
                       src={infographicUrl}
                       alt="Baby&apos;s first dental visit infographic"
-                      className="w-full h-full object-cover bg-gray-50"
-                      loading="lazy"
+                      width={1200}
+                      height={1600}
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="h-auto w-full object-cover bg-gray-50"
                     />
                     <div className="absolute bottom-4 left-4 flex items-center gap-2 text-white font-semibold drop-shadow">
                       <MinimalGlyph name="expand" className="w-5 h-5" />
@@ -332,19 +361,16 @@ export default function BabysFirstVisit() {
                 </DialogTrigger>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    <MinimalGlyph name="hygiene-sparkle" className="w-5 h-5 text-secondary mt-0.5" />
                     <p className="text-gray-700">
                       Timeline of the visit, from lap exam to the toothbrush cleaning, so you know what comes next.
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <MinimalGlyph name="shield" className="w-5 h-5 text-primary mt-0.5" />
                     <p className="text-gray-700">
                       Gentle comfort cues and safety steps we follow for babies and toddlers.
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <MinimalGlyph name="heart-care" className="w-5 h-5 text-secondary mt-0.5" />
                     <p className="text-gray-700">
                       Parent tips called out visually for quick prep before your appointment.
                     </p>
@@ -356,11 +382,18 @@ export default function BabysFirstVisit() {
               </div>
             </div>
             <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] p-0 bg-transparent border-none shadow-none">
+              <DialogTitle className="sr-only">Baby&apos;s first dental visit infographic</DialogTitle>
+              <DialogDescription className="sr-only">
+                Full-screen visual guide to the steps in a baby&apos;s first dental visit.
+              </DialogDescription>
               <div className="w-full h-full flex items-center justify-center">
-                <img
+                <Image
                   src={infographicUrl}
                   alt="Baby&apos;s first dental visit infographic full view"
-                  className="max-h-[85vh] w-auto max-w-full rounded-xl shadow-sm"
+                  width={1200}
+                  height={1600}
+                  sizes="95vw"
+                  className="max-h-[85vh] h-auto w-auto max-w-full rounded-xl shadow-sm"
                 />
               </div>
             </DialogContent>
@@ -376,9 +409,6 @@ export default function BabysFirstVisit() {
         >
           <div className="bg-muted/40 rounded-xl p-8 lg:p-12 border border-primary/10 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="bg-primary text-white rounded-lg w-12 h-12 flex items-center justify-center">
-                <MinimalGlyph name="hygiene-sparkle" className="w-6 h-6" />
-              </div>
               <div>
                 <p className="text-sm uppercase text-primary font-semibold">What to expect</p>
                 <h2 className="text-3xl font-bold text-gray-800">Step-by-step comfort</h2>
@@ -434,6 +464,7 @@ export default function BabysFirstVisit() {
 
         {/* Message from Dr */}
         <motion.section
+          ref={instagramSectionRef}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
@@ -441,7 +472,6 @@ export default function BabysFirstVisit() {
         >
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 sm:p-8 lg:p-12 space-y-8">
             <div className="flex items-center gap-3">
-              <MinimalGlyph name="smile-aligner" className="w-6 h-6 text-primary" />
               <h2 className="text-3xl font-bold text-gray-800">A Message From Dr. Tim J. Chuang</h2>
             </div>
             <div className="grid gap-6 lg:gap-8 lg:grid-cols-2 items-start">
@@ -497,24 +527,19 @@ export default function BabysFirstVisit() {
         >
           <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
             <div className="flex items-center mb-4">
-              <MinimalGlyph name="notebook-pen" className="w-6 h-6 text-primary mr-3" />
               <h2 className="text-2xl font-bold text-gray-800">How to Prepare for Your Baby&apos;s First Visit</h2>
             </div>
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start">
-                <MinimalGlyph name="hygiene-sparkle" className="w-5 h-5 text-secondary mr-3 flex-shrink-0 mt-0.5" />
                 Schedule when your baby is usually well-rested
               </li>
               <li className="flex items-start">
-                <MinimalGlyph name="hygiene-sparkle" className="w-5 h-5 text-secondary mr-3 flex-shrink-0 mt-0.5" />
                 Bring a favorite comfort item (toy, blanket, pacifier)
               </li>
               <li className="flex items-start">
-                <MinimalGlyph name="hygiene-sparkle" className="w-5 h-5 text-secondary mr-3 flex-shrink-0 mt-0.5" />
                 Feed them lightly beforehand and brush teeth/gums that morning
               </li>
               <li className="flex items-start">
-                <MinimalGlyph name="hygiene-sparkle" className="w-5 h-5 text-secondary mr-3 flex-shrink-0 mt-0.5" />
                 Write down questions about teething, habits, or development
               </li>
             </ul>
@@ -522,7 +547,6 @@ export default function BabysFirstVisit() {
           </div>
           <div className="bg-muted/40 rounded-xl p-8 border border-primary/10 shadow-sm">
             <div className="flex items-center mb-4">
-              <MinimalGlyph name="shield" className="w-6 h-6 text-primary mr-3" />
               <h2 className="text-2xl font-bold text-gray-800">Comfort & safety promises</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -534,14 +558,12 @@ export default function BabysFirstVisit() {
               ].map((item) => (
                 <div key={item} className="bg-white/70 rounded-xl p-4 border border-white">
                   <div className="flex items-start">
-                    <MinimalGlyph name="heart-care" className="w-5 h-5 text-secondary mr-2 mt-0.5" />
                     <p className="text-gray-700 text-sm">{item}</p>
                   </div>
                 </div>
               ))}
             </div>
             <div className="mt-6 flex items-center text-gray-700">
-              <MinimalGlyph name="phone-call" className="w-5 h-5 text-primary mr-3" />
               Call us at (408) 358-8100 if you would like to discuss feeding challenges or special accommodations ahead of time.
             </div>
           </div>
@@ -556,7 +578,6 @@ export default function BabysFirstVisit() {
         >
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 lg:p-12 space-y-6">
             <div className="flex items-center gap-3">
-              <MinimalGlyph name="book-open" className="w-6 h-6 text-primary" />
               <h2 className="text-3xl font-bold text-gray-800">Common Questions Parents Ask</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
@@ -600,7 +621,6 @@ export default function BabysFirstVisit() {
                 "Encourage transition off bottles by age 12-18 months",
               ].map((item) => (
                 <div key={item} className="flex items-start bg-white rounded-xl p-4 shadow-sm border border-white/60">
-                  <MinimalGlyph name="hygiene-sparkle" className="w-5 h-5 text-secondary mr-3 mt-0.5" />
                   <p className="text-gray-700">{item}</p>
                 </div>
               ))}
@@ -626,11 +646,10 @@ export default function BabysFirstVisit() {
                 "No surprises - tell-show-do pacing",
                 "Positive reinforcement and age-appropriate rewards",
                 "Comfortable seating for parents chairside",
-                "Easy parking and stroller access",
+                "Call ahead if you have stroller or accessibility questions",
                 "Friendly team trained to support little patients",
               ].map((item) => (
                 <div key={item} className="flex items-start bg-muted/40 rounded-xl p-4 border border-gray-100">
-                  <MinimalGlyph name="heart-care" className="w-5 h-5 text-primary mr-3 mt-0.5" />
                   <p className="text-gray-700">{item}</p>
                 </div>
               ))}
@@ -656,7 +675,7 @@ export default function BabysFirstVisit() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild className="w-full sm:w-auto bg-white text-primary hover:bg-gray-100 shadow-sm">
-                  <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+                  <Link href={buildAppointmentUrl({ serviceId: "childrens-dentistry/babys-first-visit", source: "baby_visit_final" })} onClick={handleAppointmentClick}>
                     Schedule Now
                   </Link>
                 </Button>
@@ -687,31 +706,25 @@ export default function BabysFirstVisit() {
             </div>
             <div className="bg-white/5 border border-white/25 rounded-xl p-6 ">
               <div className="flex items-center mb-3">
-                <MinimalGlyph name="baby" className="w-6 h-6 text-white mr-3" />
                 <p className="text-sm font-semibold">Ages 0-3 welcome</p>
               </div>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start">
-                  <MinimalGlyph name="hygiene-sparkle" className="w-4 h-4 text-white mt-0.5 mr-2" />
                   New patient appointments include parent coaching and home-care plans.
                 </li>
                 <li className="flex items-start">
-                  <MinimalGlyph name="hygiene-sparkle" className="w-4 h-4 text-white mt-0.5 mr-2" />
-                  Same-day scheduling when available for teething concerns.
+                  Call our office if your child has an urgent teething concern so we can guide the next step.
                 </li>
                 <li className="flex items-start">
-                  <MinimalGlyph name="hygiene-sparkle" className="w-4 h-4 text-white mt-0.5 mr-2" />
-                  Convenient Los Gatos location with free parking and stroller access.
+                  Convenient Los Gatos location. Call ahead with parking or stroller-access questions.
                 </li>
                 <li className="flex items-start">
-                  <MinimalGlyph name="map-pin" className="w-4 h-4 text-white mt-0.5 mr-2" />
                   <PracticeAddressLink className="text-white hover:text-white/85">
                     {practiceInfo.addressText}
                   </PracticeAddressLink>
                 </li>
               </ul>
               <div className="flex items-center mt-4 text-sm">
-                <MinimalGlyph name="phone" className="w-4 h-4 text-white mr-2" />
                 <span>(408) 358-8100</span>
               </div>
             </div>

@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -17,9 +16,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { services } from "@/content/services";
-import { insertAppointmentSchema } from "@/content/form-schemas";
+import {
+  appointmentFormSchema,
+  leadServiceIds,
+  LEAD_CONSENT_VERSION,
+  type AppointmentFormValues,
+} from "@/content/form-schemas";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import {
@@ -30,42 +35,23 @@ import {
   trackFormSubmitError,
   trackPhoneClick,
 } from "@/lib/analytics";
+import { captureLeadAttribution, createSubmissionId } from "@/lib/lead-attribution";
 
 const officePhone = "(408) 358-8100";
 const officePhoneHref = "tel:+14083588100";
 
-const appointmentFormSchema = insertAppointmentSchema
-  .omit({
-    requestType: true,
-    formspreeStatus: true,
-  })
-  .extend({
-    company: z.string().optional(),
-  });
-
-type AppointmentFormValues = z.infer<typeof appointmentFormSchema>;
-
 type AppointmentResponse = {
   success: boolean;
+  created: boolean;
   delivered: boolean;
-  appointment: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string | null;
-    service: string | null;
-    message: string | null;
-    requestType: "appointment" | "contact";
-    preferredDate: string | null;
-    preferredTime: string | null;
-    formspreeStatus: "delivered" | "failed" | null;
-    createdAt: string;
-  };
+  leadId: string;
+  serviceId: string | null;
   fallbackMessage?: string;
 };
 
 export default function BookAppointment() {
+  const searchParams = useSearchParams();
+  const submissionIdRef = useRef<string | null>(null);
   const [isFormReady, setIsFormReady] = useState(false);
   const [hasStartedForm, setHasStartedForm] = useState(false);
   const [submission, setSubmission] = useState<{
@@ -88,8 +74,11 @@ export default function BookAppointment() {
     () =>
       services
         .flatMap((service) => [service, ...(service.subServices ?? [])])
+        .filter((service) =>
+          leadServiceIds.includes(service.id as (typeof leadServiceIds)[number]),
+        )
         .map((service) => ({
-          value: service.id,
+          value: service.id as (typeof leadServiceIds)[number],
           label: service.title,
         })),
     [],
@@ -98,6 +87,7 @@ export default function BookAppointment() {
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentFormSchema),
     defaultValues: {
+      company: "",
       firstName: "",
       lastName: "",
       email: "",
@@ -106,18 +96,39 @@ export default function BookAppointment() {
       preferredDate: "",
       preferredTime: "",
       message: "",
-      company: "",
+      consentToContact: false,
     },
   });
 
+  useEffect(() => {
+    captureLeadAttribution();
+    const requestedService = searchParams.get("service");
+    const isKnownService = appointmentServiceOptions.some(
+      (option) => option.value === requestedService,
+    );
+    if (requestedService && isKnownService && !form.getValues("service")) {
+      form.setValue(
+        "service",
+        requestedService as (typeof leadServiceIds)[number],
+        { shouldValidate: true },
+      );
+    }
+  }, [appointmentServiceOptions, form, searchParams]);
+
   const appointmentMutation = useMutation({
     mutationFn: async (values: AppointmentFormValues) => {
+      submissionIdRef.current ||= createSubmissionId();
       const res = await fetch("/api/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          submissionId: submissionIdRef.current,
+          consentVersion: LEAD_CONSENT_VERSION,
+          ...captureLeadAttribution(),
+        }),
         credentials: "include",
       });
 
@@ -141,14 +152,20 @@ export default function BookAppointment() {
         fallbackMessage: data.fallbackMessage,
       });
 
+      if (data.created) {
+        trackAppointmentSubmitSuccess(
+          data.serviceId || undefined,
+          submissionIdRef.current || undefined,
+        );
+      }
+
       if (data.delivered) {
-        trackAppointmentSubmitSuccess(data.appointment.service || undefined);
         toast.success("Appointment request received", {
           description:
             "Thanks! We received your request and our team will contact you shortly to confirm.",
         });
       } else {
-        trackAppointmentSubmitFallback(data.appointment.service || undefined);
+        trackAppointmentSubmitFallback(data.serviceId || undefined);
         toast("Request saved with backup notice", {
           description:
             data.fallbackMessage ||
@@ -157,6 +174,7 @@ export default function BookAppointment() {
       }
 
       form.reset({
+        company: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -165,8 +183,9 @@ export default function BookAppointment() {
         preferredDate: "",
         preferredTime: "",
         message: "",
-        company: "",
+        consentToContact: false,
       });
+      submissionIdRef.current = null;
     },
     onError: (error: Error & { details?: { errors?: Array<{ path: Array<string | number>; message: string }>; message?: string } }) => {
       const issues = error.details?.errors ?? [];
@@ -229,7 +248,7 @@ export default function BookAppointment() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
-              Book Your Appointment
+              Request an Appointment
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Request your preferred date and time. We will follow up to confirm your visit.
@@ -249,7 +268,7 @@ export default function BookAppointment() {
             </p>
 
             {submission?.delivered ? (
-              <div className="mb-6 rounded-xl border border-sky-200 bg-sky-50 p-4">
+              <div role="status" aria-live="polite" className="mb-6 rounded-xl border border-sky-200 bg-sky-50 p-4">
                 <p className="font-semibold text-sky-900">Appointment request received.</p>
                 <p className="text-sky-800 text-sm mt-1">
                   Thank you. We will contact you soon to confirm your date and time.
@@ -258,7 +277,7 @@ export default function BookAppointment() {
             ) : null}
 
             {submission && !submission.delivered ? (
-              <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <div role="status" aria-live="polite" className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
                 <p className="font-semibold text-blue-900">Request saved with backup notice.</p>
                 <p className="text-blue-800 text-sm mt-1">
                   {submission.fallbackMessage ||
@@ -287,11 +306,11 @@ export default function BookAppointment() {
               >
                 <input
                   type="text"
+                  {...form.register("company")}
                   tabIndex={-1}
                   autoComplete="off"
                   aria-hidden="true"
                   className="hidden"
-                  {...form.register("company")}
                 />
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -302,7 +321,7 @@ export default function BookAppointment() {
                       <FormItem>
                         <FormLabel>First Name *</FormLabel>
                         <FormControl>
-                          <Input {...field} autoComplete="given-name" />
+                          <Input {...field} autoComplete="given-name" required aria-required="true" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -315,7 +334,7 @@ export default function BookAppointment() {
                       <FormItem>
                         <FormLabel>Last Name *</FormLabel>
                         <FormControl>
-                          <Input {...field} autoComplete="family-name" />
+                          <Input {...field} autoComplete="family-name" required aria-required="true" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -330,7 +349,7 @@ export default function BookAppointment() {
                     <FormItem>
                       <FormLabel>Email *</FormLabel>
                       <FormControl>
-                        <Input type="email" autoComplete="email" {...field} />
+                        <Input type="email" autoComplete="email" required aria-required="true" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -344,7 +363,7 @@ export default function BookAppointment() {
                     <FormItem>
                       <FormLabel>Phone *</FormLabel>
                       <FormControl>
-                        <Input type="tel" autoComplete="tel" {...field} />
+                        <Input type="tel" inputMode="tel" autoComplete="tel" required aria-required="true" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -360,6 +379,8 @@ export default function BookAppointment() {
                       <FormControl>
                         <select
                           {...field}
+                          required
+                          aria-required="true"
                           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <option value="" disabled>
@@ -383,7 +404,7 @@ export default function BookAppointment() {
                     name="preferredDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Preferred Date *</FormLabel>
+                        <FormLabel>Preferred Date (optional)</FormLabel>
                         <FormControl>
                           <Input type="date" min={minDate} {...field} />
                         </FormControl>
@@ -396,9 +417,17 @@ export default function BookAppointment() {
                     name="preferredTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Preferred Time *</FormLabel>
+                        <FormLabel>Preferred Time (optional)</FormLabel>
                         <FormControl>
-                          <Input type="time" {...field} />
+                          <select
+                            {...field}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          >
+                            <option value="">No preference</option>
+                            <option value="morning">Morning (9 AM–12 PM)</option>
+                            <option value="afternoon">Afternoon (12–5 PM)</option>
+                            <option value="flexible">Flexible</option>
+                          </select>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -415,7 +444,7 @@ export default function BookAppointment() {
                       <FormControl>
                         <Textarea
                           rows={4}
-                          placeholder="Tell us anything helpful before your visit."
+                          placeholder="Share scheduling details or accessibility needs."
                           value={field.value ?? ""}
                           onChange={field.onChange}
                           onBlur={field.onBlur}
@@ -423,6 +452,33 @@ export default function BookAppointment() {
                           ref={field.ref}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="consentToContact"
+                  render={({ field }) => (
+                    <FormItem className="rounded-lg border border-border bg-background p-4">
+                      <div className="flex items-start gap-3">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => field.onChange(checked === true)}
+                            aria-required="true"
+                          />
+                        </FormControl>
+                        <div>
+                          <FormLabel className="leading-relaxed">
+                            I agree that Family First Smile Care may contact me about this request. *
+                          </FormLabel>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Please do not include private medical details. Call us if you need to discuss a health concern.
+                          </p>
+                        </div>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -443,16 +499,13 @@ export default function BookAppointment() {
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">What Happens Next</h3>
               <ul className="space-y-4 text-gray-700">
-                <li className="flex items-start">
-                  <MinimalGlyph name="calendar" className="h-5 w-5 text-primary mt-0.5 mr-3 flex-shrink-0" />
+                <li>
                   We review your preferred date and service details.
                 </li>
-                <li className="flex items-start">
-                  <MinimalGlyph name="clock" className="h-5 w-5 text-primary mt-0.5 mr-3 flex-shrink-0" />
+                <li>
                   Our team contacts you to confirm the best appointment time.
                 </li>
-                <li className="flex items-start">
-                  <MinimalGlyph name="calendar-check" className="h-5 w-5 text-primary mt-0.5 mr-3 flex-shrink-0" />
+                <li>
                   You receive a confirmed visit plan and arrival instructions.
                 </li>
               </ul>
@@ -465,19 +518,17 @@ export default function BookAppointment() {
               </p>
               <a
                 href={officePhoneHref}
-                className="inline-flex items-center text-primary font-semibold hover:text-primary/80 transition-colors"
+                className="inline-flex items-center text-primary font-semibold hover:text-primary transition-colors"
                 onClick={() => trackPhoneClick("appointment_sidebar")}
               >
-                <MinimalGlyph name="phone" className="h-4 w-4 mr-2" />
                 {officePhone}
               </a>
             </div>
 
-            <div className="rounded-xl border border-secondary/20 bg-secondary/5 p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Privacy & Security</h3>
-              <p className="text-gray-700 flex items-start">
-                <MinimalGlyph name="shield-check" className="h-5 w-5 text-secondary mt-0.5 mr-3 flex-shrink-0" />
-                Your request is securely saved for our team and reviewed promptly.
+            <div className="rounded-xl border border-border bg-muted/40 p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Your Privacy</h3>
+              <p className="text-gray-700">
+                We use your details only to respond and coordinate care. Please avoid sharing sensitive medical information online.
               </p>
             </div>
           </aside>

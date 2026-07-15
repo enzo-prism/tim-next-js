@@ -2,7 +2,6 @@
 
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
 import { trackPhoneClick } from "@/lib/analytics";
@@ -29,14 +28,12 @@ export default function NotFound() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold px-6 py-3 flex items-center gap-2">
               <Link href="/">
-                <MinimalGlyph name="home" className="h-5 w-5" />
                 Back to Homepage
               </Link>
             </Button>
 
             <Button asChild variant="outline" className="text-lg font-semibold px-6 py-3 flex items-center gap-2">
               <a href="tel:4083588100" onClick={() => trackPhoneClick("not_found_page")}>
-                <MinimalGlyph name="phone" className="h-5 w-5" />
                 Call Us: (408) 358-8100
               </a>
             </Button>
@@ -48,13 +45,13 @@ export default function NotFound() {
               Helpful Links
             </h3>
             <div className="grid sm:grid-cols-3 gap-4 max-w-lg mx-auto">
-              <Link href="/services" className="text-primary hover:text-primary/80 font-medium">
+              <Link href="/services" className="text-primary hover:text-primary font-medium">
                 Our Services
               </Link>
-              <Link href="/about" className="text-primary hover:text-primary/80 font-medium">
+              <Link href="/about" className="text-primary hover:text-primary font-medium">
                 About Us
               </Link>
-              <Link href="/contact" className="text-primary hover:text-primary/80 font-medium">
+              <Link href="/contact" className="text-primary hover:text-primary font-medium">
                 Contact & Location
               </Link>
             </div>
@@ -63,7 +60,6 @@ export default function NotFound() {
           {/* Office Info */}
           <div className="mt-8 p-6 bg-gray-100 rounded-lg">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <MinimalGlyph name="map-pin" className="h-5 w-5 text-primary" />
               <span className="text-gray-700 font-medium">Family First Smile Care</span>
             </div>
             <p className="text-gray-600">

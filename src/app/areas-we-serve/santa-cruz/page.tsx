@@ -18,6 +18,7 @@ import {
   type TestimonialExcerpt,
 } from "@/content/testimonials";
 import { buildRouteMetadata } from "@/lib/metadata";
+import { buildAppointmentUrl } from "@/lib/analytics";
 import type { RelatedLink } from "@/lib/internal-links";
 
 export const metadata: Metadata = buildRouteMetadata("/areas-we-serve/santa-cruz");
@@ -31,7 +32,7 @@ const faqs = [
   {
     question: "Do you accept insurance if I live in Santa Cruz?",
     answer:
-      "Yes. We accept many major insurance plans and most PPOs, and our team can help verify your benefits before your visit so you know what to expect before coming over Highway 17 from Santa Cruz.",
+      "Insurance participation and benefits depend on the specific plan. Call our office before your visit and we can help you understand what information to confirm with your insurer.",
   },
   {
     question: "Is it worth driving from Santa Cruz to Los Gatos for a family dentist?",
@@ -46,13 +47,13 @@ const faqs = [
   {
     question: "How do I verify my PPO benefits before booking?",
     answer:
-      "Call our office or send a message through the contact form with your insurance details. We can help verify benefits, explain what is covered, and help you choose the right next step before you book.",
+      "Call our office before booking. We can review the plan information you provide and help you identify questions to confirm with your insurer. Coverage is always determined by the plan.",
   },
 ] as const;
 
 const reasons = [
   "Gentle family dentistry for children, parents, and grandparents",
-  "Help verifying many major PPO benefits before the visit",
+  "Help with plan-specific insurance questions before the visit",
   "Clear treatment recommendations without a rushed experience",
   "Modern technology that supports precise, comfortable care",
 ] as const;
@@ -133,7 +134,7 @@ export default function SantaCruzServiceAreaPage() {
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Los Gatos office serving Santa Cruz patients
               </div>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
@@ -144,8 +145,8 @@ export default function SantaCruzServiceAreaPage() {
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
                 Family First Smile Care is physically located in Los Gatos, not Santa Cruz. We
-                welcome Santa Cruz patients who want gentle, family-focused dentistry and help using
-                many major PPO plans. Our office is just off Highway 17, so the trip is
+                welcome Santa Cruz patients who want gentle, family-focused dentistry and clear
+                answers before a visit. Our office is just off Highway 17, so the trip is
                 straightforward for patients who prefer a practice that feels calm, clear, and easy
                 to trust.
               </p>
@@ -156,24 +157,23 @@ export default function SantaCruzServiceAreaPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/book-appointment">
-                    Book an appointment
+                  <Link href={buildAppointmentUrl({ source: "santa_cruz_hero" })}>
+                    Request an appointment
                     <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground">
-                  <Link href="/contact">Verify benefits or ask a question</Link>
+                  <Link href="/contact">Ask an insurance question</Link>
                 </Button>
               </div>
             </div>
 
             <aside className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 Why families make the trip
               </div>
               <div className="mt-5 space-y-4">
                 <div className="flex items-start gap-3">
-                  <MinimalGlyph name="map-pin" className="mt-0.5 h-5 w-5 text-primary" />
                   <p className="text-sm leading-6 text-slate-700">
                     Office address: 15251 National Ave, Suite 102, Los Gatos, CA.
                   </p>
@@ -214,10 +214,7 @@ export default function SantaCruzServiceAreaPage() {
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="grid xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
               <article className="p-6 sm:p-8 xl:p-10">
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <MinimalGlyph name="route" className="h-5 w-5" />
-                </div>
-                <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+                <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                   Travel convenience matters
                 </p>
                 <h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.35rem] sm:leading-[1.08]">
@@ -225,14 +222,13 @@ export default function SantaCruzServiceAreaPage() {
                 </h2>
                 <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
                   Our dental office is in Los Gatos, just off Highway 17, which makes the drive
-                  easier for many Santa Cruz patients. We offer a welcoming office, convenient
-                  parking, and a team that helps visits feel organized from the moment you arrive.
+                  easier for many Santa Cruz patients. We offer a welcoming office and a team that
+                  helps visits feel organized from the moment you arrive.
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
                   <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <MinimalGlyph name="route" className="h-4 w-4 text-primary" />
                       Just off Highway 17
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -241,7 +237,6 @@ export default function SantaCruzServiceAreaPage() {
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <MinimalGlyph name="map-pin" className="h-4 w-4 text-primary" />
                       Los Gatos address
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -261,7 +256,7 @@ export default function SantaCruzServiceAreaPage() {
               </article>
 
               <div className="border-t border-slate-200 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.16),transparent_45%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(239,246,255,0.92))] p-4 sm:p-6 xl:border-t-0 xl:border-l xl:p-8">
-                <div className="rounded-lg border border-primary/15 bg-white/75 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80 w-fit">
+                <div className="rounded-lg border border-primary/15 bg-white/75 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary w-fit">
                   Santa Cruz to Los Gatos
                 </div>
 
@@ -281,23 +276,17 @@ export default function SantaCruzServiceAreaPage() {
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <article className="rounded-xl border border-slate-200 bg-slate-50/80 p-6">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <MinimalGlyph name="shield-check" className="h-5 w-5" />
-              </div>
               <h3 className="mt-5 text-xl font-bold text-slate-900">
                 Insurance support before you visit
               </h3>
               <p className="mt-3 text-base leading-7 text-slate-600">
-                We accept many major plans including Delta Dental, Cigna, MetLife, Aetna, Blue
-                Cross Blue Shield, and most PPOs. If you are coming from Santa Cruz, our team can
-                help verify benefits before you book so you know how your coverage may apply.
+                Insurance participation and benefits vary by plan. Call before booking and our team
+                can review the information you provide and help you identify what to confirm with
+                your insurer.
               </p>
             </article>
 
             <article className="rounded-xl border border-slate-200 bg-slate-50/80 p-6">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <MinimalGlyph name="users-family" className="h-5 w-5" />
-              </div>
               <h3 className="mt-5 text-xl font-bold text-slate-900">Care for the whole family</h3>
               <p className="mt-3 text-base leading-7 text-slate-600">
                 Santa Cruz families often come to us for one office that can care for kids, adults,
@@ -331,19 +320,18 @@ export default function SantaCruzServiceAreaPage() {
                 <p>
                   For Santa Cruz families, that combination of family-focused care and easy Highway
                   17 access makes a Los Gatos visit feel practical as well as worthwhile. If you
-                  want help understanding insurance before you book, our team can walk through that
-                  too.
+                  have insurance questions before you book, call our team and we can help you
+                  identify the details to confirm with your plan.
                 </p>
               </div>
             </article>
 
             <aside className="rounded-xl border border-slate-200 bg-slate-50/80 p-6 shadow-sm">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 Quick office details
               </div>
               <div className="mt-5 space-y-4 text-sm leading-6 text-slate-700">
                 <div className="flex items-start gap-3">
-                  <MinimalGlyph name="map-pin" className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Office address</div>
                     <PracticeAddressLink className="text-inherit hover:text-primary">
@@ -352,17 +340,15 @@ export default function SantaCruzServiceAreaPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <MinimalGlyph name="route" className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Access</div>
                     <p>Convenient for patients coming over Highway 17 from Santa Cruz to Los Gatos.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <MinimalGlyph name="shield-check" className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
                     <div className="font-semibold text-slate-900">Insurance help</div>
-                    <p>Call ahead and we can help verify many major PPO benefits before your visit.</p>
+                    <p>Call ahead with your plan details and questions. Coverage is determined by your insurer.</p>
                   </div>
                 </div>
               </div>
@@ -385,7 +371,7 @@ export default function SantaCruzServiceAreaPage() {
           <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
               <div>
-                <div className="inline-flex rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+                <div className="inline-flex rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                   Reviews and testimonials
                 </div>
                 <h2 className="mt-5 text-3xl font-bold text-slate-900">
@@ -412,6 +398,7 @@ export default function SantaCruzServiceAreaPage() {
                 <p className="mt-3 text-sm leading-6 text-slate-600">
                   {testimonialsPageSummary.reviewCountLabel} from {testimonialsPageSummary.sourceLabel.toLowerCase()}.
                 </p>
+                <p className="mt-2 text-xs text-slate-500">{testimonialsPageSummary.verifiedAtLabel}</p>
                 <div className="mt-5 flex flex-col gap-3">
                   <Button asChild variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground">
                     <a
@@ -486,7 +473,7 @@ export default function SantaCruzServiceAreaPage() {
                   Talk with our team before you make the trip from Santa Cruz.
                 </h2>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-white/85">
-                  If you want to verify insurance, ask about family appointments, or make sure the
+                  If you have insurance questions, want to ask about family appointments, or make sure the
                   office is the right fit, we are happy to help you plan the next step.
                 </p>
               </div>

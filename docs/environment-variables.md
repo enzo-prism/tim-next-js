@@ -11,15 +11,16 @@ cp .env.example .env.local
 - `DATABASE_URL`
   - Postgres connection string
   - Required for contact persistence and admin contacts listing
-- `ADMIN_PASSWORD`
-  - Required by middleware for `/admin` and `/api/admin/*`
-  - If missing in production, admin routes return `503 missing_config`
+- `ADMIN_USERNAME` and `ADMIN_PASSWORD`
+  - Both are required by middleware for `/admin` and `/api/admin/*`
+  - Use non-default, randomly generated values
+  - If either is missing in production, admin routes return `503 missing_config`
 
 ## Core Site and Canonical
 
 - `CANONICAL_HOST`
   - Server-side canonical host and metadata base
-  - default fallback: `https://famfirstsmile.com`
+  - default fallback: `https://www.famfirstsmile.com`
 - `NEXT_PUBLIC_CANONICAL_HOST`
   - Client-visible canonical host override where needed
 
@@ -33,11 +34,6 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
   - default fallback: `AW-11373090310`
 - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
   - default fallback: `ads_conversion_Submit_lead_form_1`
-- `NEXT_PUBLIC_HOTJAR_ID`
-  - default fallback: `6487571`
-- `NEXT_PUBLIC_HOTJAR_SNIPPET_VERSION`
-  - default fallback: `6`
-
 ## Vercel Web Analytics
 
 - no repo-level env var is required for Vercel Web Analytics in this codebase
@@ -47,12 +43,15 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
   - turning on Web Analytics in the Vercel project dashboard
 - data is collected from deployed environments after real visits; local development does not behave like production analytics
 
-## Scheduling Relay (Server Variable)
+## Lead Notification Relays (Server Variables)
 
 - `FORMSPREE_APPOINTMENT_ENDPOINT`
   - server-side relay target for `POST /api/appointments`
   - default fallback in code: `https://formspree.io/f/mojngolr`
   - keep configured in Vercel for explicit environment control
+- `FORMSPREE_CONTACT_ENDPOINT`
+  - server-side notification target for `POST /api/contacts`
+  - falls back to the appointment endpoint when omitted
 
 ## Admin Analytics Variables
 
@@ -63,7 +62,7 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
   - used by `/api/admin/gsc/overview`
   - either:
     - `sc-domain:famfirstsmile.com`
-    - `https://famfirstsmile.com/`
+    - `https://www.famfirstsmile.com/`
 
 ## Google Service Account Credentials (One Required Mode)
 

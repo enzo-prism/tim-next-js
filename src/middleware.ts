@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const DEFAULT_ADMIN_PASSWORD = "tim";
+const DEFAULT_ADMIN_USERNAME = "admin";
 
 const safeTimingEqual = (a: string, b: string) => {
   if (a.length !== b.length) return false;
@@ -15,8 +16,7 @@ const isProtectedPath = (pathname: string) =>
   pathname === "/admin" || pathname.startsWith("/api/admin");
 
 const getCanonicalHost = () => {
-  const raw = process.env.CANONICAL_HOST?.trim();
-  if (!raw) return "";
+  const raw = process.env.CANONICAL_HOST?.trim() || "https://www.famfirstsmile.com";
   try {
     return new URL(raw).host;
   } catch {
@@ -38,12 +38,12 @@ function unauthorizedResponse() {
   );
 }
 
-function missingAdminPasswordResponse() {
+function missingAdminCredentialsResponse() {
   return new NextResponse(
     JSON.stringify({
       ok: false,
       error: "missing_config",
-      message: "ADMIN_PASSWORD is required in production.",
+      message: "ADMIN_USERNAME and ADMIN_PASSWORD are required in production.",
     }),
     {
       status: 503,
@@ -57,7 +57,7 @@ function missingAdminPasswordResponse() {
 
 export function middleware(req: NextRequest) {
   const { nextUrl } = req;
-  const host = req.headers.get("host") || "";
+  const host = req.headers.get("host") || nextUrl.host || "";
   const canonicalHost = getCanonicalHost();
   const isNonCanonicalHost =
     Boolean(canonicalHost) &&
@@ -79,8 +79,11 @@ export function middleware(req: NextRequest) {
   }
 
   if (isProtectedPath(nextUrl.pathname)) {
-    if (process.env.NODE_ENV === "production" && !process.env.ADMIN_PASSWORD) {
-      return missingAdminPasswordResponse();
+    if (
+      process.env.NODE_ENV === "production" &&
+      (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD)
+    ) {
+      return missingAdminCredentialsResponse();
     }
 
     const authHeader = req.headers.get("authorization");
@@ -100,11 +103,18 @@ export function middleware(req: NextRequest) {
       return unauthorizedResponse();
     }
 
+    const providedUsername = decoded.slice(0, separator);
     const providedPassword = decoded.slice(separator + 1);
+    const expectedUsername =
+      process.env.ADMIN_USERNAME ||
+      (process.env.NODE_ENV === "production" ? "" : DEFAULT_ADMIN_USERNAME);
     const expectedPassword =
       process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "production" ? "" : DEFAULT_ADMIN_PASSWORD);
 
-    if (!safeTimingEqual(providedPassword, expectedPassword)) {
+    if (
+      !safeTimingEqual(providedUsername, expectedUsername) ||
+      !safeTimingEqual(providedPassword, expectedPassword)
+    ) {
       return unauthorizedResponse();
     }
 

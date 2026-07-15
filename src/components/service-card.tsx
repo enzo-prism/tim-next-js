@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { Service } from "@/lib/types";
 import {
-  APPOINTMENT_FORM_URL,
+  buildAppointmentUrl,
   trackAppointmentCtaClick,
   trackServiceLearnMoreClick,
 } from "@/lib/analytics";
@@ -31,7 +31,7 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
       {featured && (
         <div className="border-b border-border bg-primary p-4 text-center text-primary-foreground">
           <span className="inline-flex items-center justify-center text-sm font-bold tracking-wide">
-            FREE CONSULTATION AVAILABLE
+            CONSULTATION AVAILABLE
           </span>
         </div>
       )}
@@ -48,7 +48,7 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
             <div className="space-y-3 mb-6">
               {service.details.slice(0, 3).map((detail, index) => (
                 <div key={index} className="flex items-start text-gray-600 group">
-                  <MinimalGlyph name="check" className="text-secondary mr-3 h-5 w-5 mt-0.5 flex-shrink-0 group-hover:text-primary transition-colors duration-200" />
+                  <MinimalGlyph name="check" className="text-primary mr-3 h-5 w-5 mt-0.5 flex-shrink-0 group-hover:text-primary transition-colors duration-200" />
                   <span className="leading-relaxed">{detail}</span>
                 </div>
               ))}
@@ -94,14 +94,14 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
               </Link>
             </Button>
             
-            {(featured || (service.subServices && service.subServices.some(sub => sub.featured))) && (
+            {featured && (
               <Button
                 asChild
                 variant="outline"
                 className="w-full rounded-xl border-2 border-primary py-3 font-semibold text-primary transition-colors duration-200 hover:bg-primary hover:text-primary-foreground"
               >
-                <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
-                  Schedule Free Consultation
+                <Link href={buildAppointmentUrl({ serviceId: service.id, source: "service_card" })} onClick={handleAppointmentClick}>
+                  Request a Consultation
                 </Link>
               </Button>
             )}

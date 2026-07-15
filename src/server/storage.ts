@@ -25,6 +25,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getContactBySubmissionId(submissionId: string): Promise<Contact | undefined>;
   createContact(contact: InsertContactRecord): Promise<Contact>;
   updateContactFormspreeStatus(
     id: string,
@@ -64,13 +65,22 @@ export class DatabaseStorage implements IStorage {
     return contact;
   }
 
+  async getContactBySubmissionId(submissionId: string): Promise<Contact | undefined> {
+    const [contact] = await this.database
+      .select()
+      .from(contacts)
+      .where(eq(contacts.submissionId, submissionId))
+      .limit(1);
+    return contact || undefined;
+  }
+
   async updateContactFormspreeStatus(
     id: string,
     status: "delivered" | "failed",
   ): Promise<Contact | undefined> {
     const [contact] = await this.database
       .update(contacts)
-      .set({ formspreeStatus: status })
+      .set({ formspreeStatus: status, updatedAt: new Date() })
       .where(eq(contacts.id, id))
       .returning();
     return contact;
@@ -91,6 +101,9 @@ export class DatabaseStorage implements IStorage {
           ilike(contacts.preferredDate, pattern),
           ilike(contacts.preferredTime, pattern),
           ilike(contacts.formspreeStatus, pattern),
+          ilike(contacts.utmSource, pattern),
+          ilike(contacts.utmCampaign, pattern),
+          ilike(contacts.landingPage, pattern),
         )
       : undefined;
 
@@ -139,6 +152,8 @@ class InMemoryStorage implements IStorage {
     const contact: Contact = {
       id: randomUUID(),
       createdAt: new Date(),
+      updatedAt: new Date(),
+      submissionId: insertContact.submissionId ?? null,
       firstName: insertContact.firstName,
       lastName: insertContact.lastName,
       email: insertContact.email,
@@ -149,9 +164,28 @@ class InMemoryStorage implements IStorage {
       preferredDate: insertContact.preferredDate ?? null,
       preferredTime: insertContact.preferredTime ?? null,
       formspreeStatus: insertContact.formspreeStatus ?? null,
+      landingPage: insertContact.landingPage ?? null,
+      referrer: insertContact.referrer ?? null,
+      ctaSource: insertContact.ctaSource ?? null,
+      utmSource: insertContact.utmSource ?? null,
+      utmMedium: insertContact.utmMedium ?? null,
+      utmCampaign: insertContact.utmCampaign ?? null,
+      utmTerm: insertContact.utmTerm ?? null,
+      utmContent: insertContact.utmContent ?? null,
+      gclid: insertContact.gclid ?? null,
+      gbraid: insertContact.gbraid ?? null,
+      wbraid: insertContact.wbraid ?? null,
+      consentToContact: insertContact.consentToContact ?? false,
+      consentVersion: insertContact.consentVersion ?? null,
     };
     this.contacts.set(contact.id, contact);
     return contact;
+  }
+
+  async getContactBySubmissionId(submissionId: string): Promise<Contact | undefined> {
+    return Array.from(this.contacts.values()).find(
+      (contact) => contact.submissionId === submissionId,
+    );
   }
 
   async updateContactFormspreeStatus(
@@ -163,6 +197,7 @@ class InMemoryStorage implements IStorage {
     const updated: Contact = {
       ...existing,
       formspreeStatus: status,
+      updatedAt: new Date(),
     };
     this.contacts.set(id, updated);
     return updated;
@@ -183,6 +218,9 @@ class InMemoryStorage implements IStorage {
         contact.preferredDate,
         contact.preferredTime,
         contact.formspreeStatus,
+        contact.utmSource,
+        contact.utmCampaign,
+        contact.landingPage,
       ]
         .filter(Boolean)
         .join(" ")
@@ -203,30 +241,31 @@ class UnavailableStorage implements IStorage {
   private readonly message =
     "DATABASE_URL is required in production. Contact storage is unavailable.";
 
-  async getUser(_id: string): Promise<User | undefined> {
+  async getUser(): Promise<User | undefined> {
     return undefined;
   }
 
-  async getUserByUsername(_username: string): Promise<User | undefined> {
+  async getUserByUsername(): Promise<User | undefined> {
     return undefined;
   }
 
-  async createUser(_insertUser: InsertUser): Promise<User> {
+  async createUser(): Promise<User> {
     throw new Error(this.message);
   }
 
-  async createContact(_insertContact: InsertContactRecord): Promise<Contact> {
+  async createContact(): Promise<Contact> {
     throw new Error(this.message);
   }
 
-  async updateContactFormspreeStatus(
-    _id: string,
-    _status: "delivered" | "failed",
-  ): Promise<Contact | undefined> {
+  async getContactBySubmissionId(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
 
-  async listContacts(_options: ListContactsOptions): Promise<ListContactsResult> {
+  async updateContactFormspreeStatus(): Promise<Contact | undefined> {
+    throw new Error(this.message);
+  }
+
+  async listContacts(): Promise<ListContactsResult> {
     throw new Error(this.message);
   }
 }

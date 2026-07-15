@@ -157,7 +157,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 {post.heroEyebrow}
               </div>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
@@ -169,22 +169,19 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
 
               <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-500">
                 <span className="inline-flex items-center gap-2">
-                  <MinimalGlyph name="calendar-days" className="h-4 w-4" />
                   Published {format(new Date(post.publishedAt), "MMMM d, yyyy")}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <MinimalGlyph name="clock" className="h-4 w-4" />
                   {post.readingTimeMinutes} min read
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <MinimalGlyph name="map-pin" className="h-4 w-4" />
                   Los Gatos, CA
                 </span>
               </div>
             </div>
 
             <aside className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 Short answer
               </div>
               <p className="mt-4 text-lg font-semibold leading-8 text-slate-900">
@@ -202,7 +199,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
             <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
-              <div className="prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:leading-8 prose-li:text-slate-700 prose-strong:text-slate-900 prose-a:text-primary prose-a:no-underline hover:prose-a:text-primary/80">
+              <div className="prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-700 prose-p:leading-8 prose-li:text-slate-700 prose-strong:text-slate-900 prose-a:text-primary prose-a:no-underline hover:prose-a:text-primary">
                 {post.intro.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
@@ -228,8 +225,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
               </div>
 
               <section className="mt-14 rounded-xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8">
-                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
-                  <MinimalGlyph name="message-text" className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                   FAQ
                 </div>
                 <div className="mt-5 space-y-4">
@@ -275,7 +271,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                         href={source.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-base font-semibold text-primary hover:text-primary/80"
+                        className="inline-flex items-center gap-2 text-base font-semibold text-primary hover:text-primary"
                       >
                         {source.label}
                         <MinimalGlyph name="external-link" className="h-4 w-4" />
@@ -290,7 +286,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
               <BlogTableOfContents items={tableOfContents} />
 
               <aside className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                   Helpful next steps
                 </div>
                 <div className="mt-5 space-y-4">

@@ -1,25 +1,25 @@
 "use client";
 
 import { Link } from "wouter";
-import { motion } from "framer-motion";
+import { LazyMotion, m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import TestimonialCarousel from "@/components/testimonial-carousel";
-import SocialMediaSection from "@/components/social-media";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import {
-  APPOINTMENT_FORM_URL,
+  buildAppointmentUrl,
   trackAppointmentCtaClick,
-  trackReviewLinkClick,
+  trackPhoneClick,
 } from "@/lib/analytics";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import VideoFacade from "@/components/video-facade";
 import officeTourPoster from "@assets/Office Photo 1_1753972057110.jpeg";
+import { testimonialsPageSummary } from "@/content/testimonials";
 
 // Animation variants for reusable patterns
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
   }
@@ -38,8 +38,8 @@ const staggerContainer = {
 
 const slideInLeft = {
   hidden: { opacity: 0, x: -50 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
     transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
   }
@@ -47,8 +47,8 @@ const slideInLeft = {
 
 const slideInRight = {
   hidden: { opacity: 0, x: 50 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
     transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
   }
@@ -56,8 +56,8 @@ const slideInRight = {
 
 const scaleIn = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
@@ -65,6 +65,8 @@ const scaleIn = {
 
 const OFFICE_TOUR_VIDEO_SRC =
   "https://player.vimeo.com/video/1106179834?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&background=1&controls=0";
+
+const loadMotionFeatures = () => import("@/lib/motion-features").then((module) => module.default);
 
 const featuredServices = [
   {
@@ -87,7 +89,7 @@ const featuredServices = [
   },
   {
     title: "Invisalign",
-    description: "Clear aligners for straighter teeth with free consultations.",
+    description: "Clear aligners with digital planning and a personalized consultation.",
     href: "/services/invisalign",
     icon: "smile-aligner" as const,
   },
@@ -160,35 +162,36 @@ export default function Home() {
   };
 
   return (
-    <div className="pt-16">
+    <LazyMotion features={loadMotionFeatures} strict>
+      <div className="pt-16">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24">
         <HeroBackdrop variant="default" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:gap-14">
-            <motion.div
+            <m.div
               initial={false}
               animate="visible"
               variants={slideInLeft}
               className="max-w-2xl"
             >
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-800 mb-5 sm:mb-6 leading-tight text-balance">
-                <motion.span
+                <m.span
                   initial={false}
                   animate="visible"
                   variants={fadeInUp}
                   style={{ display: 'block' }}
                 >
-                  Gentle, Compassionate Dental Care for the Whole Family
-                </motion.span>
+                  A Gentle Family Dentist in Los Gatos
+                </m.span>
               </h1>
-              <motion.p 
+              <m.p
                 className="text-xl text-gray-600 mb-8"
                 variants={fadeInUp}
               >
-                We provide exceptional dental care in a warm environment to foster healthy smiles for life.
-              </motion.p>
-              <motion.div 
+                Calm, clear dental care for children and adults, with one Los Gatos team your family can grow with.
+              </m.p>
+              <m.div
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4"
                 variants={fadeInUp}
               >
@@ -196,8 +199,8 @@ export default function Home() {
                   asChild
                   className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold px-6 sm:px-8 py-3 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
                 >
-                  <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
-                    Schedule Appointment
+                  <Link href={buildAppointmentUrl({ source: "home_hero" })} onClick={handleAppointmentClick}>
+                    Request an Appointment
                   </Link>
                 </Button>
                 <Button
@@ -205,23 +208,25 @@ export default function Home() {
                   variant="outline"
                   className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-base sm:text-lg font-semibold px-6 sm:px-8 py-3 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
                 >
-                  <Link href="/team">Meet the Team</Link>
+                  <a href="tel:+14083588100" onClick={() => trackPhoneClick("home_hero")}>
+                    Call (408) 358-8100
+                  </a>
                 </Button>
-              </motion.div>
-            </motion.div>
-            <motion.div 
+              </m.div>
+            </m.div>
+            <m.div
               className="relative mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[390px]"
               initial={false}
               animate="visible"
               variants={slideInRight}
             >
-              <motion.p
-                className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-primary/75"
+              <m.p
+                className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-primary"
                 variants={fadeInUp}
               >
                 Virtual Office Tour
-              </motion.p>
-              <motion.div 
+              </m.p>
+              <m.div
                 className="relative"
                 variants={scaleIn}
               >
@@ -238,19 +243,19 @@ export default function Home() {
                     />
                   </div>
                 </div>
-              </motion.div>
-              <motion.div 
+              </m.div>
+              <m.div
                 className="mt-4 inline-flex items-center gap-3 rounded-xl bg-white/95 px-4 py-3 shadow-sm ring-1 ring-slate-200 sm:absolute sm:-bottom-6 sm:-left-10 sm:mt-0"
                 initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
               >
                 <div>
-                  <p className="font-semibold leading-tight">5.0 Rating</p>
-                  <p className="text-sm text-gray-600 leading-tight">From 60+ families</p>
+                  <p className="font-semibold leading-tight">{testimonialsPageSummary.averageRating} on Google</p>
+                  <p className="text-sm text-gray-600 leading-tight">{testimonialsPageSummary.reviewCountLabel}</p>
                 </div>
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
           </div>
         </div>
       </section>
@@ -258,57 +263,57 @@ export default function Home() {
       {/* Testimonials Section */}
       <section className="relative overflow-hidden bg-background py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <m.div
             className="text-center mb-12 sm:mb-14"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-            <motion.div
-              className="mb-3 inline-flex items-center rounded-lg border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80"
+            <m.div
+              className="mb-3 inline-flex items-center rounded-lg border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary"
               variants={fadeInUp}
             >
-              Verified Reviews
-            </motion.div>
-            <motion.h2
+              Patient Reviews
+            </m.div>
+            <m.h2
               className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
               variants={fadeInUp}
             >
               <span className="inline-flex items-center justify-center gap-3">
-                
+
                 <span>What Our Patients Say</span>
               </span>
-            </motion.h2>
-            <motion.p 
+            </m.h2>
+            <m.p
               className="mx-auto max-w-3xl text-lg text-gray-600 sm:text-xl"
               variants={fadeInUp}
             >
-              Real stories from families who trust us with their smiles
-            </motion.p>
-            <motion.div className="mt-6 flex flex-wrap items-center justify-center gap-3" variants={fadeInUp}>
+              Public reviews from patients who chose our Los Gatos dental team
+            </m.p>
+            <m.div className="mt-6 flex flex-wrap items-center justify-center gap-3" variants={fadeInUp}>
               <div className="rounded-lg border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
-                5.0 average rating
+                {testimonialsPageSummary.averageRating} average rating
               </div>
               <div className="rounded-lg border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
-                60+ local families
+                {testimonialsPageSummary.reviewCountLabel}
               </div>
-              <div className="rounded-lg border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
-                Rotating featured stories
-              </div>
-            </motion.div>
-          </motion.div>
-          
-          <motion.div
+            </m.div>
+            <m.p className="mt-3 text-xs text-slate-500" variants={fadeInUp}>
+              {testimonialsPageSummary.verifiedAtLabel}
+            </m.p>
+          </m.div>
+
+          <m.div
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={scaleIn}
           >
             <TestimonialCarousel />
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             className="mt-8 flex justify-center"
             initial={false}
             whileInView="visible"
@@ -325,102 +330,99 @@ export default function Home() {
                 <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
       {/* Why Choose Us Section */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <m.div
             className="text-center mb-16"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-            <motion.h2
+            <m.h2
               className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
               variants={fadeInUp}
             >
               <span className="inline-flex items-center justify-center gap-3">
-                
+
                 <span>Why Choose Family First Smile Care?</span>
               </span>
-            </motion.h2>
-            <motion.p 
+            </m.h2>
+            <m.p
               className="text-xl text-gray-600 max-w-3xl mx-auto"
               variants={fadeInUp}
             >
               We're committed to providing exceptional dental care that puts your family's comfort and health first.
-            </motion.p>
-          </motion.div>
-          
-          <motion.div 
+            </m.p>
+          </m.div>
+
+          <m.div
             className="grid md:grid-cols-3 gap-8"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-            <motion.div 
+            <m.div
               className="text-center p-6 rounded-xl border border-border bg-card transition-colors duration-200 group hover:border-primary/30"
               variants={scaleIn}
             >
               <h3 className="text-xl font-semibold mb-3">Compassionate Care</h3>
               <p className="text-gray-600">Gentle, patient-centered approach that puts your comfort first, especially for children and anxious patients.</p>
-            </motion.div>
-            
-            <motion.div 
+            </m.div>
+
+            <m.div
               className="text-center p-6 rounded-xl border border-border bg-card transition-colors duration-200 group hover:border-primary/30"
               variants={scaleIn}
             >
               <h3 className="text-xl font-semibold mb-3">Advanced Technology</h3>
-              <p className="text-gray-600">State-of-the-art equipment including digital X-rays and CBCT scanners for precise, efficient treatment.</p>
-            </motion.div>
-            
-            <motion.div 
+              <p className="text-gray-600">Digital scanning and imaging help our team explain findings and plan care clearly.</p>
+            </m.div>
+
+            <m.div
               className="text-center p-6 rounded-xl border border-border bg-card transition-colors duration-200 group hover:border-primary/30"
               variants={scaleIn}
             >
               <h3 className="text-xl font-semibold mb-3">Family-Focused</h3>
               <p className="text-gray-600">Comprehensive care for all ages, from your child's first visit to adult preventive and cosmetic dentistry.</p>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </div>
       </section>
-
-      {/* Social Media Section */}
-      <SocialMediaSection />
 
       {/* Featured Services Section */}
       <section className="bg-background py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <m.div
             className="text-center mb-12 sm:mb-14"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-            <motion.h2
+            <m.h2
               className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
               variants={fadeInUp}
             >
               <span className="inline-flex items-center justify-center gap-3">
-                
+
                 <span>Our Featured Services</span>
               </span>
-            </motion.h2>
-            <motion.p 
+            </m.h2>
+            <m.p
               className="mx-auto max-w-3xl text-lg text-gray-600 sm:text-xl"
               variants={fadeInUp}
             >
               Comprehensive dental care tailored to your family's unique needs
-            </motion.p>
-          </motion.div>
-          
-          <motion.div 
+            </m.p>
+          </m.div>
+
+          <m.div
             className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4"
             initial={false}
             whileInView="visible"
@@ -428,7 +430,7 @@ export default function Home() {
             variants={staggerContainer}
           >
             {featuredServices.map((service) => (
-              <motion.div
+              <m.div
                 key={service.href}
                 className="group"
                 variants={scaleIn}
@@ -439,7 +441,7 @@ export default function Home() {
                   <Button
                     asChild
                     variant="link"
-                    className="mt-auto w-fit p-0 text-primary transition-colors duration-200 group-hover:text-primary/80"
+                    className="mt-auto w-fit p-0 text-primary transition-colors duration-200 group-hover:text-primary"
                   >
                     <Link href={service.href}>
                       Learn More
@@ -447,36 +449,36 @@ export default function Home() {
                     </Link>
                   </Button>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
       {/* Explore More Services */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <m.div
             className="text-center mb-12"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-            <motion.h2 
+            <m.h2
               className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
               variants={fadeInUp}
             >
               Explore More Services
-            </motion.h2>
-            <motion.p 
+            </m.h2>
+            <m.p
               className="text-lg text-gray-600 max-w-3xl mx-auto"
               variants={fadeInUp}
             >
               Specialized care options to support every stage of your smile.
-            </motion.p>
-          </motion.div>
-          <motion.div 
+            </m.p>
+          </m.div>
+          <m.div
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
             initial={false}
             whileInView="visible"
@@ -484,7 +486,7 @@ export default function Home() {
             variants={staggerContainer}
           >
             {additionalServices.map((service) => (
-              <motion.div
+              <m.div
                 key={service.href}
                 variants={scaleIn}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
@@ -499,37 +501,37 @@ export default function Home() {
                     <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
                   </div>
                 </Link>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
       {/* Patient Resources */}
       <section className="py-16 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+          <m.div
             className="text-center mb-12"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-            <motion.h2
+            <m.h2
               className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
               variants={fadeInUp}
             >
               Patient Resources
-            </motion.h2>
-            <motion.p
+            </m.h2>
+            <m.p
               className="text-lg text-gray-600 max-w-3xl mx-auto"
               variants={fadeInUp}
             >
               Helpful guides and FAQs to make your visit smooth and stress-free.
-            </motion.p>
-          </motion.div>
+            </m.p>
+          </m.div>
 
-          <motion.div
+          <m.div
             className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
             initial={false}
             whileInView="visible"
@@ -537,7 +539,7 @@ export default function Home() {
             variants={staggerContainer}
           >
             {patientResources.map((resource) => (
-              <motion.div
+              <m.div
                 key={resource.href}
                 variants={scaleIn}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
@@ -552,132 +554,14 @@ export default function Home() {
                     <span className="mt-4 inline-flex text-sm font-semibold text-primary">Read more</span>
                   </div>
                 </Link>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
-      {/* Office Tour Video Section */}
-      <motion.section 
-        className="py-16 sm:py-20 bg-muted/40"
-        initial={false}
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={fadeInUp}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              variants={slideInLeft}
-            >
-              <motion.h2 
-                className="text-3xl lg:text-4xl font-bold text-gray-800 mb-6"
-                variants={fadeInUp}
-              >
-                Take a Virtual Tour of Our Office
-              </motion.h2>
-            <motion.p 
-              className="text-xl text-gray-600 mb-8"
-              variants={fadeInUp}
-            >
-              Step inside our welcoming Los Gatos location and see why families choose us for their dental care. From our comfortable waiting area to our state-of-the-art treatment rooms.
-            </motion.p>
-            <motion.div
-              className="mb-8 rounded-xl border border-secondary/20 bg-white/90 p-5 shadow-sm"
-              variants={fadeInUp}
-            >
-              <h3 className="text-lg font-semibold text-gray-800">Serving Santa Cruz families</h3>
-              <p className="mt-2 text-base text-gray-600">
-                Many families from Santa Cruz choose our Los Gatos office for gentle care, family
-                dentistry, and help verifying major PPO benefits before the visit. We are just off
-                Highway 17, so getting here is straightforward when you want a practice that feels
-                worth the drive.
-              </p>
-              <Button asChild variant="link" className="mt-3 h-auto p-0 text-primary">
-                <Link href="/areas-we-serve/santa-cruz">
-                  Learn why Santa Cruz families visit us
-                  <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </motion.div>
-            <motion.div variants={scaleIn}>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                    asChild
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-semibold px-8 py-3 transition-colors duration-200"
-                  >
-                    <Link href="/about">Learn More About Our Office</Link>
-                  </Button>
-                </motion.div>
-              </motion.div>
-            </motion.div>
-            <motion.div 
-              className="flex justify-center"
-              variants={slideInRight}
-            >
-              <motion.div 
-                className="relative max-w-sm mx-auto rounded-xl overflow-hidden shadow-sm"
-                variants={scaleIn}
-                whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
-              >
-                <div className="relative w-full h-96 sm:h-[28rem] md:h-[32rem]">
-                  <VideoFacade
-                    videoSrc={OFFICE_TOUR_VIDEO_SRC}
-                    title="Family First Smile Care Virtual Office Tour"
-                    poster={officeTourPoster}
-                    posterAlt="Inside the Family First Smile Care office in Los Gatos"
-                    posterSizes="(max-width: 640px) 100vw, 384px"
-                    playLabel="Play office tour"
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Google Review CTA Section */}
-      <motion.section 
-        className="py-16 bg-background"
-        initial={false}
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={fadeInUp}
-      >
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <motion.p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary" variants={scaleIn}>
-            5.0 average rating from local families
-          </motion.p>
-          <motion.h2 
-            className="text-3xl font-bold text-gray-800 mb-4"
-            variants={fadeInUp}
-          >
-            Love Your Experience?
-          </motion.h2>
-          <motion.p 
-            className="text-xl text-gray-600 mb-8"
-            variants={fadeInUp}
-          >
-            Help other families find us by sharing your experience on Google. Your review means the world to us!
-          </motion.p>
-          <motion.div variants={scaleIn} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/80 text-lg font-semibold px-8 py-3">
-              <a
-                href="https://g.page/r/Cej0Xl18KcCyEAE/review"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackReviewLinkClick("google", "home_review_cta")}
-              >
-                Leave a Google Review
-              </a>
-            </Button>
-          </motion.div>
-        </div>
-      </motion.section>
-
       {/* Call to Action Section */}
-      <motion.section 
+      <m.section
         className="py-20 gradient-primary text-white"
         initial={false}
         whileInView="visible"
@@ -685,27 +569,30 @@ export default function Home() {
         variants={fadeInUp}
       >
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <motion.h2 
+          <m.h2
             className="text-3xl lg:text-4xl font-bold mb-4"
             variants={fadeInUp}
           >
-            Ready for Your Best Smile?
-          </motion.h2>
-          <motion.p 
+            Ready to Meet Your Los Gatos Dental Team?
+          </m.h2>
+          <m.p
             className="text-xl mb-8 text-white/95"
             variants={fadeInUp}
           >
-            Schedule your free Invisalign consultation today and take the first step towards a healthier, more confident smile.
-          </motion.p>
-          <motion.div variants={scaleIn}>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            Tell us what you need and when you prefer to visit. Our team will contact you to confirm the next step.
+          </m.p>
+          <m.div variants={scaleIn}>
+            <m.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button asChild className="bg-white text-primary hover:bg-gray-100 text-lg font-semibold px-8 py-3">
-                <Link href="/contact">Schedule Free Consultation</Link>
+                <Link href={buildAppointmentUrl({ source: "home_final_cta" })} onClick={() => trackAppointmentCtaClick("home_final_cta")}>
+                  Request an Appointment
+                </Link>
               </Button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </div>
-      </motion.section>
-    </div>
+      </m.section>
+      </div>
+    </LazyMotion>
   );
 }

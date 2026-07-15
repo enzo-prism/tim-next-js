@@ -5,7 +5,7 @@ import ServiceCard from "@/components/service-card";
 import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
 import { generalReviews } from "@/data/reviews";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 
@@ -61,7 +61,7 @@ export default function Services() {
             >
               <ServiceCard 
                 service={service} 
-                featured={service.featured || (service.subServices && service.subServices.some(sub => sub.featured))}
+                featured={service.featured === true}
               />
             </div>
           ))}
@@ -99,7 +99,7 @@ export default function Services() {
               <div
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-colors duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
               >
-                <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+                <Link href={buildAppointmentUrl({ source: "services_hero" })} onClick={handleAppointmentClick}>
                   Book Your Appointment
                 </Link>
               </div>

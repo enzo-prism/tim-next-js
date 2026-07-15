@@ -6,8 +6,8 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 
 - Full public website route parity
 - Admin dashboard protected with Basic Auth
-- Contact form persistence using Postgres via Drizzle ORM
-- Custom first-party scheduling form at `/book-appointment` with Formspree relay + DB persistence fallback
+- Contact and appointment persistence using Postgres via Drizzle ORM
+- First-party forms with duplicate protection, campaign attribution, consent records, and Formspree office notifications
 - Vercel Web Analytics + GA4 + Google Search Console admin reporting APIs
 - Canonical SEO + schema.org JSON-LD + sitemap/robots/llms assets
 - Vercel-ready routing, headers, and deployment flow
@@ -39,7 +39,7 @@ npm run dev
 5. Run quality checks.
 
 ```bash
-npm run check
+npm run quality:all
 ```
 
 ## Documentation Index
@@ -49,7 +49,7 @@ npm run check
 - [Routing and SEO](docs/routing-and-seo.md)
 - [API Reference](docs/api-reference.md)
 - [Environment Variables](docs/environment-variables.md)
-- [Analytics Setup (Vercel + GA4 + Ads + Hotjar + GSC)](docs/analytics-setup.md)
+- [Analytics Setup (Vercel + GA4 + Ads + GSC)](docs/analytics-setup.md)
 - [Deployment on Vercel](docs/deployment-vercel.md)
 - [Operations Runbook](docs/operations-runbook.md)
 - [Testing and Quality](docs/testing-and-quality.md)
@@ -77,7 +77,7 @@ npm run test
 npm run build
 npm run check
 
-# Database schema push
+# Database schema review/push (requires the intended DATABASE_URL)
 npm run db:push
 ```
 
@@ -87,10 +87,10 @@ npm run db:push
 2. Ensure Vercel Git integration is connected to `enzo-prism/tim-next-js`.
 3. Ensure required env vars are configured.
 4. Run `npm run db:push` against production database.
-5. Run one-command guarded release:
+5. Verify the migration succeeded, then run the guarded release:
 
 ```bash
-npm run release:prod
+npm run release:prod -- --schema-synced
 ```
 
 6. Run smoke tests on routes, redirects, APIs, and admin auth.
@@ -106,4 +106,5 @@ Checks run on PRs and pushes to `main` / `codex/**`:
 - typecheck
 - lint
 - test
-- build
+- design contract and minimal design checks
+- production build

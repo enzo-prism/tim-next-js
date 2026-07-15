@@ -19,6 +19,7 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `vercel whoami`
 4. Production secrets available:
    - `DATABASE_URL`
+   - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - analytics variables from `docs/environment-variables.md`
 5. Vercel Web Analytics enabled for the linked Vercel project
@@ -68,15 +69,15 @@ Set variables in Vercel for `production` (and `preview` where needed):
 
 ```bash
 vercel env add DATABASE_URL production
+vercel env add ADMIN_USERNAME production
 vercel env add ADMIN_PASSWORD production
 vercel env add CANONICAL_HOST production
 vercel env add NEXT_PUBLIC_CANONICAL_HOST production
 vercel env add NEXT_PUBLIC_GA_MEASUREMENT_ID production
 vercel env add NEXT_PUBLIC_GOOGLE_ADS_TAG_ID production
 vercel env add NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT production
-vercel env add NEXT_PUBLIC_HOTJAR_ID production
-vercel env add NEXT_PUBLIC_HOTJAR_SNIPPET_VERSION production
 vercel env add FORMSPREE_APPOINTMENT_ENDPOINT production
+vercel env add FORMSPREE_CONTACT_ENDPOINT production
 vercel env add GA4_PROPERTY_ID production
 vercel env add GSC_SITE_URL production
 vercel env add GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 production
@@ -97,6 +98,7 @@ vercel env ls
 
 ```bash
 npm run db:push
+npm run db:verify
 ```
 
 Use production credentials locally only in a controlled release window.
@@ -105,20 +107,21 @@ Use production credentials locally only in a controlled release window.
 
 ### Recommended guarded production release (fast path)
 
-Run one command from clean `main`:
+After applying the migration and verifying its read-back, run one command from clean `main`:
 
 ```bash
-npm run release:prod
+npm run release:prod -- --schema-synced
 ```
 
 This script enforces:
 
 1. clean git working tree
 2. local `main` aligned with `origin/main`
-3. GitHub default branch forced to `main` if drifted
+3. GitHub default branch verified as `main` without changing repository settings
 4. Vercel Git integration connected to this repo
-5. quality checks (`npm run check`)
-6. production deploy via Vercel CLI
+5. explicit confirmation that the production schema was applied and verified
+6. full quality checks (`npm run quality:all`)
+7. production deploy via Vercel CLI
 
 ### Preview deploy
 
@@ -143,28 +146,28 @@ Use production domain and preview domain checks.
 ### Route checks
 
 ```bash
-curl -I https://famfirstsmile.com/
-curl -I https://famfirstsmile.com/services
-curl -I https://famfirstsmile.com/contact
-curl -I https://famfirstsmile.com/book-appointment
-curl -I https://famfirstsmile.com/tmj
+curl -I https://www.famfirstsmile.com/
+curl -I https://www.famfirstsmile.com/services
+curl -I https://www.famfirstsmile.com/contact
+curl -I https://www.famfirstsmile.com/book-appointment
+curl -I https://www.famfirstsmile.com/tmj
 ```
 
 ### Redirect checks
 
 ```bash
-curl -I https://famfirstsmile.com/hello-world
-curl -I "https://famfirstsmile.com/?page_id=1073"
-curl -I https://www.famfirstsmile.com/
-curl -I https://famfirstsmile.com/services/tmj
+curl -I https://www.famfirstsmile.com/hello-world
+curl -I "https://www.famfirstsmile.com/?page_id=1073"
+curl -I https://famfirstsmile.com/
+curl -I https://www.famfirstsmile.com/services/tmj
 ```
 
 ### SEO asset checks
 
 ```bash
-curl -I https://famfirstsmile.com/robots.txt
-curl -I https://famfirstsmile.com/sitemap.xml
-curl -I https://famfirstsmile.com/llms.txt
+curl -I https://www.famfirstsmile.com/robots.txt
+curl -I https://www.famfirstsmile.com/sitemap.xml
+curl -I https://www.famfirstsmile.com/llms.txt
 ```
 
 ### Vercel analytics checks
@@ -179,11 +182,11 @@ curl -I https://famfirstsmile.com/llms.txt
 Public:
 
 ```bash
-curl -X POST https://famfirstsmile.com/api/contacts \
+curl -X POST https://www.famfirstsmile.com/api/contacts \
   -H "Content-Type: application/json" \
   -d '{"firstName":"Deploy","lastName":"Test","email":"deploy@example.com"}'
 
-curl -X POST https://famfirstsmile.com/api/appointments \
+curl -X POST https://www.famfirstsmile.com/api/appointments \
   -H "Content-Type: application/json" \
   -d '{"firstName":"Deploy","lastName":"Test","email":"deploy@example.com","phone":"555-111-2222","service":"dental-exams","preferredDate":"2026-03-10","preferredTime":"10:00"}'
 ```
@@ -191,13 +194,13 @@ curl -X POST https://famfirstsmile.com/api/appointments \
 Admin unauthorized check:
 
 ```bash
-curl -i https://famfirstsmile.com/api/admin/contacts
+curl -i https://www.famfirstsmile.com/api/admin/contacts
 ```
 
 Admin authorized check:
 
 ```bash
-curl -i -u "admin:${ADMIN_PASSWORD}" "https://famfirstsmile.com/api/admin/contacts?limit=5&offset=0"
+curl -i -u "${ADMIN_USERNAME}:${ADMIN_PASSWORD}" "https://www.famfirstsmile.com/api/admin/contacts?limit=5&offset=0"
 ```
 
 ## Rollback Strategy

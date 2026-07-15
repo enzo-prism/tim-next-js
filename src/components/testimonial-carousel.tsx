@@ -10,7 +10,8 @@ const testimonials: Testimonial[] = homepageTestimonials;
 export default function TestimonialCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const prefersReducedMotion = useReducedMotion();
-  const [isPaused, setIsPaused] = useState(false);
+  const [isUserPaused, setIsUserPaused] = useState(false);
+  const [isInteractionPaused, setIsInteractionPaused] = useState(false);
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -25,24 +26,28 @@ export default function TestimonialCarousel() {
   };
 
   useEffect(() => {
-    if (prefersReducedMotion || isPaused) return;
+    if (prefersReducedMotion || isUserPaused || isInteractionPaused) return;
 
     const timer = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }, 8000);
 
     return () => window.clearInterval(timer);
-  }, [prefersReducedMotion, isPaused]);
+  }, [prefersReducedMotion, isUserPaused, isInteractionPaused]);
 
   return (
     <div
       className="relative mx-auto max-w-6xl"
       role="region"
       aria-label="Patient testimonials"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={() => setIsPaused(false)}
+      onMouseEnter={() => setIsInteractionPaused(true)}
+      onMouseLeave={() => setIsInteractionPaused(false)}
+      onFocusCapture={() => setIsInteractionPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setIsInteractionPaused(false);
+        }
+      }}
     >
       <div className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-sm sm:p-6 lg:p-8">
         <div className="overflow-hidden">
@@ -50,8 +55,12 @@ export default function TestimonialCarousel() {
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
-            {testimonials.map((testimonial) => (
-              <article key={testimonial.id} className="w-full flex-shrink-0 px-1 py-2">
+            {testimonials.map((testimonial, index) => (
+              <article
+                key={testimonial.id}
+                className="w-full flex-shrink-0 px-1 py-2"
+                aria-hidden={index !== currentIndex}
+              >
                 <div className="grid gap-7 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
                   <aside className="rounded-xl border border-slate-200/80 bg-slate-50/90 px-4 py-5 text-center lg:px-5 lg:py-6">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Google Review</p>
@@ -89,6 +98,14 @@ export default function TestimonialCarousel() {
             </Button>
             <Button
               variant="outline"
+              className="min-h-11 border-slate-300 bg-white px-4"
+              onClick={() => setIsUserPaused((paused) => !paused)}
+              aria-pressed={isUserPaused}
+            >
+              {isUserPaused ? "Resume" : "Pause"}
+            </Button>
+            <Button
+              variant="outline"
               size="icon"
               className="rounded-lg border-slate-300 bg-white"
               onClick={nextTestimonial}
@@ -105,13 +122,18 @@ export default function TestimonialCarousel() {
                 <button
                   key={index}
                   type="button"
-                  className={`h-2.5 rounded-lg transition-all duration-300 ${
-                    isActive ? "w-10 bg-primary" : "w-2.5 bg-slate-400 hover:bg-slate-500"
-                  }`}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => goToTestimonial(index)}
                   aria-label={`Go to testimonial ${index + 1}`}
                   aria-current={isActive}
-                />
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`h-2.5 rounded-lg transition-all duration-300 ${
+                      isActive ? "w-8 bg-primary" : "w-2.5 bg-slate-500"
+                    }`}
+                  />
+                </button>
               );
             })}
           </div>

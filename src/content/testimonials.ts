@@ -33,6 +33,7 @@ export type TestimonialSummary = {
   sourceLabel: string;
   sourceUrl: string;
   editorialNote: string;
+  verifiedAtLabel: string;
 };
 
 export type ReviewLibrarySummary = {
@@ -40,6 +41,7 @@ export type ReviewLibrarySummary = {
   reviewCountLabel: string;
   sourceLabel: string;
   editorialNote: string;
+  verifiedAtLabel: string;
 };
 
 export type PublicReviewFeedItem = {
@@ -66,6 +68,7 @@ export const testimonialsPageSummary: TestimonialSummary = {
   sourceUrl: googleBusinessProfileUrl,
   editorialNote:
     "Selected excerpts from publicly posted Google reviews shared by patients and families.",
+  verifiedAtLabel: "Review snapshot verified April 16, 2026",
 };
 
 export const testimonialsReviewLibrarySummary: ReviewLibrarySummary = {
@@ -73,16 +76,17 @@ export const testimonialsReviewLibrarySummary: ReviewLibrarySummary = {
   reviewCountLabel: "52 Google reviews + 6 Yelp reviews",
   sourceLabel: "Public Google and Yelp review listings",
   editorialNote:
-    "This page now includes the latest public Google review excerpts we verified online, plus Yelp excerpts currently surfaced through Yahoo Local's Yelp feed.",
+    "This page includes public Google review excerpts plus Yelp excerpts surfaced through Yahoo Local's Yelp feed.",
+  verifiedAtLabel: "Review snapshot verified April 16, 2026",
 };
 
 export const publicReviewFeedSections: PublicReviewFeedSection[] = [
   {
     id: "latest-google-reviews",
-    eyebrow: "Latest Google reviews",
-    title: "Recent Google reviews that were not yet represented on the site",
+    eyebrow: "Public Google reviews",
+    title: "More experiences shared by patients",
     description:
-      "These are the newest public Google review excerpts we verified online for Family First Smile Care. They add fresh feedback from recent patients without replacing the curated service-based testimonials above.",
+      "These public Google review excerpts add more patient experiences without replacing the curated service-based testimonials above.",
     sourceLabel: "Read all Google reviews",
     sourceUrl: googleBusinessProfileUrl,
     reviews: [

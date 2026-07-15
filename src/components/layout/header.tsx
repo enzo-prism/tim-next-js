@@ -12,12 +12,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import { services } from "@/data/services";
 import {
-  APPOINTMENT_FORM_URL,
+  buildAppointmentUrl,
   trackAppointmentCtaClick,
   trackPayBillClick,
   trackServiceLearnMoreClick,
@@ -196,13 +203,12 @@ export default function Header() {
                 rel="noopener noreferrer"
                 onClick={() => trackPayBillClick("header_desktop")}
               >
-                <MinimalGlyph name="credit-card" className="mr-2 h-4 w-4" />
                 Pay Bill
               </a>
             </Button>
             <Button asChild className="h-10 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href={APPOINTMENT_FORM_URL} onClick={() => handleAppointmentClick("header_desktop")}>
-                Book Appointment
+              <Link href={buildAppointmentUrl({ source: "header_desktop" })} onClick={() => handleAppointmentClick("header_desktop")}>
+                Request Appointment
               </Link>
             </Button>
           </div>
@@ -220,13 +226,12 @@ export default function Header() {
                 rel="noopener noreferrer"
                 onClick={() => trackPayBillClick("header_compact")}
               >
-                <MinimalGlyph name="credit-card" className="mr-2 h-4 w-4" />
                 Pay Bill
               </a>
             </Button>
-            <Button asChild className="hidden sm:inline-flex h-9 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href={APPOINTMENT_FORM_URL} onClick={() => handleAppointmentClick("header_compact")}>
-                Book
+            <Button asChild className="inline-flex h-9 whitespace-nowrap bg-primary px-3 text-primary-foreground hover:bg-primary/90">
+              <Link href={buildAppointmentUrl({ source: "header_compact" })} onClick={() => handleAppointmentClick("header_compact")}>
+                Request
               </Link>
             </Button>
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -236,7 +241,22 @@ export default function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="mt-8 flex flex-col space-y-4">
+                <SheetHeader className="text-left">
+                  <SheetTitle>Family First Smile Care menu</SheetTitle>
+                  <SheetDescription>Navigate the site or request an appointment.</SheetDescription>
+                </SheetHeader>
+                <nav className="mt-6 flex flex-col space-y-4">
+                  <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Link
+                      href={buildAppointmentUrl({ source: "header_mobile" })}
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleAppointmentClick("mobile_menu_top");
+                      }}
+                    >
+                      Request Appointment
+                    </Link>
+                  </Button>
                   {navigation.filter((item) => !item.dropdown).map((item) => (
                     <Link
                       key={item.name}
@@ -305,20 +325,8 @@ export default function Header() {
                         setIsOpen(false);
                       }}
                     >
-                      <MinimalGlyph name="credit-card" className="h-4 w-4 mr-2" />
                       Pay Bill Online
                     </a>
-                  </Button>
-                  <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Link
-                      href={APPOINTMENT_FORM_URL}
-                      onClick={() => {
-                        setIsOpen(false);
-                        handleAppointmentClick("mobile_menu");
-                      }}
-                    >
-                      Book Appointment
-                    </Link>
                   </Button>
                 </nav>
               </SheetContent>

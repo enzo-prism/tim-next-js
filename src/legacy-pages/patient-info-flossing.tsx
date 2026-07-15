@@ -10,8 +10,7 @@ export default function PatientInfoFlossing() {
     <div className="pt-16 pb-20 bg-white">
       <section className="relative bg-muted/40 py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-secondary mb-4">
-            <MinimalGlyph name="floss" className="w-4 h-4 mr-2" />
+          <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-primary mb-4">
             Oral Health Education
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
@@ -50,24 +49,18 @@ export default function PatientInfoFlossing() {
             {
               title: "Use enough floss",
               description: "About 18 inches gives you a clean section for each tooth.",
-              icon: <MinimalGlyph name="shield" className="w-5 h-5 text-primary" />,
             },
             {
               title: "Gentle C-shape",
               description: "Curve the floss around the tooth and slide up and down.",
-              icon: <MinimalGlyph name="heart-care" className="w-5 h-5 text-secondary" />,
             },
             {
               title: "Daily habit",
               description: "Once per day is enough to remove plaque between teeth.",
-              icon: <MinimalGlyph name="smile-aligner" className="w-5 h-5 text-accent" />,
             },
           ].map((item) => (
             <div key={item.title} className="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-white rounded-lg w-10 h-10 flex items-center justify-center shadow-sm">
-                  {item.icon}
-                </div>
+              <div className="mb-3">
                 <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
               </div>
               <p className="text-gray-600">{item.description}</p>
@@ -108,15 +101,15 @@ export default function PatientInfoFlossing() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Flossing Options</h2>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-secondary mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Waxed or unwaxed string floss.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-secondary mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Floss picks for on-the-go convenience.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-secondary mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Water flossers for braces or sensitive gums.</span>
               </li>
             </ul>

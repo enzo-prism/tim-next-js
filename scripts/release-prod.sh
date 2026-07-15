@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SKIP_CHECK=0
+SCHEMA_SYNCED=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -9,9 +10,13 @@ while [[ $# -gt 0 ]]; do
       SKIP_CHECK=1
       shift
       ;;
+    --schema-synced)
+      SCHEMA_SYNCED=1
+      shift
+      ;;
     *)
       echo "Unknown argument: $1" >&2
-      echo "Usage: bash scripts/release-prod.sh [--skip-check]" >&2
+      echo "Usage: bash scripts/release-prod.sh --schema-synced [--skip-check]" >&2
       exit 1
       ;;
   esac
@@ -60,9 +65,18 @@ fi
 
 default_branch="$(gh api "repos/${REPO_SLUG}" --jq '.default_branch')"
 if [[ "$default_branch" != "main" ]]; then
-  echo "Default branch is '$default_branch'. Resetting to 'main'..."
-  gh api -X PATCH "repos/${REPO_SLUG}" -f default_branch=main >/dev/null
+  echo "GitHub default branch is '$default_branch', not 'main'. Fix it explicitly before release." >&2
+  exit 1
 fi
+
+if [[ "$SCHEMA_SYNCED" -ne 1 ]]; then
+  echo "Production schema confirmation is required." >&2
+  echo "Apply and verify the database migration, then rerun with --schema-synced." >&2
+  exit 1
+fi
+
+echo "Verifying production lead schema..."
+npm run db:verify
 
 echo "Ensuring Vercel project is linked..."
 if [[ ! -f ".vercel/project.json" ]]; then
@@ -86,7 +100,7 @@ rm -f "$git_connect_log"
 
 if [[ "$SKIP_CHECK" -eq 0 ]]; then
   echo "Running quality checks..."
-  npm run check
+  npm run quality:all
 else
   echo "Skipping quality checks (--skip-check)."
 fi

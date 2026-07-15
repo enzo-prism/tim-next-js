@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
 import { serviceReviews } from "@/data/reviews";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -109,7 +109,7 @@ export default function ServiceDetail() {
               className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
               variants={fadeInUp}
             >
-              {service.title}
+              {service.title} in Los Gatos
             </motion.h1>
             <motion.p 
               className="text-xl text-gray-600 max-w-3xl mx-auto"
@@ -174,7 +174,7 @@ export default function ServiceDetail() {
             <motion.div variants={fadeInUp}>
               <h2 className="text-3xl font-bold text-gray-800 mb-6">About {service.title}</h2>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                {service.longDescription || `Learn more about our comprehensive ${service.title.toLowerCase()} services designed to meet your oral health needs with the highest standards of care and professionalism.`}
+                {service.longDescription || `Learn how our Los Gatos team approaches ${service.title.toLowerCase()} with clear explanations, thoughtful planning, and your comfort in mind.`}
               </p>
             </motion.div>
             <motion.div 
@@ -254,7 +254,7 @@ export default function ServiceDetail() {
                   className="bg-muted/50 rounded-xl p-6 text-center"
                   variants={scaleIn}
                 >
-                  <div className="bg-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                     <span className="font-bold">{index + 1}</span>
                   </div>
                   <p className="text-gray-700 font-medium">{step}</p>
@@ -292,7 +292,7 @@ export default function ServiceDetail() {
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
-                href={APPOINTMENT_FORM_URL}
+                href={buildAppointmentUrl({ serviceId: service.id, source: "service_detail" })}
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                 onClick={handleAppointmentClick}
               >

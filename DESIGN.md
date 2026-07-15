@@ -135,6 +135,18 @@ components:
     typography: "{typography.label-sm}"
     rounded: "{rounded.pill}"
     padding: 8px
+  selected-state:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.accent-foreground}"
+    typography: "{typography.body-sm}"
+    rounded: "{rounded.md}"
+    padding: 8px
+  accent-rule:
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.accent-foreground}"
+    typography: "{typography.label-sm}"
+    rounded: "{rounded.sm}"
+    height: 1px
   destructive-state:
     backgroundColor: "{colors.destructive}"
     textColor: "{colors.background}"
@@ -187,6 +199,7 @@ The layout should feel practical and reassuring before it feels decorative.
 - **Cards and panels** use `bg-card`, `border-border`, and small radii. Avoid hover lift except where an item is clearly interactive.
 - **Proof modules** use text, numbers, dividers, and compact labels instead of stars or decorative icon badges.
 - **Forms** should feel steady and low-friction: clear labels, large fields, helpful validation, and calm blue confirmation states.
+- **Form controls** use the darker blue control border and primary-blue focus ring so fields and keyboard focus remain clearly visible.
 - **Assistant/widget UI** should stay inside the blue token family.
 - **Functional glyphs** are allowed only for unavoidable controls such as menu, chevrons, close, check, search, arrows, and external-link affordances.
 

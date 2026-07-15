@@ -129,9 +129,14 @@ describe("analytics custom events", () => {
   it("tracks appointment success as an Ads conversion and GA4 lead", () => {
     const { gtagMock } = setupBrowserGlobals("/book-appointment");
 
-    trackAppointmentSubmitSuccess("dental-exams");
+    trackAppointmentSubmitSuccess(
+      "dental-exams",
+      "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+    );
 
-    expect(gtagMock).toHaveBeenCalledWith("event", GOOGLE_ADS_CONVERSION_EVENT);
+    expect(gtagMock).toHaveBeenCalledWith("event", GOOGLE_ADS_CONVERSION_EVENT, {
+      transaction_id: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+    });
     expect(gtagMock).toHaveBeenCalledWith(
       "event",
       "generate_lead",

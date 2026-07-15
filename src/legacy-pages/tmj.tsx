@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import { APPOINTMENT_FORM_URL, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -81,9 +81,6 @@ export default function TMJ() {
               </p>
             </div>
             <div className="bg-muted/40 rounded-xl p-8">
-              <div className="bg-primary text-white w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6">
-                <MinimalGlyph name="jaw-tmj" className="h-8 w-8" />
-              </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Common TMJ Symptoms</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
@@ -123,9 +120,6 @@ export default function TMJ() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Link href="/services/night-guards" className="block h-full">
               <div className="h-full bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300 hover:border-primary/40">
-                <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                  <MinimalGlyph name="shield" className="h-6 w-6" />
-                </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Custom Night Guards</h3>
                 <p className="text-gray-600">We design night guards to prevent teeth grinding and clenching, which can exacerbate TMJ discomfort.</p>
                 <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
@@ -134,9 +128,6 @@ export default function TMJ() {
             
             <Link href="/services/invisalign" className="block h-full">
               <div className="h-full bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300 hover:border-primary/40">
-                <div className="bg-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                  <MinimalGlyph name="jaw-tmj" className="h-6 w-6" />
-                </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Orthodontic Solutions</h3>
                 <p className="text-gray-600">Conditions related to bite misalignment can be treated through customized orthodontic treatment plans, such as braces or Invisalign.</p>
                 <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
@@ -144,9 +135,6 @@ export default function TMJ() {
             </Link>
             
             <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300">
-              <div className="bg-accent text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <MinimalGlyph name="users-family" className="h-6 w-6" />
-              </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">Physical Therapy</h3>
               <p className="text-gray-600">Jaw exercises and muscle relaxation techniques can alleviate tension and improve function.</p>
             </div>
@@ -160,20 +148,14 @@ export default function TMJ() {
             </div>
             
             <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300">
-              <div className="bg-secondary text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <MinimalGlyph name="stethoscope" className="h-6 w-6" />
-              </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">Advanced Procedures</h3>
               <p className="text-gray-600">For more severe cases, we may recommend targeted treatments, such as restorative dental work, to improve the alignment of your bite.</p>
             </div>
             
             <Link href="/services/dental-exams" className="block h-full">
               <div className="h-full bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300 hover:border-primary/40">
-                <div className="bg-accent text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                  <MinimalGlyph name="jaw-tmj" className="h-6 w-6" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">CBCT Imaging</h3>
-                <p className="text-gray-600">Advanced digital imaging using our CBCT Scanner provides precise views of your jaw structure for accurate diagnosis.</p>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">Digital Imaging</h3>
+                <p className="text-gray-600">When appropriate, digital imaging can help the dentist evaluate jaw structures and explain treatment options.</p>
                 <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
               </div>
             </Link>
@@ -183,9 +165,6 @@ export default function TMJ() {
         {/* Consultation Process */}
         <div className="bg-muted/40 rounded-xl p-8 lg:p-12 mb-20">
           <div className="text-center mb-8">
-            <div className="bg-primary text-white w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6">
-              <MinimalGlyph name="clock" className="h-8 w-8" />
-            </div>
             <h2 className="text-3xl font-bold text-gray-800 mb-4">What to Expect During Your TMJ Consultation</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Your first step toward finding relief is scheduling a consultation with Dr. Tim Chuang at Family First Smile Care.
@@ -201,7 +180,7 @@ export default function TMJ() {
             <div className="text-center">
               <div className="bg-white rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-4 text-primary font-bold text-lg">2</div>
               <h3 className="font-semibold text-gray-800 mb-2">Advanced Imaging</h3>
-              <p className="text-gray-600">Digital imaging using our CBCT Scanner provides precise views of your jaw structure.</p>
+              <p className="text-gray-600">The dentist may recommend imaging when it is useful for evaluating jaw structures.</p>
             </div>
             <div className="text-center">
               <div className="bg-white rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-4 text-primary font-bold text-lg">3</div>
@@ -226,7 +205,7 @@ export default function TMJ() {
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
                   <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  CBCT Scanner for detailed 3D imaging
+                  Digital records and imaging when clinically appropriate
                 </li>
                 <li className="flex items-center">
                   <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
@@ -256,7 +235,7 @@ export default function TMJ() {
                 </li>
                 <li className="flex items-center">
                   <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Wheelchair accessible facility
+                  Call ahead so we can discuss mobility or accessibility needs
                 </li>
                 <li className="flex items-center">
                   <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
@@ -273,11 +252,11 @@ export default function TMJ() {
         <div className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Schedule Your TMJ Consultation Today</h2>
           <p className="text-xl mb-8 text-white/95">
-            Don't let TMJ pain interfere with your daily life. Take the first step toward a healthy, pain-free smile.
+            If jaw pain is interfering with daily life, request an evaluation and learn which next steps may help.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-3">
-              <Link href={APPOINTMENT_FORM_URL} onClick={handleAppointmentClick}>
+              <Link href={buildAppointmentUrl({ serviceId: "tmj", source: "tmj_page" })} onClick={handleAppointmentClick}>
                 Schedule Consultation
               </Link>
             </Button>

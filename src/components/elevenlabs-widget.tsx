@@ -35,8 +35,6 @@ export default function ElevenLabsWidget() {
     const interactionEvents: Array<keyof WindowEventMap> = [
       "pointerdown",
       "keydown",
-      "scroll",
-      "touchstart",
     ];
 
     const cleanupTriggers = () => {
@@ -75,9 +73,9 @@ export default function ElevenLabsWidget() {
       window.addEventListener(eventName, loadScript, { once: true, passive: true });
     }
     if ("requestIdleCallback" in window) {
-      idleHandle = window.requestIdleCallback(loadScript, { timeout: 5000 });
+      idleHandle = window.requestIdleCallback(loadScript, { timeout: 15_000 });
     } else {
-      timeoutHandle = setTimeout(loadScript, 5000);
+      timeoutHandle = setTimeout(loadScript, 15_000);
     }
 
     return cleanupTriggers;

@@ -1,5 +1,5 @@
-import { sql } from "@vercel/postgres";
-import { drizzle, type VercelPgDatabase } from "drizzle-orm/vercel-postgres";
+import { neon } from "@neondatabase/serverless";
+import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
 import * as schema from "@/server/schema";
 
 const connectionString = process.env.DATABASE_URL;
@@ -12,8 +12,8 @@ if (!connectionString) {
   }
 }
 
-export const db: VercelPgDatabase<typeof schema> | undefined = connectionString
-  ? drizzle(sql, { schema })
+export const db: NeonHttpDatabase<typeof schema> | undefined = connectionString
+  ? drizzle(neon(connectionString), { schema })
   : undefined;
 
 export const hasDatabase = Boolean(db);

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const baseUrl = (process.env.CANONICAL_HOST || "https://famfirstsmile.com").replace(/\/$/, "");
+const baseUrl = (process.env.CANONICAL_HOST || "https://www.famfirstsmile.com").replace(/\/$/, "");
 
 export default function robots(): MetadataRoute.Robots {
   return {

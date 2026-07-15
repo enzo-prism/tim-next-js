@@ -29,7 +29,7 @@ const pillars = [
   {
     title: "Local Guidance",
     description: "Helpful resources written for Los Gatos families who want clear, calm answers.",
-    icon: "book-open-text",
+    icon: "book-open",
   },
 ];
 
@@ -75,7 +75,7 @@ export default function BlogIndexPage() {
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Helpful dental guidance
               </div>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
@@ -85,21 +85,20 @@ export default function BlogIndexPage() {
                 </span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
-                This blog supports the same goal as the rest of the site: clear, prevention-focused
-                dental guidance for Los Gatos families. We are starting with the questions parents
-                ask most often, then expanding into the topics that help patients feel informed
-                before they walk through the door.
+                Find clear, prevention-focused guidance for Los Gatos families, including the
+                questions parents ask most often and the practical details that help patients feel
+                informed before a visit.
               </p>
             </div>
 
             <aside className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">What you will find here</div>
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">What you will find here</div>
               <p className="mt-4 text-base leading-7 text-slate-600">
                 Helpful, practical articles about first visits, preventive care, and the small
                 habits that make a big difference between appointments.
               </p>
               <Button asChild className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link href="/book-appointment">Book an appointment</Link>
+                  <Link href="/book-appointment?source=blog_index_hero">Request an appointment</Link>
               </Button>
             </aside>
           </div>
@@ -129,7 +128,7 @@ export default function BlogIndexPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary/80">
+              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 Latest posts
               </div>
               <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">

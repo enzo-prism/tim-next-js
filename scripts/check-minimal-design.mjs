@@ -29,6 +29,29 @@ const retiredGlyphNames = [
   'name="community-social"',
 ];
 
+const allowedMinimalGlyphNames = new Set([
+  "arrow-left",
+  "arrow-right",
+  "arrow-up-right",
+  "check",
+  "check-circle",
+  "chevron-down",
+  "chevron-left",
+  "chevron-right",
+  "chevron-up",
+  "circle",
+  "close",
+  "dot",
+  "expand",
+  "external-link",
+  "grip-vertical",
+  "menu",
+  "more-horizontal",
+  "panel-left",
+  "play",
+  "search",
+]);
+
 const warmClassPattern =
   /(?:^|[\s"`'])(?:bg|text|border|ring|from|via|to|decoration|accent)-(?:red|green|orange|amber|yellow|rose|lime|emerald|pink)(?:-|\/|\b)/;
 const emojiIconPattern = /[⭐✨✅❌🦷❤💙]/u;
@@ -64,6 +87,12 @@ function checkSourceFile(filePath) {
   for (const term of retiredGlyphNames) {
     if (source.includes(term)) {
       failures.push(`Decorative glyph usage remains: ${relativePath} -> ${term}`);
+    }
+  }
+
+  for (const match of source.matchAll(/<MinimalGlyph\s+name="([^"]+)"/g)) {
+    if (!allowedMinimalGlyphNames.has(match[1])) {
+      failures.push(`Unsupported MinimalGlyph name remains: ${relativePath} -> ${match[1]}`);
     }
   }
 

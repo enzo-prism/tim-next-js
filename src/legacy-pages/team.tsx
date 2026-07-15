@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import drChuangPhoto from "@assets/Dr. Chuang_1753977515693.jpg";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
@@ -85,23 +84,14 @@ export default function Team() {
               
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center">
-                  <div className="bg-primary text-white feature-icon mx-auto mb-3">
-                    <MinimalGlyph name="graduation-cap" />
-                  </div>
                   <h3 className="font-semibold text-gray-800 mb-1">Education</h3>
                   <p className="text-sm text-gray-600">University of the Pacific School of Dentistry</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-secondary text-white feature-icon mx-auto mb-3">
-                    <MinimalGlyph name="stethoscope" />
-                  </div>
                   <h3 className="font-semibold text-gray-800 mb-1">Experience</h3>
                   <p className="text-sm text-gray-600">5+ Years in Practice</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-accent text-white feature-icon mx-auto mb-3">
-                    <MinimalGlyph name="heart-care" />
-                  </div>
                   <h3 className="font-semibold text-gray-800 mb-1">Specialty</h3>
                   <p className="text-sm text-gray-600">Gentle, Family-Centered Care</p>
                 </div>

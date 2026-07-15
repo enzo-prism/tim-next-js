@@ -10,8 +10,7 @@ export default function PatientInfoNutrition() {
     <div className="pt-16 pb-20 bg-white">
       <section className="relative bg-muted/40 py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-accent mb-4">
-            <MinimalGlyph name="nutrition-apple" className="w-4 h-4 mr-2" />
+          <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-primary mb-4">
             Oral Health Education
           </div>
           <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
@@ -50,24 +49,18 @@ export default function PatientInfoNutrition() {
             {
               title: "Choose calcium-rich foods",
               description: "Dairy, fortified alternatives, and leafy greens strengthen enamel.",
-              icon: <MinimalGlyph name="shield" className="w-5 h-5 text-primary" />,
             },
             {
               title: "Crunchy produce helps",
               description: "Apples, carrots, and celery increase saliva and gently clean teeth.",
-              icon: <MinimalGlyph name="nutrition-apple" className="w-5 h-5 text-secondary" />,
             },
             {
               title: "Hydrate often",
               description: "Water rinses acids and keeps the mouth balanced.",
-              icon: <MinimalGlyph name="hygiene-sparkle" className="w-5 h-5 text-accent" />,
             },
           ].map((item) => (
             <div key={item.title} className="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-white rounded-lg w-10 h-10 flex items-center justify-center shadow-sm">
-                  {item.icon}
-                </div>
+              <div className="mb-3">
                 <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
               </div>
               <p className="text-gray-600">{item.description}</p>
@@ -97,15 +90,12 @@ export default function PatientInfoNutrition() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Smart Daily Habits</h2>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="heart-care" className="w-5 h-5 text-secondary mt-1" />
                 <span>Pair sweets with meals instead of snacking all day.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="heart-care" className="w-5 h-5 text-secondary mt-1" />
                 <span>Rinse with water after acidic drinks or snacks.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="heart-care" className="w-5 h-5 text-secondary mt-1" />
                 <span>Choose sugar-free gum to boost saliva between meals.</span>
               </li>
             </ul>
@@ -114,15 +104,15 @@ export default function PatientInfoNutrition() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Smile-Friendly Snack Ideas</h2>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-accent mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Cheese cubes with apple slices.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-accent mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Greek yogurt with berries.</span>
               </li>
               <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-accent mt-1" />
+                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
                 <span>Celery with nut butter.</span>
               </li>
             </ul>

@@ -3,16 +3,16 @@ import { services } from "./services";
 
 export const practiceInfo = {
   name: "Family First Smile Care",
-  url: "https://famfirstsmile.com",
+  url: "https://www.famfirstsmile.com",
   telephone: "+1-408-358-8100",
   email: "hello@famfirstsmile.com",
   addressText: "15251 National Ave, Suite 102, Los Gatos, CA 95032",
   addressLines: ["15251 National Ave, Suite 102", "Los Gatos, CA 95032"],
   mapUrl: "https://maps.app.goo.gl/RVPut9T6J8XDvHWi7",
-  logo: "https://famfirstsmile.com/attached_assets/Logo_1753972987510.png",
+  logo: "https://www.famfirstsmile.com/attached_assets/Logo_1753972987510.png",
   image: [
-    "https://famfirstsmile.com/og-image.jpg",
-    "https://famfirstsmile.com/attached_assets/Office%20Photo%201_1753972057110.jpeg",
+    "https://www.famfirstsmile.com/og-image.jpg",
+    "https://www.famfirstsmile.com/attached_assets/Office%20Photo%201_1753972057110.jpeg",
   ],
   address: {
     "@type": "PostalAddress",

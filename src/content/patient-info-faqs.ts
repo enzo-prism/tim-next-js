@@ -4,7 +4,7 @@ export const patientInfoFaqs: FAQItem[] = [
   {
     id: "insurance",
     question: "Do you accept insurance?",
-    answer: "Yes, we accept many major insurance plans including Delta Dental, Cigna, MetLife, Aetna, and Blue Cross Blue Shield, and we also work with most PPO plans. If you're coming from Santa Cruz, call ahead and our team can help verify your benefits before your visit and explain what to expect."
+    answer: "Insurance participation and benefits depend on your specific plan. Call our office with your plan information before your visit and we can help you identify what to confirm with your insurer."
   },
   {
     id: "frequency",

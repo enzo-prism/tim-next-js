@@ -58,7 +58,7 @@ export default function SocialMediaSection() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div className="mb-10 text-center sm:mb-12" variants={fadeInUp}>
-          <div className="mb-3 inline-flex items-center rounded-lg border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary/80">
+          <div className="mb-3 inline-flex items-center rounded-lg border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
             Live Updates
           </div>
           <h2 className="text-3xl font-bold text-gray-800 lg:text-4xl">Follow Us on Social Media</h2>
@@ -91,7 +91,7 @@ export default function SocialMediaSection() {
               </div>
               <h3 className="text-lg font-semibold text-gray-800">{post.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-gray-600">{post.description}</p>
-              <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
+              <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors group-hover:text-primary">
                 View on Instagram
                 <MinimalGlyph name="arrow-up-right" className="h-4 w-4" />
               </span>
