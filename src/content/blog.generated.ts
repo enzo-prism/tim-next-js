@@ -11,7 +11,11 @@ export const additionalBlogPosts: BlogPost[] = [
       "category": "Children's Dentistry",
       "primaryKeyword": "does my child need a space maintainer Los Gatos",
       "secondaryKeywords": [
-        "early baby tooth loss Los Gatos, child lost baby tooth too early, pediatric space maintainer Los Gatos, space maintainer after tooth extraction child, Los Gatos family dentist kids"
+        "early baby tooth loss Los Gatos",
+        "child lost baby tooth too early",
+        "pediatric space maintainer Los Gatos",
+        "space maintainer after tooth extraction child",
+        "Los Gatos family dentist kids"
       ],
       "publishedAt": "2026-04-06",
       "updatedAt": "2026-04-06",

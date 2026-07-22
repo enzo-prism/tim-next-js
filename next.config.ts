@@ -28,6 +28,24 @@ const legacyRedirects: NonNullable<NextConfig["redirects"]> = async () => [
     permanent: true,
   },
   { source: "/services/tmj", destination: "/tmj", permanent: true },
+  // Misspelled parent path that existed in old internal links/indexes
+  // (the real parent service ID is "children-dentistry").
+  {
+    source: "/services/childrens-dentistry",
+    destination: "/services/children-dentistry",
+    permanent: true,
+  },
+  // Catch-alls for legacy URL families (specific mappings above win first).
+  {
+    source: "/dental-services/:slug",
+    destination: "/services/:slug",
+    permanent: true,
+  },
+  {
+    source: "/articles/:path*",
+    destination: "/blog",
+    permanent: true,
+  },
 ];
 
 const nextConfig: NextConfig = {

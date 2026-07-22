@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import ServiceDetailPage from "@/legacy-pages/service-detail";
 import JsonLd from "@/components/seo/json-ld";
 import { buildRouteMetadata } from "@/lib/metadata";
@@ -13,12 +14,20 @@ export function generateStaticParams() {
     .map((service) => ({ serviceId: service.id }));
 }
 
+// Only the service IDs above are valid routes; anything else must be a real
+// 404 (previously unknown IDs rendered a 200 "Service Not Found" soft 404).
+export const dynamicParams = false;
+
 type ServiceRouteProps = {
   params: Promise<{ serviceId: string }>;
 };
 
 export async function generateMetadata({ params }: ServiceRouteProps): Promise<Metadata> {
   const { serviceId } = await params;
+  const service = allServices.find((entry) => entry.id === serviceId);
+  if (!service) {
+    notFound();
+  }
   return buildRouteMetadata(`/services/${serviceId}`);
 }
 
@@ -26,9 +35,13 @@ export default async function Page({ params }: ServiceRouteProps) {
   const { serviceId } = await params;
   const service = allServices.find((entry) => entry.id === serviceId);
 
+  if (!service) {
+    notFound();
+  }
+
   return (
     <>
-      {service ? <JsonLd data={buildMedicalProcedureSchema(service)} /> : null}
+      <JsonLd data={buildMedicalProcedureSchema(service)} />
       <ServiceDetailPage />
     </>
   );
