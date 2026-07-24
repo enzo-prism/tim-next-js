@@ -36,6 +36,9 @@ require_cmd npm
 
 REPO_SLUG="${REPO_SLUG:-enzo-prism/tim-next-js}"
 REPO_URL="${REPO_URL:-https://github.com/${REPO_SLUG}.git}"
+VERCEL_PROJECT_NAME="${VERCEL_PROJECT_NAME:-tim-next-js}"
+VERCEL_PROJECT_ID="${VERCEL_PROJECT_ID:-prj_bzwJ806oFI1FxU70DEIi2iyV0sl1}"
+VERCEL_ORG_ID="${VERCEL_ORG_ID:-team_NbogaPSGlnnTm8RNaeS0B4Pl}"
 
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
@@ -80,7 +83,26 @@ npm run db:verify
 
 echo "Ensuring Vercel project is linked..."
 if [[ ! -f ".vercel/project.json" ]]; then
-  vercel link --yes
+  vercel link --yes --project "$VERCEL_PROJECT_ID" --team "$VERCEL_ORG_ID"
+fi
+
+linked_project_id="$(node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(".vercel/project.json","utf8")); process.stdout.write(data.projectId || "")')"
+linked_org_id="$(node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(".vercel/project.json","utf8")); process.stdout.write(data.orgId || "")')"
+linked_project_name="$(node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync(".vercel/project.json","utf8")); process.stdout.write(data.projectName || "")')"
+
+if [[ "$linked_project_id" != "$VERCEL_PROJECT_ID" || "$linked_org_id" != "$VERCEL_ORG_ID" || "$linked_project_name" != "$VERCEL_PROJECT_NAME" ]]; then
+  echo "Linked Vercel project does not match the production project for this repo." >&2
+  echo "Expected:" >&2
+  echo "  projectName=$VERCEL_PROJECT_NAME" >&2
+  echo "  projectId=$VERCEL_PROJECT_ID" >&2
+  echo "  orgId=$VERCEL_ORG_ID" >&2
+  echo "Found:" >&2
+  echo "  projectName=${linked_project_name:-<missing>}" >&2
+  echo "  projectId=${linked_project_id:-<missing>}" >&2
+  echo "  orgId=${linked_org_id:-<missing>}" >&2
+  echo "Recovery:" >&2
+  echo "  vercel link --yes --project \"$VERCEL_PROJECT_ID\" --team \"$VERCEL_ORG_ID\"" >&2
+  exit 1
 fi
 
 echo "Ensuring Vercel Git integration is connected..."

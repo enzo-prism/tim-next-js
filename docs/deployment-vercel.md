@@ -14,7 +14,10 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
 
 1. Node.js `20.9.0` or newer
 2. Access to GitHub repo: `enzo-prism/tim-next-js`
-3. Access to linked Vercel project
+3. Access to the production Vercel project:
+   - project name: `tim-next-js`
+   - project id: `prj_bzwJ806oFI1FxU70DEIi2iyV0sl1`
+   - org id: `team_NbogaPSGlnnTm8RNaeS0B4Pl`
 4. CLI tools installed and authenticated:
    - `gh auth status`
    - `vercel whoami`
@@ -23,7 +26,7 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - analytics variables from `docs/environment-variables.md`
-6. Vercel Web Analytics enabled for the linked Vercel project
+6. Vercel Web Analytics enabled for the production Vercel project
 
 ## Critical Deployment Guardrails
 
@@ -31,26 +34,39 @@ The most common failure mode is branch/config drift:
 
 - GitHub default branch is not `main`
 - Vercel project is not connected to the GitHub repo
+- local `.vercel/project.json` points at the wrong Vercel project
 
 Verify before release:
 
 ```bash
 gh repo view enzo-prism/tim-next-js --json defaultBranchRef
+cat .vercel/project.json
 vercel git connect https://github.com/enzo-prism/tim-next-js.git
 ```
 
 If the default branch is not `main`, stop and correct the repository setting as a separate, explicit administrative action.
 `vercel git connect` is safe to run repeatedly; it will report if already connected.
+`.vercel/project.json` must match this production target:
+
+- `projectName`: `tim-next-js`
+- `projectId`: `prj_bzwJ806oFI1FxU70DEIi2iyV0sl1`
+- `orgId`: `team_NbogaPSGlnnTm8RNaeS0B4Pl`
+
+If it does not match, relink explicitly:
+
+```bash
+vercel link --yes --project prj_bzwJ806oFI1FxU70DEIi2iyV0sl1 --team team_NbogaPSGlnnTm8RNaeS0B4Pl
+```
 
 ## One-Time Project Linking
 
 If not already linked:
 
 ```bash
-vercel link
+vercel link --yes --project prj_bzwJ806oFI1FxU70DEIi2iyV0sl1 --team team_NbogaPSGlnnTm8RNaeS0B4Pl
 ```
 
-`.vercel/project.json` is local and intentionally ignored. The guarded release script runs `vercel link --yes` when the checkout is not linked.
+`.vercel/project.json` is local and intentionally ignored. The guarded release script links this exact project when the checkout is not linked, and it fails fast if the checkout is linked to any other Vercel project.
 
 ## Pre-Deploy Local Checks
 
@@ -127,10 +143,11 @@ This script enforces:
 1. clean git working tree
 2. local `main` aligned with `origin/main`
 3. GitHub default branch verified as `main` without changing repository settings
-4. Vercel Git integration connected to this repo
-5. explicit confirmation that the production schema was applied and verified
-6. full quality checks (`npm run quality:all`)
-7. production deploy via Vercel CLI
+4. `.vercel/project.json` matches the production Vercel project for this repo
+5. Vercel Git integration connected to this repo
+6. explicit confirmation that the production schema was applied and verified
+7. full quality checks (`npm run quality:all`)
+8. production deploy via Vercel CLI
 
 ### Preview deploy
 
