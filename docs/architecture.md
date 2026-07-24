@@ -25,10 +25,12 @@ Primary design goals:
 
 1. Contact page posts to `POST /api/contacts`.
 2. The public-form guard enforces JSON, trusted browser origin, actual streamed body size, honeypot, and a best-effort per-instance rate limit.
-3. The shared Zod contract validates contact details, the closed service catalog, consent, submission UUID, and bounded attribution fields.
-4. The submission UUID is checked before insert and is protected by a unique database index, preventing duplicate leads and duplicate conversion notifications.
-5. The lead is persisted before the server relays a privacy-limited office notification through Formspree.
-6. Storage backend is selected by environment:
+3. The shared Zod contract validates contact details, a known service or the contact-only `"other"` choice, consent, submission UUID, and bounded attribution fields.
+4. The submission UUID is checked before insert and is protected by a unique database index, preventing duplicate leads.
+5. The lead starts with `formspreeStatus="failed"`. Before relay, the server atomically claims it by changing the state to `sending`, so concurrent requests cannot both notify the office.
+6. A known relay failure returns the state to `failed` for a later retry. Success changes it to `delivered`.
+7. An indeterminate `sending` state is not retried automatically. It requires manual reconciliation because Formspree does not provide a verified idempotency key and an automatic retry could create a duplicate notification.
+8. Storage backend is selected by environment:
    - Production: Postgres-backed `DatabaseStorage` (requires `DATABASE_URL`)
    - Development without DB: in-memory fallback
    - Production without DB: explicit unavailable storage error
@@ -44,10 +46,11 @@ Primary design goals:
    - `requestType="appointment"`
    - `preferredDate` / `preferredTime`
    - initial `formspreeStatus="failed"`
-7. Server relays to `FORMSPREE_APPOINTMENT_ENDPOINT`.
+7. The server uses the same atomic `failed` -> `sending` notification claim as the contact endpoint, then relays to `FORMSPREE_APPOINTMENT_ENDPOINT`.
 8. Relay outcomes:
    - success -> `formspreeStatus` updated to `delivered`, API returns `201`.
-   - failure -> DB record is still retained, API returns `202 delivered:false` with fallback messaging.
+   - known failure -> state returns to `failed`, the DB record is retained, and the API returns `202 delivered:false`.
+   - indeterminate `sending` -> no automatic resend; staff must reconcile provider and application records before changing the state.
 
 ### Admin flow
 
@@ -124,5 +127,5 @@ Primary design goals:
 
 1. Incrementally migrate `src/legacy-pages/*` into colocated App Router components.
 2. Add a managed, cross-instance rate-limit store if abuse exceeds the current Vercel-instance guard.
-3. Add a durable notification outbox/retry worker if manual follow-up on `failed` rows becomes operationally expensive.
+3. Add a provider-supported idempotent notification outbox if manual follow-up on `failed` and `sending` rows becomes operationally expensive.
 4. Replace ad-hoc changelog generation with a build artifact step.

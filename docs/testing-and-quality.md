@@ -12,7 +12,7 @@ CI workflow (`.github/workflows/ci.yml`) runs:
 6. `npm run build`
 7. `npm run test:e2e`
 
-`npm run test` uses Vitest. The current suite covers analytics sanitization and conversion dedupe, booking-step events, form schemas, request guards, notification routing, contact/appointment persistence and lifecycle behavior, concurrent idempotency recovery, GSC opportunity scoring, and admin middleware. Playwright covers key browser-level design and widget behavior in CI.
+`npm run test` uses Vitest. The current suite covers analytics sanitization and conversion dedupe, booking-step events, form schemas, request guards, atomic notification claims, contact/appointment persistence and lifecycle behavior, concurrent idempotency recovery, GSC opportunity scoring, and admin middleware. Playwright covers key browser-level design, mobile navigation, and widget behavior in CI.
 
 ## ElevenLabs Widget Coverage
 
@@ -23,6 +23,11 @@ CI workflow (`.github/workflows/ci.yml`) runs:
 - Browser coverage lives in Playwright under `tests/e2e/elevenlabs-widget.spec.ts`
 - Automated browser tests stub the external widget script so layout, launcher behavior, and coexistence checks stay deterministic in CI
 - Manual QA still needs one live pass with the real ElevenLabs script before release
+
+## Mobile Menu Coverage
+
+- Browser coverage lives in `tests/e2e/mobile-menu.spec.ts`
+- The regression test uses a short `390x568` viewport, confirms the menu has a scrollable region, and verifies the final `Pay Bill` link can be scrolled into view
 
 ## Local Developer Workflow
 
@@ -66,6 +71,10 @@ Validate these redirect as expected:
 
 - valid new payload returns a PII-safe `201` response after persistence
 - repeated submission UUID returns the existing lead without duplicate notification
+- contact accepts the contact-only `"other"` service choice; appointment rejects it
+- concurrent requests can claim a notification only once
+- a known relay failure releases the claim for retry
+- a successful provider call followed by a failed status write does not trigger an automatic resend
 - malformed payload returns `400` with `errors`
 - oversized, non-JSON, and untrusted-browser requests are rejected before persistence
 - storage failure returns `500`
@@ -79,6 +88,7 @@ Validate these redirect as expected:
 - honeypot-filled payload returns `400`
 - unknown service and past preferred date return `400`
 - a concurrent duplicate insert resolves to the existing lead without a second relay
+- a notification claim failure keeps the saved lead and returns the fallback response
 
 ### Admin API auth
 
@@ -123,6 +133,7 @@ Manual checks on desktop and mobile:
 7. ElevenLabs launcher stays inside the viewport on `/`, `/contact`, `/book-appointment`, and `/blog`.
 8. ElevenLabs launcher does not introduce horizontal overflow on any supported viewport.
 9. ElevenLabs widget stays below Radix toasts and does not block the sticky header or mobile sheet.
+10. On short mobile viewports, every menu item remains reachable by scrolling.
 
 ## Suggested Automated Test Additions
 

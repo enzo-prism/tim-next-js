@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { insertAppointmentSchema } from "@/server/schema";
+import { insertAppointmentSchema, type Contact } from "@/server/schema";
 import { relayLeadNotification } from "@/server/lead-notifications";
 import {
   guardPublicFormRequest,
@@ -90,6 +90,40 @@ export async function POST(request: Request) {
       }
     }
 
+    let claimed: Contact | undefined;
+    try {
+      claimed = await storage.claimContactNotification(appointment.id);
+    } catch (claimError) {
+      console.error("Appointment notification claim failed:", claimError);
+      return NextResponse.json(
+        {
+          success: true,
+          created,
+          delivered: false,
+          leadId: appointment.id,
+          serviceId: appointment.service,
+          fallbackMessage,
+        },
+        { status: 202 },
+      );
+    }
+
+    if (!claimed) {
+      const latest = await storage.getContactBySubmissionId(data.submissionId);
+      const delivered = latest?.formspreeStatus === "delivered";
+      return NextResponse.json(
+        {
+          success: true,
+          created,
+          delivered,
+          leadId: appointment.id,
+          serviceId: appointment.service,
+          ...(!delivered ? { fallbackMessage } : {}),
+        },
+        { status: delivered ? 200 : 202 },
+      );
+    }
+
     try {
       await relayLeadNotification({
         requestType: "appointment",
@@ -132,6 +166,11 @@ export async function POST(request: Request) {
       );
     } catch (notificationError) {
       console.error("Appointment notification warning:", notificationError);
+      try {
+        await storage.updateContactFormspreeStatus(appointment.id, "failed");
+      } catch (statusError) {
+        console.error("Appointment notification failure status update failed:", statusError);
+      }
       return NextResponse.json(
         {
           success: true,

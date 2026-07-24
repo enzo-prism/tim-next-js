@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { insertContactSchema } from "@/server/schema";
+import { insertContactSchema, type Contact } from "@/server/schema";
 import { relayLeadNotification } from "@/server/lead-notifications";
 import {
   guardPublicFormRequest,
@@ -89,6 +89,40 @@ export async function POST(request: Request) {
       }
     }
 
+    let claimed: Contact | undefined;
+    try {
+      claimed = await storage.claimContactNotification(contact.id);
+    } catch (claimError) {
+      console.error("Contact notification claim failed:", claimError);
+      return NextResponse.json(
+        {
+          success: true,
+          created,
+          delivered: false,
+          leadId: contact.id,
+          serviceId: contact.service,
+          fallbackMessage,
+        },
+        { status: 202 },
+      );
+    }
+
+    if (!claimed) {
+      const latest = await storage.getContactBySubmissionId(data.submissionId);
+      const delivered = latest?.formspreeStatus === "delivered";
+      return NextResponse.json(
+        {
+          success: true,
+          created,
+          delivered,
+          leadId: contact.id,
+          serviceId: contact.service,
+          ...(!delivered ? { fallbackMessage } : {}),
+        },
+        { status: delivered ? 200 : 202 },
+      );
+    }
+
     try {
       await relayLeadNotification({
         requestType: "contact",
@@ -129,6 +163,11 @@ export async function POST(request: Request) {
       );
     } catch (notificationError) {
       console.error("Contact notification warning:", notificationError);
+      try {
+        await storage.updateContactFormspreeStatus(contact.id, "failed");
+      } catch (statusError) {
+        console.error("Contact notification failure status update failed:", statusError);
+      }
       return NextResponse.json(
         {
           success: true,

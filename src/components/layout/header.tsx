@@ -240,12 +240,15 @@ export default function Header() {
                   <MinimalGlyph name="menu" className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <SheetHeader className="text-left">
+              <SheetContent
+                side="right"
+                className="flex h-dvh w-[300px] flex-col gap-0 overflow-hidden pb-0 pt-[max(1.5rem,env(safe-area-inset-top))] sm:w-[400px] [&>button]:right-[max(1rem,env(safe-area-inset-right))] [&>button]:top-[max(1rem,env(safe-area-inset-top))]"
+              >
+                <SheetHeader className="shrink-0 text-left">
                   <SheetTitle>Family First Smile Care menu</SheetTitle>
                   <SheetDescription>Navigate the site or request an appointment.</SheetDescription>
                 </SheetHeader>
-                <nav className="mt-6 flex flex-col space-y-4">
+                <nav className="mt-6 min-h-0 flex-1 touch-pan-y space-y-4 overflow-y-auto overscroll-y-contain pb-[max(1.5rem,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
                   <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                     <Link
                       href={buildAppointmentUrl({ source: "header_mobile" })}

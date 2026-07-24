@@ -25,6 +25,35 @@ describe("public lead schemas", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts Other as a contact-only service choice", () => {
+    const contact = contactFormSchema.safeParse({
+      company: "",
+      firstName: "Jamie",
+      lastName: "Lee",
+      email: "jamie@example.com",
+      phone: "",
+      service: "other",
+      message: "I have a general question.",
+      consentToContact: true,
+    });
+
+    const appointment = appointmentFormSchema.safeParse({
+      company: "",
+      firstName: "Jamie",
+      lastName: "Lee",
+      email: "jamie@example.com",
+      phone: "(408) 555-1212",
+      service: "other",
+      preferredDate: "",
+      preferredTime: "",
+      message: "",
+      consentToContact: true,
+    });
+
+    expect(contact.success).toBe(true);
+    expect(appointment.success).toBe(false);
+  });
+
   it("requires a plausible phone and selected service for appointments", () => {
     const result = appointmentFormSchema.safeParse({
       company: "",

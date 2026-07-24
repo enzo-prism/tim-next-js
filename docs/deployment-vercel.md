@@ -12,17 +12,18 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
 
 ## Prerequisites
 
-1. Access to GitHub repo: `enzo-prism/tim-next-js`
-2. Access to linked Vercel project
-3. CLI tools installed and authenticated:
+1. Node.js `20.9.0` or newer
+2. Access to GitHub repo: `enzo-prism/tim-next-js`
+3. Access to linked Vercel project
+4. CLI tools installed and authenticated:
    - `gh auth status`
    - `vercel whoami`
-4. Production secrets available:
+5. Production secrets available:
    - `DATABASE_URL`
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - analytics variables from `docs/environment-variables.md`
-5. Vercel Web Analytics enabled for the linked Vercel project
+6. Vercel Web Analytics enabled for the linked Vercel project
 
 ## Critical Deployment Guardrails
 

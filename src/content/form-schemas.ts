@@ -38,6 +38,7 @@ export const leadServiceIds = [
 ] as const;
 
 const serviceIdSchema = z.enum(leadServiceIds);
+const contactServiceIdSchema = z.union([serviceIdSchema, z.literal("other")]);
 
 const getPracticeToday = () => {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -73,7 +74,7 @@ export const contactFormSchema = z.object({
   lastName: requiredName("Last name"),
   email: z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(254),
   phone: phoneSchema.nullable().optional(),
-  service: z.union([z.literal(""), serviceIdSchema]).nullable().optional(),
+  service: z.union([z.literal(""), contactServiceIdSchema]).nullable().optional(),
   message: z.string().trim().max(2000, "Message is too long").nullable().optional(),
   consentToContact: consentSchema,
 });

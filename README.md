@@ -14,6 +14,8 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 
 ## Quick Start
 
+Prerequisite: Node.js `20.9.0` or newer.
+
 1. Install dependencies.
 
 ```bash

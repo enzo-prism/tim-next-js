@@ -35,7 +35,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 2. Verify admin analytics endpoints return healthy payloads.
 3. Confirm Vercel Analytics, GA4 Realtime, and Search Console data are flowing.
 4. Confirm the ElevenLabs widget still loads from the pinned `0.11.4` embed URL.
-5. Review unworked `new` leads, failed notification rows, source booking rates, and Search Console opportunity candidates.
+5. Review unworked `new` leads, `failed` and `sending` notification rows, source booking rates, and Search Console opportunity candidates.
 
 ## ElevenLabs Widget Notes
 
@@ -103,15 +103,19 @@ Symptoms:
 
 - `POST /api/appointments` returns `202 delivered:false`
 - appointments still appear in admin contacts with `requestType=appointment`
-- `formspreeStatus` remains `failed`
+- `formspreeStatus` remains `failed` or `sending`
 
 Actions:
 
 1. Confirm DB persistence is still healthy (this is source of truth for lead capture).
 2. Check Vercel logs for relay errors from `/api/appointments`.
 3. Validate `FORMSPREE_APPOINTMENT_ENDPOINT` in Vercel env.
-4. Manually notify front desk to call back pending `failed` appointment rows.
-5. Once Formspree recovers, continue normal flow; no data loss should occur.
+4. Treat `failed` as a known failed attempt. The same submission can retry after Formspree recovers.
+5. Treat `sending` as indeterminate. Check Formspree submission history and Vercel logs before changing it:
+   - confirmed delivered -> manually mark the row `delivered`
+   - confirmed not delivered -> manually mark the row `failed`, then retry
+6. Never bulk-reset `sending` rows or retry them without provider evidence; the original notification may have succeeded.
+7. Manually notify the front desk to call back any lead whose notification is not confirmed.
 
 ## Incident: Admin contacts list fails
 

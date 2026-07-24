@@ -26,7 +26,7 @@ Defined by `insertContactSchema` in `src/server/schema.ts`:
 - `lastName`: string, required
 - `email`: string, required
 - `phone`: string, optional
-- `service`: closed service ID or empty, optional
+- `service`: closed service ID, `"other"`, or empty, optional
 - `message`: string, optional
 - `consentToContact`: boolean `true`, required
 - `consentVersion`: current version string, required
@@ -57,13 +57,19 @@ The `contacts` table now also includes:
 - `requestType`: `"contact"` or `"appointment"`
 - `preferredDate`: string or null
 - `preferredTime`: string or null
-- `formspreeStatus`: `"delivered" | "failed" | null`
+- `formspreeStatus`: `"failed" | "sending" | "delivered" | null`
 - `submissionId`: unique browser-generated UUID
 - campaign, landing-page, referrer, and CTA attribution fields
 - contact consent and consent-version fields
 - lifecycle fields: `leadStatus`, `contactedAt`, `bookedAt`, `arrivedAt`, `lostReason`, and private `staffNotes`
 
 ## Endpoints
+
+### Notification delivery state
+
+Before either public endpoint calls Formspree, it atomically claims the stored lead by changing `formspreeStatus` from `failed` to `sending`. A known relay failure changes it back to `failed`, which allows a later retry. A successful relay changes it to `delivered`.
+
+`sending` is never reclaimed automatically because Formspree does not provide a verified idempotency key. If the process stops after the provider call, or delivery succeeds but the final database update fails, the row stays `sending` and requires manual reconciliation. This prevents an automatic retry from sending the office a duplicate notification.
 
 ## `POST /api/contacts`
 
@@ -93,7 +99,7 @@ Responses:
   - `{ "success": true, "created": true, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
 - `200` (duplicate already delivered)
   - `{ "success": true, "created": false, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
-- `202` (lead persisted, notification delayed)
+- `202` (lead persisted, notification not confirmed)
   - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
 - `400`
   - `{ "success": false, "message": "Invalid form data", "errors": [...] }`
@@ -132,7 +138,7 @@ Responses:
   - `{ "success": true, "created": true, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
 - `200` (duplicate already delivered)
   - `{ "success": true, "created": false, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
-- `202` (DB persisted, Formspree relay failed)
+- `202` (DB persisted, Formspree notification not confirmed)
   - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
 - `400`
   - `{ "success": false, "message": "Invalid appointment data", "errors": [...] }`

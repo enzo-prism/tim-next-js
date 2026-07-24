@@ -100,6 +100,7 @@ export interface IStorage {
   getContact(id: string): Promise<Contact | undefined>;
   getContactBySubmissionId(submissionId: string): Promise<Contact | undefined>;
   createContact(contact: InsertContactRecord): Promise<Contact>;
+  claimContactNotification(id: string): Promise<Contact | undefined>;
   updateContactFormspreeStatus(
     id: string,
     status: "delivered" | "failed",
@@ -158,6 +159,17 @@ export class DatabaseStorage implements IStorage {
       .from(contacts)
       .where(eq(contacts.submissionId, submissionId))
       .limit(1);
+    return contact || undefined;
+  }
+
+  async claimContactNotification(id: string): Promise<Contact | undefined> {
+    // Formspree has no verified idempotency key. A sending claim is therefore
+    // never auto-reclaimed: interrupted sends require manual reconciliation.
+    const [contact] = await this.database
+      .update(contacts)
+      .set({ formspreeStatus: "sending", updatedAt: new Date() })
+      .where(and(eq(contacts.id, id), eq(contacts.formspreeStatus, "failed")))
+      .returning();
     return contact || undefined;
   }
 
@@ -270,7 +282,7 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-class InMemoryStorage implements IStorage {
+export class InMemoryStorage implements IStorage {
   private readonly users = new Map<string, User>();
   private readonly contacts = new Map<string, Contact>();
 
@@ -339,6 +351,19 @@ class InMemoryStorage implements IStorage {
     return Array.from(this.contacts.values()).find(
       (contact) => contact.submissionId === submissionId,
     );
+  }
+
+  async claimContactNotification(id: string): Promise<Contact | undefined> {
+    const existing = this.contacts.get(id);
+    if (!existing || existing.formspreeStatus !== "failed") return undefined;
+
+    const claimed: Contact = {
+      ...existing,
+      formspreeStatus: "sending",
+      updatedAt: new Date(),
+    };
+    this.contacts.set(id, claimed);
+    return claimed;
   }
 
   async updateContactFormspreeStatus(
@@ -460,6 +485,10 @@ class UnavailableStorage implements IStorage {
   }
 
   async getContactBySubmissionId(): Promise<Contact | undefined> {
+    throw new Error(this.message);
+  }
+
+  async claimContactNotification(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
 

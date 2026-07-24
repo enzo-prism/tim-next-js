@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildContactLifecycleUpdate,
+  InMemoryStorage,
   normalizeLeadSource,
 } from "@/server/storage";
 
@@ -81,5 +82,32 @@ describe("lead source attribution", () => {
     expect(normalizeLeadSource({ gclid: "click" })).toBe("Google Ads");
     expect(normalizeLeadSource({ referrer: "https://example.com" })).toBe("Referral");
     expect(normalizeLeadSource({})).toBe("Direct / unknown");
+  });
+});
+
+describe("notification claims", () => {
+  it("keeps a sending claim protected indefinitely", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date("2026-07-24T16:00:00.000Z"));
+      const storage = new InMemoryStorage();
+      const contact = await storage.createContact({
+        submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+        firstName: "Jamie",
+        lastName: "Lee",
+        email: "jamie@example.com",
+        requestType: "contact",
+        formspreeStatus: "failed",
+      });
+
+      expect(await storage.claimContactNotification(contact.id)).toEqual(
+        expect.objectContaining({ formspreeStatus: "sending" }),
+      );
+
+      vi.setSystemTime(new Date("2027-07-24T16:00:00.000Z"));
+      expect(await storage.claimContactNotification(contact.id)).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
