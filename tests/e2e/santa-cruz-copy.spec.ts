@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
 test("Santa Cruz page clearly presents a Los Gatos office serving Santa Cruz patients", async ({
   page,
 }) => {
-  await page.goto("/areas-we-serve/santa-cruz");
+  await page.goto("/areas-we-serve/santa-cruz", { waitUntil: "domcontentloaded" });
 
   await expect(page).toHaveTitle(
     "Los Gatos Family Dentist Serving Santa Cruz | Family First Smile Care",

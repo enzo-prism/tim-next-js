@@ -59,7 +59,7 @@ export default function Footer() {
           
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
             <ul className="space-y-2 text-muted-foreground">
               <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
               <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
@@ -109,7 +109,7 @@ export default function Footer() {
               </li>
             </ul>
 
-            <h4 className="mt-7 text-sm font-semibold tracking-wide text-foreground">Popular Services</h4>
+            <h3 className="mt-7 text-sm font-semibold tracking-wide text-foreground">Popular Services</h3>
             <ul className="mt-3 space-y-2 text-muted-foreground">
               <li><Link href="/services/dental-exams" className="hover:text-primary transition-colors">Dental Exams</Link></li>
               <li><Link href="/services/dental-hygiene" className="hover:text-primary transition-colors">Dental Hygiene</Link></li>
@@ -140,7 +140,7 @@ export default function Footer() {
           
           {/* Office Hours & Social */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Our Hours</h3>
+            <h2 className="text-lg font-semibold mb-4">Our Hours</h2>
             <div className="text-muted-foreground space-y-1 mb-6">
               <p>Monday: 9AM - 5PM</p>
               <p>Tuesday: 9AM - 5PM</p>

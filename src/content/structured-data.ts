@@ -78,13 +78,6 @@ export const buildLocalBusinessSchema = () => ({
       opens: "09:00",
       closes: "17:00",
     },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: "Friday",
-      opens: "00:00",
-      closes: "00:00",
-      description: "Closed",
-    },
   ],
   contactPoint: [
     {

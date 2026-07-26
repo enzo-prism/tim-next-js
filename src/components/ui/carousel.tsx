@@ -26,9 +26,12 @@ type CarouselContextProps = {
   scrollNext: () => void
   canScrollPrev: boolean
   canScrollNext: boolean
+  selectedIndex: number
+  slideCount: number
 } & CarouselProps
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
+const CarouselItemIndexContext = React.createContext<number | null>(null)
 
 function useCarousel() {
   const context = React.useContext(CarouselContext)
@@ -65,6 +68,8 @@ const Carousel = React.forwardRef<
     )
     const [canScrollPrev, setCanScrollPrev] = React.useState(false)
     const [canScrollNext, setCanScrollNext] = React.useState(false)
+    const [selectedIndex, setSelectedIndex] = React.useState(0)
+    const [slideCount, setSlideCount] = React.useState(0)
 
     const onSelect = React.useCallback((api: CarouselApi) => {
       if (!api) {
@@ -73,6 +78,8 @@ const Carousel = React.forwardRef<
 
       setCanScrollPrev(api.canScrollPrev())
       setCanScrollNext(api.canScrollNext())
+      setSelectedIndex(api.selectedScrollSnap())
+      setSlideCount(api.scrollSnapList().length)
     }, [])
 
     const scrollPrev = React.useCallback(() => {
@@ -114,6 +121,7 @@ const Carousel = React.forwardRef<
       api.on("select", onSelect)
 
       return () => {
+        api?.off("reInit", onSelect)
         api?.off("select", onSelect)
       }
     }, [api, onSelect])
@@ -130,6 +138,8 @@ const Carousel = React.forwardRef<
           scrollNext,
           canScrollPrev,
           canScrollNext,
+          selectedIndex,
+          slideCount,
         }}
       >
         <div
@@ -141,6 +151,9 @@ const Carousel = React.forwardRef<
           {...props}
         >
           {children}
+          <span className="sr-only" aria-live="polite" aria-atomic="true">
+            {slideCount > 0 ? `Slide ${selectedIndex + 1} of ${slideCount}` : null}
+          </span>
         </div>
       </CarouselContext.Provider>
     )
@@ -151,7 +164,7 @@ Carousel.displayName = "Carousel"
 const CarouselContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -164,7 +177,13 @@ const CarouselContent = React.forwardRef<
           className
         )}
         {...props}
-      />
+      >
+        {React.Children.map(children, (child, index) => (
+          <CarouselItemIndexContext.Provider value={index}>
+            {child}
+          </CarouselItemIndexContext.Provider>
+        ))}
+      </div>
     </div>
   )
 })
@@ -174,19 +193,29 @@ const CarouselItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const { orientation } = useCarousel()
+  const { orientation, selectedIndex, slideCount } = useCarousel()
+  const itemIndex = React.useContext(CarouselItemIndexContext)
+  const isCurrent = itemIndex === null || itemIndex === selectedIndex
 
   return (
     <div
       ref={ref}
+      {...props}
       role="group"
       aria-roledescription="slide"
+      aria-label={
+        itemIndex !== null && slideCount > 0
+          ? `Slide ${itemIndex + 1} of ${slideCount}`
+          : undefined
+      }
+      aria-current={isCurrent ? "true" : undefined}
+      aria-hidden={isCurrent ? undefined : true}
+      inert={isCurrent ? undefined : true}
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
         orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       )}
-      {...props}
     />
   )
 })
