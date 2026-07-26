@@ -1,3 +1,5 @@
+import { InMemoryRateLimiter } from "@/server/in-memory-rate-limit";
+
 type GuardResult =
   | { ok: true }
   | { ok: false; status: 403 | 413 | 415 | 429; message: string };
@@ -5,7 +7,12 @@ type GuardResult =
 const MAX_BODY_BYTES = 32_000;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 10;
-const attempts = new Map<string, { count: number; resetAt: number }>();
+
+const attempts = new InMemoryRateLimiter({
+  maxAttempts: RATE_LIMIT_MAX,
+  maxEntries: 5_000,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+});
 
 export class PublicFormPayloadTooLargeError extends Error {
   constructor() {
@@ -16,7 +23,22 @@ export class PublicFormPayloadTooLargeError extends Error {
 
 const getRequestKey = (request: Request) => {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return (forwarded || request.headers.get("x-real-ip") || "unknown").slice(0, 100);
+  const clientIp = (
+    forwarded ||
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
+  ).slice(0, 100);
+  const userAgent = (request.headers.get("user-agent") || "unknown").slice(0, 160);
+  const pathname = (() => {
+    try {
+      return new URL(request.url).pathname;
+    } catch {
+      return "unknown";
+    }
+  })();
+
+  return `${pathname}:${clientIp}:${userAgent}`;
 };
 
 const hasAllowedOrigin = (request: Request) => {
@@ -53,20 +75,17 @@ export function guardPublicFormRequest(request: Request): GuardResult {
     return { ok: false, status: 403, message: "Invalid submission origin" };
   }
 
-  const now = Date.now();
   const key = getRequestKey(request);
-  const current = attempts.get(key);
-  if (!current || current.resetAt <= now) {
-    attempts.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return { ok: true };
-  }
-
-  current.count += 1;
-  if (current.count > RATE_LIMIT_MAX) {
+  const current = attempts.consume(key);
+  if (!current.ok) {
     return { ok: false, status: 429, message: "Too many submissions. Please try again later." };
   }
 
   return { ok: true };
+}
+
+export function resetPublicFormRateLimiterForTests() {
+  attempts.resetAll();
 }
 
 export async function readPublicFormJson(request: Request): Promise<Record<string, unknown>> {

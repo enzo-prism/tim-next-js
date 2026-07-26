@@ -1,4 +1,6 @@
 type LeadNotificationPayload = {
+  leadId: string;
+  submissionId: string;
   requestType: "appointment" | "contact";
   firstName: string;
   lastName: string;
@@ -19,6 +21,8 @@ type LeadNotificationPayload = {
   gclid?: string | null;
   gbraid?: string | null;
   wbraid?: string | null;
+  consentToContact: boolean;
+  consentVersion?: string | null;
 };
 
 const DEFAULT_FORMSPREE_ENDPOINT = "https://formspree.io/f/mojngolr";

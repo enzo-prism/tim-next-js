@@ -20,6 +20,7 @@ export type AdminContactItem = {
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
+  leadSource: string;
   leadStatus: LeadStatus;
   contactedAt: string | null;
   bookedAt: string | null;
@@ -47,6 +48,7 @@ export type UpdateAdminContactInput = {
   leadStatus?: LeadStatus;
   lostReason?: string | null;
   staffNotes?: string | null;
+  expectedUpdatedAt: string;
 };
 
 export type UpdateAdminContactResponse = {

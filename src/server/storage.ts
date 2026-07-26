@@ -10,6 +10,9 @@ import {
   type User,
 } from "@/server/schema";
 import { db } from "@/server/db";
+import { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
+
+export { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
 
 type ListContactsOptions = {
   limit: number;
@@ -37,21 +40,14 @@ export type UpdateContactLifecycleInput = {
   leadStatus?: LeadStatus;
   lostReason?: string | null;
   staffNotes?: string | null;
+  expectedUpdatedAt: Date;
 };
 
-export const normalizeLeadSource = (contact: {
-  utmSource?: string | null;
-  gclid?: string | null;
-  gbraid?: string | null;
-  wbraid?: string | null;
-  referrer?: string | null;
-}) => {
-  const utmSource = contact.utmSource?.trim();
-  if (utmSource) return utmSource;
-  if (contact.gclid || contact.gbraid || contact.wbraid) return "Google Ads";
-  if (contact.referrer?.trim()) return "Referral";
-  return "Direct / unknown";
-};
+export type UpdateContactLifecycleResult =
+  | { status: "updated"; contact: Contact }
+  | { status: "not_found" }
+  | { status: "conflict" }
+  | { status: "invalid_lost_reason" };
 
 type ContactLifecycleFields = Pick<
   Contact,
@@ -60,7 +56,7 @@ type ContactLifecycleFields = Pick<
 
 export const buildContactLifecycleUpdate = (
   existing: ContactLifecycleFields,
-  update: UpdateContactLifecycleInput,
+  update: Omit<UpdateContactLifecycleInput, "expectedUpdatedAt">,
   now: Date,
 ): ContactLifecycleFields => {
   const leadStatus = update.leadStatus ?? existing.leadStatus;
@@ -76,14 +72,25 @@ export const buildContactLifecycleUpdate = (
     bookedAt: existing.bookedAt ?? (reachedBooked ? now : null),
     arrivedAt: existing.arrivedAt ?? (reachedArrived ? now : null),
     lostReason:
-      leadStatus === "lost" ? (update.lostReason ?? existing.lostReason) : null,
+      leadStatus === "lost"
+        ? update.lostReason === undefined
+          ? existing.lostReason
+          : update.lostReason
+        : null,
     staffNotes:
       update.staffNotes === undefined ? existing.staffNotes : update.staffNotes,
   };
 };
 
 const leadSourceSql = dsql<string>`CASE
-  WHEN NULLIF(BTRIM(${contacts.utmSource}), '') IS NOT NULL THEN BTRIM(${contacts.utmSource})
+  WHEN LOWER(BTRIM(${contacts.utmSource})) IN ('google', 'google ads', 'googleads', 'adwords')
+    THEN 'Google Ads'
+  WHEN LOWER(BTRIM(${contacts.utmSource})) IN ('facebook', 'fb', 'instagram', 'meta')
+    THEN 'Meta'
+  WHEN LOWER(BTRIM(${contacts.utmSource})) IN ('bing', 'microsoft', 'microsoft ads')
+    THEN 'Microsoft Ads'
+  WHEN NULLIF(BTRIM(${contacts.utmSource}), '') IS NOT NULL
+    THEN INITCAP(LOWER(REGEXP_REPLACE(BTRIM(${contacts.utmSource}), '[[:space:]]+', ' ', 'g')))
   WHEN COALESCE(
     NULLIF(BTRIM(${contacts.gclid}), ''),
     NULLIF(BTRIM(${contacts.gbraid}), ''),
@@ -110,7 +117,7 @@ export interface IStorage {
   updateContactLifecycle(
     id: string,
     update: UpdateContactLifecycleInput,
-  ): Promise<Contact | undefined>;
+  ): Promise<UpdateContactLifecycleResult>;
 }
 
 type DrizzleDatabase = NonNullable<typeof db>;
@@ -187,7 +194,8 @@ export class DatabaseStorage implements IStorage {
 
   async listContacts(options: ListContactsOptions): Promise<ListContactsResult> {
     const q = options.q?.trim();
-    const pattern = q ? `%${q}%` : null;
+    const escapedQuery = q?.replace(/[\\%_]/g, "\\$&");
+    const pattern = escapedQuery ? `%${escapedQuery}%` : null;
     const searchWhere = pattern
       ? or(
           ilike(contacts.firstName, pattern),
@@ -223,7 +231,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(contacts)
       .where(where)
-      .orderBy(desc(contacts.createdAt))
+      .orderBy(desc(contacts.createdAt), desc(contacts.id))
       .limit(options.limit)
       .offset(options.offset);
 
@@ -263,12 +271,20 @@ export class DatabaseStorage implements IStorage {
   async updateContactLifecycle(
     id: string,
     update: UpdateContactLifecycleInput,
-  ): Promise<Contact | undefined> {
+  ): Promise<UpdateContactLifecycleResult> {
     const existing = await this.getContact(id);
-    if (!existing) return undefined;
+    if (!existing) return { status: "not_found" };
+    if (existing.updatedAt.getTime() !== update.expectedUpdatedAt.getTime()) {
+      return { status: "conflict" };
+    }
 
-    const now = new Date();
+    const now = new Date(
+      Math.max(Date.now(), existing.updatedAt.getTime() + 1),
+    );
     const lifecycle = buildContactLifecycleUpdate(existing, update, now);
+    if (lifecycle.leadStatus === "lost" && !lifecycle.lostReason?.trim()) {
+      return { status: "invalid_lost_reason" };
+    }
 
     const [contact] = await this.database
       .update(contacts)
@@ -276,9 +292,14 @@ export class DatabaseStorage implements IStorage {
         ...lifecycle,
         updatedAt: now,
       })
-      .where(eq(contacts.id, id))
+      .where(
+        and(
+          eq(contacts.id, id),
+          eq(contacts.updatedAt, update.expectedUpdatedAt),
+        ),
+      )
       .returning();
-    return contact || undefined;
+    return contact ? { status: "updated", contact } : { status: "conflict" };
   }
 }
 
@@ -416,7 +437,11 @@ export class InMemoryStorage implements IStorage {
           (!options.status || contact.leadStatus === options.status) &&
           (!options.source || normalizeLeadSource(contact) === options.source),
       )
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort(
+        (a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime() ||
+          b.id.localeCompare(a.id),
+      );
 
     const items = all.slice(options.offset, options.offset + options.limit);
     return { total: all.length, items };
@@ -444,19 +469,27 @@ export class InMemoryStorage implements IStorage {
   async updateContactLifecycle(
     id: string,
     update: UpdateContactLifecycleInput,
-  ): Promise<Contact | undefined> {
+  ): Promise<UpdateContactLifecycleResult> {
     const existing = this.contacts.get(id);
-    if (!existing) return undefined;
+    if (!existing) return { status: "not_found" };
+    if (existing.updatedAt.getTime() !== update.expectedUpdatedAt.getTime()) {
+      return { status: "conflict" };
+    }
 
-    const now = new Date();
+    const now = new Date(
+      Math.max(Date.now(), existing.updatedAt.getTime() + 1),
+    );
     const lifecycle = buildContactLifecycleUpdate(existing, update, now);
+    if (lifecycle.leadStatus === "lost" && !lifecycle.lostReason?.trim()) {
+      return { status: "invalid_lost_reason" };
+    }
     const updated: Contact = {
       ...existing,
       ...lifecycle,
       updatedAt: now,
     };
     this.contacts.set(id, updated);
-    return updated;
+    return { status: "updated", contact: updated };
   }
 }
 
@@ -504,7 +537,7 @@ class UnavailableStorage implements IStorage {
     throw new Error(this.message);
   }
 
-  async updateContactLifecycle(): Promise<Contact | undefined> {
+  async updateContactLifecycle(): Promise<UpdateContactLifecycleResult> {
     throw new Error(this.message);
   }
 }

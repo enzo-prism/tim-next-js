@@ -71,6 +71,14 @@ export const contacts = pgTable(
       "contacts_lead_status_check",
       sql`${table.leadStatus} in ('new', 'contacted', 'booked', 'arrived', 'no-show', 'lost')`,
     ),
+    check(
+      "contacts_request_type_check",
+      sql`${table.requestType} in ('contact', 'appointment')`,
+    ),
+    check(
+      "contacts_formspree_status_check",
+      sql`${table.formspreeStatus} is null or ${table.formspreeStatus} in ('failed', 'sending', 'delivered')`,
+    ),
   ],
 );
 

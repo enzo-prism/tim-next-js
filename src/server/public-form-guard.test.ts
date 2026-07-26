@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   guardPublicFormRequest,
   PublicFormPayloadTooLargeError,
   readPublicFormJson,
+  resetPublicFormRateLimiterForTests,
 } from "@/server/public-form-guard";
 
 const request = (headers: Record<string, string>) =>
@@ -12,6 +13,10 @@ const request = (headers: Record<string, string>) =>
   });
 
 describe("public form request guard", () => {
+  afterEach(() => {
+    resetPublicFormRateLimiterForTests();
+  });
+
   it("rejects an untrusted origin", () => {
     expect(
       guardPublicFormRequest(

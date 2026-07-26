@@ -13,7 +13,7 @@ vi.mock("@/server/storage", () => ({
   },
 }));
 
-import { GET } from "@/app/api/admin/contacts/route";
+import { GET, POST } from "@/app/api/admin/contacts/route";
 
 const auth = () =>
   `Basic ${Buffer.from("office-admin:test-password").toString("base64")}`;
@@ -81,18 +81,26 @@ describe("admin contacts GET", () => {
     expect(mocks.listContacts).not.toHaveBeenCalled();
   });
 
-  it("returns lifecycle data and source results with filters", async () => {
-    const response = await GET(
-      new NextRequest(
-        "http://localhost/api/admin/contacts?status=booked&source=google&q=Jamie",
-        { headers: { authorization: auth() } },
-      ),
+  it("returns lifecycle data and source results with private filters in the body", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/admin/contacts", {
+        method: "POST",
+        headers: {
+          authorization: auth(),
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "booked",
+          source: "Google Ads",
+          q: "Jamie",
+        }),
+      }),
     );
     const body = await response.json();
 
     expect(response.status).toBe(200);
     expect(mocks.listContacts).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "booked", source: "google", q: "Jamie" }),
+      expect.objectContaining({ status: "booked", source: "Google Ads", q: "Jamie" }),
     );
     expect(body.items[0]).toEqual(
       expect.objectContaining({
@@ -106,6 +114,20 @@ describe("admin contacts GET", () => {
       expect.objectContaining({ source: "google", booked: 1 }),
     );
     expect(response.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("rejects private search terms in the URL", async () => {
+    const response = await GET(
+      new NextRequest("http://localhost/api/admin/contacts?q=Jamie", {
+        headers: { authorization: auth() },
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual(
+      expect.objectContaining({ error: "search_body_required" }),
+    );
+    expect(mocks.listContacts).not.toHaveBeenCalled();
   });
 
   it("rejects unknown lifecycle status filters", async () => {

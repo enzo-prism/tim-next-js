@@ -99,7 +99,13 @@ export async function GET(req: NextRequest) {
           { activeUsers: 0, sessions: 0, screenPageViews: 0 },
         );
 
-    const fetchTopPages = async () => {
+    const fetchTopPages = async (): Promise<
+      | {
+          status: "available";
+          data: Array<{ pagePath: string; screenPageViews: number }>;
+        }
+      | { status: "unavailable"; data: null }
+    > => {
       const dimensionCandidates = [
         "unifiedPagePathScreen",
         "pagePathPlusQueryString",
@@ -121,11 +127,17 @@ export async function GET(req: NextRequest) {
             },
           });
 
-          return (report.data.rows ?? []).map((row) => {
-            const pagePath = row.dimensionValues?.[0]?.value ?? "";
-            const screenPageViews = Number.parseInt(row.metricValues?.[0]?.value ?? "0", 10);
-            return { pagePath, screenPageViews };
-          });
+          return {
+            status: "available",
+            data: (report.data.rows ?? []).map((row) => {
+              const pagePath = row.dimensionValues?.[0]?.value ?? "";
+              const screenPageViews = Number.parseInt(
+                row.metricValues?.[0]?.value ?? "0",
+                10,
+              );
+              return { pagePath, screenPageViews };
+            }),
+          };
         } catch (error: any) {
           lastError = error;
           const message = String(error?.message || "");
@@ -139,35 +151,42 @@ export async function GET(req: NextRequest) {
       }
 
       if (lastError) {
-        console.warn("GA4 top pages query failed; continuing without it.");
+        console.warn("GA4 top pages query failed.");
       }
-      return [] as Array<{ pagePath: string; screenPageViews: number }>;
+      return { status: "unavailable", data: null };
     };
 
-    const topPages = await fetchTopPages();
+    const topPagesResult = await fetchTopPages();
 
     const payload = {
       range,
       totals,
       series,
-      topPages,
+      topPages: topPagesResult.data,
+      partial: topPagesResult.status === "unavailable",
+      sections: {
+        overview: { status: "available" as const },
+        topPages:
+          topPagesResult.status === "available"
+            ? { status: "available" as const }
+            : {
+                status: "unavailable" as const,
+                message: "Top-page reporting is temporarily unavailable.",
+              },
+      },
     };
 
     setCache(cacheKey, payload, 10 * 60_000);
     return jsonResponse(payload);
-  } catch (error: any) {
-    console.error("GA4 overview error:", error);
-    const message =
-      typeof error?.message === "string" && error.message
-        ? `GA4 API error: ${error.message}`
-        : "Failed to fetch GA4 data.";
+  } catch {
+    console.error("GA4 overview query failed.");
     return jsonResponse(
       {
         ok: false,
-        error: "server_error",
-        message,
+        error: "upstream_error",
+        message: "Google Analytics data is temporarily unavailable.",
       },
-      { status: 500 },
+      { status: 502 },
     );
   }
 }

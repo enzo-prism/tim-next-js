@@ -75,13 +75,60 @@ describe("lead source attribution", () => {
         gclid: "click",
         referrer: "https://google.com",
       }),
-    ).toBe("newsletter");
+    ).toBe("Newsletter");
   });
 
   it("separates paid search, referral, and direct leads", () => {
     expect(normalizeLeadSource({ gclid: "click" })).toBe("Google Ads");
+    expect(normalizeLeadSource({ utmSource: "GOOGLE" })).toBe("Google Ads");
+    expect(normalizeLeadSource({ utmSource: "instagram" })).toBe("Meta");
     expect(normalizeLeadSource({ referrer: "https://example.com" })).toBe("Referral");
     expect(normalizeLeadSource({})).toBe("Direct / unknown");
+  });
+});
+
+describe("lead lifecycle concurrency", () => {
+  it("rejects stale writes and keeps the first update", async () => {
+    const storage = new InMemoryStorage();
+    const contact = await storage.createContact({
+      firstName: "Synthetic",
+      lastName: "Patient",
+      email: "synthetic@example.com",
+      requestType: "contact",
+    });
+
+    const first = await storage.updateContactLifecycle(contact.id, {
+      leadStatus: "booked",
+      expectedUpdatedAt: contact.updatedAt,
+    });
+    expect(first.status).toBe("updated");
+
+    const stale = await storage.updateContactLifecycle(contact.id, {
+      staffNotes: "Stale note",
+      expectedUpdatedAt: contact.updatedAt,
+    });
+    expect(stale).toEqual({ status: "conflict" });
+    expect((await storage.getContact(contact.id))?.leadStatus).toBe("booked");
+  });
+
+  it("does not allow a lost lead to lose its reason", async () => {
+    const storage = new InMemoryStorage();
+    const contact = await storage.createContact({
+      firstName: "Synthetic",
+      lastName: "Patient",
+      email: "synthetic@example.com",
+      requestType: "contact",
+      leadStatus: "lost",
+      lostReason: "Timing",
+    });
+
+    const result = await storage.updateContactLifecycle(contact.id, {
+      lostReason: null,
+      expectedUpdatedAt: contact.updatedAt,
+    });
+
+    expect(result).toEqual({ status: "invalid_lost_reason" });
+    expect((await storage.getContact(contact.id))?.lostReason).toBe("Timing");
   });
 });
 

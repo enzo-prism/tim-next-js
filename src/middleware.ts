@@ -1,7 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { InMemoryRateLimiter } from "@/server/in-memory-rate-limit";
 
 const DEFAULT_ADMIN_PASSWORD = "tim";
 const DEFAULT_ADMIN_USERNAME = "admin";
+const ADMIN_AUTH_WINDOW_MS = 15 * 60 * 1000;
+const ADMIN_AUTH_MAX_ATTEMPTS = 5;
+const adminAuthAttempts = new InMemoryRateLimiter({
+  maxAttempts: ADMIN_AUTH_MAX_ATTEMPTS,
+  maxEntries: 2_000,
+  windowMs: ADMIN_AUTH_WINDOW_MS,
+});
 
 const safeTimingEqual = (a: string, b: string) => {
   if (a.length !== b.length) return false;
@@ -18,10 +26,25 @@ const isProtectedPath = (pathname: string) =>
 const getCanonicalHost = () => {
   const raw = process.env.CANONICAL_HOST?.trim() || "https://www.famfirstsmile.com";
   try {
-    return new URL(raw).host;
+    const host = new URL(raw).host;
+    return host === "famfirstsmile.com" ? "www.famfirstsmile.com" : host;
   } catch {
     return "";
   }
+};
+
+const getClientAddress = (req: NextRequest) =>
+  (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
+  ).slice(0, 100);
+
+const getAdminRateLimitKey = (req: NextRequest) => {
+  const userAgent = (req.headers.get("user-agent") || "unknown").slice(0, 160);
+  const scope = req.nextUrl.pathname.startsWith("/api/admin") ? "api-admin" : "admin";
+  return `${scope}:${getClientAddress(req)}:${userAgent}`;
 };
 
 function unauthorizedResponse() {
@@ -33,6 +56,24 @@ function unauthorizedResponse() {
         "WWW-Authenticate": 'Basic realm="Admin"',
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
+      },
+    },
+  );
+}
+
+function rateLimitedResponse(retryAfterSeconds: number) {
+  return new NextResponse(
+    JSON.stringify({
+      ok: false,
+      error: "too_many_attempts",
+      message: "Too many failed sign-in attempts. Please try again later.",
+    }),
+    {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        "Retry-After": String(retryAfterSeconds),
       },
     },
   );
@@ -79,6 +120,8 @@ export function middleware(req: NextRequest) {
   }
 
   if (isProtectedPath(nextUrl.pathname)) {
+    const rateLimitKey = getAdminRateLimitKey(req);
+
     if (
       process.env.NODE_ENV === "production" &&
       (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD)
@@ -115,9 +158,11 @@ export function middleware(req: NextRequest) {
       !safeTimingEqual(providedUsername, expectedUsername) ||
       !safeTimingEqual(providedPassword, expectedPassword)
     ) {
-      return unauthorizedResponse();
+      const attempt = adminAuthAttempts.consume(rateLimitKey);
+      return attempt.ok ? unauthorizedResponse() : rateLimitedResponse(attempt.retryAfterSeconds);
     }
 
+    adminAuthAttempts.reset(rateLimitKey);
     const response = NextResponse.next();
     response.headers.set("Cache-Control", "no-store");
     return response;
@@ -129,3 +174,7 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
+
+export function resetAdminAuthRateLimiterForTests() {
+  adminAuthAttempts.resetAll();
+}

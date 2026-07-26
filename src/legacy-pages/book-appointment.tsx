@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -52,8 +51,11 @@ type AppointmentResponse = {
   fallbackMessage?: string;
 };
 
-export default function BookAppointment() {
-  const searchParams = useSearchParams();
+type BookAppointmentProps = {
+  initialServiceId?: (typeof leadServiceIds)[number];
+};
+
+export default function BookAppointment({ initialServiceId }: BookAppointmentProps) {
   const submissionIdRef = useRef<string | null>(null);
   const formStartedRef = useRef(false);
   const completedRef = useRef(false);
@@ -62,6 +64,7 @@ export default function BookAppointment() {
   const activeStepRef = useRef<AppointmentBookingStep>(1);
   const shouldFocusStepHeadingRef = useRef(false);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+  const submissionStatusRef = useRef<HTMLDivElement>(null);
   const [isFormReady, setIsFormReady] = useState(false);
   const [step, setStep] = useState<AppointmentBookingStep>(1);
   const [submission, setSubmission] = useState<{
@@ -102,7 +105,7 @@ export default function BookAppointment() {
       lastName: "",
       email: "",
       phone: "",
-      service: "",
+      service: initialServiceId ?? "",
       preferredDate: "",
       preferredTime: "",
       message: "",
@@ -112,18 +115,7 @@ export default function BookAppointment() {
 
   useEffect(() => {
     captureLeadAttribution();
-    const requestedService = searchParams.get("service");
-    const isKnownService = appointmentServiceOptions.some(
-      (option) => option.value === requestedService,
-    );
-    if (requestedService && isKnownService && !form.getValues("service")) {
-      form.setValue(
-        "service",
-        requestedService as (typeof leadServiceIds)[number],
-        { shouldValidate: true },
-      );
-    }
-  }, [appointmentServiceOptions, form, searchParams]);
+  }, []);
 
   useEffect(() => {
     if (!isFormReady || submission) return;
@@ -135,7 +127,13 @@ export default function BookAppointment() {
     if (!shouldFocusStepHeadingRef.current) return;
     shouldFocusStepHeadingRef.current = false;
     stepHeadingRef.current?.focus();
-  }, [step]);
+  }, [step, submission]);
+
+  useEffect(() => {
+    if (submission) {
+      submissionStatusRef.current?.focus();
+    }
+  }, [submission]);
 
   useEffect(() => {
     const trackAbandonment = (reason: "page_exit" | "route_change") => {
@@ -198,13 +196,15 @@ export default function BookAppointment() {
       return payload;
     },
     onSuccess: (data) => {
+      // The lead is complete once the API has durably saved it, even if the
+      // office notification still needs a retry.
       completedRef.current = true;
       setSubmission({
         delivered: data.delivered,
         fallbackMessage: data.fallbackMessage,
       });
 
-      if (data.created) {
+      if (data.delivered) {
         trackAppointmentSubmitSuccess(
           data.serviceId || undefined,
           submissionIdRef.current || undefined,
@@ -225,8 +225,10 @@ export default function BookAppointment() {
         });
       }
 
-      form.reset();
-      submissionIdRef.current = null;
+      if (data.delivered) {
+        form.reset();
+        submissionIdRef.current = null;
+      }
     },
     onError: (
       error: Error & {
@@ -383,7 +385,13 @@ export default function BookAppointment() {
             </div>
 
             {submission ? (
-              <div role="status" aria-live="polite" className="rounded-xl border border-border bg-accent p-5">
+              <div
+                ref={submissionStatusRef}
+                role="status"
+                aria-live="polite"
+                tabIndex={-1}
+                className="rounded-xl border border-border bg-accent p-5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <h2 id="appointment-form-heading" className="text-xl font-bold text-accent-foreground">
                   {submission.delivered
                     ? "Your appointment request was received"
@@ -396,13 +404,25 @@ export default function BookAppointment() {
                       "Online delivery is delayed. Please call us so we can prioritize your request."}
                 </p>
                 {!submission.delivered ? (
-                  <a
-                    href={officePhoneHref}
-                    className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
-                    onClick={() => trackPhoneClick("appointment_fallback_notice")}
-                  >
-                    Call {officePhone}
-                  </a>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        shouldFocusStepHeadingRef.current = true;
+                        setSubmission(null);
+                      }}
+                      className="sm:w-auto"
+                    >
+                      Try delivery again
+                    </Button>
+                    <a
+                      href={officePhoneHref}
+                      className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
+                      onClick={() => trackPhoneClick("appointment_fallback_notice")}
+                    >
+                      Call {officePhone}
+                    </a>
+                  </div>
                 ) : null}
               </div>
             ) : (

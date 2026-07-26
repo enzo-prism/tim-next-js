@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -50,6 +50,7 @@ export default function Contact() {
   const [hasStartedForm, setHasStartedForm] = useState(false);
   const [submission, setSubmission] = useState<{ delivered: boolean; fallbackMessage?: string } | null>(null);
   const submissionIdRef = useRef<string | null>(null);
+  const submissionStatusRef = useRef<HTMLDivElement>(null);
   const serviceOptions = useMemo(
     () => services.flatMap((service) => [service, ...(service.subServices ?? [])]),
     [],
@@ -95,7 +96,9 @@ export default function Contact() {
     },
     onSuccess: (data, variables) => {
       setSubmission({ delivered: data.delivered, fallbackMessage: data.fallbackMessage });
-      if (data.created) trackContactSubmitSuccess(variables.service || undefined);
+      if (data.delivered) {
+        trackContactSubmitSuccess(variables.service || undefined);
+      }
       if (data.delivered) {
         toast.success("Message received", {
           description: "Thank you. Our team will get back to you soon.",
@@ -105,17 +108,19 @@ export default function Contact() {
           description: data.fallbackMessage,
         });
       }
-      form.reset({
-        company: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        service: "",
-        message: "",
-        consentToContact: false,
-      });
-      submissionIdRef.current = null;
+      if (data.delivered) {
+        form.reset({
+          company: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          service: "",
+          message: "",
+          consentToContact: false,
+        });
+        submissionIdRef.current = null;
+      }
     },
     onError: (error: Error & { details?: ContactResponse }) => {
       const issues = error.details?.errors ?? [];
@@ -136,6 +141,12 @@ export default function Contact() {
       });
     },
   });
+
+  useEffect(() => {
+    if (submission) {
+      submissionStatusRef.current?.focus();
+    }
+  }, [submission]);
 
   const onSubmit = (values: ContactFormValues) => {
     setSubmission(null);
@@ -326,9 +337,11 @@ export default function Contact() {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Send Us a Message</h2>
               {submission ? (
                 <div
+                  ref={submissionStatusRef}
                   role="status"
                   aria-live="polite"
-                  className="mb-6 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900"
+                  tabIndex={-1}
+                  className="mb-6 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <p className="font-semibold">Your message was saved.</p>
                   <p className="mt-1">
@@ -336,6 +349,11 @@ export default function Contact() {
                       ? "Thank you. Our team will get back to you soon."
                       : submission.fallbackMessage}
                   </p>
+                  {!submission.delivered ? (
+                    <p className="mt-2 font-medium">
+                      Your details are still here. Press Send Message again to retry delivery.
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
               <Form {...form}>

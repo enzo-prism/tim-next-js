@@ -45,12 +45,49 @@ const payload = {
   landingPage: "/services/invisalign",
 };
 
-const post = () =>
+const storedAppointment = (overrides: Record<string, unknown> = {}) => ({
+  id: "lead-1",
+  submissionId: payload.submissionId,
+  firstName: payload.firstName,
+  lastName: payload.lastName,
+  email: payload.email,
+  phone: payload.phone,
+  service: payload.service,
+  message: payload.message,
+  requestType: "appointment",
+  preferredDate: payload.preferredDate,
+  preferredTime: payload.preferredTime,
+  formspreeStatus: "failed",
+  landingPage: payload.landingPage,
+  referrer: null,
+  ctaSource: null,
+  utmSource: null,
+  utmMedium: null,
+  utmCampaign: null,
+  utmTerm: null,
+  utmContent: null,
+  gclid: null,
+  gbraid: null,
+  wbraid: null,
+  consentToContact: true,
+  consentVersion: LEAD_CONSENT_VERSION,
+  leadStatus: "new",
+  contactedAt: null,
+  bookedAt: null,
+  arrivedAt: null,
+  lostReason: null,
+  staffNotes: null,
+  createdAt: new Date("2026-07-24T16:00:00.000Z"),
+  updatedAt: new Date("2026-07-24T16:00:00.000Z"),
+  ...overrides,
+});
+
+const post = (overrides: Record<string, unknown> = {}) =>
   POST(
     new Request("https://www.famfirstsmile.com/api/appointments", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, ...overrides }),
     }),
   );
 
@@ -62,12 +99,10 @@ describe("appointment API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getContactBySubmissionId.mockResolvedValue(undefined);
-    mocks.createContact.mockResolvedValue({ id: "lead-1", service: "invisalign" });
-    mocks.claimContactNotification.mockResolvedValue({
-      id: "lead-1",
-      service: "invisalign",
-      formspreeStatus: "sending",
-    });
+    mocks.createContact.mockResolvedValue(storedAppointment());
+    mocks.claimContactNotification.mockResolvedValue(
+      storedAppointment({ formspreeStatus: "sending" }),
+    );
     mocks.relayLeadNotification.mockResolvedValue(undefined);
     mocks.updateContactFormspreeStatus.mockResolvedValue(undefined);
   });
@@ -109,9 +144,7 @@ describe("appointment API", () => {
 
   it("does not resend an already delivered submission", async () => {
     mocks.getContactBySubmissionId.mockResolvedValue({
-      id: "lead-existing",
-      service: "invisalign",
-      formspreeStatus: "delivered",
+      ...storedAppointment({ id: "lead-existing", formspreeStatus: "delivered" }),
     });
 
     const response = await post();
@@ -140,11 +173,7 @@ describe("appointment API", () => {
   it("does not resend after delivery succeeds but its status writeback fails", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-24T16:00:00.000Z"));
-    const pending = {
-      id: "lead-1",
-      service: "invisalign",
-      formspreeStatus: "sending",
-    };
+    const pending = storedAppointment({ formspreeStatus: "sending" });
     mocks.getContactBySubmissionId.mockResolvedValueOnce(undefined).mockResolvedValue(pending);
     mocks.claimContactNotification
       .mockResolvedValueOnce(pending)
@@ -165,11 +194,7 @@ describe("appointment API", () => {
   });
 
   it("allows only one concurrent retry to claim and send a notification", async () => {
-    const failed = {
-      id: "lead-existing",
-      service: "invisalign",
-      formspreeStatus: "failed",
-    };
+    const failed = storedAppointment({ id: "lead-existing" });
     mocks.getContactBySubmissionId.mockResolvedValue(failed);
     mocks.claimContactNotification
       .mockResolvedValueOnce({ ...failed, formspreeStatus: "sending" })
@@ -183,11 +208,7 @@ describe("appointment API", () => {
   });
 
   it("releases a failed relay claim so the same submission can retry once", async () => {
-    const failed = {
-      id: "lead-1",
-      service: "invisalign",
-      formspreeStatus: "failed",
-    };
+    const failed = storedAppointment();
     mocks.getContactBySubmissionId.mockResolvedValueOnce(undefined).mockResolvedValue(failed);
     mocks.relayLeadNotification.mockRejectedValueOnce(new Error("provider unavailable"));
 
@@ -234,11 +255,7 @@ describe("appointment API", () => {
   it("recovers a concurrent duplicate without sending a second notification", async () => {
     mocks.getContactBySubmissionId
       .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce({
-        id: "lead-concurrent",
-        service: "invisalign",
-        formspreeStatus: "failed",
-      });
+      .mockResolvedValueOnce(storedAppointment({ id: "lead-concurrent" }));
     mocks.createContact.mockRejectedValue(new Error("unique violation"));
 
     const response = await post();
@@ -253,5 +270,52 @@ describe("appointment API", () => {
       }),
     );
     expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
+  });
+
+  it("rejects reuse of an appointment submission ID with changed data", async () => {
+    mocks.getContactBySubmissionId.mockResolvedValue(storedAppointment());
+
+    const response = await post({ preferredTime: "afternoon" });
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual(
+      expect.objectContaining({ success: false, message: expect.stringContaining("submission ID") }),
+    );
+    expect(mocks.claimContactNotification).not.toHaveBeenCalled();
+    expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
+  });
+
+  it("rejects a submission ID that belongs to a contact", async () => {
+    mocks.getContactBySubmissionId.mockResolvedValue(
+      storedAppointment({
+        requestType: "contact",
+        preferredDate: null,
+        preferredTime: null,
+      }),
+    );
+
+    const response = await post();
+
+    expect(response.status).toBe(409);
+    expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
+  });
+
+  it("relays the canonical stored appointment data", async () => {
+    const canonical = storedAppointment({ formspreeStatus: "sending" });
+    mocks.createContact.mockResolvedValue({ ...canonical, formspreeStatus: "failed" });
+    mocks.claimContactNotification.mockResolvedValue(canonical);
+
+    await post();
+
+    expect(mocks.relayLeadNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        leadId: canonical.id,
+        submissionId: canonical.submissionId,
+        requestType: "appointment",
+        email: canonical.email,
+        preferredDate: canonical.preferredDate,
+        consentVersion: LEAD_CONSENT_VERSION,
+      }),
+    );
   });
 });

@@ -64,6 +64,10 @@ type AdminChangelogResponse = {
   entries: AdminChangelogEntry[];
 };
 
+type AnalyticsSectionState =
+  | { status: "available" }
+  | { status: "unavailable"; message: string };
+
 type GA4OverviewResponse = {
   range: { days: DaysOption; startDate: string; endDate: string };
   totals: { activeUsers: number; sessions: number; screenPageViews: number };
@@ -73,7 +77,12 @@ type GA4OverviewResponse = {
     sessions: number;
     screenPageViews: number;
   }>;
-  topPages: Array<{ pagePath: string; screenPageViews: number }>;
+  topPages: Array<{ pagePath: string; screenPageViews: number }> | null;
+  partial: boolean;
+  sections: {
+    overview: AnalyticsSectionState;
+    topPages: AnalyticsSectionState;
+  };
 };
 
 type GSCOverviewResponse = {
@@ -92,14 +101,14 @@ type GSCOverviewResponse = {
     impressions: number;
     ctr: number;
     position: number;
-  }>;
+  }> | null;
   topPages: Array<{
     page: string;
     clicks: number;
     impressions: number;
     ctr: number;
     position: number;
-  }>;
+  }> | null;
   searchOpportunities: Array<{
     page: string;
     query: string;
@@ -108,7 +117,27 @@ type GSCOverviewResponse = {
     ctr: number;
     position: number;
     opportunityScore: number;
-  }>;
+  }> | null;
+  partial: boolean;
+  sections: {
+    overview: AnalyticsSectionState;
+    topQueries: AnalyticsSectionState;
+    topPages: AnalyticsSectionState;
+    searchOpportunities:
+      | {
+          status: "available";
+          truncated: boolean;
+          rowsScanned: number;
+          rowCap: number;
+        }
+      | {
+          status: "unavailable";
+          message: string;
+          truncated: false;
+          rowsScanned: 0;
+          rowCap: number;
+        };
+  };
   opportunityCriteria: {
     minPosition: number;
     maxPosition: number;
@@ -185,6 +214,24 @@ async function patchJson<T>(url: string, body: unknown): Promise<T> {
   return payload as T;
 }
 
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await res.json().catch(() => null)) as unknown;
+  if (!res.ok) {
+    const error: FetchJsonError = new Error(getPayloadMessage(payload) || res.statusText);
+    error.status = res.status;
+    error.payload = payload;
+    throw error;
+  }
+  return payload as T;
+}
+
 const formatInt = (value: number) => value.toLocaleString();
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const formatPosition = (value: number) => value.toFixed(1);
@@ -240,6 +287,7 @@ function LeadLifecycleEditor({
         leadStatus,
         lostReason: leadStatus === "lost" ? lostReason.trim() : null,
         staffNotes: staffNotes.trim() || null,
+        expectedUpdatedAt: row.updatedAt,
       });
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Update failed.");
@@ -382,6 +430,17 @@ function QueryErrorCard({ error }: { error: unknown }) {
   );
 }
 
+function PartialDataNotice() {
+  return (
+    <div
+      role="status"
+      className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900"
+    >
+      Some reporting sections are temporarily unavailable. Available numbers are still shown.
+    </div>
+  );
+}
+
 export default function Admin() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"changelog" | "ga4" | "gsc" | "contacts">(
@@ -419,20 +478,20 @@ export default function Admin() {
     enabled: tab === "gsc",
   });
 
-  const contactsQueryKey = useMemo(() => {
-    const params = new URLSearchParams({
-      limit: String(contactsLimit),
-      offset: String(contactsPage * contactsLimit),
-    });
+  const contactsRequest = useMemo(() => {
     const q = contactsSearch.trim();
-    if (q) params.set("q", q);
-    if (contactsStatus !== "all") params.set("status", contactsStatus);
-    if (contactsSource !== "all") params.set("source", contactsSource);
-    return `/api/admin/contacts?${params.toString()}`;
+    return {
+      limit: contactsLimit,
+      offset: contactsPage * contactsLimit,
+      ...(q ? { q } : {}),
+      ...(contactsStatus !== "all" ? { status: contactsStatus } : {}),
+      ...(contactsSource !== "all" ? { source: contactsSource } : {}),
+    };
   }, [contactsLimit, contactsPage, contactsSearch, contactsSource, contactsStatus]);
   const contactsQuery = useQuery({
-    queryKey: [contactsQueryKey],
-    queryFn: () => fetchJson<AdminContactsResponse>(contactsQueryKey),
+    queryKey: ["admin-contacts", contactsRequest],
+    queryFn: () =>
+      postJson<AdminContactsResponse>("/api/admin/contacts", contactsRequest),
     enabled: tab === "contacts",
   });
   const updateContactMutation = useMutation({
@@ -450,9 +509,13 @@ export default function Admin() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         predicate: (query) =>
-          typeof query.queryKey[0] === "string" &&
-          query.queryKey[0].startsWith("/api/admin/contacts?"),
+          query.queryKey[0] === "admin-contacts",
       });
+    },
+    onError: (error) => {
+      if ((error as FetchJsonError)?.status === 409) {
+        void queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
+      }
     },
   });
 
@@ -466,7 +529,7 @@ export default function Admin() {
     await queryClient.invalidateQueries({ queryKey: ["/api/admin/changelog"] });
     await queryClient.invalidateQueries({ queryKey: [gaQueryKey] });
     await queryClient.invalidateQueries({ queryKey: [gscQueryKey] });
-    await queryClient.invalidateQueries({ queryKey: [contactsQueryKey] });
+    await queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
   };
 
   const showRange = tab === "ga4" || tab === "gsc";
@@ -626,6 +689,7 @@ export default function Admin() {
               <QueryErrorCard error={ga4Query.error} />
             ) : (
               <>
+                {ga4Query.data?.partial ? <PartialDataNotice /> : null}
                 <div className="grid gap-4 md:grid-cols-3">
                   <Card>
                     <CardHeader>
@@ -692,7 +756,13 @@ export default function Admin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {ga4Query.data?.topPages?.length ? (
+                        {ga4Query.data?.sections.topPages.status === "unavailable" ? (
+                          <TableRow>
+                            <TableCell colSpan={2} className="text-sm text-muted-foreground">
+                              {ga4Query.data.sections.topPages.message}
+                            </TableCell>
+                          </TableRow>
+                        ) : ga4Query.data?.topPages?.length ? (
                           ga4Query.data.topPages.map((row) => (
                             <TableRow key={row.pagePath}>
                               <TableCell className="font-mono text-xs">
@@ -728,6 +798,7 @@ export default function Admin() {
               <QueryErrorCard error={gscQuery.error} />
             ) : (
               <>
+                {gscQuery.data?.partial ? <PartialDataNotice /> : null}
                 <div className="grid gap-4 md:grid-cols-4">
                   <Card>
                     <CardHeader>
@@ -811,7 +882,14 @@ export default function Admin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {gscQuery.data?.searchOpportunities?.length ? (
+                        {gscQuery.data?.sections.searchOpportunities.status ===
+                        "unavailable" ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-sm text-muted-foreground">
+                              {gscQuery.data.sections.searchOpportunities.message}
+                            </TableCell>
+                          </TableRow>
+                        ) : gscQuery.data?.searchOpportunities?.length ? (
                           gscQuery.data.searchOpportunities.map((row) => (
                             <TableRow key={`${row.page}:${row.query}`}>
                               <TableCell className="max-w-[280px] text-sm font-medium">
@@ -850,6 +928,14 @@ export default function Admin() {
                         )}
                       </TableBody>
                     </Table>
+                    {gscQuery.data?.sections.searchOpportunities.status === "available" &&
+                    gscQuery.data.sections.searchOpportunities.truncated ? (
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        Opportunity analysis reached its bounded{" "}
+                        {formatInt(gscQuery.data.sections.searchOpportunities.rowCap)}-row cap.
+                        Results may be incomplete.
+                      </p>
+                    ) : null}
                   </CardContent>
                 </Card>
 
@@ -868,7 +954,13 @@ export default function Admin() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {gscQuery.data?.topQueries?.length ? (
+                          {gscQuery.data?.sections.topQueries.status === "unavailable" ? (
+                            <TableRow>
+                              <TableCell colSpan={3} className="text-sm text-muted-foreground">
+                                {gscQuery.data.sections.topQueries.message}
+                              </TableCell>
+                            </TableRow>
+                          ) : gscQuery.data?.topQueries?.length ? (
                             gscQuery.data.topQueries.map((row) => (
                               <TableRow key={row.query}>
                                 <TableCell className="text-sm">{row.query || "(not set)"}</TableCell>
@@ -906,7 +998,13 @@ export default function Admin() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {gscQuery.data?.topPages?.length ? (
+                          {gscQuery.data?.sections.topPages.status === "unavailable" ? (
+                            <TableRow>
+                              <TableCell colSpan={3} className="text-sm text-muted-foreground">
+                                {gscQuery.data.sections.topPages.message}
+                              </TableCell>
+                            </TableRow>
+                          ) : gscQuery.data?.topPages?.length ? (
                             gscQuery.data.topPages.map((row) => (
                               <TableRow key={row.page}>
                                 <TableCell className="font-mono text-xs">
@@ -1191,7 +1289,7 @@ export default function Admin() {
                             <TableCell className="text-sm">
                               <div className="space-y-1">
                                 <div className="font-medium text-gray-800">
-                                  {row.utmSource || row.referrer || "Direct / unknown"}
+                                  {row.leadSource}
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {[row.utmMedium, row.utmCampaign, row.ctaSource]

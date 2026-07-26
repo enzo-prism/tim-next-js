@@ -10,6 +10,10 @@ import {
   OPPORTUNITY_MAX_POSITION,
   OPPORTUNITY_MIN_POSITION,
 } from "@/app/api/admin/gsc/overview/opportunities";
+import {
+  fetchBoundedQueryPageRows,
+  GSC_QUERY_PAGE_ROW_CAP,
+} from "@/app/api/admin/gsc/overview/pagination";
 
 export const runtime = "nodejs";
 
@@ -64,7 +68,7 @@ export async function GET(req: NextRequest) {
       searchType: "web",
     } as const;
 
-    const [seriesRes, queriesRes, pagesRes, queryPagesRes] = await Promise.all([
+    const [seriesRes, queriesResult, pagesResult, queryPagesResult] = await Promise.all([
       searchconsole.searchanalytics.query({
         siteUrl,
         requestBody: { ...requestBase, dimensions: ["date"], rowLimit: 1000 },
@@ -74,34 +78,46 @@ export async function GET(req: NextRequest) {
           siteUrl,
           requestBody: { ...requestBase, dimensions: ["query"], rowLimit: 10 },
         })
-        .catch((error: any) => {
-          console.warn("GSC top queries query failed; continuing without it.", error?.message);
-          return null;
+        .then((response) => ({ status: "available" as const, response }))
+        .catch(() => {
+          console.warn("GSC top queries query failed.");
+          return { status: "unavailable" as const, response: null };
         }),
       searchconsole.searchanalytics
         .query({
           siteUrl,
           requestBody: { ...requestBase, dimensions: ["page"], rowLimit: 10 },
         })
-        .catch((error: any) => {
-          console.warn("GSC top pages query failed; continuing without it.", error?.message);
-          return null;
+        .then((response) => ({ status: "available" as const, response }))
+        .catch(() => {
+          console.warn("GSC top pages query failed.");
+          return { status: "unavailable" as const, response: null };
         }),
-      searchconsole.searchanalytics
-        .query({
+      fetchBoundedQueryPageRows(async (startRow, rowLimit) => {
+        const response = await searchconsole.searchanalytics.query({
           siteUrl,
           requestBody: {
             ...requestBase,
             dimensions: ["page", "query"],
-            rowLimit: 5000,
+            startRow,
+            rowLimit,
           },
-        })
-        .catch((error: any) => {
-          console.warn(
-            "GSC query-by-page query failed; continuing without opportunities.",
-            error?.message,
-          );
-          return null;
+        });
+        return response.data.rows ?? [];
+      })
+        .then((result) => ({
+          status: "available" as const,
+          ...result,
+        }))
+        .catch(() => {
+          console.warn("GSC query-by-page query failed.");
+          return {
+            status: "unavailable" as const,
+            rows: [],
+            truncated: false,
+            rowsScanned: 0,
+            rowCap: GSC_QUERY_PAGE_ROW_CAP,
+          };
         }),
     ]);
 
@@ -131,24 +147,39 @@ export async function GET(req: NextRequest) {
         totalsRaw.impressions > 0 ? totalsRaw.weightedPosition / totalsRaw.impressions : 0,
     };
 
-    const topQueries = (queriesRes?.data?.rows ?? []).map((row) => ({
-      query: row.keys?.[0] ?? "",
-      clicks: row.clicks ?? 0,
-      impressions: row.impressions ?? 0,
-      ctr: row.ctr ?? 0,
-      position: row.position ?? 0,
-    }));
+    const topQueries =
+      queriesResult.status === "available"
+        ? (queriesResult.response.data.rows ?? []).map((row) => ({
+            query: row.keys?.[0] ?? "",
+            clicks: row.clicks ?? 0,
+            impressions: row.impressions ?? 0,
+            ctr: row.ctr ?? 0,
+            position: row.position ?? 0,
+          }))
+        : null;
 
-    const topPages = (pagesRes?.data?.rows ?? []).map((row) => ({
-      page: row.keys?.[0] ?? "",
-      clicks: row.clicks ?? 0,
-      impressions: row.impressions ?? 0,
-      ctr: row.ctr ?? 0,
-      position: row.position ?? 0,
-    }));
+    const topPages =
+      pagesResult.status === "available"
+        ? (pagesResult.response.data.rows ?? []).map((row) => ({
+            page: row.keys?.[0] ?? "",
+            clicks: row.clicks ?? 0,
+            impressions: row.impressions ?? 0,
+            ctr: row.ctr ?? 0,
+            position: row.position ?? 0,
+          }))
+        : null;
 
-    const queryPageRows = mapQueryPageRows(queryPagesRes?.data?.rows ?? []);
-    const searchOpportunities = buildSearchOpportunityCandidates(queryPageRows);
+    const queryPageRows =
+      queryPagesResult.status === "available"
+        ? mapQueryPageRows(queryPagesResult.rows)
+        : null;
+    const searchOpportunities = queryPageRows
+      ? buildSearchOpportunityCandidates(queryPageRows)
+      : null;
+    const partial =
+      queriesResult.status === "unavailable" ||
+      pagesResult.status === "unavailable" ||
+      queryPagesResult.status === "unavailable";
 
     const payload = {
       range,
@@ -156,8 +187,40 @@ export async function GET(req: NextRequest) {
       series,
       topQueries,
       topPages,
-      queryPageRows,
       searchOpportunities,
+      partial,
+      sections: {
+        overview: { status: "available" as const },
+        topQueries:
+          queriesResult.status === "available"
+            ? { status: "available" as const }
+            : {
+                status: "unavailable" as const,
+                message: "Top-query reporting is temporarily unavailable.",
+              },
+        topPages:
+          pagesResult.status === "available"
+            ? { status: "available" as const }
+            : {
+                status: "unavailable" as const,
+                message: "Top-page reporting is temporarily unavailable.",
+              },
+        searchOpportunities:
+          queryPagesResult.status === "available"
+            ? {
+                status: "available" as const,
+                truncated: queryPagesResult.truncated,
+                rowsScanned: queryPagesResult.rowsScanned,
+                rowCap: queryPagesResult.rowCap,
+              }
+            : {
+                status: "unavailable" as const,
+                message: "Search-opportunity reporting is temporarily unavailable.",
+                truncated: false,
+                rowsScanned: 0,
+                rowCap: GSC_QUERY_PAGE_ROW_CAP,
+              },
+      },
       opportunityCriteria: {
         minPosition: OPPORTUNITY_MIN_POSITION,
         maxPosition: OPPORTUNITY_MAX_POSITION,
@@ -169,19 +232,15 @@ export async function GET(req: NextRequest) {
 
     setCache(cacheKey, payload, 10 * 60_000);
     return jsonResponse(payload);
-  } catch (error: any) {
-    console.error("GSC overview error:", error);
-    const message =
-      typeof error?.message === "string" && error.message
-        ? `Search Console API error: ${error.message}`
-        : "Failed to fetch Search Console data.";
+  } catch {
+    console.error("GSC overview query failed.");
     return jsonResponse(
       {
         ok: false,
-        error: "server_error",
-        message,
+        error: "upstream_error",
+        message: "Search Console data is temporarily unavailable.",
       },
-      { status: 500 },
+      { status: 502 },
     );
   }
 }

@@ -14,12 +14,16 @@ describe("lead notification relay", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await relayLeadNotification({
+      leadId: "lead-1",
+      submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
       requestType: "contact",
       firstName: "Jamie",
       lastName: "Lee",
       email: "jamie@example.com",
       ctaSource: "contact_hero",
       utmSource: "google",
+      consentToContact: true,
+      consentVersion: "2026-07-15",
     });
 
     const [url, init] = fetchMock.mock.calls[0];
@@ -27,6 +31,8 @@ describe("lead notification relay", () => {
     expect(JSON.parse(String(init.body))).toEqual(
       expect.objectContaining({
         requestType: "contact",
+        leadId: "lead-1",
+        submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
         ctaSource: "contact_hero",
         utmSource: "google",
         form_key: "contacts",
@@ -39,10 +45,13 @@ describe("lead notification relay", () => {
 
     await expect(
       relayLeadNotification({
+        leadId: "lead-1",
+        submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
         requestType: "appointment",
         firstName: "Jamie",
         lastName: "Lee",
         email: "jamie@example.com",
+        consentToContact: true,
       }),
     ).rejects.toThrow("status 503");
   });
