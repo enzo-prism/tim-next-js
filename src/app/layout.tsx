@@ -6,7 +6,6 @@ import Footer from "@/components/layout/footer";
 import AppProviders from "@/components/app-providers";
 import ElevenLabsWidget from "@/components/elevenlabs-widget";
 import RouteAnalytics from "@/components/route-analytics";
-import VercelAnalytics from "@/components/vercel-analytics";
 import GoogleAnalytics from "@/components/google-analytics";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
 import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
@@ -31,6 +30,21 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable}>
       <body>
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = window.gtag || gtag;
+gtag('consent', 'default', {
+  analytics_storage: 'denied',
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  wait_for_update: 500
+});`,
+          }}
+        />
         <GoogleAnalytics />
 
         <AppProviders>
@@ -57,7 +71,6 @@ export default function RootLayout({
           />
           <ElevenLabsWidget />
         </AppProviders>
-        <VercelAnalytics />
       </body>
     </html>
   );

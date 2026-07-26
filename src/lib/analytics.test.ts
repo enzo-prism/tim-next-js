@@ -17,9 +17,16 @@ vi.mock("@vercel/analytics", () => ({
   track: vercelTrackMock,
 }));
 
-const setupBrowserGlobals = (pathname = "/") => {
+const setupBrowserGlobals = (
+  pathname = "/",
+  analyticsConsent: "granted" | "denied" | null = "granted",
+) => {
   const gtagMock = vi.fn();
   const appendChildMock = vi.fn();
+  const storage = new Map<string, string>();
+  if (analyticsConsent) {
+    storage.set("ffsc_analytics_consent_v1", analyticsConsent);
+  }
 
   vi.stubGlobal("window", {
     dataLayer: [],
@@ -29,6 +36,10 @@ const setupBrowserGlobals = (pathname = "/") => {
       href: `https://famfirstsmile.com${pathname}`,
       pathname,
       search: "",
+    },
+    localStorage: {
+      getItem: vi.fn((key: string) => storage.get(key) ?? null),
+      setItem: vi.fn((key: string, value: string) => storage.set(key, value)),
     },
     open: vi.fn(),
   });
@@ -106,6 +117,16 @@ describe("analytics custom events", () => {
       cta_type: "appointment",
       location: "admin",
     });
+
+    expect(gtagMock).not.toHaveBeenCalled();
+    expect(vercelTrackMock).not.toHaveBeenCalled();
+  });
+
+  it("does not send events before informed analytics consent", () => {
+    const { gtagMock } = setupBrowserGlobals("/book-appointment", null);
+
+    trackAppointmentBookingStepView(1, "invisalign");
+    trackSiteEvent("cta_click", { location: "header" });
 
     expect(gtagMock).not.toHaveBeenCalled();
     expect(vercelTrackMock).not.toHaveBeenCalled();
