@@ -48,6 +48,9 @@ const ALLOWED_EVENT_KEYS = new Set([
 ]);
 
 const MAX_EVENT_VALUE_LENGTH = 120;
+export const ANALYTICS_CONSENT_STORAGE_KEY = "ffsc_analytics_consent_v1";
+
+type AnalyticsConsent = "granted" | "denied";
 
 // Define the Google tag queue globally for typed client-side event calls.
 declare global {
@@ -58,6 +61,18 @@ declare global {
 }
 
 let gtagInitialized = false;
+
+const getStoredAnalyticsConsent = (): AnalyticsConsent | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = window.localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY);
+    return stored === "granted" || stored === "denied" ? stored : null;
+  } catch {
+    return null;
+  }
+};
+
+export const hasAnalyticsConsent = () => getStoredAnalyticsConsent() === "granted";
 
 const sanitizePath = (path: string) => {
   const [pathWithoutHash] = path.split("#");
@@ -128,16 +143,39 @@ const ensureGtag = () => {
   return true;
 };
 
+const consentPayload = (consent: AnalyticsConsent) => ({
+  analytics_storage: consent,
+  ad_storage: consent,
+  ad_user_data: consent,
+  ad_personalization: consent,
+});
+
+export const setAnalyticsConsent = (consent: AnalyticsConsent) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(ANALYTICS_CONSENT_STORAGE_KEY, consent);
+  } catch {
+    // A blocked storage write should keep analytics off.
+    if (consent === "granted") return;
+  }
+
+  if (!ensureGtag()) return;
+  window.gtag("consent", "update", consentPayload(consent));
+};
+
 export const triggerGoogleAdsConversion = (
   url?: string,
   target: "_self" | "_blank" = "_self",
   transactionId?: string,
 ) => {
   if (typeof window === "undefined") return;
+  if (!hasAnalyticsConsent()) return;
 
-  initGA();
+  if (!initGA()) return;
   if (!window.gtag) return;
 
+  // The submission UUID doubles as the Ads transaction ID so a double submit
+  // or a reloaded confirmation cannot be counted as two conversions.
   if (transactionId) {
     window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT, { transaction_id: transactionId });
   } else {
@@ -156,6 +194,7 @@ export const triggerGoogleAdsConversion = (
 export const trackSiteEvent = (eventName: SiteEventName, payload: SiteEventPayload = {}) => {
   if (typeof window === "undefined") return;
   if (isAdminPath()) return;
+  if (!hasAnalyticsConsent()) return;
 
   const sanitizedPayload = sanitizeSiteEventPayload(payload);
 
@@ -176,19 +215,25 @@ export const trackSiteEvent = (eventName: SiteEventName, payload: SiteEventPaylo
 
 // Initialize Google Analytics
 export const initGA = () => {
-  if (gtagInitialized) return;
-  if (!ensureGtag()) return;
+  if (gtagInitialized) return true;
+  if (!hasAnalyticsConsent()) return false;
+  if (!ensureGtag()) return false;
 
+  window.gtag("consent", "update", consentPayload("granted"));
+  window.gtag("js", new Date());
+  window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
   window.gtag("config", GOOGLE_ADS_TAG_ID);
   gtagInitialized = true;
+  return true;
 };
 
 // Track page views - useful for single-page applications
 export const trackPageView = (url: string) => {
   if (typeof window === "undefined") return;
   if (isAdminPath()) return;
+  if (!hasAnalyticsConsent()) return;
 
-  initGA();
+  if (!initGA()) return;
   if (!window.gtag) return;
 
   const pagePath = sanitizePath(url || `${window.location.pathname}${window.location.search}`);
@@ -334,7 +379,10 @@ export const trackFormSubmitError = (details: {
   });
 };
 
-export const trackAppointmentSubmitSuccess = (serviceId?: string, transactionId?: string) => {
+export const trackAppointmentSubmitSuccess = (
+  serviceId?: string,
+  transactionId?: string,
+) => {
   triggerGoogleAdsConversion(undefined, "_self", transactionId);
   trackGenerateLead({
     formType: "appointment",
