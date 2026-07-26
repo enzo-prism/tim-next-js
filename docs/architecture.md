@@ -69,9 +69,10 @@ Primary design goals:
 1. `captureLeadAttribution()` stores first-touch landing page, external referrer hostname, CTA source, UTM values, and Google click IDs in session storage.
 2. Contact and appointment submissions persist that attribution with the consent version and submission UUID.
 3. No analytics or ad tag runs before the visitor opts in. `gtag` consent defaults are set to denied for analytics and ad storage before any tag loads, the GA script and Vercel Analytics mount only after consent is granted, and every event helper re-checks stored consent. A denied or undecided visitor emits nothing.
-4. Public analytics receives only allow-listed, bounded event properties; names, emails, phone numbers, messages, URLs with query strings, and health details are excluded. `service_id` is allow-listed because it is a bounded enum of published service slugs.
-5. `generate_lead` is emitted after a durable new record is created. The appointment Google Ads event also uses the submission UUID as `transaction_id` for deduplication.
-6. A Formspree delivery failure produces a saved-lead fallback state and call prompt instead of losing the lead or claiming full delivery.
+4. Public analytics receives only allow-listed, bounded event properties; names, emails, phone numbers, messages, and health details are excluded. `service_id` is allow-listed because it is a bounded enum of published service slugs.
+5. Every analytics URL is reduced by `sanitizeAnalyticsUrl()` to its path plus allow-listed campaign parameters (`utm_*`, `gclid`, `gbraid`, `wbraid`, `dclid`, `msclkid`); the hash and all other query parameters are dropped. The same policy is applied to GA4 `page_location` and to Vercel Web Analytics via `beforeSend`, because GA4 derives session source and campaign from `page_location` and would otherwise report paid traffic as direct.
+6. `generate_lead` is emitted after a durable new record is created. The appointment Google Ads event also uses the submission UUID as `transaction_id` for deduplication.
+7. A Formspree delivery failure produces a saved-lead fallback state and call prompt instead of losing the lead or claiming full delivery.
 
 ## Directory Responsibilities
 
