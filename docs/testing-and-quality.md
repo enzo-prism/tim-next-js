@@ -14,6 +14,12 @@ CI workflow (`.github/workflows/ci.yml`) runs:
 
 `npm run test` uses Vitest. The current suite covers analytics sanitization and conversion dedupe, booking-step events, form schemas, request guards, atomic notification claims, contact/appointment persistence and lifecycle behavior, concurrent idempotency recovery, GSC opportunity scoring, and admin middleware. Playwright covers key browser-level design, mobile navigation, and widget behavior in CI.
 
+`npm run test:e2e` now exercises the production runtime instead of `next dev`:
+
+- local runs build first, then serve with `next start`
+- CI reuses the earlier build artifact and serves it with `next start`
+- route checks use `domcontentloaded` plus explicit page assertions so they do not depend on third-party assets finishing every `load` event
+
 ## ElevenLabs Widget Coverage
 
 - Widget bundle is pinned to `https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4`
@@ -77,6 +83,7 @@ Validate these redirect as expected:
 - a successful provider call followed by a failed status write does not trigger an automatic resend
 - malformed payload returns `400` with `errors`
 - oversized, non-JSON, and untrusted-browser requests are rejected before persistence
+- best-effort throttling is enforced per server instance and per request fingerprint
 - storage failure returns `500`
 
 ### Appointment API
@@ -144,6 +151,12 @@ Priority order:
 3. Metadata snapshot tests for key routes.
 4. Playwright smoke tests for the full appointment journey using a mocked API response.
 5. A managed cross-instance rate-limit integration test when shared rate-limit storage is introduced.
+
+## Security Coverage Notes
+
+- Public form throttling is still best-effort unless a shared store or edge/WAF rate limit is added in front of the app.
+- Admin auth now has middleware throttling for repeated failures, but it is still shared Basic Auth rather than per-person identity.
+- CSP is in `report-only` mode first so violations can be observed before enforcement.
 
 ## Release Readiness Checklist
 

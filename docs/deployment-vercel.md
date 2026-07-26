@@ -25,6 +25,8 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `DATABASE_URL`
    - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
+   - `FORMSPREE_APPOINTMENT_ENDPOINT`
+   - `FORMSPREE_CONTACT_ENDPOINT`
    - analytics variables from `docs/environment-variables.md`
 6. Vercel Web Analytics enabled for the production Vercel project
 
@@ -67,6 +69,8 @@ vercel link --yes --project prj_bzwJ806oFI1FxU70DEIi2iyV0sl1 --team team_NbogaPS
 ```
 
 `.vercel/project.json` is local and intentionally ignored. The guarded release script links this exact project when the checkout is not linked, and it fails fast if the checkout is linked to any other Vercel project.
+
+Before any production deploy, the guarded release script also validates production env names without printing secret values. It blocks the release if a required env is missing, including the Google credential one-of group used by admin analytics.
 
 ## Pre-Deploy Local Checks
 
@@ -111,16 +115,20 @@ vercel env ls
 ## Database Provisioning and Schema
 
 1. Ensure `DATABASE_URL` points to the intended Vercel Postgres instance.
-2. Apply the checked-in migration (preferred for this release) or reconcile with Drizzle:
+2. Apply every checked-in migration in numeric order (preferred) or reconcile with Drizzle:
 
 ```bash
+psql "$DATABASE_URL" -f drizzle/0000_base_schema.sql
 psql "$DATABASE_URL" -f drizzle/0001_growth_lead_attribution.sql
 psql "$DATABASE_URL" -f drizzle/0002_closed_loop_lead_pipeline.sql
+psql "$DATABASE_URL" -f drizzle/0003_public_form_contract.sql
 # Or, after reviewing the generated diff:
 npm run db:push
 ```
 
-3. Read the production schema back before deployment:
+`0000_base_schema.sql` makes a fresh database bootstrapable and is safe to run against an existing database because it uses `IF NOT EXISTS`. Migration `0003` adds the public-form runtime columns to older databases and validates request-type and Formspree-state constraints. It intentionally stops if unexpected existing values need manual reconciliation.
+
+3. Read the production schema back before deployment. This checks every public-form runtime column, required defaults and nullability, the submission UUID index, lifecycle indexes, and validated state constraints:
 
 ```bash
 npm run db:verify
@@ -145,9 +153,10 @@ This script enforces:
 3. GitHub default branch verified as `main` without changing repository settings
 4. `.vercel/project.json` matches the production Vercel project for this repo
 5. Vercel Git integration connected to this repo
-6. explicit confirmation that the production schema was applied and verified
-7. full quality checks (`npm run quality:all`)
-8. production deploy via Vercel CLI
+6. required production env names present in Vercel without exposing their values
+7. explicit confirmation that the production schema was applied and verified
+8. full quality checks (`npm run quality:all`)
+9. production deploy via Vercel CLI
 
 ### Preview deploy
 

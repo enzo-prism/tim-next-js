@@ -71,6 +71,8 @@ Before either public endpoint calls Formspree, it atomically claims the stored l
 
 `sending` is never reclaimed automatically because Formspree does not provide a verified idempotency key. If the process stops after the provider call, or delivery succeeds but the final database update fails, the row stays `sending` and requires manual reconciliation. This prevents an automatic retry from sending the office a duplicate notification.
 
+The submission UUID is bound to the form type and normalized stored payload. An exact retry reuses the stored row and relays only its canonical data. Reusing a UUID for changed data or the other public form returns `409`.
+
 ## `POST /api/contacts`
 
 Persist a contact submission and notify the office through Formspree.
@@ -104,6 +106,7 @@ Responses:
 - `400`
   - `{ "success": false, "message": "Invalid form data", "errors": [...] }`
 - `403`: untrusted browser origin
+- `409`: submission UUID is already bound to different form data
 - `413`: request body exceeds 32,000 bytes
 - `415`: content type is not JSON
 - `429`: per-instance submission limit exceeded
@@ -143,6 +146,7 @@ Responses:
 - `400`
   - `{ "success": false, "message": "Invalid appointment data", "errors": [...] }`
 - `403`: untrusted browser origin
+- `409`: submission UUID is already bound to different form data
 - `413`: request body exceeds 32,000 bytes
 - `415`: content type is not JSON
 - `429`: per-instance submission limit exceeded

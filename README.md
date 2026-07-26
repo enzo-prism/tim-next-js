@@ -91,7 +91,7 @@ npm run db:verify
 1. Keep GitHub default branch set to `main`.
 2. Ensure Vercel Git integration is connected to `enzo-prism/tim-next-js`.
 3. Ensure required env vars are configured.
-4. Apply both checked-in database migrations, then run `npm run db:verify` against production.
+4. Apply all checked-in database migrations in numeric order, then run `npm run db:verify` against production. Start with `0000_base_schema.sql` when bootstrapping a fresh database.
 5. Verify the migration succeeded, then run the guarded release:
 
 ```bash

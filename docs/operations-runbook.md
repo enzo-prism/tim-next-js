@@ -10,6 +10,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 - Contact persistence: Postgres via Drizzle (`contacts` table)
 - Appointment relay: `POST /api/appointments` -> internal DB + Formspree relay
 - Admin auth: middleware Basic Auth (`/admin`, `/api/admin/*`)
+- Admin auth throttling: repeated failed attempts return `429` with `Retry-After`
 - ElevenLabs widget: pinned custom-element embed on public routes only
 - Analytics APIs:
   - GA4: `/api/admin/ga4/overview`
@@ -36,6 +37,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 3. Confirm Vercel Analytics, GA4 Realtime, and Search Console data are flowing.
 4. Confirm the ElevenLabs widget still loads from the pinned `0.11.4` embed URL.
 5. Review unworked `new` leads, `failed` and `sending` notification rows, source booking rates, and Search Console opportunity candidates.
+6. Review CSP report-only logs for new blocked domains before switching to enforcing mode.
 
 ## ElevenLabs Widget Notes
 
@@ -80,6 +82,16 @@ Actions:
    - `curl -i -u "<username>:<password>" https://<domain>/api/admin/contacts`
 3. If `503 missing_config`, set both admin credentials and redeploy.
 4. If still failing, rotate secret and update password manager entry.
+5. If repeated failures are being throttled (`429`), wait for the `Retry-After` window or rotate the shared credential after confirming the caller is legitimate.
+
+## Admin auth hardening path
+
+The current production control is shared Basic Auth plus failure throttling. A stronger path requires infrastructure that is not part of this repo today:
+
+1. move admin access behind an identity-aware proxy or SSO-capable edge product
+2. issue individual accounts instead of one shared password
+3. require MFA at the identity layer
+4. keep the current middleware only as a narrow fallback during migration
 
 ## Incident: Contact form returns 500
 
@@ -187,7 +199,8 @@ Actions:
    - `vercel git connect https://github.com/enzo-prism/tim-next-js.git`
 4. Run guarded release:
    - `npm run release:prod -- --schema-synced`
-5. Confirm new production deployment is Ready:
+5. If the guarded release fails on env validation, add the missing production env names in Vercel before retrying.
+6. Confirm new production deployment is Ready:
    - `vercel ls tim-next-js`
 
 ## Routine Operational Tasks
