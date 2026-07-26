@@ -1,11 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GA_MEASUREMENT_ID, GOOGLE_ADS_CONVERSION_EVENT } from "@/lib/tracking-config";
+import {
+  GA_MEASUREMENT_ID,
+  GOOGLE_ADS_CONVERSION_EVENT,
+  GOOGLE_ADS_TAG_ID,
+} from "@/lib/tracking-config";
 import {
   sanitizeSiteEventPayload,
   trackAppointmentBookingAbandonment,
   trackAppointmentBookingStepComplete,
   trackAppointmentBookingStepView,
   trackAppointmentSubmitSuccess,
+  sanitizeAnalyticsUrl,
+  trackPageView,
   trackSiteEvent,
 } from "@/lib/analytics";
 
@@ -20,6 +26,7 @@ vi.mock("@vercel/analytics", () => ({
 const setupBrowserGlobals = (
   pathname = "/",
   analyticsConsent: "granted" | "denied" | null = "granted",
+  search = "",
 ) => {
   const gtagMock = vi.fn();
   const appendChildMock = vi.fn();
@@ -33,9 +40,10 @@ const setupBrowserGlobals = (
     gtag: gtagMock,
     location: {
       assign: vi.fn(),
-      href: `https://famfirstsmile.com${pathname}`,
+      href: `https://famfirstsmile.com${pathname}${search}`,
+      origin: "https://famfirstsmile.com",
       pathname,
-      search: "",
+      search,
     },
     localStorage: {
       getItem: vi.fn((key: string) => storage.get(key) ?? null),
@@ -150,6 +158,60 @@ describe("analytics custom events", () => {
     });
   });
 
+  it("reduces any analytics URL to path plus campaign parameters", () => {
+    expect(
+      sanitizeAnalyticsUrl(
+        "https://www.famfirstsmile.com/contact?email=patient%40example.com&utm_source=google&gclid=abc#form",
+      ),
+    ).toBe("https://www.famfirstsmile.com/contact?utm_source=google&gclid=abc");
+
+    expect(sanitizeAnalyticsUrl("https://www.famfirstsmile.com/blog/post?name=Jane")).toBe(
+      "https://www.famfirstsmile.com/blog/post",
+    );
+  });
+
+  it("keeps campaign parameters in page_location so GA4 can attribute the session", () => {
+    const { gtagMock } = setupBrowserGlobals(
+      "/",
+      "granted",
+      "?utm_source=google&utm_medium=cpc&utm_campaign=los-gatos&gclid=abc123",
+    );
+
+    trackPageView("/");
+
+    const payload = gtagMock.mock.calls.find((call) => call[1] === "page_view")?.[2];
+    expect(payload.page_location).toBe(
+      "https://famfirstsmile.com/?utm_source=google&utm_medium=cpc&utm_campaign=los-gatos&gclid=abc123",
+    );
+    expect(payload.page_path).toBe("/");
+  });
+
+  it("drops non-campaign query parameters from page_location", () => {
+    const { gtagMock } = setupBrowserGlobals(
+      "/contact",
+      "granted",
+      "?email=patient%40example.com&gclid=keep-me&note=private",
+    );
+
+    trackPageView("/contact");
+
+    const payload = gtagMock.mock.calls.find((call) => call[1] === "page_view")?.[2];
+    expect(payload.page_location).toBe("https://famfirstsmile.com/contact?gclid=keep-me");
+    expect(payload.page_location).not.toContain("email");
+    expect(payload.page_location).not.toContain("note");
+  });
+
+  it("scopes the Ads conversion to the Ads destination only", () => {
+    const { gtagMock } = setupBrowserGlobals("/book-appointment");
+
+    trackAppointmentSubmitSuccess("invisalign", "e2f1c0aa-1111-4222-8333-444455556666");
+
+    expect(gtagMock).toHaveBeenCalledWith("event", GOOGLE_ADS_CONVERSION_EVENT, {
+      send_to: GOOGLE_ADS_TAG_ID,
+      transaction_id: "e2f1c0aa-1111-4222-8333-444455556666",
+    });
+  });
+
   it("tracks appointment success as an Ads conversion and GA4 lead", () => {
     const { gtagMock } = setupBrowserGlobals("/book-appointment");
 
@@ -159,6 +221,7 @@ describe("analytics custom events", () => {
     );
 
     expect(gtagMock).toHaveBeenCalledWith("event", GOOGLE_ADS_CONVERSION_EVENT, {
+      send_to: GOOGLE_ADS_TAG_ID,
       transaction_id: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
     });
     expect(gtagMock).toHaveBeenCalledWith(

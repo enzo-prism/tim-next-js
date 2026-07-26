@@ -80,6 +80,62 @@ const sanitizePath = (path: string) => {
   return pathWithoutQuery || "/";
 };
 
+/**
+ * GA4 derives session source/medium and campaign from `page_location`. Sending
+ * a query-stripped URL therefore reports paid and campaign traffic as direct.
+ * These keys are campaign identifiers rather than patient data, so they are the
+ * only ones carried through; everything else a URL might hold is still dropped.
+ */
+const CAMPAIGN_PARAM_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "utm_id",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "dclid",
+  "msclkid",
+] as const;
+
+const MAX_CAMPAIGN_VALUE_LENGTH = 200;
+
+/** Reduce a query string to campaign parameters only. Pure, so it can be
+ *  applied to any analytics URL regardless of provider. */
+export const sanitizeCampaignSearch = (search: string) => {
+  const current = new URLSearchParams(search);
+  const preserved = new URLSearchParams();
+  for (const key of CAMPAIGN_PARAM_KEYS) {
+    const value = current.get(key)?.trim();
+    if (value) preserved.set(key, value.slice(0, MAX_CAMPAIGN_VALUE_LENGTH));
+  }
+
+  const query = preserved.toString();
+  return query ? `?${query}` : "";
+};
+
+/**
+ * Apply the same URL policy every analytics provider must follow: keep the
+ * path and campaign parameters, drop the hash and every other query
+ * parameter. A patient-facing URL can carry an email or a name, so no
+ * provider may receive one verbatim.
+ */
+export const sanitizeAnalyticsUrl = (rawUrl: string) => {
+  try {
+    const url = new URL(rawUrl);
+    return `${url.origin}${sanitizePath(url.pathname)}${sanitizeCampaignSearch(url.search)}`;
+  } catch {
+    return sanitizePath(rawUrl);
+  }
+};
+
+const buildCampaignQuery = () => {
+  if (typeof window === "undefined") return "";
+  return sanitizeCampaignSearch(window.location.search);
+};
+
 const getCurrentPagePath = () => {
   if (typeof window === "undefined") return "/";
   return sanitizePath(window.location.pathname || "/");
@@ -174,13 +230,16 @@ export const triggerGoogleAdsConversion = (
   if (!initGA()) return;
   if (!window.gtag) return;
 
+  // Scope the conversion to the Ads destination. Without send_to, gtag
+  // broadcasts it to every configured target and GA4 also records a stray
+  // ads_conversion_* event next to generate_lead.
+  //
   // The submission UUID doubles as the Ads transaction ID so a double submit
   // or a reloaded confirmation cannot be counted as two conversions.
-  if (transactionId) {
-    window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT, { transaction_id: transactionId });
-  } else {
-    window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT);
-  }
+  window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT, {
+    send_to: GOOGLE_ADS_TAG_ID,
+    ...(transactionId ? { transaction_id: transactionId } : {}),
+  });
 
   if (!url) return;
   if (target === "_blank") {
@@ -240,7 +299,7 @@ export const trackPageView = (url: string) => {
   window.gtag("event", "page_view", {
     send_to: GA_MEASUREMENT_ID,
     page_path: pagePath,
-    page_location: `${window.location.origin}${pagePath}`,
+    page_location: `${window.location.origin}${pagePath}${buildCampaignQuery()}`,
     page_title: document.title
   });
 };
