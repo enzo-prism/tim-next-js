@@ -26,7 +26,7 @@ Primary design goals:
 1. Contact page posts to `POST /api/contacts`.
 2. The public-form guard enforces JSON, trusted browser origin, actual streamed body size, honeypot, and a best-effort per-instance rate limit.
 3. The shared Zod contract validates contact details, a known service or the contact-only `"other"` choice, consent, submission UUID, and bounded attribution fields.
-4. The submission UUID is checked before insert and is protected by a unique database index, preventing duplicate leads.
+4. The submission UUID is checked before insert and is protected by a unique database index, preventing duplicate leads. It is also bound to the form type and normalized stored payload. Reusing it with changed data returns `409` instead of changing or relaying a different lead.
 5. The lead starts with `formspreeStatus="failed"`. Before relay, the server atomically claims it by changing the state to `sending`, so concurrent requests cannot both notify the office.
 6. A known relay failure returns the state to `failed` for a later retry. Success changes it to `delivered`.
 7. An indeterminate `sending` state is not retried automatically. It requires manual reconciliation because Formspree does not provide a verified idempotency key and an automatic retry could create a duplicate notification.
@@ -41,12 +41,12 @@ Primary design goals:
 2. Privacy-safe step-view, step-complete, and abandonment events identify funnel loss without sending form contents.
 3. The completed request posts once to `POST /api/appointments`.
 4. The same public-form guard, consent, attribution, and idempotency protections used by the contact form run first.
-5. `insertAppointmentSchema` additionally requires a known service, valid phone number, and a preferred date that is not in the past in Los Angeles time.
+5. `insertAppointmentSchema` additionally requires a known service, valid phone number, and a real preferred calendar date that is not in the past in Los Angeles time and falls on an open Monday-through-Thursday practice day.
 6. Request is persisted first in `contacts` with:
    - `requestType="appointment"`
    - `preferredDate` / `preferredTime`
    - initial `formspreeStatus="failed"`
-7. The server uses the same atomic `failed` -> `sending` notification claim as the contact endpoint, then relays to `FORMSPREE_APPOINTMENT_ENDPOINT`.
+7. The server uses the same atomic `failed` -> `sending` notification claim as the contact endpoint, then relays the canonical stored row to `FORMSPREE_APPOINTMENT_ENDPOINT`. The notification includes the internal lead ID and submission UUID for reconciliation.
 8. Relay outcomes:
    - success -> `formspreeStatus` updated to `delivered`, API returns `201`.
    - known failure -> state returns to `failed`, the DB record is retained, and the API returns `202 delivered:false`.
@@ -68,9 +68,10 @@ Primary design goals:
 
 1. `captureLeadAttribution()` stores first-touch landing page, external referrer hostname, CTA source, UTM values, and Google click IDs in session storage.
 2. Contact and appointment submissions persist that attribution with the consent version and submission UUID.
-3. Public analytics receives only allow-listed, bounded event properties; names, emails, phone numbers, messages, URLs with query strings, and health details are excluded.
-4. `generate_lead` is emitted after a durable new record is created. The appointment Google Ads event also uses the submission UUID as `transaction_id` for deduplication.
-5. A Formspree delivery failure produces a saved-lead fallback state and call prompt instead of losing the lead or claiming full delivery.
+3. No analytics or ad tag runs before the visitor opts in. `gtag` consent defaults are set to denied for analytics and ad storage before any tag loads, the GA script and Vercel Analytics mount only after consent is granted, and every event helper re-checks stored consent. A denied or undecided visitor emits nothing.
+4. Public analytics receives only allow-listed, bounded event properties; names, emails, phone numbers, messages, URLs with query strings, and health details are excluded. `service_id` is allow-listed because it is a bounded enum of published service slugs.
+5. `generate_lead` is emitted after a durable new record is created. The appointment Google Ads event also uses the submission UUID as `transaction_id` for deduplication.
+6. A Formspree delivery failure produces a saved-lead fallback state and call prompt instead of losing the lead or claiming full delivery.
 
 ## Directory Responsibilities
 
@@ -111,6 +112,8 @@ Primary design goals:
   - restrictive `Permissions-Policy`
 - Public forms use validation, streamed size limits, origin checks, honeypots, rate limiting, consent records, and idempotency keys.
 - Hotjar/session replay is intentionally not used on patient-facing pages.
+- Analytics and ad measurement are opt-in; nothing is loaded or emitted until the visitor consents.
+- Admin lead search is sent in a POST body so patient names never enter query strings, access logs, or browser history.
 
 ## Key Architectural Decisions
 

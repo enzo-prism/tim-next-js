@@ -75,7 +75,7 @@ Do not optimize only for raw form volume. The durable business outcome is confir
 
 Before production deployment:
 
-1. Apply `drizzle/0001_growth_lead_attribution.sql` and `drizzle/0002_closed_loop_lead_pipeline.sql` to the intended production database.
+1. Apply all `drizzle/*.sql` migrations in numeric order to the intended production database, including the safe `0000` baseline and public-form contract migration.
 2. Run `npm run db:verify` against that database.
 3. Confirm GA4, Ads, Formspree, canonical host, and both admin credentials are configured.
 4. Run `npm run quality:all` and CI E2E.
