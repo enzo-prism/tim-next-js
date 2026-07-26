@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const publicRoutes = [
   "/",
@@ -25,11 +25,15 @@ const retiredAssetReferences = [
   "mesh-hero",
 ];
 
+async function gotoReady(page: Page, route: string) {
+  await page.goto(route, { waitUntil: "domcontentloaded" });
+  await expect(page.locator("main")).toBeVisible();
+}
+
 test.describe("minimal clinical design guard", () => {
   for (const route of publicRoutes) {
     test(`${route} avoids retired generated icon visuals`, async ({ page }) => {
-      await page.goto(route);
-      await expect(page.locator("main")).toBeVisible();
+      await gotoReady(page, route);
 
       await expect(page.locator('img[src*="/icons/soft-blue/"]')).toHaveCount(0);
       await expect(page.locator("svg.lucide")).toHaveCount(0);
@@ -44,8 +48,7 @@ test.describe("minimal clinical design guard", () => {
 
   test("breadcrumb separators stay compact across public pages", async ({ page }) => {
     for (const route of publicRoutes.filter((path) => path !== "/")) {
-      await page.goto(route);
-      await expect(page.locator("main")).toBeVisible();
+      await gotoReady(page, route);
 
       const separators = page.locator('nav[aria-label="breadcrumb"] [role="presentation"] svg');
       const count = await separators.count();
@@ -59,14 +62,14 @@ test.describe("minimal clinical design guard", () => {
   });
 
   test("primary appointment paths remain visible", async ({ page }) => {
-    await page.goto("/");
+    await gotoReady(page, "/");
     await expect(page.getByRole("link", { name: /request an appointment/i }).first()).toBeVisible();
 
-    await page.goto("/book-appointment");
+    await gotoReady(page, "/book-appointment");
     await expect(page.getByRole("heading", { name: /start with the essentials/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "Continue" })).toBeEnabled();
 
-    await page.goto("/contact");
+    await gotoReady(page, "/contact");
     await expect(page.getByRole("heading", { name: /send us a message/i })).toBeVisible();
   });
 });

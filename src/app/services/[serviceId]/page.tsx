@@ -16,7 +16,9 @@ export function generateStaticParams() {
 
 // Only the service IDs above are valid routes; anything else must be a real
 // 404 (previously unknown IDs rendered a 200 "Service Not Found" soft 404).
-export const dynamicParams = false;
+// Let unknown slugs reach the route so `notFound()` can return the shared 404
+// cleanly in the production server instead of triggering Next's fallback error.
+export const dynamicParams = true;
 
 type ServiceRouteProps = {
   params: Promise<{ serviceId: string }>;

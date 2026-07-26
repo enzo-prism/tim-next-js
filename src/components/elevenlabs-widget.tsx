@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 const ELEVENLABS_WIDGET_SCRIPT_SRC =
@@ -14,75 +14,78 @@ const ELEVENLABS_TEXT_CONTENTS = JSON.stringify({
   collapse: "Close assistant",
 });
 
-function isPrivateRoute(pathname: string | null) {
-  return pathname === "/admin" || pathname?.startsWith("/admin/") || false;
+function isSuppressedRoute(pathname: string | null) {
+  return (
+    pathname === "/admin" ||
+    pathname?.startsWith("/admin/") ||
+    pathname === "/contact" ||
+    pathname === "/book-appointment"
+  );
 }
 
 export default function ElevenLabsWidget() {
   const pathname = usePathname();
-  const isPrivate = isPrivateRoute(pathname);
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
-  useEffect(() => {
-    if (isPrivate) {
+  const loadAssistant = () => {
+    if (status === "loading" || status === "ready") return;
+
+    setStatus("loading");
+    if (customElements.get("elevenlabs-convai")) {
+      setStatus("ready");
       return;
     }
 
-    // Defer the widget script so it never competes with initial page load:
-    // load on first user interaction, or when the browser goes idle.
-    let loaded = false;
-    let idleHandle: number | undefined;
-    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-    const interactionEvents: Array<keyof WindowEventMap> = [
-      "pointerdown",
-      "keydown",
-    ];
+    const existingScript = document.getElementById(
+      "elevenlabs-convai-widget-script",
+    ) as HTMLScriptElement | null;
+    const script = existingScript ?? document.createElement("script");
 
-    const cleanupTriggers = () => {
-      for (const eventName of interactionEvents) {
-        window.removeEventListener(eventName, loadScript);
-      }
-      if (idleHandle !== undefined && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleHandle);
-      }
-      if (timeoutHandle !== undefined) {
-        clearTimeout(timeoutHandle);
-      }
+    const handleReady = () => setStatus("ready");
+    const handleError = () => {
+      script.remove();
+      setStatus("error");
     };
+    script.addEventListener("load", handleReady, { once: true });
+    script.addEventListener("error", handleError, { once: true });
 
-    function loadScript() {
-      if (loaded) return;
-      loaded = true;
-      cleanupTriggers();
-
-      const existingScript =
-        document.getElementById("elevenlabs-convai-widget-script") ||
-        document.querySelector(`script[src="${ELEVENLABS_WIDGET_SCRIPT_SRC}"]`);
-
-      if (existingScript) {
-        return;
-      }
-
-      const script = document.createElement("script");
+    if (!existingScript) {
       script.id = "elevenlabs-convai-widget-script";
       script.src = ELEVENLABS_WIDGET_SCRIPT_SRC;
       script.async = true;
       document.body.appendChild(script);
     }
+  };
 
-    for (const eventName of interactionEvents) {
-      window.addEventListener(eventName, loadScript, { once: true, passive: true });
-    }
-    if ("requestIdleCallback" in window) {
-      idleHandle = window.requestIdleCallback(loadScript, { timeout: 15_000 });
-    } else {
-      timeoutHandle = setTimeout(loadScript, 15_000);
-    }
-
-    return cleanupTriggers;
-  }, [isPrivate]);
-
-  if (isPrivate) {
+  if (isSuppressedRoute(pathname)) {
     return null;
+  }
+
+  if (status !== "ready") {
+    return (
+      <div className="fixed bottom-4 right-4 z-[90] sm:bottom-6 sm:right-6">
+        <button
+          type="button"
+          data-testid="assistant-launcher"
+          onClick={loadAssistant}
+          disabled={status === "loading"}
+          className="min-h-11 rounded-lg border border-primary/25 bg-card px-4 text-sm font-semibold text-primary shadow-sm hover:border-primary/45 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
+        >
+          {status === "loading"
+            ? "Opening assistant…"
+            : status === "error"
+              ? "Try assistant again"
+              : "Need help?"}
+        </button>
+        <span className="sr-only" aria-live="polite">
+          {status === "loading"
+            ? "Loading the Family First Smile Care assistant"
+            : status === "error"
+              ? "The assistant did not load"
+              : ""}
+        </span>
+      </div>
+    );
   }
 
   return (

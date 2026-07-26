@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { resolveCanonicalPath, resolvePageMeta } from "@/content/seo";
 
-const defaultHost = (process.env.CANONICAL_HOST || "https://www.famfirstsmile.com").replace(/\/$/, "");
+const normalizeCanonicalHost = (value: string) => {
+  const host = value.replace(/\/$/, "");
+  return host === "https://famfirstsmile.com"
+    ? "https://www.famfirstsmile.com"
+    : host;
+};
+
+const defaultHost = normalizeCanonicalHost(
+  process.env.CANONICAL_HOST || "https://www.famfirstsmile.com",
+);
 
 export const metadataBase = new URL(defaultHost);
 

@@ -158,7 +158,7 @@ const FormMessage = React.forwardRef<
       ref={ref}
       id={formMessageId}
       role="alert"
-      className={cn("flex items-start gap-1.5 text-sm font-medium text-destructive", className)}
+      className={cn("flex items-start gap-1.5 text-sm font-medium text-primary", className)}
       {...props}
     >
       {/* Non-color affordance: the brand palette renders destructive states in

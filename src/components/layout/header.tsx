@@ -248,7 +248,10 @@ export default function Header() {
                   <SheetTitle>Family First Smile Care menu</SheetTitle>
                   <SheetDescription>Navigate the site or request an appointment.</SheetDescription>
                 </SheetHeader>
-                <nav className="mt-6 min-h-0 flex-1 touch-pan-y space-y-4 overflow-y-auto overscroll-y-contain pb-[max(1.5rem,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
+                <nav
+                  aria-label="Mobile navigation"
+                  className="mt-6 min-h-0 flex-1 touch-pan-y space-y-4 overflow-y-auto overscroll-y-contain pb-[max(1.5rem,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]"
+                >
                   <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                     <Link
                       href={buildAppointmentUrl({ source: "header_mobile" })}
@@ -265,7 +268,7 @@ export default function Header() {
                       key={item.name}
                       href={item.href}
                       aria-current={isItemActive(item.href) ? "page" : undefined}
-                      className={`nav-link text-lg ${
+                      className={`nav-link text-lg forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText] ${
                         isItemActive(item.href)
                           ? "text-primary font-semibold"
                           : "text-gray-700 hover:text-primary"

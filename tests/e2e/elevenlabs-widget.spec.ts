@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const PUBLIC_ROUTES = ["/", "/contact", "/book-appointment", "/blog"];
+const PUBLIC_ROUTES = ["/", "/blog"];
+const SUPPRESSED_ROUTES = ["/contact", "/book-appointment"];
 const WIDGET_SCRIPT_URL =
   "https://cdn.jsdelivr.net/npm/@elevenlabs/convai-widget-embed@0.11.4";
 
@@ -243,13 +244,15 @@ const widgetStubScript = `
 function getFutureDateInputValue(daysFromNow = 14) {
   const date = new Date();
   date.setDate(date.getDate() + daysFromNow);
+  while (date.getDay() === 0 || date.getDay() >= 5) {
+    date.setDate(date.getDate() + 1);
+  }
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
   const day = `${date.getDate()}`.padStart(2, "0");
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
 async function installWidgetStub(page: Page) {
-  await page.addInitScript(widgetStubScript);
   await page.route(WIDGET_SCRIPT_URL, async (route) => {
     await route.fulfill({
       contentType: "application/javascript",
@@ -258,9 +261,15 @@ async function installWidgetStub(page: Page) {
   });
 }
 
-async function gotoWithWidget(page: Page, route: string) {
+async function gotoWithLauncher(page: Page, route: string) {
   await installWidgetStub(page);
-  await page.goto(route);
+  await page.goto(route, { waitUntil: "domcontentloaded" });
+  await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible();
+  await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(0);
+}
+
+async function activateAssistant(page: Page) {
+  await page.locator('[data-testid="assistant-launcher"]').click();
   await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(1);
   await expect
     .poll(async () => {
@@ -270,19 +279,11 @@ async function gotoWithWidget(page: Page, route: string) {
 }
 
 async function getLauncherMetrics(page: Page) {
-  const host = page.locator('[data-widget="elevenlabs-convai"]');
-  await expect(host).toHaveCount(1);
+  const launcher = page.locator('[data-testid="assistant-launcher"]');
+  await expect(launcher).toBeVisible();
 
-  return host.evaluate((element) => {
-    const launcher = element.shadowRoot?.querySelector(
-      '[data-testid="mock-elevenlabs-launcher"]',
-    ) as HTMLElement | null;
-
-    if (!launcher) {
-      return null;
-    }
-
-    const rect = launcher.getBoundingClientRect();
+  return launcher.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
     return {
       top: rect.top,
       right: rect.right,
@@ -293,12 +294,6 @@ async function getLauncherMetrics(page: Page) {
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
     };
-  });
-}
-
-async function getHostZIndex(page: Page) {
-  return page.locator('[data-widget="elevenlabs-convai"]').evaluate((element) => {
-    return window.getComputedStyle(element).zIndex;
   });
 }
 
@@ -316,7 +311,7 @@ test.describe("ElevenLabs widget integration", () => {
     const expectedInset = testInfo.project.name === "desktop" ? 24 : 16;
 
     for (const route of PUBLIC_ROUTES) {
-      await gotoWithWidget(page, route);
+      await gotoWithLauncher(page, route);
       const metrics = await getLauncherMetrics(page);
 
       expect(metrics).not.toBeNull();
@@ -338,8 +333,73 @@ test.describe("ElevenLabs widget integration", () => {
     }
   });
 
+  test("does not load the assistant until the visitor asks for it", async ({ page }) => {
+    let widgetScriptRequests = 0;
+    await page.route(WIDGET_SCRIPT_URL, async (route) => {
+      widgetScriptRequests += 1;
+      await route.fulfill({
+        contentType: "application/javascript",
+        body: widgetStubScript,
+      });
+    });
+
+    await page.goto("/");
+    await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible();
+    expect(widgetScriptRequests).toBe(0);
+
+    await page.locator('[data-testid="assistant-launcher"]').click();
+    await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(1);
+    expect(widgetScriptRequests).toBe(1);
+  });
+
+  test("can retry after the assistant script fails to load", async ({ page }) => {
+    let attempts = 0;
+    await page.route(WIDGET_SCRIPT_URL, async (route) => {
+      attempts += 1;
+      if (attempts === 1) {
+        await route.abort("failed");
+        return;
+      }
+      await route.fulfill({
+        contentType: "application/javascript",
+        body: widgetStubScript,
+      });
+    });
+
+    await page.goto("/");
+    await page.getByRole("button", { name: "Need help?" }).click();
+    await expect(page.getByRole("button", { name: "Try assistant again" })).toBeVisible();
+    await page.getByRole("button", { name: "Try assistant again" }).click();
+
+    await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(1);
+    expect(attempts).toBe(2);
+  });
+
+  test("keeps the privacy choice panel clear of the assistant launcher", async ({ page }) => {
+    await gotoWithLauncher(page, "/");
+
+    const privacyPanel = page.getByRole("region", { name: "Analytics privacy choices" });
+    const launcher = page.locator('[data-testid="assistant-launcher"]');
+    await expect(privacyPanel).toBeVisible();
+
+    const [privacyBox, launcherBox] = await Promise.all([
+      privacyPanel.boundingBox(),
+      launcher.boundingBox(),
+    ]);
+    expect(privacyBox).not.toBeNull();
+    expect(launcherBox).not.toBeNull();
+
+    const overlaps =
+      (privacyBox?.x ?? 0) < (launcherBox?.x ?? 0) + (launcherBox?.width ?? 0) &&
+      (privacyBox?.x ?? 0) + (privacyBox?.width ?? 0) > (launcherBox?.x ?? 0) &&
+      (privacyBox?.y ?? 0) < (launcherBox?.y ?? 0) + (launcherBox?.height ?? 0) &&
+      (privacyBox?.y ?? 0) + (privacyBox?.height ?? 0) > (launcherBox?.y ?? 0);
+    expect(overlaps).toBeFalsy();
+  });
+
   test("opens and collapses cleanly with pointer and keyboard", async ({ page }) => {
-    await gotoWithWidget(page, "/");
+    await gotoWithLauncher(page, "/");
+    await activateAssistant(page);
 
     const host = page.locator('[data-widget="elevenlabs-convai"]');
     await expect(host).toHaveAttribute("text-contents", /Talk with us/);
@@ -393,10 +453,13 @@ test.describe("ElevenLabs widget integration", () => {
       .toBeTruthy();
   });
 
-  test("keeps the toast above the widget and preserves navigation affordances", async ({
+  test("keeps error feedback visible and preserves navigation affordances", async ({
     page,
   }, testInfo) => {
-    await gotoWithWidget(page, "/book-appointment");
+    await page.goto("/book-appointment");
+    await page.getByRole("button", { name: "No thanks" }).click();
+    await expect(page.locator('[data-testid="assistant-launcher"]')).toHaveCount(0);
+    await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Continue" })).toBeEnabled({
       timeout: 15_000,
     });
@@ -432,14 +495,9 @@ test.describe("ElevenLabs widget integration", () => {
       toastViewport.getByText("Unable to submit request", { exact: true }),
     ).toBeVisible();
 
-    const [hostZIndex, toastZIndex] = await Promise.all([
-      getHostZIndex(page),
-      toastViewport.evaluate((element) => {
-        return window.getComputedStyle(element).zIndex;
-      }),
-    ]);
-
-    expect(hostZIndex).toBe("90");
+    const toastZIndex = await toastViewport.evaluate((element) => {
+      return window.getComputedStyle(element).zIndex;
+    });
     expect(toastZIndex).toBe("100");
 
     if (testInfo.project.name === "desktop") {
@@ -451,9 +509,17 @@ test.describe("ElevenLabs widget integration", () => {
     }
   });
 
-  test("does not render on the admin route", async ({ browser }) => {
+  test("suppresses the assistant on form routes", async ({ page }) => {
+    for (const route of SUPPRESSED_ROUTES) {
+      await page.goto(route);
+      await expect(page.locator('[data-testid="assistant-launcher"]')).toHaveCount(0);
+      await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(0);
+    }
+  });
+
+  test("does not render on the admin route", async ({ browser }, testInfo) => {
     const context = await browser.newContext({
-      baseURL: "http://127.0.0.1:3000",
+      baseURL: String(testInfo.project.use.baseURL),
       httpCredentials: {
         username: "admin",
         password: "tim",

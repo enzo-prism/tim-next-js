@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { cn } from "@/lib/utils";
@@ -32,25 +32,56 @@ export default function VideoFacade({
   className,
 }: VideoFacadeProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playButtonRef = useRef<HTMLButtonElement>(null);
+  const shouldRestoreFocusRef = useRef(false);
+
+  useEffect(() => {
+    if (isPlaying) {
+      iframeRef.current?.focus();
+      return;
+    }
+
+    if (shouldRestoreFocusRef.current) {
+      shouldRestoreFocusRef.current = false;
+      playButtonRef.current?.focus();
+    }
+  }, [isPlaying]);
 
   if (isPlaying) {
     return (
-      <iframe
-        src={videoSrc}
-        className={cn("absolute inset-0 h-full w-full border-0", className)}
-        allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
-        title={title}
-      />
+      <>
+        <iframe
+          ref={iframeRef}
+          src={videoSrc}
+          className={cn("absolute inset-0 h-full w-full border-0", className)}
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+          title={title}
+        />
+        <button
+          type="button"
+          aria-label={`Close video: ${title}`}
+          className="absolute right-3 top-3 z-10 inline-flex h-10 min-w-10 items-center justify-center gap-2 rounded-md bg-background/95 px-3 text-sm font-semibold text-primary shadow-sm ring-1 ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText]"
+          onClick={() => {
+            shouldRestoreFocusRef.current = true;
+            setIsPlaying(false);
+          }}
+        >
+          <MinimalGlyph name="close" className="h-4 w-4" />
+          <span>Close</span>
+        </button>
+      </>
     );
   }
 
   return (
     <button
+      ref={playButtonRef}
       type="button"
       onClick={() => setIsPlaying(true)}
       aria-label={`${playLabel}: ${title}`}
       className={cn(
-        "group absolute inset-0 h-full w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group absolute inset-0 h-full w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-[-2px] forced-colors:focus-visible:outline-[CanvasText]",
         className,
       )}
     >
