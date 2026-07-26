@@ -4,6 +4,7 @@ import {
   buildSearchOpportunityCandidates,
   mapQueryPageRows,
 } from "@/app/api/admin/gsc/overview/opportunities";
+import { fetchBoundedQueryPageRows } from "@/app/api/admin/gsc/overview/pagination";
 
 describe("GSC query-by-page opportunities", () => {
   it("maps page and query dimensions in Search Console order", () => {
@@ -84,5 +85,48 @@ describe("GSC query-by-page opportunities", () => {
     expect(candidates[0].opportunityScore).toBeGreaterThan(
       candidates[1].opportunityScore,
     );
+  });
+});
+
+describe("GSC query-page pagination", () => {
+  it("paginates until a short page without marking the result truncated", async () => {
+    const calls: Array<{ startRow: number; rowLimit: number }> = [];
+    const allRows = Array.from({ length: 7 }, (_, index) => ({
+      keys: [`https://example.com/${index}`, `query ${index}`],
+    }));
+
+    const result = await fetchBoundedQueryPageRows(
+      async (startRow, rowLimit) => {
+        calls.push({ startRow, rowLimit });
+        return allRows.slice(startRow, startRow + rowLimit);
+      },
+      10,
+      3,
+    );
+
+    expect(calls).toEqual([
+      { startRow: 0, rowLimit: 3 },
+      { startRow: 3, rowLimit: 3 },
+      { startRow: 6, rowLimit: 3 },
+    ]);
+    expect(result.rows).toHaveLength(7);
+    expect(result.truncated).toBe(false);
+    expect(result.rowsScanned).toBe(7);
+  });
+
+  it("uses one extra row to report when the bounded cap truncates results", async () => {
+    const allRows = Array.from({ length: 12 }, (_, index) => ({
+      keys: [`https://example.com/${index}`, `query ${index}`],
+    }));
+
+    const result = await fetchBoundedQueryPageRows(
+      async (startRow, rowLimit) => allRows.slice(startRow, startRow + rowLimit),
+      10,
+      4,
+    );
+
+    expect(result.rows).toHaveLength(10);
+    expect(result.truncated).toBe(true);
+    expect(result.rowCap).toBe(10);
   });
 });

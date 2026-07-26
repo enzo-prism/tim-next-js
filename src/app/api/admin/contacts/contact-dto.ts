@@ -1,5 +1,6 @@
 import type { AdminContactItem } from "@/app/api/admin/contacts/types";
 import type { Contact } from "@/server/schema";
+import { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
 
 export const toAdminContactItem = (contact: Contact): AdminContactItem => ({
   id: contact.id,
@@ -21,6 +22,7 @@ export const toAdminContactItem = (contact: Contact): AdminContactItem => ({
   utmSource: contact.utmSource,
   utmMedium: contact.utmMedium,
   utmCampaign: contact.utmCampaign,
+  leadSource: normalizeLeadSource(contact),
   leadStatus: contact.leadStatus,
   contactedAt: contact.contactedAt?.toISOString() ?? null,
   bookedAt: contact.bookedAt?.toISOString() ?? null,

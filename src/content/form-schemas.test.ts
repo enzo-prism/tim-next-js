@@ -116,6 +116,36 @@ describe("public lead schemas", () => {
     ).toBe(false);
   });
 
+  it("rejects impossible dates and days when the practice is closed", () => {
+    const base = {
+      company: "",
+      firstName: "Jamie",
+      lastName: "Lee",
+      email: "jamie@example.com",
+      phone: "(408) 555-1212",
+      service: "invisalign",
+      preferredTime: "morning" as const,
+      message: "",
+      consentToContact: true,
+    };
+
+    expect(
+      appointmentFormSchema.safeParse({ ...base, preferredDate: "2027-02-31" }).success,
+    ).toBe(false);
+    expect(
+      appointmentFormSchema.safeParse({ ...base, preferredDate: "2027-00-12" }).success,
+    ).toBe(false);
+    expect(
+      appointmentFormSchema.safeParse({ ...base, preferredDate: "2027-08-06" }).success,
+    ).toBe(false);
+    expect(
+      appointmentFormSchema.safeParse({ ...base, preferredDate: "2027-08-07" }).success,
+    ).toBe(false);
+    expect(
+      appointmentFormSchema.safeParse({ ...base, preferredDate: "2027-08-09" }).success,
+    ).toBe(true);
+  });
+
   it("validates required details before optional appointment preferences", () => {
     expect(
       appointmentDetailsStepSchema.safeParse({

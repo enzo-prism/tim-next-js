@@ -13,6 +13,7 @@ const updateSchema = z
     leadStatus: z.enum(LEAD_STATUS_VALUES).optional(),
     lostReason: z.string().trim().max(500).nullable().optional(),
     staffNotes: z.string().trim().max(4000).nullable().optional(),
+    expectedUpdatedAt: z.string().datetime(),
   })
   .strict()
   .refine(
@@ -79,21 +80,44 @@ export async function PATCH(
   }
 
   try {
-    const contact = await storage.updateContactLifecycle(id, parsed.data);
-    if (!contact) {
+    const result = await storage.updateContactLifecycle(id, {
+      ...parsed.data,
+      expectedUpdatedAt: new Date(parsed.data.expectedUpdatedAt),
+    });
+    if (result.status === "not_found") {
       return jsonResponse(
         { ok: false, error: "not_found", message: "Lead not found." },
         { status: 404 },
       );
     }
+    if (result.status === "conflict") {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "update_conflict",
+          message: "This lead changed since you opened it. Refresh and try again.",
+        },
+        { status: 409 },
+      );
+    }
+    if (result.status === "invalid_lost_reason") {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "invalid_update",
+          message: "A reason is required while a lead is marked lost.",
+        },
+        { status: 400 },
+      );
+    }
 
     const payload: UpdateAdminContactResponse = {
       ok: true,
-      item: toAdminContactItem(contact),
+      item: toAdminContactItem(result.contact),
     };
     return jsonResponse(payload);
-  } catch (error) {
-    console.error("Admin contact lifecycle update error:", error);
+  } catch {
+    console.error("Admin contact lifecycle update failed.");
     return jsonResponse(
       { ok: false, error: "server_error", message: "Failed to update lead." },
       { status: 500 },

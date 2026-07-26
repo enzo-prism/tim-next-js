@@ -33,12 +33,80 @@ require_cmd git
 require_cmd gh
 require_cmd vercel
 require_cmd npm
+require_cmd node
 
 REPO_SLUG="${REPO_SLUG:-enzo-prism/tim-next-js}"
 REPO_URL="${REPO_URL:-https://github.com/${REPO_SLUG}.git}"
 VERCEL_PROJECT_NAME="${VERCEL_PROJECT_NAME:-tim-next-js}"
 VERCEL_PROJECT_ID="${VERCEL_PROJECT_ID:-prj_bzwJ806oFI1FxU70DEIi2iyV0sl1}"
 VERCEL_ORG_ID="${VERCEL_ORG_ID:-team_NbogaPSGlnnTm8RNaeS0B4Pl}"
+REQUIRED_PRODUCTION_ENVS_CSV="${REQUIRED_PRODUCTION_ENVS_CSV:-DATABASE_URL,ADMIN_USERNAME,ADMIN_PASSWORD,CANONICAL_HOST,NEXT_PUBLIC_CANONICAL_HOST,NEXT_PUBLIC_GA_MEASUREMENT_ID,NEXT_PUBLIC_GOOGLE_ADS_TAG_ID,NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT,FORMSPREE_APPOINTMENT_ENDPOINT,FORMSPREE_CONTACT_ENDPOINT,GA4_PROPERTY_ID,GSC_SITE_URL}"
+REQUIRED_PRODUCTION_ENV_GROUPS_CSV="${REQUIRED_PRODUCTION_ENV_GROUPS_CSV:-GOOGLE_SERVICE_ACCOUNT_JSON|GOOGLE_SERVICE_ACCOUNT_JSON_BASE64|GOOGLE_APPLICATION_CREDENTIALS}"
+
+validate_production_envs() {
+  local env_list_log
+  env_list_log="$(mktemp)"
+
+  if ! vercel env list production --format json --project "$VERCEL_PROJECT_ID" >"$env_list_log" 2>&1; then
+    cat "$env_list_log" >&2
+    rm -f "$env_list_log"
+    exit 1
+  fi
+
+  REQUIRED_PRODUCTION_ENVS_CSV="$REQUIRED_PRODUCTION_ENVS_CSV" \
+  REQUIRED_PRODUCTION_ENV_GROUPS_CSV="$REQUIRED_PRODUCTION_ENV_GROUPS_CSV" \
+  node - "$env_list_log" <<'NODE'
+const fs = require("fs");
+
+const filePath = process.argv[2];
+const raw = fs.readFileSync(filePath, "utf8");
+const jsonStart = raw.indexOf("{");
+
+if (jsonStart < 0) {
+  console.error("Could not parse Vercel production env list output.");
+  process.exit(1);
+}
+
+const parsed = JSON.parse(raw.slice(jsonStart));
+const keys = new Set((parsed.envs ?? []).map((entry) => entry.key));
+const required = (process.env.REQUIRED_PRODUCTION_ENVS_CSV ?? "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+const groups = (process.env.REQUIRED_PRODUCTION_ENV_GROUPS_CSV ?? "")
+  .split(",")
+  .map((group) =>
+    group
+      .split("|")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  )
+  .filter((group) => group.length > 0);
+
+const missing = required.filter((key) => !keys.has(key));
+const missingGroups = groups.filter((group) => !group.some((key) => keys.has(key)));
+
+if (missing.length > 0 || missingGroups.length > 0) {
+  if (missing.length > 0) {
+    console.error("Missing required production env names:");
+    for (const key of missing) {
+      console.error(`  - ${key}`);
+    }
+  }
+
+  if (missingGroups.length > 0) {
+    console.error("Missing required production env group:");
+    for (const group of missingGroups) {
+      console.error(`  - one of: ${group.join(", ")}`);
+    }
+  }
+
+  process.exit(1);
+}
+NODE
+
+  rm -f "$env_list_log"
+}
 
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
@@ -119,6 +187,9 @@ else
   cat "$git_connect_log"
 fi
 rm -f "$git_connect_log"
+
+echo "Validating required production env names..."
+validate_production_envs
 
 if [[ "$SKIP_CHECK" -eq 0 ]]; then
   echo "Running quality checks..."

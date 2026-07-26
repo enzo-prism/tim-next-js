@@ -29,6 +29,63 @@ vi.mock("@/server/public-form-guard", async (importOriginal) => ({
 import { POST } from "@/app/api/contacts/route";
 import { LEAD_CONSENT_VERSION } from "@/content/form-schemas";
 
+const payload = {
+  company: "",
+  firstName: "Jamie",
+  lastName: "Lee",
+  email: "jamie@example.com",
+  phone: "408-555-1212",
+  service: "family-dentistry",
+  message: "I have a question.",
+  consentToContact: true,
+  consentVersion: LEAD_CONSENT_VERSION,
+  submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+};
+
+const storedContact = (overrides: Record<string, unknown> = {}) => ({
+  id: "contact-1",
+  submissionId: payload.submissionId,
+  firstName: payload.firstName,
+  lastName: payload.lastName,
+  email: payload.email,
+  phone: payload.phone,
+  service: payload.service,
+  message: payload.message,
+  requestType: "contact",
+  preferredDate: null,
+  preferredTime: null,
+  formspreeStatus: "failed",
+  landingPage: null,
+  referrer: null,
+  ctaSource: null,
+  utmSource: null,
+  utmMedium: null,
+  utmCampaign: null,
+  utmTerm: null,
+  utmContent: null,
+  gclid: null,
+  gbraid: null,
+  wbraid: null,
+  consentToContact: true,
+  consentVersion: LEAD_CONSENT_VERSION,
+  leadStatus: "new",
+  contactedAt: null,
+  bookedAt: null,
+  arrivedAt: null,
+  lostReason: null,
+  staffNotes: null,
+  createdAt: new Date("2026-07-24T16:00:00.000Z"),
+  updatedAt: new Date("2026-07-24T16:00:00.000Z"),
+  ...overrides,
+});
+
+const request = (overrides: Record<string, unknown> = {}) =>
+  new Request("https://www.famfirstsmile.com/api/contacts", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ...payload, ...overrides }),
+  });
+
 describe("contact API", () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -37,36 +94,22 @@ describe("contact API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getContactBySubmissionId.mockResolvedValue(undefined);
-    mocks.createContact.mockResolvedValue({ id: "contact-1", service: "family-dentistry" });
-    mocks.claimContactNotification.mockResolvedValue({
-      id: "contact-1",
-      service: "family-dentistry",
-      formspreeStatus: "sending",
-    });
+    mocks.createContact.mockResolvedValue(storedContact());
+    mocks.claimContactNotification.mockResolvedValue(
+      storedContact({ formspreeStatus: "sending" }),
+    );
     mocks.relayLeadNotification.mockResolvedValue(undefined);
     mocks.updateContactFormspreeStatus.mockResolvedValue(undefined);
   });
 
   it("persists and notifies the office for a general contact lead", async () => {
-    const response = await POST(
-      new Request("https://www.famfirstsmile.com/api/contacts", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          company: "",
-          firstName: "Jamie",
-          lastName: "Lee",
-          email: "jamie@example.com",
-          phone: "408-555-1212",
-          service: "family-dentistry",
-          message: "I have a question.",
-          consentToContact: true,
-          consentVersion: LEAD_CONSENT_VERSION,
-          submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
-          ctaSource: "contact_page",
-        }),
-      }),
-    );
+    const contactWithAttribution = storedContact({
+      ctaSource: "contact_page",
+      formspreeStatus: "sending",
+    });
+    mocks.createContact.mockResolvedValue({ ...contactWithAttribution, formspreeStatus: "failed" });
+    mocks.claimContactNotification.mockResolvedValue(contactWithAttribution);
+    const response = await POST(request({ ctaSource: "contact_page" }));
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({
@@ -85,34 +128,12 @@ describe("contact API", () => {
   it("does not resend after delivery succeeds but its status writeback fails", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-24T16:00:00.000Z"));
-    const pending = {
-      id: "contact-1",
-      service: "family-dentistry",
-      formspreeStatus: "sending",
-    };
+    const pending = storedContact({ formspreeStatus: "sending" });
     mocks.getContactBySubmissionId.mockResolvedValueOnce(undefined).mockResolvedValue(pending);
     mocks.claimContactNotification
       .mockResolvedValueOnce(pending)
       .mockResolvedValueOnce(undefined);
     mocks.updateContactFormspreeStatus.mockRejectedValue(new Error("writeback failed"));
-
-    const request = () =>
-      new Request("https://www.famfirstsmile.com/api/contacts", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          company: "",
-          firstName: "Jamie",
-          lastName: "Lee",
-          email: "jamie@example.com",
-          phone: "408-555-1212",
-          service: "family-dentistry",
-          message: "I have a question.",
-          consentToContact: true,
-          consentVersion: LEAD_CONSENT_VERSION,
-          submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
-        }),
-      });
 
     const first = await POST(request());
     vi.setSystemTime(new Date("2026-07-25T16:00:00.000Z"));
@@ -128,31 +149,9 @@ describe("contact API", () => {
   });
 
   it("releases a failed relay claim so the same submission can retry once", async () => {
-    const failed = {
-      id: "contact-1",
-      service: "family-dentistry",
-      formspreeStatus: "failed",
-    };
+    const failed = storedContact();
     mocks.getContactBySubmissionId.mockResolvedValueOnce(undefined).mockResolvedValue(failed);
     mocks.relayLeadNotification.mockRejectedValueOnce(new Error("provider unavailable"));
-
-    const request = () =>
-      new Request("https://www.famfirstsmile.com/api/contacts", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          company: "",
-          firstName: "Jamie",
-          lastName: "Lee",
-          email: "jamie@example.com",
-          phone: "408-555-1212",
-          service: "family-dentistry",
-          message: "I have a question.",
-          consentToContact: true,
-          consentVersion: LEAD_CONSENT_VERSION,
-          submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
-        }),
-      });
 
     const first = await POST(request());
     const retry = await POST(request());
@@ -178,24 +177,7 @@ describe("contact API", () => {
   it("returns a saved-lead fallback when acquiring the notification claim fails", async () => {
     mocks.claimContactNotification.mockRejectedValue(new Error("database unavailable"));
 
-    const response = await POST(
-      new Request("https://www.famfirstsmile.com/api/contacts", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          company: "",
-          firstName: "Jamie",
-          lastName: "Lee",
-          email: "jamie@example.com",
-          phone: "408-555-1212",
-          service: "family-dentistry",
-          message: "I have a question.",
-          consentToContact: true,
-          consentVersion: LEAD_CONSENT_VERSION,
-          submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
-        }),
-      }),
-    );
+    const response = await POST(request());
 
     expect(response.status).toBe(202);
     const body = await response.json();
@@ -208,6 +190,30 @@ describe("contact API", () => {
       }),
     );
     expect(body.fallbackMessage).toContain("(408) 358-8100");
+    expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
+  });
+
+  it("rejects reuse of a contact submission ID with changed data", async () => {
+    mocks.getContactBySubmissionId.mockResolvedValue(storedContact());
+
+    const response = await POST(request({ email: "different@example.com" }));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual(
+      expect.objectContaining({ success: false, message: expect.stringContaining("submission ID") }),
+    );
+    expect(mocks.claimContactNotification).not.toHaveBeenCalled();
+    expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
+  });
+
+  it("rejects a submission ID that belongs to an appointment", async () => {
+    mocks.getContactBySubmissionId.mockResolvedValue(
+      storedContact({ requestType: "appointment" }),
+    );
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(409);
     expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
   });
 });
