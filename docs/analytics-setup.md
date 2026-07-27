@@ -2,12 +2,31 @@
 
 ## Tracking Architecture in This Codebase
 
+### Consent gating (applies to everything below)
+
+Nothing described in this document runs before the visitor opts in.
+
+1. `src/app/layout.tsx` sets `gtag('consent', 'default', ...)` to `denied` for `analytics_storage`, `ad_storage`, `ad_user_data`, and `ad_personalization`, with `wait_for_update: 500`, before any tag loads.
+2. `src/components/google-analytics.tsx` renders the consent prompt and mounts the GA script and Vercel Analytics only after consent is granted. The choice persists in `localStorage` under `ffsc_analytics_consent_v1`.
+3. Every helper in `src/lib/analytics.ts` re-checks stored consent, so a denied or undecided visitor emits nothing even if a helper is called directly.
+
+Expect reported traffic and conversions to be lower than raw visits. That is the consent gate working, not a tracking fault.
+
+### The shared URL policy
+
+`sanitizeAnalyticsUrl()` in `src/lib/analytics.ts` reduces any analytics URL to its path plus allow-listed campaign parameters (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `utm_id`, `gclid`, `gbraid`, `wbraid`, `dclid`, `msclkid`). The hash and all other query parameters are dropped.
+
+Both GA4 (`page_location`) and Vercel Web Analytics (`beforeSend`) use it. Two reasons it must stay that way:
+
+- A patient-facing URL can carry an email address or a name, so no provider may receive one verbatim.
+- GA4 derives session source/medium and campaign **from `page_location`**. Stripping the query string wholesale silently reports all paid traffic as direct.
+
 ### Vercel Web Analytics page tracking
 
 1. `@vercel/analytics` is installed in `package.json`.
 2. `src/components/vercel-analytics.tsx` wraps `<Analytics />` from `@vercel/analytics/next`.
-3. `src/app/layout.tsx` mounts that wrapper once at the app shell level.
-4. `beforeSend(...)` drops `/admin*` traffic so public analytics stay clean.
+3. `src/components/google-analytics.tsx` mounts that wrapper once consent is granted.
+4. `beforeSend(...)` drops `/admin*` traffic (matched on pathname, not a substring of the whole URL) and rewrites every remaining event URL through `sanitizeAnalyticsUrl()`.
 5. Vercel automatically tracks page views in production after the deployment is visited.
 
 This does not replace GA4. It gives a first-party Vercel traffic view alongside the existing Google-based reporting stack.
@@ -47,19 +66,20 @@ Vercel custom events require a Vercel plan that supports custom events. Pageview
 
 ### GA4 page tracking
 
-1. `src/app/layout.tsx` loads `gtag.js` and initializes GA4 using:
+1. `src/components/google-analytics.tsx` loads `gtag.js` and initializes GA4 using:
    - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (fallback `G-L7MH47XYXL`)
 2. GA4 is configured with `send_page_view: false`.
 3. `src/components/route-analytics.tsx` listens for route changes.
-4. `trackPageView(...)` in `src/lib/analytics.ts` sends explicit `page_view` events to GA4.
+4. `trackPageView(...)` in `src/lib/analytics.ts` sends explicit `page_view` events to GA4, with `page_location` built through the shared URL policy so campaign parameters survive.
 
-This pattern is intentional for App Router SPA navigation accuracy.
+This pattern is intentional for App Router SPA navigation accuracy. It only stays accurate while the GA4 property-side setting described in "Required GA4 property configuration" is left off.
 
 ### Google Ads conversion tracking
 
 - `initGA()` configures Google Ads with `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`.
 - `triggerGoogleAdsConversion(...)` sends event name from:
   - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
+- The event is scoped with `send_to: NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`. Without it, gtag broadcasts the conversion to every configured destination and GA4 records a stray `ads_conversion_*` event beside `generate_lead`.
 - The appointment form calls this only after a lead is durably created.
 - The browser-generated submission ID is sent as the Ads transaction ID to prevent duplicate conversions.
 - CTA clicks remain non-conversion navigation events.
@@ -72,6 +92,33 @@ This pattern is intentional for App Router SPA navigation accuracy.
   - reads Search Console data through Google Search Console API
   - returns query-by-page rows plus ranked positions 4-20 opportunities
 - both return `503 missing_config` when credentials/env are incomplete
+
+## Required GA4 Property Configuration
+
+These are set in the GA4 property, not in this repo, and they will silently corrupt reporting if changed back.
+
+Property `518867337`, stream `13261242785`, measurement ID `G-L7MH47XYXL`.
+
+| Setting | Required state | Why |
+| --- | --- | --- |
+| Enhanced measurement → Page views → "Page changes based on browser history events" | **Off** | App Router navigates via `history.pushState`. Left on, GA4 fires its own `page_view` on every client-side navigation on top of the one `RouteAnalytics` sends, roughly doubling page views. The automatic one also reports the raw URL, bypassing the shared URL policy. |
+| Enhanced measurement → Form interactions | **Off** | GA4 auto-fires its own `form_start` that collides with the richer custom `form_start` in this codebase, blending two different event shapes under one name. |
+| Enhanced measurement → Page views (main toggle) | On (locked by GA4) | Harmless. The initial page view is suppressed by `send_page_view: false` at the tag. |
+| Redact data → Email | On | Defence in depth behind the shared URL policy. |
+
+## Google Ads Account Configuration
+
+Account `353-904-6031`. Auto-tagging is **on**, so `gclid` is appended to landing URLs; GA4 only sees it because `page_location` preserves it.
+
+The account's Google tag bundles several IDs including `AW-11373090310`. It also contains historical conversion actions belonging to other properties, which must never be primary:
+
+| Conversion action | State | Note |
+| --- | --- | --- |
+| `Submit lead form` (`Page load: www.design-prism.com/#Apply`) | Secondary | Agency site, created 2023. Can never fire from this domain. |
+| `Submit lead form (Page load https://www.chriswongdds.com/…/thank-you)` | Secondary | Different client's site. |
+| `Submit lead form (1)` — source *Website (Google Analytics GA4)* | **Primary** | Intended working path, created when the GA4 link was made on 2026-07-25. Which GA4 event it imports is unconfirmed; `generate_lead` is the property's only lead key event. Confirm it actually records before trusting Ads conversion numbers. |
+
+A primary conversion action that cannot fire makes every campaign bid toward a target it will never reach. Audit `Action optimization` on the "Submit lead form" goal before trusting Ads conversion numbers.
 
 ## Required Variables
 
@@ -115,6 +162,13 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 
 ## Validation Checklist (Production)
 
+Run these two first, in a fresh browser profile, because everything after them depends on consent being granted:
+
+- Load a public route and confirm **no** GA or Vercel request fires before choosing "Allow analytics". Then accept and confirm tracking starts.
+- With consent granted, load a route with `?utm_source=test&gclid=test123&email=someone@example.com` and confirm the GA4 `page_view` `page_location` and the Vercel `[view]` URL both keep `utm_source`/`gclid` and both drop `email`.
+
+Then:
+
 1. Open the production deployment and verify `/_vercel/insights/script.js` loads.
 2. Navigate across two or more public routes and confirm page views begin appearing in the Vercel Analytics dashboard.
 3. Open [famfirstsmile.com](https://www.famfirstsmile.com) and verify `gtag/js?id=G-L7MH47XYXL` loads.
@@ -136,6 +190,7 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 
 1. GA detected by Tag Assistant but no page data in reports:
    - usually `NEXT_PUBLIC_GA_MEASUREMENT_ID` mismatch or filtering in GA4 property.
+   - also check consent: nothing is emitted until the visitor opts in, and a fresh browser profile starts undecided.
 2. Admin GA4/GSC cards show missing config:
    - missing `GA4_PROPERTY_ID`, `GSC_SITE_URL`, or service account credentials.
 3. Search Console returns permission errors:
@@ -148,6 +203,14 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
    - GA4 custom parameters need matching custom dimensions/metrics before they appear in standard reports.
 7. Vercel pageviews appear but custom events do not:
    - the Vercel project plan may not include custom events, or the event has not been triggered in production yet.
+8. Paid traffic reports as `(direct) / (none)` or `googleads.g.doubleclick.net / referral`, and Paid Search shows zero sessions:
+   - `page_location` is being sent without campaign parameters. GA4 reads source/medium from that field, so a query-stripped URL destroys attribution even though auto-tagging is on. Verify `sanitizeAnalyticsUrl()` still preserves `gclid` and the `utm_*` keys.
+9. Page views roughly double, or engagement rate looks implausibly low:
+   - "Page changes based on browser history events" was re-enabled in Enhanced measurement. See "Required GA4 property configuration".
+10. GA4 shows a stray `ads_conversion_*` event next to `generate_lead`:
+   - the Ads conversion is firing without `send_to`, so gtag is broadcasting it to the GA4 destination as well.
+11. Google Ads reports far fewer conversions than GA4 reports leads:
+   - check what the primary conversion actions on the "Submit lead form" goal are actually keyed to. A page-load conversion pointed at a domain this site does not serve will sit at zero forever while still driving bidding.
 
 ## Hardening Recommendations
 
