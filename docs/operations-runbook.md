@@ -38,6 +38,8 @@ Provide a fast, repeatable response guide for production incidents and routine o
 4. Confirm the ElevenLabs widget still loads from the pinned `0.11.4` embed URL.
 5. Review unworked `new` leads, `failed` and `sending` notification rows, source booking rates, and Search Console opportunity candidates.
 6. Review CSP report-only logs for new blocked domains before switching to enforcing mode.
+7. Compare Google Ads conversions against GA4 `generate_lead` for the same window. A large gap means a primary conversion action is keyed to something that cannot fire, not that leads stopped. See "Google Ads account configuration" in [Analytics Setup](./analytics-setup.md).
+8. Confirm GA4 traffic acquisition still shows `google / cpc` for paid visits. A drift back to `(direct)` or `googleads.g.doubleclick.net / referral` means campaign parameters stopped reaching `page_location`.
 
 ## ElevenLabs Widget Notes
 
