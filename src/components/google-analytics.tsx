@@ -64,7 +64,7 @@ export default function GoogleAnalytics() {
       {consent === "prompt" ? (
         <section
           aria-label="Analytics privacy choices"
-          className="fixed inset-x-4 bottom-20 z-[80] rounded-xl border border-border bg-card p-4 text-sm text-foreground shadow-sm sm:inset-x-auto sm:bottom-6 sm:left-6 sm:max-w-md"
+          className="fixed inset-x-4 bottom-20 z-40 rounded-xl border border-border bg-card p-4 text-sm text-foreground shadow-sm sm:inset-x-auto sm:bottom-6 sm:left-6 sm:max-w-md"
         >
           <p className="font-semibold">Your privacy choices</p>
           <p className="mt-1 leading-relaxed text-muted-foreground">
