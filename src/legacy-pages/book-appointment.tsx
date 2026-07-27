@@ -188,8 +188,9 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
       if (!res.ok || !payload?.success) {
         const error = new Error(
           payload?.message || "Failed to submit appointment request.",
-        ) as Error & { details?: typeof payload };
+        ) as Error & { details?: typeof payload; status?: number };
         error.details = payload ?? undefined;
+        error.status = res.status;
         throw error;
       }
 
@@ -236,8 +237,17 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
           errors?: Array<{ path: Array<string | number>; message: string }>;
           message?: string;
         };
+        status?: number;
       },
     ) => {
+      // A 409 means this submission UUID is already bound to different stored
+      // data, which happens when a patient edits their request and resubmits
+      // after a delivery-fallback notice. Retire the UUID so the next attempt
+      // is treated as a fresh lead instead of conflicting forever.
+      const isSubmissionConflict = error.status === 409;
+      if (isSubmissionConflict) {
+        submissionIdRef.current = null;
+      }
       const issues = error.details?.errors ?? [];
       let hasDetailsError = false;
       trackFormSubmitError({
@@ -267,7 +277,9 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
       }
 
       toast.error("Unable to submit request", {
-        description: error.message || "Please try again or call our office directly.",
+        description: isSubmissionConflict
+          ? "Your request changed since the last attempt. Submit once more to send the updated details."
+          : error.message || "Please try again or call our office directly.",
       });
     },
   });

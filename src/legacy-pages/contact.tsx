@@ -88,8 +88,10 @@ export default function Contact() {
       if (!response.ok || !payload?.success) {
         const error = new Error(payload?.message || "Unable to send your message.") as Error & {
           details?: ContactResponse;
+          status?: number;
         };
         error.details = payload || undefined;
+        error.status = response.status;
         throw error;
       }
       return payload;
@@ -122,7 +124,15 @@ export default function Contact() {
         submissionIdRef.current = null;
       }
     },
-    onError: (error: Error & { details?: ContactResponse }) => {
+    onError: (error: Error & { details?: ContactResponse; status?: number }) => {
+      // A 409 means this submission UUID is already bound to different stored
+      // data, which happens when a patient edits their details and resubmits
+      // after a delivery-fallback notice. Retire the UUID so the next attempt
+      // is treated as a fresh lead instead of conflicting forever.
+      const isSubmissionConflict = error.status === 409;
+      if (isSubmissionConflict) {
+        submissionIdRef.current = null;
+      }
       const issues = error.details?.errors ?? [];
       trackFormSubmitError({
         errorType: issues.length ? "validation_error" : "request_error",
@@ -137,7 +147,9 @@ export default function Contact() {
         }
       }
       toast.error("Error sending message", {
-        description: error.message || "Please try again later.",
+        description: isSubmissionConflict
+          ? "Your details changed since the last attempt. Press Send Message once more to submit them."
+          : error.message || "Please try again later.",
       });
     },
   });

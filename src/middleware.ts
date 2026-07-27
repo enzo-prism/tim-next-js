@@ -71,6 +71,10 @@ function rateLimitedResponse(retryAfterSeconds: number) {
     {
       status: 429,
       headers: {
+        // Browsers only reopen the Basic-auth dialog on a challenge. Without
+        // this, staff who mistyped once keep auto-resending cached bad
+        // credentials and cannot enter the correct ones until the window ends.
+        "WWW-Authenticate": 'Basic realm="Admin"',
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
         "Retry-After": String(retryAfterSeconds),
