@@ -12,6 +12,25 @@ Nothing described in this document runs before the visitor opts in.
 
 Expect reported traffic and conversions to be lower than raw visits. That is the consent gate working, not a tracking fault.
 
+### The consent prompt UI
+
+The prompt is deliberately low-emphasis: a single bar pinned bottom-left with one line of muted
+12px text, a plain `Privacy` link to `/privacy-policy`, and two text buttons. "Allow" and "No
+thanks" carry the same visual weight — neither is a filled CTA — so the presentation does not
+nudge the visitor toward granting consent.
+
+Three constraints to preserve when restyling it:
+
+- **Accessible names are load-bearing.** Playwright selects the region by `Analytics privacy
+  choices` and the buttons by `Allow analytics` and `No thanks`. The allow button shows "Allow"
+  and carries `aria-label="Allow analytics"`; changing either name breaks `tests/e2e`.
+- **It must never overlap the assistant launcher** (`data-testid="assistant-launcher"`, fixed
+  bottom-right, ~110x44). `tests/e2e/elevenlabs-widget.spec.ts` asserts this. The bar is one row
+  from `md` up and wraps to text-over-actions below that specifically to keep clear of it;
+  verify 360-1920px after any layout change.
+- **Keep it inside the `DESIGN.md` contract** — semantic tokens, `rounded-lg`, at most
+  `shadow-sm`. `npm run minimal:check` enforces the hard rules.
+
 ### The shared URL policy
 
 `sanitizeAnalyticsUrl()` in `src/lib/analytics.ts` reduces any analytics URL to its path plus allow-listed campaign parameters (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `utm_id`, `gclid`, `gbraid`, `wbraid`, `dclid`, `msclkid`). The hash and all other query parameters are dropped.
@@ -164,7 +183,7 @@ This project already implements an equivalent setup in `src/app/layout.tsx`.
 
 Run these two first, in a fresh browser profile, because everything after them depends on consent being granted:
 
-- Load a public route and confirm **no** GA or Vercel request fires before choosing "Allow analytics". Then accept and confirm tracking starts.
+- Load a public route and confirm **no** GA or Vercel request fires before choosing "Allow" in the consent bar. Then accept and confirm tracking starts.
 - With consent granted, load a route with `?utm_source=test&gclid=test123&email=someone@example.com` and confirm the GA4 `page_view` `page_location` and the Vercel `[view]` URL both keep `utm_source`/`gclid` and both drop `email`.
 
 Then:
