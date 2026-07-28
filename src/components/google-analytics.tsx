@@ -64,31 +64,35 @@ export default function GoogleAnalytics() {
       {consent === "prompt" ? (
         <section
           aria-label="Analytics privacy choices"
-          className="fixed inset-x-4 bottom-20 z-40 rounded-xl border border-border bg-card p-4 text-sm text-foreground shadow-sm sm:inset-x-auto sm:bottom-6 sm:left-6 sm:max-w-md"
+          className="fixed inset-x-3 bottom-20 z-40 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80 md:w-auto"
         >
-          <p className="font-semibold">Your privacy choices</p>
-          <p className="mt-1 leading-relaxed text-muted-foreground">
-            May we use analytics and ad measurement? This can record pages, service interests, and
-            appointment actions, but never the details you type into a form.{" "}
-            <Link href="/privacy-policy" className="font-semibold text-primary underline">
-              Privacy policy
-            </Link>
-          </p>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => chooseConsent("granted")}
-              className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              Allow analytics
-            </button>
-            <button
-              type="button"
-              onClick={() => chooseConsent("denied")}
-              className="min-h-11 rounded-lg border border-border bg-background px-4 font-semibold text-primary hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              No thanks
-            </button>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-card px-3 py-2 shadow-sm md:flex-nowrap">
+            <p className="text-xs leading-snug text-muted-foreground md:whitespace-nowrap">
+              Analytics and ad measurement? We never record what you type.{" "}
+              <Link
+                href="/privacy-policy"
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                Privacy
+              </Link>
+            </p>
+            <div className="ml-auto flex items-center gap-0.5">
+              <button
+                type="button"
+                aria-label="Allow analytics"
+                onClick={() => chooseConsent("granted")}
+                className="rounded-md px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              >
+                Allow
+              </button>
+              <button
+                type="button"
+                onClick={() => chooseConsent("denied")}
+                className="rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              >
+                No thanks
+              </button>
+            </div>
           </div>
         </section>
       ) : null}
