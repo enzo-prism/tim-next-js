@@ -46,6 +46,12 @@ const staticLinksByHref: Record<string, RelatedLink> = {
     description:
       "A Los Gatos guide to six-month cleanings, higher-risk patients, and personalized preventive timing.",
   },
+  "/blog/why-does-my-child-have-bad-breath-even-after-brushing-los-gatos": {
+    href: "/blog/why-does-my-child-have-bad-breath-even-after-brushing-los-gatos",
+    title: "Why Does My Child Have Bad Breath?",
+    description:
+      "Common reasons brushing may not fix a child's bad breath and when to schedule a dental visit.",
+  },
   "/services": {
     href: "/services",
     title: "All Dental Services",
@@ -138,6 +144,7 @@ const curatedBoosts: Record<string, string[]> = {
   "children-dentistry": [
     "childrens-dentistry/babys-first-visit",
     "/blog/when-should-kids-first-see-a-dentist-los-gatos",
+    "/blog/why-does-my-child-have-bad-breath-even-after-brushing-los-gatos",
     "/patient-info/brushing",
     "/contact",
   ],

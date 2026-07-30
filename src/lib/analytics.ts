@@ -49,6 +49,7 @@ const ALLOWED_EVENT_KEYS = new Set([
 
 const MAX_EVENT_VALUE_LENGTH = 120;
 export const ANALYTICS_CONSENT_STORAGE_KEY = "ffsc_analytics_consent_v1";
+export const ANALYTICS_CONSENT_EVENT = "ffsc:analytics-consent";
 
 type AnalyticsConsent = "granted" | "denied";
 

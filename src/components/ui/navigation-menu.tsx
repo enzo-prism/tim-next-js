@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority"
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import * as React from "react"
-import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui"
+import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 
 import { cn } from "@/lib/utils"
 

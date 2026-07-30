@@ -1,4 +1,4 @@
-import { Slot as SlotPrimitive } from "radix-ui"
+import * as SlotPrimitive from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import * as React from "react"

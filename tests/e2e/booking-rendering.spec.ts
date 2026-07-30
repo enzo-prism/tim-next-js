@@ -1,4 +1,35 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import {
+  GOOGLE_ADS_CONVERSION_EVENT,
+  GOOGLE_ADS_TAG_ID,
+} from "../../src/lib/tracking-config";
+
+const countDataLayerEvents = async (
+  page: Page,
+  eventName: string,
+) =>
+  page.evaluate(
+    (name) =>
+      window.dataLayer.filter(
+        (entry) => entry?.[0] === "event" && entry?.[1] === name,
+      ).length,
+    eventName,
+  );
+
+const countAppointmentAdsConversions = async (page: Page) =>
+  page.evaluate(
+    ({ eventName, destination }) =>
+      window.dataLayer.filter(
+        (entry) =>
+          entry?.[0] === "event" &&
+          entry?.[1] === eventName &&
+          entry?.[2]?.send_to === destination,
+      ).length,
+    {
+      eventName: GOOGLE_ADS_CONVERSION_EVENT,
+      destination: GOOGLE_ADS_TAG_ID,
+    },
+  );
 
 test.describe("appointment request rendering and retry", () => {
   test("renders meaningful booking content without JavaScript", async ({ browser }) => {
@@ -59,6 +90,9 @@ test.describe("appointment request rendering and retry", () => {
 
     await expect(page.getByRole("heading", { name: "Your request was saved" })).toBeVisible();
     await expect(page.getByRole("status")).toBeFocused();
+    await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
+    await expect.poll(() => countAppointmentAdsConversions(page)).toBe(1);
+    await expect.poll(() => countDataLayerEvents(page, "form_submit_fallback")).toBe(1);
     await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide")));
     expect(
       await page.evaluate(() =>
@@ -79,15 +113,9 @@ test.describe("appointment request rendering and retry", () => {
     await expect(
       page.getByRole("heading", { name: "Your appointment request was received" }),
     ).toBeVisible();
-    await expect
-      .poll(() =>
-        page.evaluate(() =>
-          window.dataLayer.some(
-            (entry) => entry?.[0] === "event" && entry?.[1] === "generate_lead",
-          ),
-        ),
-      )
-      .toBe(true);
+    await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
+    await expect.poll(() => countAppointmentAdsConversions(page)).toBe(1);
+    await expect.poll(() => countDataLayerEvents(page, "form_submit_fallback")).toBe(1);
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[1]?.submissionId).toBe(requestBodies[0]?.submissionId);
   });
@@ -182,5 +210,60 @@ test.describe("appointment request rendering and retry", () => {
     expect(requestBodies[1]?.submissionId).toBe(requestBodies[0]?.submissionId);
     expect(requestBodies[2]?.submissionId).not.toBe(requestBodies[1]?.submissionId);
     expect(requestBodies[2]?.phone).toBe("4083588101");
+  });
+});
+
+test.describe("contact request conversion tracking", () => {
+  test("tracks a newly saved lead once when its delivery retry later succeeds", async ({
+    page,
+  }) => {
+    const requestBodies: Array<Record<string, unknown>> = [];
+    let attempt = 0;
+
+    await page.route("https://www.googletagmanager.com/gtag/js**", async (route) => {
+      await route.fulfill({ contentType: "application/javascript", body: "" });
+    });
+    await page.route("**/api/contacts", async (route) => {
+      attempt += 1;
+      requestBodies.push(route.request().postDataJSON());
+      await route.fulfill({
+        status: attempt === 1 ? 202 : 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          success: true,
+          created: attempt === 1,
+          delivered: attempt > 1,
+          leadId: "lead-1",
+          serviceId: null,
+          ...(attempt === 1
+            ? { fallbackMessage: "Notification delayed. Please try delivery again." }
+            : {}),
+        }),
+      });
+    });
+
+    await page.goto("/contact");
+    await page.getByRole("button", { name: "Allow analytics" }).click();
+    await page.getByLabel("First Name *").fill("Taylor");
+    await page.getByLabel("Last Name *").fill("Patient");
+    await page.getByLabel("Email Address *").fill("taylor@example.com");
+    await page
+      .getByLabel(/I agree that Family First Smile Care may contact me/i)
+      .check();
+    await page.getByRole("button", { name: "Send Message" }).click();
+
+    await expect(page.getByText("Your message was saved.")).toBeVisible();
+    await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
+
+    await page.getByRole("button", { name: "Send Message" }).click();
+    await expect(
+      page
+        .getByRole("status")
+        .getByText("Thank you. Our team will get back to you soon."),
+    ).toBeVisible();
+    await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
+
+    expect(requestBodies).toHaveLength(2);
+    expect(requestBodies[1]?.submissionId).toBe(requestBodies[0]?.submissionId);
   });
 });

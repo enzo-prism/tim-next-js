@@ -143,7 +143,7 @@ export default function PatientInfoBrushing() {
 
         <section>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Related Reading</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <Link href="/patient-info/flossing" className="block">
               <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
                 <h3 className="font-semibold text-gray-800 mb-2">Flossing Fundamentals</h3>
@@ -154,6 +154,17 @@ export default function PatientInfoBrushing() {
               <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
                 <h3 className="font-semibold text-gray-800 mb-2">Nutrition for Healthy Teeth</h3>
                 <p className="text-sm text-gray-600">Build strong teeth with smart snack choices and hydration.</p>
+              </div>
+            </Link>
+            <Link
+              href="/blog/why-does-my-child-have-bad-breath-even-after-brushing-los-gatos"
+              className="block"
+            >
+              <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
+                <h3 className="font-semibold text-gray-800 mb-2">Child Bad Breath After Brushing</h3>
+                <p className="text-sm text-gray-600">
+                  Learn common causes and when persistent bad breath deserves a dental visit.
+                </p>
               </div>
             </Link>
           </div>

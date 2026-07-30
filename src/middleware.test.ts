@@ -72,6 +72,35 @@ describe("admin middleware", () => {
     expect(response.headers.get("location")).toBe("https://www.famfirstsmile.com/patient-info");
   });
 
+  it.each([
+    ["/Book-Appointment", "/book-appointment"],
+    ["/Services/Invisalign", "/services/invisalign"],
+  ])("redirects the exact stale Ads path %s and preserves its query", (source, destination) => {
+    const response = middleware(
+      new NextRequest(
+        `https://www.famfirstsmile.com${source}?utm_source=google&utm_campaign=spring`,
+        {
+          headers: { host: "www.famfirstsmile.com" },
+        },
+      ),
+    );
+
+    expect(response.status).toBe(301);
+    expect(response.headers.get("location")).toBe(
+      `https://www.famfirstsmile.com${destination}?utm_source=google&utm_campaign=spring`,
+    );
+  });
+
+  it("does not redirect other mixed-case public paths", () => {
+    const response = middleware(
+      new NextRequest("https://www.famfirstsmile.com/Services/Dental-Exams", {
+        headers: { host: "www.famfirstsmile.com" },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+  });
+
   it("returns missing_config in production when admin credentials are absent", () => {
     vi.stubEnv("NODE_ENV", "production");
 

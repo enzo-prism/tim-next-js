@@ -2,10 +2,11 @@
 
 ## Start Here
 
-1. [Architecture](./architecture.md)
-2. [Environment Variables](./environment-variables.md)
-3. [Routing and SEO](./routing-and-seo.md)
-4. [API Reference](./api-reference.md)
+1. [Release Notes](./release-notes.md)
+2. [Architecture](./architecture.md)
+3. [Environment Variables](./environment-variables.md)
+4. [Routing and SEO](./routing-and-seo.md)
+5. [API Reference](./api-reference.md)
 
 ## Deployment and Operations
 

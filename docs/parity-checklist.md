@@ -35,6 +35,8 @@ Use this checklist before cutting traffic fully to Vercel production.
 - [ ] `/?page_id=1073` -> `/patient-info`
 - [ ] `https://famfirstsmile.com/*` -> `https://www.famfirstsmile.com/*`
 - [ ] `/services/tmj` -> `/tmj`
+- [ ] `/Book-Appointment?utm_source=google` -> `/book-appointment?utm_source=google`
+- [ ] `/Services/Invisalign?gclid=test` -> `/services/invisalign?gclid=test`
 - [ ] TMJ canonical points to `/tmj`
 
 ## SEO and Structured Data

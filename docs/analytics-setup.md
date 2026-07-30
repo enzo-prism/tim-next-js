@@ -14,20 +14,19 @@ Expect reported traffic and conversions to be lower than raw visits. That is the
 
 ### The consent prompt UI
 
-The prompt is deliberately low-emphasis: a single bar pinned bottom-left with one line of muted
-12px text, a plain `Privacy` link to `/privacy-policy`, and two text buttons. "Allow" and "No
-thanks" carry the same visual weight — neither is a filled CTA — so the presentation does not
-nudge the visitor toward granting consent.
+The prompt is deliberately low-emphasis: a compact bar pinned above the mobile safe area with
+muted 12px text, a plain `Privacy` link to `/privacy-policy`, and two text buttons. Neither choice
+is a filled CTA, so the presentation does not strongly nudge the visitor toward granting consent.
 
 Three constraints to preserve when restyling it:
 
 - **Accessible names are load-bearing.** Playwright selects the region by `Analytics privacy
   choices` and the buttons by `Allow analytics` and `No thanks`. The allow button shows "Allow"
   and carries `aria-label="Allow analytics"`; changing either name breaks `tests/e2e`.
-- **It must never overlap the assistant launcher** (`data-testid="assistant-launcher"`, fixed
-  bottom-right, ~110x44). `tests/e2e/elevenlabs-widget.spec.ts` asserts this. The bar is one row
-  from `md` up and wraps to text-over-actions below that specifically to keep clear of it;
-  verify 360-1920px after any layout change.
+- **It must never compete with the assistant launcher.** The assistant launcher
+  (`data-testid="assistant-launcher"`) remains hidden until the visitor resolves the analytics
+  choice. `tests/e2e/elevenlabs-widget.spec.ts` asserts the consent-first handoff across desktop,
+  tablet, and mobile.
 - **Keep it inside the `DESIGN.md` contract** — semantic tokens, `rounded-lg`, at most
   `shadow-sm`. `npm run minimal:check` enforces the hard rules.
 
@@ -99,8 +98,12 @@ This pattern is intentional for App Router SPA navigation accuracy. It only stay
 - `triggerGoogleAdsConversion(...)` sends event name from:
   - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
 - The event is scoped with `send_to: NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`. Without it, gtag broadcasts the conversion to every configured destination and GA4 records a stray `ads_conversion_*` event beside `generate_lead`.
-- The appointment form calls this only after a lead is durably created.
+- The appointment and contact forms emit GA4 `generate_lead` only after a lead is durably
+  created, even if the office relay is delayed.
+- Only the appointment form also calls the direct Google Ads conversion helper.
 - The browser-generated submission ID is sent as the Ads transaction ID to prevent duplicate conversions.
+- A notification-only retry for an existing lead does not emit another `generate_lead`; an
+  appointment retry also does not emit another Ads conversion.
 - CTA clicks remain non-conversion navigation events.
 
 ### Admin analytics APIs (server-side)

@@ -1,6 +1,6 @@
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import * as React from "react"
-import { Accordion as AccordionPrimitive } from "radix-ui"
+import * as AccordionPrimitive from "@radix-ui/react-accordion"
 
 import { cn } from "@/lib/utils"
 

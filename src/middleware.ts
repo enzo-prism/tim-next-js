@@ -23,6 +23,11 @@ const safeTimingEqual = (a: string, b: string) => {
 const isProtectedPath = (pathname: string) =>
   pathname === "/admin" || pathname.startsWith("/api/admin");
 
+const exactCaseRedirects: Record<string, string> = {
+  "/Book-Appointment": "/book-appointment",
+  "/Services/Invisalign": "/services/invisalign",
+};
+
 const getCanonicalHost = () => {
   const raw = process.env.CANONICAL_HOST?.trim() || "https://www.famfirstsmile.com";
   try {
@@ -115,6 +120,13 @@ export function middleware(req: NextRequest) {
   if (isNonCanonicalHost) {
     const redirectUrl = new URL(req.url);
     redirectUrl.host = canonicalHost;
+    return NextResponse.redirect(redirectUrl, 301);
+  }
+
+  const exactCaseDestination = exactCaseRedirects[nextUrl.pathname];
+  if (exactCaseDestination) {
+    const redirectUrl = new URL(req.url);
+    redirectUrl.pathname = exactCaseDestination;
     return NextResponse.redirect(redirectUrl, 301);
   }
 

@@ -12,7 +12,7 @@ import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
 
 const raleway = Raleway({
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  style: ["normal"],
   display: "swap",
   variable: "--font-raleway",
 });
@@ -30,6 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={raleway.variable}>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 z-[60] rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-primary/40"
+        >
+          Skip to content
+        </a>
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
@@ -49,13 +55,6 @@ gtag('consent', 'default', {
 
         <AppProviders>
           <RouteAnalytics />
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 z-[60] rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-primary/40"
-          >
-            Skip to content
-          </a>
-
           <div className="min-h-screen flex flex-col">
             <Header />
             <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">

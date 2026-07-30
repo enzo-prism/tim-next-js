@@ -8,6 +8,7 @@ import { generalReviews } from "@/data/reviews";
 import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
+import { Button } from "@/components/ui/button";
 
 export default function Services() {
   const handleAppointmentClick = () => {
@@ -26,16 +27,7 @@ export default function Services() {
             <h1
               className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 mb-6 leading-tight"
             >
-              <span className="inline-flex items-center justify-center gap-3 flex-wrap">
-                
-                <span>
-                  Our{" "}
-                  <span className="bg-primary bg-clip-text text-transparent">
-                    Comprehensive
-                  </span>{" "}
-                  Services
-                </span>
-              </span>
+              Our Comprehensive Services
             </h1>
             <p
               className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
@@ -96,13 +88,14 @@ export default function Services() {
             <div
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <div
+              <Button
+                asChild
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-colors duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
               >
                 <Link href={buildAppointmentUrl({ source: "services_hero" })} onClick={handleAppointmentClick}>
                   Book Your Appointment
                 </Link>
-              </div>
+              </Button>
               <span className="text-white text-sm">or call (408) 358-8100</span>
             </div>
           </div>

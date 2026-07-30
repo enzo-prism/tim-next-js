@@ -59,7 +59,7 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
             
             {service.subServices && service.subServices.length > 0 && (
               <div className="border-t border-gray-200 pt-6 mb-6">
-                <h4 className="font-bold text-gray-800 mb-4 text-lg">Includes:</h4>
+                <h3 className="font-bold text-gray-800 mb-4 text-lg">Includes:</h3>
                 <div className="grid gap-3">
                   {service.subServices.map((subService) => (
                     <div key={subService.id} className="rounded-xl border border-border bg-muted/40 p-3">
@@ -69,7 +69,7 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
                             href={getServiceHref(subService.id)}
                             onClick={() => trackServiceLearnMoreClick(subService.id, "service_card_subservice")}
                           >
-                            <h5 className="font-semibold text-gray-800 text-sm hover:text-primary transition-colors cursor-pointer">{subService.title}</h5>
+                            <h4 className="font-semibold text-gray-800 text-sm hover:text-primary transition-colors cursor-pointer">{subService.title}</h4>
                             <p className="text-xs text-gray-600">{subService.description}</p>
                           </Link>
                         </div>

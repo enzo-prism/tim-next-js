@@ -2,7 +2,7 @@
 
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import * as React from "react"
-import { Menubar as MenubarPrimitive } from "radix-ui"
+import * as MenubarPrimitive from "@radix-ui/react-menubar"
 
 import { cn } from "@/lib/utils"
 

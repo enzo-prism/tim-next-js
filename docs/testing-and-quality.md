@@ -12,7 +12,12 @@ CI workflow (`.github/workflows/ci.yml`) runs:
 6. `npm run build`
 7. `npm run test:e2e`
 
-`npm run test` uses Vitest. The current suite covers analytics sanitization and conversion dedupe, booking-step events, form schemas, request guards, atomic notification claims, contact/appointment persistence and lifecycle behavior, concurrent idempotency recovery, GSC opportunity scoring, and admin middleware. Playwright covers key browser-level design, mobile navigation, and widget behavior in CI.
+`npm run test` uses Vitest. The current suite covers analytics sanitization and conversion dedupe,
+booking-step events, form schemas, request guards, atomic notification claims,
+contact/appointment persistence and lifecycle behavior, concurrent idempotency recovery, GSC
+opportunity scoring, metadata and internal-link contracts, mixed-case Ads redirects, accessibility
+source contracts, and admin middleware. Playwright covers key browser-level design, mobile
+navigation, widget behavior, and durable-lead conversion behavior in CI.
 
 `npm run test:e2e` now exercises the production runtime instead of `next dev`:
 
@@ -25,6 +30,7 @@ CI workflow (`.github/workflows/ci.yml`) runs:
 - Widget bundle is pinned to `https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4`
 - Agent ID is `agent_4801kn7ednjse6drbr2cnt62kkp2`
 - Widget renders on all public routes and is intentionally excluded from `/admin`
+- The launcher remains hidden until the visitor resolves the analytics consent choice
 - Host-side launcher copy is applied through the widget's supported `text-contents` JSON attribute for `0.11.4`
 - Browser coverage lives in Playwright under `tests/e2e/elevenlabs-widget.spec.ts`
 - Automated browser tests stub the external widget script so layout, launcher behavior, and coexistence checks stay deterministic in CI
@@ -68,6 +74,8 @@ Validate these redirect as expected:
 - `/dental-services/dental-crowns` -> `/services/dental-crowns`
 - `/digital-x-ray` -> `/services/dental-exams`
 - `/services/tmj` -> `/tmj`
+- `/Book-Appointment?utm_source=google` -> `/book-appointment?utm_source=google`
+- `/Services/Invisalign?gclid=test` -> `/services/invisalign?gclid=test`
 - `/?page_id=1073` -> `/patient-info`
 - `https://famfirstsmile.com` -> `https://www.famfirstsmile.com`
 

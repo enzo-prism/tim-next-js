@@ -76,7 +76,7 @@ export default function Header() {
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200">
               <Image
                 src={familyFirstLogo}
-                alt="Family First Smile Care Logo"
+                alt=""
                 width={40}
                 height={40}
                 priority
@@ -204,6 +204,7 @@ export default function Header() {
                 onClick={() => trackPayBillClick("header_desktop")}
               >
                 Pay Bill
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </Button>
             <Button asChild className="h-10 whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90">
@@ -227,6 +228,7 @@ export default function Header() {
                 onClick={() => trackPayBillClick("header_compact")}
               >
                 Pay Bill
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </Button>
             <Button asChild className="inline-flex h-9 whitespace-nowrap bg-primary px-3 text-primary-foreground hover:bg-primary/90">

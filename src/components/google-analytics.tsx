@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
 import {
+  ANALYTICS_CONSENT_EVENT,
   ANALYTICS_CONSENT_STORAGE_KEY,
   initGA,
   setAnalyticsConsent,
@@ -39,6 +40,9 @@ export default function GoogleAnalytics() {
     trackCurrentPageOnReadyRef.current = nextConsent === "granted";
     setAnalyticsConsent(nextConsent);
     setConsent(nextConsent);
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT));
+    }, 0);
   };
 
   return (
@@ -64,10 +68,10 @@ export default function GoogleAnalytics() {
       {consent === "prompt" ? (
         <section
           aria-label="Analytics privacy choices"
-          className="fixed inset-x-3 bottom-20 z-40 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80 md:w-auto"
+          className="fixed inset-x-3 bottom-3 z-40 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80 md:w-auto"
         >
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-card px-3 py-2 shadow-sm md:flex-nowrap">
-            <p className="text-xs leading-snug text-muted-foreground md:whitespace-nowrap">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+            <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground md:whitespace-nowrap">
               Analytics and ad measurement? We never record what you type.{" "}
               <Link
                 href="/privacy-policy"
@@ -76,7 +80,7 @@ export default function GoogleAnalytics() {
                 Privacy
               </Link>
             </p>
-            <div className="ml-auto flex items-center gap-0.5">
+            <div className="flex shrink-0 items-center gap-0.5">
               <button
                 type="button"
                 aria-label="Allow analytics"

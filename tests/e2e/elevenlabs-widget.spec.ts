@@ -264,6 +264,18 @@ async function installWidgetStub(page: Page) {
 async function gotoWithLauncher(page: Page, route: string) {
   await installWidgetStub(page);
   await page.goto(route, { waitUntil: "domcontentloaded" });
+  const privacyPanel = page.getByRole("region", { name: "Analytics privacy choices" });
+  await expect
+    .poll(async () => {
+      return (
+        (await privacyPanel.isVisible()) ||
+        (await page.locator('[data-testid="assistant-launcher"]').isVisible())
+      );
+    })
+    .toBeTruthy();
+  if (await privacyPanel.isVisible()) {
+    await page.getByRole("button", { name: "No thanks" }).click();
+  }
   await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible();
   await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(0);
 }
@@ -344,9 +356,11 @@ test.describe("ElevenLabs widget integration", () => {
     });
 
     await page.goto("/");
-    await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible();
+    await expect(page.locator('[data-testid="assistant-launcher"]')).toHaveCount(0);
     expect(widgetScriptRequests).toBe(0);
 
+    await page.getByRole("button", { name: "No thanks" }).click();
+    await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible();
     await page.locator('[data-testid="assistant-launcher"]').click();
     await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(1);
     expect(widgetScriptRequests).toBe(1);
@@ -367,6 +381,7 @@ test.describe("ElevenLabs widget integration", () => {
     });
 
     await page.goto("/");
+    await page.getByRole("button", { name: "No thanks" }).click();
     await page.getByRole("button", { name: "Need help?" }).click();
     await expect(page.getByRole("button", { name: "Try assistant again" })).toBeVisible();
     await page.getByRole("button", { name: "Try assistant again" }).click();
@@ -375,26 +390,15 @@ test.describe("ElevenLabs widget integration", () => {
     expect(attempts).toBe(2);
   });
 
-  test("keeps the privacy choice panel clear of the assistant launcher", async ({ page }) => {
-    await gotoWithLauncher(page, "/");
-
+  test("waits to show the assistant until the privacy choice is resolved", async ({ page }) => {
+    await page.goto("/");
     const privacyPanel = page.getByRole("region", { name: "Analytics privacy choices" });
-    const launcher = page.locator('[data-testid="assistant-launcher"]');
     await expect(privacyPanel).toBeVisible();
+    await expect(page.locator('[data-testid="assistant-launcher"]')).toHaveCount(0);
 
-    const [privacyBox, launcherBox] = await Promise.all([
-      privacyPanel.boundingBox(),
-      launcher.boundingBox(),
-    ]);
-    expect(privacyBox).not.toBeNull();
-    expect(launcherBox).not.toBeNull();
-
-    const overlaps =
-      (privacyBox?.x ?? 0) < (launcherBox?.x ?? 0) + (launcherBox?.width ?? 0) &&
-      (privacyBox?.x ?? 0) + (privacyBox?.width ?? 0) > (launcherBox?.x ?? 0) &&
-      (privacyBox?.y ?? 0) < (launcherBox?.y ?? 0) + (launcherBox?.height ?? 0) &&
-      (privacyBox?.y ?? 0) + (privacyBox?.height ?? 0) > (launcherBox?.y ?? 0);
-    expect(overlaps).toBeFalsy();
+    await page.getByRole("button", { name: "No thanks" }).click();
+    await expect(privacyPanel).toHaveCount(0);
+    await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible();
   });
 
   test("opens and collapses cleanly with pointer and keyboard", async ({ page }) => {

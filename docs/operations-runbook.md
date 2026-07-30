@@ -183,6 +183,8 @@ Actions:
 2. Verify middleware redirects for:
    - apex/noncanonical custom host to `https://www.famfirstsmile.com`
    - `/?page_id=1073` to `/patient-info`
+   - `/Book-Appointment` to `/book-appointment`
+   - `/Services/Invisalign` to `/services/invisalign`
 3. Deploy fix and run redirect smoke tests.
 
 ## Incident: Push landed on GitHub but not visible in Vercel

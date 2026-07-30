@@ -22,7 +22,7 @@ export interface PageMeta {
 
 const staticMeta: Record<string, PageMeta> = {
   "/": {
-    title: "Family First Smile Care | Los Gatos, CA Dentist",
+    title: "Los Gatos Dentist | Family First Smile Care",
     description: "Gentle, compassionate dental care for the whole family in Los Gatos, CA. Dr. Tim J. Chuang provides comprehensive dentistry in a welcoming environment.",
   },
   "/about": {
@@ -56,7 +56,7 @@ const staticMeta: Record<string, PageMeta> = {
     description: "Contact Family First Smile Care in Los Gatos, CA to schedule an appointment. Call (408) 358-8100 or visit 15251 National Ave, Suite 102.",
   },
   "/areas-we-serve/santa-cruz": {
-    title: "Los Gatos Family Dentist Serving Santa Cruz | Family First Smile Care",
+    title: "Dentist Serving Santa Cruz | Family First Smile Care",
     description:
       "Family First Smile Care is physically located in Los Gatos, just off Highway 17, and serves Santa Cruz patients who want gentle family dentistry.",
   },
@@ -86,8 +86,8 @@ const staticMeta: Record<string, PageMeta> = {
     description: "Tooth-friendly nutrition tips, foods to limit, and daily habits that help prevent decay and support healthy gums.",
   },
   "/tmj": {
-    title: "TMJ Treatment in Los Gatos - Family First Smile Care",
-    description: "Expert TMJ treatment in Los Gatos by Dr. Tim J. Chuang. Relief for jaw pain, headaches, and TMD symptoms with personalized care and advanced technology.",
+    title: "TMJ Treatment Los Gatos | Family First Smile Care",
+    description: "Personalized TMJ care in Los Gatos for jaw pain, headaches, and TMD symptoms. Learn about evaluation and treatment options with Dr. Tim J. Chuang.",
   },
   "/technology/itero-digital-scanner": {
     title: "iTero Digital Scanner Los Gatos | Family First Smile Care",

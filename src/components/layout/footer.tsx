@@ -23,7 +23,7 @@ export default function Footer() {
             <div className="flex items-center mb-4">
               <Image
                 src={familyFirstLogo}
-                alt="Family First Smile Care Logo"
+                alt=""
                 width={32}
                 height={32}
                 className="h-8 w-8 mr-3"
@@ -83,6 +83,7 @@ export default function Footer() {
                   onClick={() => trackReviewLinkClick("google", "footer")}
                 >
                   Leave a Google Review
+                  <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </li>
               <li>
@@ -94,6 +95,7 @@ export default function Footer() {
                   onClick={() => trackReviewLinkClick("yelp", "footer")}
                 >
                   Read Yelp Reviews
+                  <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </li>
               <li>
@@ -105,6 +107,7 @@ export default function Footer() {
                   onClick={() => trackPayBillClick("footer")}
                 >
                   Pay Bill Online
+                  <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </li>
             </ul>
@@ -158,6 +161,7 @@ export default function Footer() {
                 onClick={() => trackSocialClick("facebook", "footer")}
               >
                 Facebook
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
               <a 
                 href="https://www.instagram.com/famfirstsmile/" 
@@ -168,6 +172,7 @@ export default function Footer() {
                 onClick={() => trackSocialClick("instagram", "footer")}
               >
                 Instagram
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </div>
           </div>

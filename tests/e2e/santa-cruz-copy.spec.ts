@@ -25,7 +25,7 @@ test("Santa Cruz page clearly presents a Los Gatos office serving Santa Cruz pat
   await page.goto("/areas-we-serve/santa-cruz", { waitUntil: "domcontentloaded" });
 
   await expect(page).toHaveTitle(
-    "Los Gatos Family Dentist Serving Santa Cruz | Family First Smile Care",
+    "Dentist Serving Santa Cruz | Family First Smile Care",
   );
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",

@@ -3,7 +3,7 @@
 import { cva, type VariantProps } from "class-variance-authority"
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import * as React from "react"
-import { Dialog as SheetPrimitive } from "radix-ui"
+import * as SheetPrimitive from "@radix-ui/react-dialog"
 
 import { cn } from "@/lib/utils"
 

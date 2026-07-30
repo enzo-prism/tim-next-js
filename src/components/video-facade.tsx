@@ -12,6 +12,7 @@ interface VideoFacadeProps {
   posterAlt: string;
   posterSizes?: string;
   posterPriority?: boolean;
+  posterFetchPriority?: "high" | "low" | "auto";
   playLabel?: string;
   className?: string;
 }
@@ -28,6 +29,7 @@ export default function VideoFacade({
   posterAlt,
   posterSizes,
   posterPriority = false,
+  posterFetchPriority,
   playLabel = "Play video",
   className,
 }: VideoFacadeProps) {
@@ -91,6 +93,7 @@ export default function VideoFacade({
         fill
         sizes={posterSizes}
         priority={posterPriority}
+        fetchPriority={posterFetchPriority}
         className="object-cover"
       />
       <span className="absolute inset-0 bg-accent-foreground/20 transition-colors group-hover:bg-accent-foreground/30" />

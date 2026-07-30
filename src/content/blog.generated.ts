@@ -2189,7 +2189,7 @@ export const additionalBlogPosts: BlogPost[] = [
   {
       "slug": "why-does-my-child-have-bad-breath-even-after-brushing-los-gatos",
       "title": "Why Does My Child Have Bad Breath Even After Brushing? A Los Gatos Parent Guide",
-      "metaTitle": "Child Bad Breath Even After Brushing? Los Gatos Parent Guide | Family First Smile Care",
+      "metaTitle": "Child Bad Breath After Brushing? | Los Gatos Dentist",
       "metaDescription": "Learn common reasons a child may still have bad breath after brushing, what parents can try at home, and when to see a Los Gatos dentist for answers.",
       "excerpt": "If your child brushes every day but still seems to have bad breath, you are not imagining it. Parents notice this all the time, especially in the morning, after school, or when talking closely in the car. The good news is that bad breath in kids is often caused by something simple and fixable. The less-fun news is that brushing alone does not always solve it.",
       "category": "Children's Dentistry",
@@ -2205,8 +2205,8 @@ export const additionalBlogPosts: BlogPost[] = [
       "readingTimeMinutes": 6,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "Learn common reasons a child may still have bad breath after brushing, what parents can try at home, and when to see a Los Gatos dentist for answers.",
-      "quickAnswer": "If your child brushes every day but still seems to have bad breath, you are not imagining it.",
-      "quickAnswerSupport": "Parents notice this all the time, especially in the morning, after school, or when talking closely in the car. The good news is that bad breath in kids is often caused by something simple and fixable. The less-fun news is that brushing alone does not always solve it.",
+      "quickAnswer": "Bad breath after brushing can come from missed plaque or food, tongue buildup, dry mouth or mouth breathing, cavities, or congestion.",
+      "quickAnswerSupport": "Contact a dentist if it keeps returning despite thorough brushing and flossing, or if your child has pain, sensitivity, bleeding gums, or visible tooth changes.",
       "intro": [
         "If your child brushes every day but still seems to have bad breath, you are not imagining it. Parents notice this all the time, especially in the morning, after school, or when talking closely in the car. The good news is that bad breath in kids is often caused by something simple and fixable. The less-fun news is that brushing alone does not always solve it.",
         "At Family First Smile Care, we help Los Gatos families sort through these questions without judgment. Sometimes the issue is oral hygiene. Sometimes it is dry mouth, congestion, food trapping, or a cavity starting in a place that is hard to see. The key is understanding what else may be going on."
@@ -2221,40 +2221,66 @@ export const additionalBlogPosts: BlogPost[] = [
           ]
         },
         {
-          "id": "common-reasons-kids-still-have-bad-breath-after-brushing",
-          "title": "Common reasons kids still have bad breath after brushing",
+          "id": "brushing-but-not-cleaning-thoroughly",
+          "title": "1. They are brushing, but not cleaning thoroughly",
           "paragraphs": [
-            "### 1. They are brushing, but not cleaning thoroughly",
             "Many children brush quickly or miss key spots, especially the back teeth, the gumline, and the tongue. Even with good intentions, plaque and food debris can stay behind.",
             "A few common issues we see:",
-            "For younger kids, supervised brushing still matters. For older kids, an occasional “show me how you brush” check can be surprisingly revealing.",
-            "### 2. The tongue is holding onto bacteria",
-            "The tongue is one of the most overlooked sources of bad breath. Its surface can trap bacteria, food particles, and debris, especially if a child is not brushing or gently cleaning the tongue.",
-            "If the teeth look fairly clean but the breath still seems off, tongue buildup is worth considering.",
-            "### 3. Dry mouth or mouth breathing",
-            "Saliva helps wash away bacteria. When the mouth gets dry, odor tends to get stronger. Kids who breathe through their mouth while sleeping, snore, have allergies, or wake up congested often deal with more morning bad breath.",
-            "This can be especially noticeable if your child:",
-            "Sometimes mouth breathing is short-term during a cold. Sometimes it keeps happening and deserves a closer look.",
-            "### 4. Food stuck between teeth",
-            "Kids can have surprisingly stubborn food traps, especially between back teeth where flossing is harder. If food stays lodged there, it can create a strong odor even when the rest of the mouth seems clean.",
-            "This is one reason flossing matters even for children. Brushing cannot clean between teeth well enough on its own.",
-            "### 5. Cavities or leaking areas around teeth",
-            "Bad breath can sometimes point to decay. A cavity can trap bacteria and food in a way that keeps producing odor. This is especially likely if bad breath comes with sensitivity, visible white or brown spots, complaints of food getting stuck, or a history of frequent cavities.",
-            "If your child has persistent bad breath and you are not sure why, a dental exam can help rule this in or out quickly.",
-            "### 6. Postnasal drip, congestion, or enlarged tonsils",
-            "Not every source of bad breath starts with the teeth. Some children develop odor because of chronic congestion, postnasal drip, or debris around the tonsils. Parents often notice that the breath smells worse when allergies flare up or when a child is constantly stuffy.",
-            "Dentists and pediatricians sometimes work together here, especially if the child also snores, breathes through the mouth often, or seems congested for long stretches."
+            "For younger kids, supervised brushing still matters. For older kids, an occasional “show me how you brush” check can be surprisingly revealing."
           ],
           "bullets": [
             "Brushing for less than two minutes",
             "Missing the back molars",
             "Not brushing the tongue",
             "Skipping flossing where food gets trapped",
-            "Rushing through bedtime brushing when everyone is tired",
+            "Rushing through bedtime brushing when everyone is tired"
+          ]
+        },
+        {
+          "id": "tongue-holding-onto-bacteria",
+          "title": "2. The tongue is holding onto bacteria",
+          "paragraphs": [
+            "The tongue is one of the most overlooked sources of bad breath. Its surface can trap bacteria, food particles, and debris, especially if a child is not brushing or gently cleaning the tongue.",
+            "If the teeth look fairly clean but the breath still seems off, tongue buildup is worth considering."
+          ]
+        },
+        {
+          "id": "dry-mouth-or-mouth-breathing",
+          "title": "3. Dry mouth or mouth breathing",
+          "paragraphs": [
+            "Saliva helps wash away bacteria. When the mouth gets dry, odor tends to get stronger. Kids who breathe through their mouth while sleeping, snore, have allergies, or wake up congested often deal with more morning bad breath.",
+            "This can be especially noticeable if your child:",
+            "Sometimes mouth breathing is short-term during a cold. Sometimes it keeps happening and deserves a closer look."
+          ],
+          "bullets": [
             "Sleeps with their mouth open",
             "Wakes up with dry lips",
             "Sounds stuffy often",
             "Has bad breath that is worse in the morning"
+          ]
+        },
+        {
+          "id": "food-stuck-between-teeth",
+          "title": "4. Food stuck between teeth",
+          "paragraphs": [
+            "Kids can have surprisingly stubborn food traps, especially between back teeth where flossing is harder. If food stays lodged there, it can create a strong odor even when the rest of the mouth seems clean.",
+            "This is one reason flossing matters even for children. Brushing cannot clean between teeth well enough on its own."
+          ]
+        },
+        {
+          "id": "cavities-or-leaking-areas-around-teeth",
+          "title": "5. Cavities or leaking areas around teeth",
+          "paragraphs": [
+            "Bad breath can sometimes point to decay. A cavity can trap bacteria and food in a way that keeps producing odor. This is especially likely if bad breath comes with sensitivity, visible white or brown spots, complaints of food getting stuck, or a history of frequent cavities.",
+            "If your child has persistent bad breath and you are not sure why, a dental exam can help rule this in or out quickly."
+          ]
+        },
+        {
+          "id": "postnasal-drip-congestion-or-enlarged-tonsils",
+          "title": "6. Postnasal drip, congestion, or enlarged tonsils",
+          "paragraphs": [
+            "Not every source of bad breath starts with the teeth. Some children develop odor because of chronic congestion, postnasal drip, or debris around the tonsils. Parents often notice that the breath smells worse when allergies flare up or when a child is constantly stuffy.",
+            "Dentists and pediatricians sometimes work together here, especially if the child also snores, breathes through the mouth often, or seems congested for long stretches."
           ]
         },
         {

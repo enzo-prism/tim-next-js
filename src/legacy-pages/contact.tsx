@@ -98,7 +98,7 @@ export default function Contact() {
     },
     onSuccess: (data, variables) => {
       setSubmission({ delivered: data.delivered, fallbackMessage: data.fallbackMessage });
-      if (data.delivered) {
+      if (data.created) {
         trackContactSubmitSuccess(variables.service || undefined);
       }
       if (data.delivered) {

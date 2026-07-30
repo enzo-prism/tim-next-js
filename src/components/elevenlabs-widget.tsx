@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import {
+  ANALYTICS_CONSENT_EVENT,
+  ANALYTICS_CONSENT_STORAGE_KEY,
+} from "@/lib/analytics";
 
 const ELEVENLABS_WIDGET_SCRIPT_SRC =
   "https://cdn.jsdelivr.net/npm/@elevenlabs/convai-widget-embed@0.11.4";
@@ -25,7 +29,23 @@ function isSuppressedRoute(pathname: string | null) {
 
 export default function ElevenLabsWidget() {
   const pathname = usePathname();
+  const [consentResolved, setConsentResolved] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+
+  useEffect(() => {
+    const syncConsent = () => {
+      try {
+        const stored = window.localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY);
+        setConsentResolved(stored === "granted" || stored === "denied");
+      } catch {
+        setConsentResolved(false);
+      }
+    };
+
+    syncConsent();
+    window.addEventListener(ANALYTICS_CONSENT_EVENT, syncConsent);
+    return () => window.removeEventListener(ANALYTICS_CONSENT_EVENT, syncConsent);
+  }, []);
 
   const loadAssistant = () => {
     if (status === "loading" || status === "ready") return;
@@ -58,6 +78,10 @@ export default function ElevenLabsWidget() {
   };
 
   if (isSuppressedRoute(pathname)) {
+    return null;
+  }
+
+  if (!consentResolved) {
     return null;
   }
 

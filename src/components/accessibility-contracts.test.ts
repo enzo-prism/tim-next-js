@@ -50,4 +50,29 @@ describe("accessibility component contracts", () => {
     expect(read("./ui/dialog.tsx")).toMatch(/Close className="[^"]*h-10 w-10/);
     expect(read("./ui/form.tsx")).toContain("text-sm font-medium text-primary");
   });
+
+  it("does not point form controls at missing description nodes", () => {
+    const source = read("./ui/form.tsx");
+
+    expect(source).toContain("aria-describedby={error ? formMessageId : undefined}");
+    expect(source).not.toContain("`${formDescriptionId}`");
+  });
+
+  it("keeps the services CTA fully clickable and its headings sequential", () => {
+    const services = read("../legacy-pages/services.tsx");
+    const serviceCard = read("./service-card.tsx");
+
+    expect(services).toContain("<Button\n                asChild");
+    expect(services).toContain("Our Comprehensive Services");
+    expect(serviceCard).toContain('<h3 className="font-bold');
+    expect(serviceCard).toContain('<h4 className="font-semibold');
+  });
+
+  it("places the skip link before analytics choices in keyboard order", () => {
+    const layout = read("../app/layout.tsx");
+
+    expect(layout.indexOf('href="#main-content"')).toBeLessThan(
+      layout.indexOf("<GoogleAnalytics />"),
+    );
+  });
 });

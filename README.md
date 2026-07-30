@@ -47,6 +47,7 @@ npm run quality:all
 ## Documentation Index
 
 - [Docs Hub](docs/README.md)
+- [Release Notes](docs/release-notes.md)
 - [Architecture](docs/architecture.md)
 - [Routing and SEO](docs/routing-and-seo.md)
 - [API Reference](docs/api-reference.md)
@@ -57,6 +58,16 @@ npm run quality:all
 - [Operations Runbook](docs/operations-runbook.md)
 - [Testing and Quality](docs/testing-and-quality.md)
 - [Migration Parity Checklist](docs/parity-checklist.md)
+
+## Current Release
+
+The July 29, 2026 release improves the public conversion path, consent UI,
+accessibility, SEO/Ads landing-route compatibility, and client bundle size.
+It also corrects lead conversion tracking so a newly persisted appointment or
+contact lead is counted once even when the office notification is delayed.
+
+See [Release Notes](docs/release-notes.md) for the complete scope and
+verification record.
 
 ## Tech Stack
 

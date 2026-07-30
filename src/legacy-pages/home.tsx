@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "wouter";
 import { LazyMotion, m } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import VideoFacade from "@/components/video-facade";
 import officeTourPoster from "@assets/Office Photo 1_1753972057110.jpeg";
+import drChuangPhoto from "@assets/Dr. Chuang_1753977515693.jpg";
 import { testimonialsPageSummary } from "@/content/testimonials";
 
 // Animation variants for reusable patterns
@@ -95,67 +97,6 @@ const featuredServices = [
   },
 ];
 
-const additionalServices = [
-  {
-    title: "Dental Exams",
-    description: "Comprehensive checkups and early detection.",
-    href: "/services/dental-exams",
-  },
-  {
-    title: "Night Guards",
-    description: "Custom protection for grinding and jaw tension.",
-    href: "/services/night-guards",
-  },
-  {
-    title: "Restorative Dentistry",
-    description: "Repair damaged teeth and restore function.",
-    href: "/services/restorative-dentistry",
-  },
-  {
-    title: "Teeth Whitening",
-    description: "Professional brightening for a confident smile.",
-    href: "/services/teeth-whitening",
-  },
-  {
-    title: "Dental Crowns",
-    description: "Durable crowns to restore damaged teeth.",
-    href: "/services/dental-crowns",
-  },
-  {
-    title: "TMJ Treatment",
-    description: "Relief for jaw pain and headaches.",
-    href: "/tmj",
-  },
-  {
-    title: "Baby's First Visit",
-    description: "Gentle introductions for infants and toddlers.",
-    href: "/services/childrens-dentistry/babys-first-visit",
-  },
-];
-
-const patientResources = [
-  {
-    title: "Patient Info",
-    description: "FAQs, insurance, and what to expect at your visit.",
-    href: "/patient-info",
-  },
-  {
-    title: "Brushing Guide",
-    description: "Step-by-step brushing technique and age-based tips.",
-    href: "/patient-info/brushing",
-  },
-  {
-    title: "Flossing Fundamentals",
-    description: "Daily flossing technique to support healthy gums.",
-    href: "/patient-info/flossing",
-  },
-  {
-    title: "Nutrition Tips",
-    description: "Tooth-friendly food choices and habits that help prevent decay.",
-    href: "/patient-info/nutrition",
-  },
-];
-
 export default function Home() {
   const handleAppointmentClick = () => {
     trackAppointmentCtaClick("home_hero");
@@ -186,10 +127,17 @@ export default function Home() {
                 </m.span>
               </h1>
               <m.p
-                className="text-xl text-gray-600 mb-8"
+                className="text-xl text-gray-600 mb-4"
                 variants={fadeInUp}
               >
                 Calm, clear dental care for children and adults, with one Los Gatos team your family can grow with.
+              </m.p>
+              <m.p className="mb-8 text-sm font-semibold text-primary" variants={fadeInUp}>
+                Led by{" "}
+                <Link href="/team" className="underline decoration-primary/35 underline-offset-4 hover:decoration-primary">
+                  Dr. Tim J. Chuang, DDS
+                </Link>
+                , a Bay Area native focused on gentle, family-centered care.
               </m.p>
               <m.div
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4"
@@ -239,6 +187,7 @@ export default function Home() {
                       posterAlt="Inside the Family First Smile Care office in Los Gatos"
                       posterSizes="(max-width: 640px) 320px, 390px"
                       posterPriority
+                      posterFetchPriority="high"
                       playLabel="Play office tour"
                     />
                   </div>
@@ -334,62 +283,51 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose Us Section */}
+      {/* Doctor trust section */}
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <m.div
-            className="text-center mb-16"
+            className="grid items-center gap-8 rounded-xl border border-border bg-card p-6 sm:p-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-            <m.h2
-              className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
-              variants={fadeInUp}
-            >
-              <span className="inline-flex items-center justify-center gap-3">
-
-                <span>Why Choose Family First Smile Care?</span>
-              </span>
-            </m.h2>
-            <m.p
-              className="text-xl text-gray-600 max-w-3xl mx-auto"
-              variants={fadeInUp}
-            >
-              We're committed to providing exceptional dental care that puts your family's comfort and health first.
-            </m.p>
-          </m.div>
-
-          <m.div
-            className="grid md:grid-cols-3 gap-8"
-            initial={false}
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
-            <m.div
-              className="text-center p-6 rounded-xl border border-border bg-card transition-colors duration-200 group hover:border-primary/30"
-              variants={scaleIn}
-            >
-              <h3 className="text-xl font-semibold mb-3">Compassionate Care</h3>
-              <p className="text-gray-600">Gentle, patient-centered approach that puts your comfort first, especially for children and anxious patients.</p>
-            </m.div>
-
-            <m.div
-              className="text-center p-6 rounded-xl border border-border bg-card transition-colors duration-200 group hover:border-primary/30"
-              variants={scaleIn}
-            >
-              <h3 className="text-xl font-semibold mb-3">Advanced Technology</h3>
-              <p className="text-gray-600">Digital scanning and imaging help our team explain findings and plan care clearly.</p>
-            </m.div>
-
-            <m.div
-              className="text-center p-6 rounded-xl border border-border bg-card transition-colors duration-200 group hover:border-primary/30"
-              variants={scaleIn}
-            >
-              <h3 className="text-xl font-semibold mb-3">Family-Focused</h3>
-              <p className="text-gray-600">Comprehensive care for all ages, from your child's first visit to adult preventive and cosmetic dentistry.</p>
+            <Image
+              src={drChuangPhoto}
+              alt="Dr. Tim J. Chuang, DDS"
+              sizes="(max-width: 1024px) 240px, 240px"
+              className="mx-auto aspect-[4/5] w-full max-w-60 rounded-xl object-cover"
+            />
+            <m.div variants={fadeInUp}>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                Meet your dentist
+              </p>
+              <h2 className="text-3xl font-bold text-gray-800 lg:text-4xl">
+                Dr. Tim J. Chuang
+              </h2>
+              <p className="mt-2 text-lg font-semibold text-primary">
+                Lead dentist and practice owner
+              </p>
+              <p className="mt-4 max-w-3xl text-base leading-relaxed text-gray-600 sm:text-lg">
+                Dr. Chuang is a Bay Area native and University of the Pacific School of Dentistry
+                graduate. His approach centers on clear explanations, gentle treatment, and care
+                that works for children, adults, and anxious patients.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2 text-sm text-gray-700">
+                <span className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+                  5+ years in practice
+                </span>
+                <span className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+                  General dentistry residency
+                </span>
+                <span className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+                  Family-centered care
+                </span>
+              </div>
+              <Button asChild variant="outline" className="mt-6 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground">
+                <Link href="/team">Meet Dr. Chuang and the team</Link>
+              </Button>
             </m.div>
           </m.div>
         </div>
@@ -452,110 +390,19 @@ export default function Home() {
               </m.div>
             ))}
           </m.div>
-        </div>
-      </section>
-
-      {/* Explore More Services */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <m.div
-            className="text-center mb-12"
-            initial={false}
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
-            <m.h2
-              className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
-              variants={fadeInUp}
-            >
-              Explore More Services
-            </m.h2>
-            <m.p
-              className="text-lg text-gray-600 max-w-3xl mx-auto"
-              variants={fadeInUp}
-            >
-              Specialized care options to support every stage of your smile.
-            </m.p>
-          </m.div>
-          <m.div
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row"
             initial={false}
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
-            variants={staggerContainer}
-          >
-            {additionalServices.map((service) => (
-              <m.div
-                key={service.href}
-                variants={scaleIn}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <Link
-                  href={service.href}
-                  className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <div className="h-full rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-sm transition-shadow duration-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{service.title}</h3>
-                    <p className="text-sm text-gray-600">{service.description}</p>
-                    <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
-                  </div>
-                </Link>
-              </m.div>
-            ))}
-          </m.div>
-        </div>
-      </section>
-
-      {/* Patient Resources */}
-      <section className="py-16 bg-background">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <m.div
-            className="text-center mb-12"
-            initial={false}
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-            <m.h2
-              className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4"
-              variants={fadeInUp}
-            >
-              Patient Resources
-            </m.h2>
-            <m.p
-              className="text-lg text-gray-600 max-w-3xl mx-auto"
-              variants={fadeInUp}
-            >
-              Helpful guides and FAQs to make your visit smooth and stress-free.
-            </m.p>
-          </m.div>
-
-          <m.div
-            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
-            initial={false}
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={staggerContainer}
-          >
-            {patientResources.map((resource) => (
-              <m.div
-                key={resource.href}
-                variants={scaleIn}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <Link
-                  href={resource.href}
-                  className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <div className="h-full rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-sm transition-shadow duration-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{resource.title}</h3>
-                    <p className="text-sm text-gray-600">{resource.description}</p>
-                    <span className="mt-4 inline-flex text-sm font-semibold text-primary">Read more</span>
-                  </div>
-                </Link>
-              </m.div>
-            ))}
+            <Button asChild className="sm:w-auto">
+              <Link href="/services">Explore all dental services</Link>
+            </Button>
+            <Button asChild variant="outline" className="border-primary/40 text-primary sm:w-auto">
+              <Link href="/patient-info">Patient information and FAQs</Link>
+            </Button>
           </m.div>
         </div>
       </section>

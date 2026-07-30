@@ -205,7 +205,7 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
         fallbackMessage: data.fallbackMessage,
       });
 
-      if (data.delivered) {
+      if (data.created) {
         trackAppointmentSubmitSuccess(
           data.serviceId || undefined,
           submissionIdRef.current || undefined,

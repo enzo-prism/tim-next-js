@@ -51,6 +51,8 @@ Configured in `next.config.ts` and middleware:
 - `/articles/premium_education/category/47367` -> `/services`
 - `/services/tmj` -> `/tmj`
 - `/?page_id=1073` -> `/patient-info` (middleware)
+- `/Book-Appointment` -> `/book-appointment` (middleware; preserves campaign query parameters)
+- `/Services/Invisalign` -> `/services/invisalign` (middleware; preserves campaign query parameters)
 - apex and other noncanonical custom hosts -> `https://www.famfirstsmile.com` (middleware)
 
 ## Metadata Strategy
@@ -99,4 +101,6 @@ Configured in `next.config.ts` and middleware:
 2. Verify OpenGraph/Twitter image and text values.
 3. Confirm `/robots.txt`, `/sitemap.xml`, and `/llms.txt` return `200`.
 4. Verify redirect targets and status codes for all legacy routes.
+   Include the two exact mixed-case Google Ads landing routes and confirm `utm_*`, `gclid`,
+   `gbraid`, and `wbraid` parameters survive the redirect.
 5. Validate JSON-LD snippets with Google Rich Results Test.

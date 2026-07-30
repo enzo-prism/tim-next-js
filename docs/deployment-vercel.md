@@ -195,7 +195,12 @@ curl -I https://www.famfirstsmile.com/hello-world
 curl -I "https://www.famfirstsmile.com/?page_id=1073"
 curl -I https://famfirstsmile.com/
 curl -I https://www.famfirstsmile.com/services/tmj
+curl -I "https://www.famfirstsmile.com/Book-Appointment?utm_source=google"
+curl -I "https://www.famfirstsmile.com/Services/Invisalign?gclid=test"
 ```
+
+The mixed-case Ads routes should return `301`, use their lowercase canonical paths, and preserve
+the supplied campaign parameters.
 
 ### SEO asset checks
 
