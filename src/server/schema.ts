@@ -193,6 +193,8 @@ export const reconciliationRuns = pgTable(
     missingInStored: integer("missing_in_stored"),
     missingInExternal: integer("missing_in_external"),
     errorCode: text("error_code"),
+    leaseToken: text("lease_token"),
+    leaseExpiresAt: timestamp("lease_expires_at"),
     startedAt: timestamp("started_at").defaultNow().notNull(),
     completedAt: timestamp("completed_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -227,6 +229,12 @@ export const reconciliationDiscrepancies = pgTable(
   },
   (table) => [
     index("reconciliation_discrepancies_run_id_idx").on(table.runId),
+    uniqueIndex("reconciliation_discrepancies_unique_idx").on(
+      table.runId,
+      table.provider,
+      table.externalId,
+      table.discrepancyType,
+    ),
     check(
       "reconciliation_discrepancies_type_check",
       sql`${table.discrepancyType} in ('missing_in_stored', 'missing_in_external')`,

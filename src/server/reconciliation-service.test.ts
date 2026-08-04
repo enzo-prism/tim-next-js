@@ -5,7 +5,6 @@ const mocks = vi.hoisted(() => ({
   select: vi.fn(),
   update: vi.fn(),
   insert: vi.fn(),
-  fetchExternalLeadIds: vi.fn(),
 }));
 
 const mockDb = {
@@ -15,23 +14,101 @@ const mockDb = {
   insert: mocks.insert,
 } as never;
 
-vi.mock("@/server/reconciliation-providers", () => ({
-  getReconciliationProvider: vi.fn(),
-  ALL_RECONCILIATION_PROVIDERS: ["google_ads", "formspree"],
-}));
+const setupUpdateChain = () => {
+  const chain = {
+    set: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    returning: vi.fn().mockResolvedValue([]),
+  };
+  mocks.update.mockReturnValue(chain);
+  return chain;
+};
 
-import { DatabaseReconciliationService } from "@/server/reconciliation-service";
-import type { IReconciliationProvider } from "@/server/reconciliation-providers";
+import {
+  DatabaseReconciliationService,
+  computeTimeWindow,
+  deduplicateAndValidateIds,
+  sanitizeErrorCode,
+} from "@/server/reconciliation-service";
+import type { IReconciliationProvider, ReconciliationTimeWindow } from "@/server/reconciliation-providers";
 
 const makeProvider = (
   name: "google_ads" | "formspree",
   ids: string[] | Error,
 ): IReconciliationProvider => ({
   name,
-  fetchExternalLeadIds: async () => {
+  fetchExternalLeadIds: async (_window: ReconciliationTimeWindow) => {
     if (ids instanceof Error) throw ids;
     return ids;
   },
+});
+
+describe("sanitizeErrorCode", () => {
+  it("maps allowlisted error messages directly", () => {
+    expect(sanitizeErrorCode(new Error("provider_not_configured"))).toBe("provider_not_configured");
+    expect(sanitizeErrorCode(new Error("provider_timeout"))).toBe("provider_timeout");
+    expect(sanitizeErrorCode(new Error("database_error"))).toBe("database_error");
+  });
+
+  it("maps timeout-related errors to provider_timeout", () => {
+    expect(sanitizeErrorCode(new Error("request timeout after 30s"))).toBe("provider_timeout");
+    expect(sanitizeErrorCode(new Error("ETIMEDOUT"))).toBe("provider_timeout");
+  });
+
+  it("maps network errors to provider_api_error", () => {
+    expect(sanitizeErrorCode(new Error("fetch failed"))).toBe("provider_api_error");
+    expect(sanitizeErrorCode(new Error("ECONNREFUSED 127.0.0.1:443"))).toBe("provider_api_error");
+  });
+
+  it("maps unknown errors to unknown_error", () => {
+    expect(sanitizeErrorCode(new Error("some random error"))).toBe("unknown_error");
+    expect(sanitizeErrorCode("not an error")).toBe("unknown_error");
+    expect(sanitizeErrorCode(null)).toBe("unknown_error");
+  });
+
+  it("never exposes raw error messages with sensitive data", () => {
+    const malicious = new Error("https://api.google.com/v1/leads?key=SECRET123 user@email.com");
+    const code = sanitizeErrorCode(malicious);
+    expect(code).toBe("unknown_error");
+    expect(code).not.toContain("SECRET");
+    expect(code).not.toContain("email");
+    expect(code).not.toContain("http");
+  });
+});
+
+describe("deduplicateAndValidateIds", () => {
+  it("removes duplicate IDs", () => {
+    expect(deduplicateAndValidateIds(["a", "b", "a", "c"])).toEqual(["a", "b", "c"]);
+  });
+
+  it("trims whitespace", () => {
+    expect(deduplicateAndValidateIds(["  a  ", "b"])).toEqual(["a", "b"]);
+  });
+
+  it("filters empty and null-ish values", () => {
+    expect(deduplicateAndValidateIds(["", "  ", "a"])).toEqual(["a"]);
+  });
+
+  it("filters IDs exceeding 500 characters", () => {
+    const longId = "x".repeat(501);
+    expect(deduplicateAndValidateIds([longId, "valid"])).toEqual(["valid"]);
+  });
+});
+
+describe("computeTimeWindow", () => {
+  it("returns midnight-to-noon for am slot", () => {
+    const now = new Date("2026-08-04T09:00:00Z");
+    const window = computeTimeWindow(now);
+    expect(window.since.toISOString()).toBe("2026-08-04T00:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-04T12:00:00.000Z");
+  });
+
+  it("returns noon-to-midnight for pm slot", () => {
+    const now = new Date("2026-08-04T21:00:00Z");
+    const window = computeTimeWindow(now);
+    expect(window.since.toISOString()).toBe("2026-08-04T12:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-05T00:00:00.000Z");
+  });
 });
 
 describe("DatabaseReconciliationService", () => {
@@ -39,16 +116,19 @@ describe("DatabaseReconciliationService", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    setupUpdateChain();
     service = new DatabaseReconciliationService();
   });
 
   describe("acquireRunLock", () => {
-    it("returns run id when insert succeeds", async () => {
+    it("returns run id and lease token when insert succeeds", async () => {
       mocks.execute.mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
 
       const result = await service.acquireRunLock(mockDb, "key-1", "google_ads");
 
-      expect(result).toBe("run-1");
+      expect(result).not.toBeNull();
+      expect(result!.runId).toBe("run-1");
+      expect(result!.leaseToken).toBeDefined();
       expect(mocks.execute).toHaveBeenCalledTimes(1);
     });
 
@@ -70,7 +150,8 @@ describe("DatabaseReconciliationService", () => {
 
       const result = await service.acquireRunLock(mockDb, "key-1", "google_ads");
 
-      expect(result).toBe("run-failed");
+      expect(result).not.toBeNull();
+      expect(result!.runId).toBe("run-failed");
       expect(mocks.execute).toHaveBeenCalledTimes(2);
     });
   });
@@ -94,24 +175,15 @@ describe("DatabaseReconciliationService", () => {
     });
 
     it("returns completed with correct counts when no discrepancies", async () => {
-      mocks.execute.mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockResolvedValue([{ id: "lead-1" }, { id: "lead-2" }]),
       };
       mocks.select.mockReturnValue(selectChain);
-
-      const updateChain = {
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue([]),
-      };
-      mocks.update.mockReturnValue(updateChain);
-
-      const insertChain = {
-        values: vi.fn().mockResolvedValue([]),
-      };
-      mocks.insert.mockReturnValue(insertChain);
 
       const provider = makeProvider("google_ads", ["lead-1", "lead-2"]);
       const result = await service.runReconciliation(mockDb, provider, now);
@@ -126,61 +198,10 @@ describe("DatabaseReconciliationService", () => {
       });
     });
 
-    it("detects leads missing in stored and missing in external", async () => {
-      mocks.execute.mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
-
-      const selectChain = {
-        from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue([{ id: "stored-1" }]),
-      };
-      mocks.select.mockReturnValue(selectChain);
-
-      const updateChain = {
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue([]),
-      };
-      mocks.update.mockReturnValue(updateChain);
-
-      const valuesMock = vi.fn().mockResolvedValue([]);
-      mocks.insert.mockReturnValue({ values: valuesMock });
-
-      const provider = makeProvider("google_ads", ["external-1"]);
-      const result = await service.runReconciliation(mockDb, provider, now);
-
-      expect(result).toEqual({
-        status: "completed",
-        runKey: "reconciliation:google_ads:2026-08-04:am",
-        totalExternal: 1,
-        totalStored: 1,
-        missingInStored: 1,
-        missingInExternal: 1,
-      });
-
-      expect(mocks.insert).toHaveBeenCalled();
-      const insertedRows = valuesMock.mock.calls[0][0];
-      expect(insertedRows).toHaveLength(2);
-      expect(insertedRows).toContainEqual(
-        expect.objectContaining({
-          externalId: "external-1",
-          discrepancyType: "missing_in_stored",
-        }),
-      );
-      expect(insertedRows).toContainEqual(
-        expect.objectContaining({
-          externalId: "stored-1",
-          discrepancyType: "missing_in_external",
-        }),
-      );
-    });
-
-    it("returns failed with error code when provider throws", async () => {
-      mocks.execute.mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
-
-      const updateChain = {
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue([]),
-      };
-      mocks.update.mockReturnValue(updateChain);
+    it("returns failed with sanitized error code when provider throws", async () => {
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
 
       const provider = makeProvider("google_ads", new Error("provider_not_configured"));
       const result = await service.runReconciliation(mockDb, provider, now);
@@ -192,8 +213,30 @@ describe("DatabaseReconciliationService", () => {
       });
     });
 
-    it("does not include patient fields in the outcome", async () => {
-      mocks.execute.mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
+    it("maps malicious error messages to safe codes", async () => {
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
+
+      const provider = makeProvider(
+        "google_ads",
+        new Error("https://secret-api.com/key=ABC123 patient@email.com"),
+      );
+      const result = await service.runReconciliation(mockDb, provider, now);
+
+      expect(result.status).toBe("failed");
+      if (result.status === "failed") {
+        expect(result.errorCode).toBe("unknown_error");
+        expect(result.errorCode).not.toContain("secret");
+        expect(result.errorCode).not.toContain("email");
+        expect(result.errorCode).not.toContain("http");
+      }
+    });
+
+    it("deduplicates external IDs before comparison", async () => {
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),
@@ -201,16 +244,26 @@ describe("DatabaseReconciliationService", () => {
       };
       mocks.select.mockReturnValue(selectChain);
 
-      const updateChain = {
-        set: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue([]),
-      };
-      mocks.update.mockReturnValue(updateChain);
+      const provider = makeProvider("google_ads", ["lead-1", "lead-1", "lead-1"]);
+      const result = await service.runReconciliation(mockDb, provider, now);
 
-      const insertChain = {
-        values: vi.fn().mockResolvedValue([]),
+      expect(result.status).toBe("completed");
+      if (result.status === "completed") {
+        expect(result.totalExternal).toBe(1);
+        expect(result.missingInStored).toBe(0);
+      }
+    });
+
+    it("does not include patient fields in the outcome", async () => {
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
+
+      const selectChain = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockResolvedValue([{ id: "lead-1" }]),
       };
-      mocks.insert.mockReturnValue(insertChain);
+      mocks.select.mockReturnValue(selectChain);
 
       const provider = makeProvider("google_ads", ["lead-1"]);
       const result = await service.runReconciliation(mockDb, provider, now);
@@ -224,6 +277,8 @@ describe("DatabaseReconciliationService", () => {
   });
 
   describe("getStoredLeadIds", () => {
+    const window = { since: new Date("2026-08-04T00:00:00Z"), until: new Date("2026-08-04T12:00:00Z") };
+
     it("queries googleAdsLeadId for google_ads provider", async () => {
       const selectChain = {
         from: vi.fn().mockReturnThis(),
@@ -231,7 +286,7 @@ describe("DatabaseReconciliationService", () => {
       };
       mocks.select.mockReturnValue(selectChain);
 
-      const result = await service.getStoredLeadIds(mockDb, "google_ads");
+      const result = await service.getStoredLeadIds(mockDb, "google_ads", window);
 
       expect(result).toEqual(["ga-1"]);
     });
@@ -243,7 +298,7 @@ describe("DatabaseReconciliationService", () => {
       };
       mocks.select.mockReturnValue(selectChain);
 
-      const result = await service.getStoredLeadIds(mockDb, "formspree");
+      const result = await service.getStoredLeadIds(mockDb, "formspree", window);
 
       expect(result).toEqual(["fs-1"]);
     });

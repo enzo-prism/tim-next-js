@@ -1,14 +1,19 @@
 import type { ReconciliationProviderName } from "@/server/schema";
 
+export interface ReconciliationTimeWindow {
+  since: Date;
+  until: Date;
+}
+
 export interface IReconciliationProvider {
   readonly name: ReconciliationProviderName;
-  fetchExternalLeadIds(): Promise<string[]>;
+  fetchExternalLeadIds(window: ReconciliationTimeWindow): Promise<string[]>;
 }
 
 export class GoogleAdsReconciliationProvider implements IReconciliationProvider {
   readonly name: ReconciliationProviderName = "google_ads";
 
-  async fetchExternalLeadIds(): Promise<string[]> {
+  async fetchExternalLeadIds(_window: ReconciliationTimeWindow): Promise<string[]> {
     throw new Error("provider_not_configured");
   }
 }
@@ -16,7 +21,7 @@ export class GoogleAdsReconciliationProvider implements IReconciliationProvider 
 export class FormspreeReconciliationProvider implements IReconciliationProvider {
   readonly name: ReconciliationProviderName = "formspree";
 
-  async fetchExternalLeadIds(): Promise<string[]> {
+  async fetchExternalLeadIds(_window: ReconciliationTimeWindow): Promise<string[]> {
     throw new Error("provider_not_configured");
   }
 }

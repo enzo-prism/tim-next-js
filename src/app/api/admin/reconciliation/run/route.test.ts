@@ -94,7 +94,7 @@ describe("reconciliation run GET", () => {
     expect(mocks.runReconciliation).toHaveBeenCalledTimes(2);
   });
 
-  it("handles partial provider failure without failing the whole request", async () => {
+  it("returns 502 when any provider fails", async () => {
     mocks.runReconciliation
       .mockResolvedValueOnce({
         status: "failed",
@@ -111,9 +111,9 @@ describe("reconciliation run GET", () => {
       });
 
     const response = await GET(buildRequest(true));
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(502);
     const body = await response.json();
-    expect(body.ok).toBe(true);
+    expect(body.ok).toBe(false);
     expect(body.results).toHaveLength(2);
 
     const failed = body.results.find(
@@ -126,6 +126,20 @@ describe("reconciliation run GET", () => {
     expect(failed.errorCode).toBe("provider_not_configured");
     expect(completed).toBeDefined();
     expect(completed.totalExternal).toBe(3);
+  });
+
+  it("returns 502 when all providers fail", async () => {
+    mocks.runReconciliation.mockResolvedValue({
+      status: "failed",
+      runKey: "reconciliation:google_ads:2026-08-04:am",
+      errorCode: "provider_not_configured",
+    });
+
+    const response = await GET(buildRequest(true));
+    expect(response.status).toBe(502);
+    const body = await response.json();
+    expect(body.ok).toBe(false);
+    expect(body.results).toHaveLength(2);
   });
 
   it("does not include patient fields in the response", async () => {

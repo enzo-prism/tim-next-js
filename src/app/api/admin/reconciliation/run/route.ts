@@ -97,5 +97,14 @@ export async function GET(req: NextRequest) {
     }),
   );
 
+  const anyFailed = results.some((r) => r.status === "failed");
+
+  if (anyFailed) {
+    return jsonResponse(
+      { ok: false, disabled: false, results },
+      { status: 502 },
+    );
+  }
+
   return jsonResponse({ ok: true, disabled: false, results });
 }

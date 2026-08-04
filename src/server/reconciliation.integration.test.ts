@@ -1,9 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { eq } from "drizzle-orm";
 import pg from "pg";
 import * as schema from "@/server/schema";
 import { DatabaseReconciliationService, type DrizzleDatabase } from "@/server/reconciliation-service";
-import type { IReconciliationProvider } from "@/server/reconciliation-providers";
+import type { IReconciliationProvider, ReconciliationTimeWindow } from "@/server/reconciliation-providers";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -39,6 +40,7 @@ const MIGRATIONS = [
   "0005_notification_outbox.sql",
   "0006_outbox_lease_fields.sql",
   "0007_reconciliation.sql",
+  "0008_reconciliation_lease.sql",
 ];
 
 beforeAll(async () => {
@@ -69,7 +71,7 @@ const makeProvider = (
   ids: string[] | Error,
 ): IReconciliationProvider => ({
   name,
-  fetchExternalLeadIds: async () => {
+  fetchExternalLeadIds: async (_window: ReconciliationTimeWindow) => {
     if (ids instanceof Error) throw ids;
     return ids;
   },
@@ -87,6 +89,7 @@ const seedContact = async (
     leadStatus: "new" as const,
     consentToContact: true,
     isTest: false,
+    createdAt: new Date("2026-08-04T06:00:00Z"),
   };
   await db.insert(schema.contacts).values({ ...base, ...overrides });
 };
@@ -256,6 +259,116 @@ describe("Postgres reconciliation integration", () => {
       expect(result.totalStored).toBe(1);
       expect(result.missingInStored).toBe(1);
       expect(result.missingInExternal).toBe(0);
+    }
+  });
+
+  it("recovers stale running runs with expired lease", async () => {
+    const provider = makeProvider("google_ads", []);
+    const first = await service.runReconciliation(db, provider, now);
+    expect(first.status).toBe("completed");
+
+    await client!.query(
+      `UPDATE reconciliation_runs SET status = 'running', lease_expires_at = NOW() - INTERVAL '1 second' WHERE run_key = $1`,
+      ["reconciliation:google_ads:2026-08-04:am"],
+    );
+
+    const recovered = await service.recoverStaleRuns(db);
+    expect(recovered).toBeGreaterThanOrEqual(1);
+
+    const [run] = await db
+      .select()
+      .from(schema.reconciliationRuns)
+      .where(eq(schema.reconciliationRuns.runKey, "reconciliation:google_ads:2026-08-04:am"))
+      .limit(1);
+
+    expect(run.status).toBe("failed");
+    expect(run.errorCode).toBe("stale_run_recovered");
+  });
+
+  it("recovers running runs with null lease_expires_at", async () => {
+    await client!.query(
+      `INSERT INTO reconciliation_runs (run_key, provider, status, lease_token, lease_expires_at) VALUES ($1, $2, 'running', NULL, NULL)`,
+      ["reconciliation:google_ads:2026-08-04:am", "google_ads"],
+    );
+
+    const recovered = await service.recoverStaleRuns(db);
+    expect(recovered).toBeGreaterThanOrEqual(1);
+  });
+
+  it("stale worker cannot finalize after lease recovery", async () => {
+    const lock = await service.acquireRunLock(db, "reconciliation:google_ads:2026-08-04:am", "google_ads");
+    expect(lock).not.toBeNull();
+
+    await client!.query(
+      `UPDATE reconciliation_runs SET lease_expires_at = NOW() - INTERVAL '1 second' WHERE run_key = $1`,
+      ["reconciliation:google_ads:2026-08-04:am"],
+    );
+    await service.recoverStaleRuns(db);
+
+    const finalized = await service.finalizeRun(
+      db,
+      lock!.runId,
+      lock!.leaseToken,
+      "google_ads",
+      { totalExternal: 0, totalStored: 0, missingInStored: 0, missingInExternal: 0 },
+      [],
+    );
+    expect(finalized).toBe(false);
+  });
+
+  it("deduplicates external IDs before comparison", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-dedup-1" });
+
+    const provider = makeProvider("google_ads", ["ga-dedup-1", "ga-dedup-1", "ga-dedup-1"]);
+    const result = await service.runReconciliation(db, provider, now);
+
+    expect(result.status).toBe("completed");
+    if (result.status === "completed") {
+      expect(result.totalExternal).toBe(1);
+      expect(result.missingInStored).toBe(0);
+    }
+  });
+
+  it("retry after finalize failure does not duplicate discrepancies", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-retry-1" });
+
+    const provider = makeProvider("google_ads", ["ga-retry-1", "ga-missing"]);
+    const first = await service.runReconciliation(db, provider, now);
+    expect(first.status).toBe("completed");
+
+    const discrepancies1 = await db
+      .select()
+      .from(schema.reconciliationDiscrepancies);
+    const count1 = discrepancies1.length;
+
+    await client!.query(
+      `UPDATE reconciliation_runs SET status = 'failed' WHERE run_key = $1`,
+      ["reconciliation:google_ads:2026-08-04:am"],
+    );
+
+    const retried = await service.runReconciliation(db, provider, now);
+    expect(retried.status).toBe("completed");
+
+    const discrepancies2 = await db
+      .select()
+      .from(schema.reconciliationDiscrepancies);
+    expect(discrepancies2.length).toBe(count1);
+  });
+
+  it("time window filters stored leads by createdAt", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-in-window" });
+
+    await client!.query(
+      `UPDATE contacts SET created_at = '2026-08-01T00:00:00Z' WHERE google_ads_lead_id = 'ga-in-window'`,
+    );
+
+    const provider = makeProvider("google_ads", ["ga-in-window"]);
+    const result = await service.runReconciliation(db, provider, now);
+
+    expect(result.status).toBe("completed");
+    if (result.status === "completed") {
+      expect(result.totalStored).toBe(0);
+      expect(result.missingInStored).toBe(1);
     }
   });
 });
