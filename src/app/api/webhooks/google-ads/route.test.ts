@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  createContactIgnoreDuplicate: vi.fn(),
+  createContactWithOutbox: vi.fn(),
 }));
 
 vi.mock("@/server/storage", () => ({
   storage: {
-    createContactIgnoreDuplicate: mocks.createContactIgnoreDuplicate,
+    createContactWithOutbox: mocks.createContactWithOutbox,
   },
 }));
 
@@ -48,7 +48,10 @@ describe("Google Ads webhook POST", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.GOOGLE_ADS_WEBHOOK_KEY = TEST_KEY;
-    mocks.createContactIgnoreDuplicate.mockResolvedValue({ id: "new-contact-id" });
+    mocks.createContactWithOutbox.mockResolvedValue({
+      contact: { id: "new-contact-id" },
+      outboxEnqueued: true,
+    });
   });
 
   it("returns 503 with message when webhook key is not configured", async () => {
@@ -57,7 +60,7 @@ describe("Google Ads webhook POST", () => {
     expect(response.status).toBe(503);
     const json = await response.json();
     expect(json.message).toBeDefined();
-    expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("returns 400 with message for invalid JSON", async () => {
@@ -70,7 +73,7 @@ describe("Google Ads webhook POST", () => {
     expect(response.status).toBe(400);
     const json = await response.json();
     expect(json.message).toBeDefined();
-    expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("returns 400 with message for malformed payload", async () => {
@@ -79,7 +82,7 @@ describe("Google Ads webhook POST", () => {
     expect(response.status).toBe(400);
     const json = await response.json();
     expect(json.message).toBeDefined();
-    expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("returns 401 with message when google_key does not match", async () => {
@@ -88,7 +91,7 @@ describe("Google Ads webhook POST", () => {
     expect(response.status).toBe(401);
     const json = await response.json();
     expect(json.message).toBeDefined();
-    expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("returns 400 when no contact info (email or phone) is present", async () => {
@@ -103,7 +106,7 @@ describe("Google Ads webhook POST", () => {
     expect(response.status).toBe(400);
     const json = await response.json();
     expect(json.message).toBeDefined();
-    expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("returns 413 when body exceeds size limit", async () => {
@@ -119,14 +122,14 @@ describe("Google Ads webhook POST", () => {
     expect(response.status).toBe(413);
     const json = await response.json();
     expect(json.message).toBeDefined();
-    expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("creates contact from exact numeric official sample and returns 200 {}", async () => {
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({});
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         firstName: "Jane",
         lastName: "Doe",
@@ -151,7 +154,7 @@ describe("Google Ads webhook POST", () => {
   it("sanitizes google_key from rawPayload before storage", async () => {
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(200);
-    const call = mocks.createContactIgnoreDuplicate.mock.calls[0][0];
+    const call = mocks.createContactWithOutbox.mock.calls[0][0];
     expect(call.rawPayload).not.toHaveProperty("google_key");
     expect(call.rawPayload).toHaveProperty("lead_id", "google-lead-001");
     expect(call.rawPayload).toHaveProperty("campaign_id", 12345678901);
@@ -164,7 +167,7 @@ describe("Google Ads webhook POST", () => {
   it("preserves all user_column_data in rawPayload including custom fields", async () => {
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(200);
-    const call = mocks.createContactIgnoreDuplicate.mock.calls[0][0];
+    const call = mocks.createContactWithOutbox.mock.calls[0][0];
     expect(call.rawPayload.user_column_data).toHaveLength(7);
     expect(call.rawPayload.user_column_data).toEqual(
       expect.arrayContaining([
@@ -176,7 +179,7 @@ describe("Google Ads webhook POST", () => {
   it("uses stable top-level lead_id for deduplication", async () => {
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(200);
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         googleAdsLeadId: "google-lead-001",
       }),
@@ -184,11 +187,14 @@ describe("Google Ads webhook POST", () => {
   });
 
   it("returns 200 {} for duplicate delivery (storage returns null)", async () => {
-    mocks.createContactIgnoreDuplicate.mockResolvedValue(null);
+    mocks.createContactWithOutbox.mockResolvedValue({
+      contact: null,
+      outboxEnqueued: false,
+    });
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({});
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledTimes(1);
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledTimes(1);
   });
 
   it("supports phone-only leads with email null", async () => {
@@ -204,7 +210,7 @@ describe("Google Ads webhook POST", () => {
     const response = await POST(buildRequest(payload));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({});
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         firstName: "John",
         lastName: "Smith",
@@ -223,7 +229,7 @@ describe("Google Ads webhook POST", () => {
     };
     const response = await POST(buildRequest(payload));
     expect(response.status).toBe(200);
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         isTest: true,
         googleAdsLeadId: "test-lead-001",
@@ -232,12 +238,12 @@ describe("Google Ads webhook POST", () => {
   });
 
   it("returns 500 with message when storage throws unexpected error", async () => {
-    mocks.createContactIgnoreDuplicate.mockRejectedValue(new Error("db down"));
+    mocks.createContactWithOutbox.mockRejectedValue(new Error("db down"));
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(500);
     const json = await response.json();
     expect(json.message).toBeDefined();
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledTimes(1);
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledTimes(1);
   });
 
   it("parses FIRST_NAME/LAST_NAME when FULL_NAME is absent", async () => {
@@ -252,7 +258,7 @@ describe("Google Ads webhook POST", () => {
     };
     const response = await POST(buildRequest(payload));
     expect(response.status).toBe(200);
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         firstName: "John",
         lastName: "Smith",
@@ -273,7 +279,7 @@ describe("Google Ads webhook POST", () => {
     };
     const response = await POST(buildRequest(payload));
     expect(response.status).toBe(200);
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         phone: null,
         service: null,
@@ -287,7 +293,7 @@ describe("Google Ads webhook POST", () => {
       const response = await POST(buildRequest(payload));
       expect(response.status).toBe(400);
     }
-    expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("preserves int64 campaign_id above MAX_SAFE_INTEGER as a string", async () => {
@@ -309,7 +315,7 @@ describe("Google Ads webhook POST", () => {
     });
     const response = await POST(request);
     expect(response.status).toBe(200);
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         campaignId: largeId,
         googleAdsLeadId: "int64-lead",
@@ -320,7 +326,7 @@ describe("Google Ads webhook POST", () => {
   it("stores sanitized rawPayload without google_key even if present in body", async () => {
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(200);
-    const call = mocks.createContactIgnoreDuplicate.mock.calls[0][0];
+    const call = mocks.createContactWithOutbox.mock.calls[0][0];
     expect(call.rawPayload).not.toHaveProperty("google_key");
     expect(call.rawPayload).toHaveProperty("lead_id", "google-lead-001");
   });
@@ -336,7 +342,7 @@ describe("Google Ads webhook POST", () => {
     });
     const response = await POST(request);
     expect(response.status).toBe(200);
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         campaignId: maxInt64,
         googleAdsLeadId: "max-int64-lead",
@@ -364,7 +370,7 @@ describe("Google Ads webhook POST", () => {
     });
     const response = await POST(request);
     expect(response.status).toBe(200);
-    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         campaignId: "12345678901",
         googleAdsLeadId: "whitespace-lead",
@@ -382,7 +388,7 @@ describe("Google Ads webhook POST", () => {
     });
     const response = await POST(request);
     expect(response.status).toBe(200);
-    const call = mocks.createContactIgnoreDuplicate.mock.calls[0][0];
+    const call = mocks.createContactWithOutbox.mock.calls[0][0];
     expect(call.rawPayload.user_column_data).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

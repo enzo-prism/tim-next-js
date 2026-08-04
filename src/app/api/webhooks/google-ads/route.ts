@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    await storage.createContactIgnoreDuplicate(contactData);
+    await storage.createContactWithOutbox(contactData);
   } catch {
     console.error("google_ads_webhook_insert_failed");
     return errorResponse("Internal server error.", 500);

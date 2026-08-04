@@ -4,6 +4,7 @@ import type { PgDatabase } from "drizzle-orm/pg-core";
 import type * as schema from "@/server/schema";
 import {
   contacts,
+  notificationOutbox,
   users,
   type Contact,
   type InsertContactRecord,
@@ -13,6 +14,7 @@ import {
 } from "@/server/schema";
 import { db } from "@/server/db";
 import { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
+import { buildEventKey } from "@/server/notification-outbox";
 
 export { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
 
@@ -111,6 +113,9 @@ export interface IStorage {
   getContactByGoogleAdsLeadId(leadId: string): Promise<Contact | undefined>;
   createContact(contact: InsertContactRecord): Promise<Contact>;
   createContactIgnoreDuplicate(contact: InsertContactRecord): Promise<Contact | null>;
+  createContactWithOutbox(
+    contact: InsertContactRecord,
+  ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }>;
   claimContactNotification(id: string): Promise<Contact | undefined>;
   updateContactFormspreeStatus(
     id: string,
@@ -165,6 +170,45 @@ export class DatabaseStorage implements IStorage {
       .onConflictDoNothing()
       .returning();
     return contact || null;
+  }
+
+  async createContactWithOutbox(
+    insertContact: InsertContactRecord,
+  ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }> {
+    return this.database.transaction(async (tx) => {
+      const [contact] = await tx
+        .insert(contacts)
+        .values(insertContact)
+        .onConflictDoNothing()
+        .returning();
+
+      if (!contact) {
+        return { contact: null, outboxEnqueued: false };
+      }
+
+      if (contact.isTest) {
+        return { contact, outboxEnqueued: false };
+      }
+
+      const eventKey = buildEventKey(
+        contact.googleAdsLeadId,
+        contact.submissionId,
+        contact.id,
+      );
+
+      const [event] = await tx
+        .insert(notificationOutbox)
+        .values({
+          eventKey,
+          eventType: "new_lead",
+          contactId: contact.id,
+          status: "pending",
+        })
+        .onConflictDoNothing()
+        .returning();
+
+      return { contact, outboxEnqueued: Boolean(event) };
+    });
   }
 
   async getContact(id: string): Promise<Contact | undefined> {
@@ -426,6 +470,15 @@ export class InMemoryStorage implements IStorage {
     return this.createContact(insertContact);
   }
 
+  async createContactWithOutbox(
+    insertContact: InsertContactRecord,
+  ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }> {
+    const contact = await this.createContactIgnoreDuplicate(insertContact);
+    if (!contact) return { contact: null, outboxEnqueued: false };
+    if (contact.isTest) return { contact, outboxEnqueued: false };
+    return { contact, outboxEnqueued: true };
+  }
+
   async getContact(id: string): Promise<Contact | undefined> {
     return this.contacts.get(id);
   }
@@ -592,6 +645,13 @@ class UnavailableStorage implements IStorage {
   }
 
   async createContactIgnoreDuplicate(): Promise<Contact | null> {
+    throw new Error(this.message);
+  }
+
+  async createContactWithOutbox(): Promise<{
+    contact: Contact | null;
+    outboxEnqueued: boolean;
+  }> {
     throw new Error(this.message);
   }
 

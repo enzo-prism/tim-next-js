@@ -3,6 +3,7 @@ import {
   boolean,
   check,
   index,
+  integer,
   jsonb,
   pgTable,
   text,
@@ -103,6 +104,43 @@ export const contacts = pgTable(
     check(
       "contacts_ingested_via_check",
       sql`${table.ingestedVia} is null or ${table.ingestedVia} in ('webhook', 'reconciliation', 'website-form', 'backfill')`,
+    ),
+  ],
+);
+
+export const OUTBOX_STATUS_VALUES = [
+  "pending",
+  "sending",
+  "sent",
+  "failed",
+] as const;
+
+export type OutboxStatus = (typeof OUTBOX_STATUS_VALUES)[number];
+
+export const notificationOutbox = pgTable(
+  "notification_outbox",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    eventKey: text("event_key").notNull(),
+    eventType: text("event_type").notNull().default("new_lead"),
+    contactId: varchar("contact_id").notNull(),
+    status: text("status").$type<OutboxStatus>().notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    sentAt: timestamp("sent_at"),
+  },
+  (table) => [
+    uniqueIndex("notification_outbox_event_key_idx").on(table.eventKey),
+    index("notification_outbox_status_idx").on(table.status),
+    check(
+      "notification_outbox_status_check",
+      sql`${table.status} in ('pending', 'sending', 'sent', 'failed')`,
+    ),
+    check(
+      "notification_outbox_event_type_check",
+      sql`${table.eventType} in ('new_lead')`,
     ),
   ],
 );
