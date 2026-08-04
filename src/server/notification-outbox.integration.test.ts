@@ -47,6 +47,7 @@ beforeAll(async () => {
     "0004_google_ads_lead_ingestion.sql",
     "0005_notification_outbox.sql",
     "0006_outbox_lease_fields.sql",
+    "0007_reconciliation.sql",
   ];
   for (const file of migrations) {
     const sql = readFileSync(join(migrationDir, file), "utf-8");

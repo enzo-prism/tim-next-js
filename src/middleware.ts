@@ -20,7 +20,10 @@ const safeTimingEqual = (a: string, b: string) => {
   return mismatch === 0;
 };
 
-const CRON_EXEMPT_PATHS = ["/api/admin/notifications/process"];
+const CRON_EXEMPT_PATHS = [
+  "/api/admin/notifications/process",
+  "/api/admin/reconciliation/run",
+];
 
 const isProtectedPath = (pathname: string) =>
   pathname === "/admin" || pathname.startsWith("/api/admin");

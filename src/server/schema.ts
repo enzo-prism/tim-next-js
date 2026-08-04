@@ -154,6 +154,86 @@ export const notificationOutbox = pgTable(
   ],
 );
 
+export const RECONCILIATION_RUN_STATUS_VALUES = [
+  "running",
+  "completed",
+  "failed",
+] as const;
+
+export type ReconciliationRunStatus =
+  (typeof RECONCILIATION_RUN_STATUS_VALUES)[number];
+
+export const RECONCILIATION_PROVIDER_VALUES = [
+  "google_ads",
+  "formspree",
+] as const;
+
+export type ReconciliationProviderName =
+  (typeof RECONCILIATION_PROVIDER_VALUES)[number];
+
+export const DISCREPANCY_TYPE_VALUES = [
+  "missing_in_stored",
+  "missing_in_external",
+] as const;
+
+export type DiscrepancyType = (typeof DISCREPANCY_TYPE_VALUES)[number];
+
+export const reconciliationRuns = pgTable(
+  "reconciliation_runs",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    runKey: text("run_key").notNull(),
+    provider: text("provider").$type<ReconciliationProviderName>().notNull(),
+    status: text("status")
+      .$type<ReconciliationRunStatus>()
+      .notNull()
+      .default("running"),
+    totalExternal: integer("total_external"),
+    totalStored: integer("total_stored"),
+    missingInStored: integer("missing_in_stored"),
+    missingInExternal: integer("missing_in_external"),
+    errorCode: text("error_code"),
+    startedAt: timestamp("started_at").defaultNow().notNull(),
+    completedAt: timestamp("completed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("reconciliation_runs_run_key_idx").on(table.runKey),
+    index("reconciliation_runs_status_idx").on(table.status),
+    check(
+      "reconciliation_runs_status_check",
+      sql`${table.status} in ('running', 'completed', 'failed')`,
+    ),
+    check(
+      "reconciliation_runs_provider_check",
+      sql`${table.provider} in ('google_ads', 'formspree')`,
+    ),
+  ],
+);
+
+export const reconciliationDiscrepancies = pgTable(
+  "reconciliation_discrepancies",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    runId: varchar("run_id")
+      .notNull()
+      .references(() => reconciliationRuns.id),
+    provider: text("provider").$type<ReconciliationProviderName>().notNull(),
+    externalId: text("external_id").notNull(),
+    discrepancyType: text("discrepancy_type")
+      .$type<DiscrepancyType>()
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("reconciliation_discrepancies_run_id_idx").on(table.runId),
+    check(
+      "reconciliation_discrepancies_type_check",
+      sql`${table.discrepancyType} in ('missing_in_stored', 'missing_in_external')`,
+    ),
+  ],
+);
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
