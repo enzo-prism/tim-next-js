@@ -451,10 +451,13 @@ describe("Postgres reconciliation integration", () => {
     }
   });
 
-  it("lead at exact until boundary is excluded (half-open)", async () => {
+  it("lead at exact until boundary (with overlap) is excluded (half-open)", async () => {
+    const { INGESTION_OVERLAP_MS } = await import("@/server/reconciliation-service");
+    const untilBoundary = new Date(new Date("2026-08-04T09:00:00Z").getTime() + INGESTION_OVERLAP_MS);
+
     await seedContact(db, {
       googleAdsLeadId: "ga-at-boundary",
-      createdAt: new Date("2026-08-04T09:00:00Z"),
+      createdAt: untilBoundary,
     });
 
     const provider = makeProvider("google_ads", ["ga-at-boundary"]);
@@ -465,5 +468,69 @@ describe("Postgres reconciliation integration", () => {
       expect(result.totalStored).toBe(0);
       expect(result.missingInStored).toBe(1);
     }
+  });
+
+  it("lead within overlap window is included (delayed ingestion)", async () => {
+    await seedContact(db, {
+      googleAdsLeadId: "ga-in-overlap",
+      createdAt: new Date("2026-08-04T09:05:00Z"),
+    });
+
+    const provider = makeProvider("google_ads", ["ga-in-overlap"]);
+    const result = await service.runReconciliation(db, provider, now);
+
+    expect(result.status).toBe("completed");
+    if (result.status === "completed") {
+      expect(result.totalStored).toBe(1);
+      expect(result.missingInStored).toBe(0);
+    }
+  });
+
+  it("old-nonempty discrepancies are exactly replaced by different-nonempty set", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-old-stored" });
+
+    const storedCheck = await db
+      .select({ id: schema.contacts.googleAdsLeadId, createdAt: schema.contacts.createdAt })
+      .from(schema.contacts);
+    expect(storedCheck.length).toBe(1);
+    expect(storedCheck[0].id).toBe("ga-old-stored");
+
+    const provider1 = makeProvider("google_ads", ["ga-old-external"]);
+    const first = await service.runReconciliation(db, provider1, now);
+    expect(first.status).toBe("completed");
+    if (first.status === "completed") {
+      expect(first.totalStored).toBe(1);
+      expect(first.missingInExternal).toBe(1);
+    }
+
+    const discrepancies1 = await db
+      .select()
+      .from(schema.reconciliationDiscrepancies);
+    expect(discrepancies1.length).toBe(2);
+    const oldIds = discrepancies1.map((d) => d.externalId);
+    expect(oldIds).toContain("ga-old-external");
+    expect(oldIds).toContain("ga-old-stored");
+
+    await client!.query(
+      `UPDATE reconciliation_runs SET status = 'failed' WHERE run_key = $1`,
+      ["reconciliation:google_ads:2026-08-04:am"],
+    );
+
+    const provider2 = makeProvider("google_ads", ["ga-new-external"]);
+    const second = await service.runReconciliation(db, provider2, now);
+    expect(second.status).toBe("completed");
+    if (second.status === "completed") {
+      expect(second.totalStored).toBe(1);
+      expect(second.missingInExternal).toBe(1);
+    }
+
+    const discrepancies2 = await db
+      .select()
+      .from(schema.reconciliationDiscrepancies);
+    const newIds = discrepancies2.map((d) => d.externalId);
+
+    expect(newIds).not.toContain("ga-old-external");
+    expect(newIds).toContain("ga-new-external");
+    expect(newIds).toContain("ga-old-stored");
   });
 });

@@ -17,7 +17,8 @@ type DrizzleDatabase = PgDatabase<any, typeof schema>;
 export type { DrizzleDatabase };
 
 export const RECONCILIATION_LEASE_DURATION_MS = 5 * 60_000;
-export const PROVIDER_TIMEOUT_MS = 4 * 60_000;
+export const PROVIDER_TIMEOUT_MS = 3 * 60_000;
+export const INGESTION_OVERLAP_MS = 15 * 60_000;
 
 const ALLOWED_ERROR_CODES = new Set([
   "provider_not_configured",
@@ -32,7 +33,7 @@ export const sanitizeErrorCode = (error: unknown): string => {
   if (error instanceof Error) {
     const msg = error.message;
     if (ALLOWED_ERROR_CODES.has(msg)) return msg;
-    if (msg.includes("timeout") || msg.includes("ETIMEDOUT") || msg.includes("AbortError"))
+    if (msg.includes("timeout") || msg.includes("ETIMEDOUT") || msg.includes("AbortError") || msg.includes("aborted"))
       return "provider_timeout";
     if (msg.includes("fetch") || msg.includes("network") || msg.includes("ECONNREFUSED"))
       return "provider_api_error";
@@ -60,28 +61,47 @@ export type ReconciliationOutcome =
       reason: "lock_contention";
     };
 
+export interface CanonicalBoundary {
+  boundary: Date;
+  slot: "am" | "pm";
+  dateStr: string;
+}
+
+export const computeCanonicalBoundary = (now: Date): CanonicalBoundary => {
+  const hour = now.getUTCHours();
+  const dateStr = now.toISOString().slice(0, 10);
+
+  if (hour >= 21) {
+    return { boundary: new Date(`${dateStr}T21:00:00Z`), slot: "pm", dateStr };
+  }
+  if (hour >= 9) {
+    return { boundary: new Date(`${dateStr}T09:00:00Z`), slot: "am", dateStr };
+  }
+  const prevDay = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const prevDateStr = prevDay.toISOString().slice(0, 10);
+  return { boundary: new Date(`${prevDateStr}T21:00:00Z`), slot: "pm", dateStr: prevDateStr };
+};
+
 export const computeRunKey = (
   provider: ReconciliationProviderName,
   now: Date,
 ): string => {
-  const dateStr = now.toISOString().slice(0, 10);
-  const slot = now.getUTCHours() < 12 ? "am" : "pm";
+  const { dateStr, slot } = computeCanonicalBoundary(now);
   return `reconciliation:${provider}:${dateStr}:${slot}`;
 };
 
 export const computeTimeWindow = (now: Date): ReconciliationTimeWindow => {
-  const hour = now.getUTCHours();
-  const dateStr = now.toISOString().slice(0, 10);
+  const { boundary, slot, dateStr } = computeCanonicalBoundary(now);
 
-  if (hour < 12) {
-    const prevDay = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  if (slot === "am") {
+    const prevDay = new Date(boundary.getTime() - 24 * 60 * 60 * 1000);
     const since = new Date(`${prevDay.toISOString().slice(0, 10)}T21:00:00Z`);
-    const until = new Date(`${dateStr}T09:00:00Z`);
+    const until = new Date(boundary.getTime() + INGESTION_OVERLAP_MS);
     return { since, until };
   }
 
   const since = new Date(`${dateStr}T09:00:00Z`);
-  const until = new Date(`${dateStr}T21:00:00Z`);
+  const until = new Date(boundary.getTime() + INGESTION_OVERLAP_MS);
   return { since, until };
 };
 
@@ -105,6 +125,11 @@ export interface IReconciliationService {
     provider: ReconciliationProviderName,
   ): Promise<{ runId: string; leaseToken: string } | null>;
   recoverStaleRuns(db: DrizzleDatabase): Promise<number>;
+  refreshLease(
+    db: DrizzleDatabase,
+    runId: string,
+    leaseToken: string,
+  ): Promise<boolean>;
   getStoredLeadIds(
     db: DrizzleDatabase,
     provider: ReconciliationProviderName,
@@ -203,6 +228,25 @@ export class DatabaseReconciliationService implements IReconciliationService {
     return recovered.length;
   }
 
+  async refreshLease(
+    db: DrizzleDatabase,
+    runId: string,
+    leaseToken: string,
+  ): Promise<boolean> {
+    const newExpiry = new Date(Date.now() + RECONCILIATION_LEASE_DURATION_MS);
+
+    const result = await db.execute(dsql`
+      UPDATE reconciliation_runs
+      SET lease_expires_at = ${newExpiry}
+      WHERE id = ${runId}
+        AND lease_token = ${leaseToken}
+        AND status = 'running'
+      RETURNING id
+    `);
+
+    return (result.rows as Array<{ id: string }>).length > 0;
+  }
+
   async getStoredLeadIds(
     db: DrizzleDatabase,
     provider: ReconciliationProviderName,
@@ -253,44 +297,7 @@ export class DatabaseReconciliationService implements IReconciliationService {
     discrepancies: Array<{ externalId: string; discrepancyType: string }>,
   ): Promise<boolean> {
     const now = new Date();
-
-    if (discrepancies.length === 0) {
-      const result = await db.execute(dsql`
-        WITH finalized AS (
-          UPDATE reconciliation_runs
-          SET
-            status = 'completed',
-            total_external = ${counts.totalExternal},
-            total_stored = ${counts.totalStored},
-            missing_in_stored = ${counts.missingInStored},
-            missing_in_external = ${counts.missingInExternal},
-            completed_at = ${now},
-            lease_token = NULL,
-            lease_expires_at = NULL
-          WHERE id = ${runId}
-            AND lease_token = ${leaseToken}
-            AND status = 'running'
-          RETURNING id
-        ),
-        cleared AS (
-          DELETE FROM reconciliation_discrepancies
-          WHERE run_id = ${runId}
-            AND EXISTS (SELECT 1 FROM finalized)
-          RETURNING id
-        )
-        SELECT COUNT(*) as cnt FROM finalized
-      `);
-      const rows = result.rows as Array<{ cnt: string }>;
-      return rows.length > 0 && Number(rows[0].cnt) === 1;
-    }
-
-    const escapeSqlString = (s: string) => s.replace(/'/g, "''");
-    const externalIdsLiteral = discrepancies
-      .map((d) => `'${escapeSqlString(d.externalId)}'`)
-      .join(",");
-    const typesLiteral = discrepancies
-      .map((d) => `'${escapeSqlString(d.discrepancyType)}'`)
-      .join(",");
+    const discrepanciesJson = JSON.stringify(discrepancies);
 
     const result = await db.execute(dsql`
       WITH finalized AS (
@@ -320,16 +327,11 @@ export class DatabaseReconciliationService implements IReconciliationService {
         SELECT
           ${runId},
           ${provider},
-          eid.val,
-          dt.val
-        FROM
-          (SELECT unnest(ARRAY[${dsql.raw(externalIdsLiteral)}]::text[]) as val,
-                  generate_subscripts(ARRAY[${dsql.raw(externalIdsLiteral)}]::text[], 1) as idx) eid
-          JOIN
-          (SELECT unnest(ARRAY[${dsql.raw(typesLiteral)}]::text[]) as val,
-                  generate_subscripts(ARRAY[${dsql.raw(typesLiteral)}]::text[], 1) as idx) dt
-          ON eid.idx = dt.idx
-        WHERE EXISTS (SELECT 1 FROM finalized)
+          item ->> 'externalId',
+          item ->> 'discrepancyType'
+        FROM finalized f
+        CROSS JOIN LATERAL json_array_elements(${discrepanciesJson}::json) as item
+        WHERE f.id = ${runId}
         ON CONFLICT (run_id, provider, external_id, discrepancy_type) DO NOTHING
         RETURNING id
       )
@@ -384,13 +386,25 @@ export class DatabaseReconciliationService implements IReconciliationService {
 
     const { runId, leaseToken } = lock;
 
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     try {
-      const rawExternalIds = await Promise.race([
-        providerAdapter.fetchExternalLeadIds(window),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("provider_timeout")), PROVIDER_TIMEOUT_MS),
-        ),
-      ]);
+      const externalIdsPromise = providerAdapter.fetchExternalLeadIds(window);
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          controller.abort();
+          reject(new Error("provider_timeout"));
+        }, PROVIDER_TIMEOUT_MS);
+      });
+
+      let rawExternalIds: string[];
+      try {
+        rawExternalIds = await Promise.race([externalIdsPromise, timeoutPromise]);
+      } finally {
+        if (timeoutId !== undefined) clearTimeout(timeoutId);
+      }
+
       const externalIds = deduplicateAndValidateIds(rawExternalIds);
       const rawStoredIds = await this.getStoredLeadIds(db, providerAdapter.name, window);
       const storedIds = deduplicateAndValidateIds(rawStoredIds);
@@ -418,6 +432,8 @@ export class DatabaseReconciliationService implements IReconciliationService {
         missingInStored: missingInStored.length,
         missingInExternal: missingInExternal.length,
       };
+
+      await this.refreshLease(db, runId, leaseToken);
 
       const finalized = await this.finalizeRun(
         db,
