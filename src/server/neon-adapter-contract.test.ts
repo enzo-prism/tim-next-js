@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { drizzle } from "drizzle-orm/neon-http";
 import { DatabaseStorage } from "@/server/storage";
-
-const buildNeonHttpMock = (rows: Array<Record<string, unknown>>) => ({
-  execute: vi.fn().mockResolvedValue({ rows }),
-});
+import * as schema from "@/server/schema";
 
 const CONTACT_ROW = {
   id: "contact-uuid-001",
@@ -49,6 +47,12 @@ const CONTACT_ROW = {
   outbox_enqueued: true,
 };
 
+const buildNeonHttpDrizzle = (rows: Array<Record<string, unknown>>) => {
+  const mockQueryFn = vi.fn().mockResolvedValue({ rows });
+  const db = drizzle(mockQueryFn as never, { schema });
+  return { db, mockQueryFn };
+};
+
 describe("Neon HTTP adapter contract", () => {
   it("createContactWithOutbox does not call .transaction()", () => {
     const source = DatabaseStorage.prototype.createContactWithOutbox.toString();
@@ -62,9 +66,9 @@ describe("Neon HTTP adapter contract", () => {
     expect(source).toContain("WITH inserted_contact");
   });
 
-  it("behavioral: createContactWithOutbox maps result.rows from Neon HTTP adapter shape", async () => {
-    const mockDb = buildNeonHttpMock([CONTACT_ROW]);
-    const storage = new DatabaseStorage(mockDb as never);
+  it("behavioral: createContactWithOutbox through real drizzle-orm/neon-http adapter", async () => {
+    const { db, mockQueryFn } = buildNeonHttpDrizzle([CONTACT_ROW]);
+    const storage = new DatabaseStorage(db);
 
     const result = await storage.createContactWithOutbox({
       firstName: "Jane",
@@ -78,7 +82,7 @@ describe("Neon HTTP adapter contract", () => {
       isTest: false,
     });
 
-    expect(mockDb.execute).toHaveBeenCalledTimes(1);
+    expect(mockQueryFn).toHaveBeenCalledTimes(1);
     expect(result.contact).not.toBeNull();
     expect(result.contact!.id).toBe("contact-uuid-001");
     expect(result.contact!.firstName).toBe("Jane");
@@ -91,8 +95,8 @@ describe("Neon HTTP adapter contract", () => {
   });
 
   it("behavioral: returns null contact when rows is empty (duplicate)", async () => {
-    const mockDb = buildNeonHttpMock([]);
-    const storage = new DatabaseStorage(mockDb as never);
+    const { db, mockQueryFn } = buildNeonHttpDrizzle([]);
+    const storage = new DatabaseStorage(db);
 
     const result = await storage.createContactWithOutbox({
       firstName: "Jane",
@@ -106,15 +110,15 @@ describe("Neon HTTP adapter contract", () => {
       isTest: false,
     });
 
-    expect(mockDb.execute).toHaveBeenCalledTimes(1);
+    expect(mockQueryFn).toHaveBeenCalledTimes(1);
     expect(result.contact).toBeNull();
     expect(result.outboxEnqueued).toBe(false);
   });
 
   it("behavioral: outbox_enqueued is false for test leads", async () => {
     const testRow = { ...CONTACT_ROW, is_test: true, outbox_enqueued: false };
-    const mockDb = buildNeonHttpMock([testRow]);
-    const storage = new DatabaseStorage(mockDb as never);
+    const { db, mockQueryFn } = buildNeonHttpDrizzle([testRow]);
+    const storage = new DatabaseStorage(db);
 
     const result = await storage.createContactWithOutbox({
       firstName: "Test",
@@ -128,8 +132,33 @@ describe("Neon HTTP adapter contract", () => {
       isTest: true,
     });
 
-    expect(mockDb.execute).toHaveBeenCalledTimes(1);
+    expect(mockQueryFn).toHaveBeenCalledTimes(1);
     expect(result.contact).not.toBeNull();
     expect(result.outboxEnqueued).toBe(false);
+  });
+
+  it("behavioral: verifies SQL contains CTE structure via neon-http serialization", async () => {
+    const { db, mockQueryFn } = buildNeonHttpDrizzle([CONTACT_ROW]);
+    const storage = new DatabaseStorage(db);
+
+    await storage.createContactWithOutbox({
+      firstName: "Jane",
+      lastName: "Doe",
+      email: "jane@example.com",
+      requestType: "google_ads_lead",
+      googleAdsLeadId: "lead-sql-check",
+      ingestedVia: "webhook",
+      leadStatus: "new",
+      consentToContact: true,
+      isTest: false,
+    });
+
+    expect(mockQueryFn).toHaveBeenCalledTimes(1);
+    const [sqlString] = mockQueryFn.mock.calls[0];
+    expect(sqlString).toContain("WITH inserted_contact");
+    expect(sqlString).toContain("ON CONFLICT DO NOTHING");
+    expect(sqlString).toContain("notification_outbox");
+    expect(sqlString).not.toContain("BEGIN");
+    expect(sqlString).not.toContain("COMMIT");
   });
 });

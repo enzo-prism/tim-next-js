@@ -11,7 +11,7 @@ const jsonResponse = (payload: unknown, init?: ResponseInit) => {
 };
 
 const requireCronAuth = (req: NextRequest): NextResponse | null => {
-  const cronSecret = process.env.NOTIFICATION_CRON_SECRET;
+  const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return jsonResponse(
       { ok: false, error: "cron_not_configured", message: "Cron secret is not configured." },

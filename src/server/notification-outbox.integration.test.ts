@@ -427,35 +427,48 @@ describe("Postgres outbox claim/retry integration", () => {
   });
 
   it("forced outbox insert failure rolls back contact (CTE atomicity)", async () => {
-    const result = await storage.createContactWithOutbox({
-      firstName: "Rollback",
-      lastName: "Test",
-      email: "rollback@example.com",
-      requestType: "google_ads_lead",
-      googleAdsLeadId: "pg-rollback-lead-001",
-      ingestedVia: "webhook",
-      leadStatus: "new",
-      consentToContact: true,
-      isTest: false,
-    });
-    expect(result.contact).not.toBeNull();
-    expect(result.outboxEnqueued).toBe(true);
+    await client!.query(`
+      CREATE OR REPLACE FUNCTION force_outbox_failure() RETURNS trigger AS $$
+      BEGIN
+        IF NEW.event_key LIKE '%force-fail%' THEN
+          RAISE EXCEPTION 'forced outbox failure for test';
+        END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    await client!.query(`
+      CREATE TRIGGER test_force_outbox_failure
+      BEFORE INSERT ON notification_outbox
+      FOR EACH ROW EXECUTE FUNCTION force_outbox_failure();
+    `);
 
-    const db = drizzle(client!, { schema });
-    const [contactRow] = await db
-      .select()
-      .from(schema.contacts)
-      .where(eq(schema.contacts.googleAdsLeadId, "pg-rollback-lead-001"))
-      .limit(1);
+    try {
+      await expect(
+        storage.createContactWithOutbox({
+          firstName: "Rollback",
+          lastName: "Test",
+          email: "rollback@example.com",
+          requestType: "google_ads_lead",
+          googleAdsLeadId: "pg-force-fail-lead-001",
+          ingestedVia: "webhook",
+          leadStatus: "new",
+          consentToContact: true,
+          isTest: false,
+        }),
+      ).rejects.toThrow();
 
-    const [outboxRow] = await db
-      .select()
-      .from(schema.notificationOutbox)
-      .where(eq(schema.notificationOutbox.contactId, contactRow.id))
-      .limit(1);
+      const db = drizzle(client!, { schema });
+      const [contactRow] = await db
+        .select()
+        .from(schema.contacts)
+        .where(eq(schema.contacts.googleAdsLeadId, "pg-force-fail-lead-001"))
+        .limit(1);
 
-    expect(contactRow).toBeDefined();
-    expect(outboxRow).toBeDefined();
-    expect(outboxRow.contactId).toBe(contactRow.id);
+      expect(contactRow).toBeUndefined();
+    } finally {
+      await client!.query(`DROP TRIGGER IF EXISTS test_force_outbox_failure ON notification_outbox`);
+      await client!.query(`DROP FUNCTION IF EXISTS force_outbox_failure()`);
+    }
   });
 });

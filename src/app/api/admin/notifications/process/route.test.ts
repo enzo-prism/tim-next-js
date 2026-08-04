@@ -24,12 +24,12 @@ const buildRequest = (method: "GET" | "POST", authenticated = true) =>
 describe("notification worker POST", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NOTIFICATION_CRON_SECRET = CRON_SECRET;
+    process.env.CRON_SECRET = CRON_SECRET;
     mocks.processOutboxBatch.mockResolvedValue({ processed: 0, sent: 0, failed: 0 });
   });
 
   it("returns 503 when cron secret is not configured", async () => {
-    delete process.env.NOTIFICATION_CRON_SECRET;
+    delete process.env.CRON_SECRET;
     const response = await POST(buildRequest("POST", true));
     expect(response.status).toBe(503);
     expect(mocks.processOutboxBatch).not.toHaveBeenCalled();
@@ -86,12 +86,12 @@ describe("notification worker POST", () => {
 describe("notification worker GET (scheduler-compatible)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NOTIFICATION_CRON_SECRET = CRON_SECRET;
+    process.env.CRON_SECRET = CRON_SECRET;
     mocks.processOutboxBatch.mockResolvedValue({ processed: 0, sent: 0, failed: 0 });
   });
 
   it("returns 503 when cron secret is not configured", async () => {
-    delete process.env.NOTIFICATION_CRON_SECRET;
+    delete process.env.CRON_SECRET;
     const response = await GET(buildRequest("GET", true));
     expect(response.status).toBe(503);
     expect(mocks.processOutboxBatch).not.toHaveBeenCalled();

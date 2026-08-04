@@ -28,6 +28,12 @@ export const processOutboxBatch = async (): Promise<{
   let failed = 0;
 
   for (const event of events) {
+    const leaseValid = await outboxService.refreshLease(db, event.id, event.leaseToken);
+    if (!leaseValid) {
+      failed += 1;
+      continue;
+    }
+
     try {
       await sendGenericLeadAlert(event.id);
       const marked = await outboxService.markSent(db, event.id, event.leaseToken);
@@ -44,10 +50,6 @@ export const processOutboxBatch = async (): Promise<{
       await outboxService.markFailed(db, event.id, event.leaseToken, "send_failed");
       failed += 1;
     }
-
-    await outboxService.refreshLease(db, event.id, event.leaseToken).catch(
-      () => undefined,
-    );
   }
 
   return { processed: events.length, sent, failed };
