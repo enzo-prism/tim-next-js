@@ -1,4 +1,4 @@
-import { and, eq, sql as dsql } from "drizzle-orm";
+import { and, eq, lt, sql as dsql } from "drizzle-orm";
 import { notificationOutbox } from "@/server/schema";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import type * as schema from "@/server/schema";
@@ -6,6 +6,10 @@ import type * as schema from "@/server/schema";
 type DrizzleDatabase = PgDatabase<any, typeof schema>;
 
 export type OutboxEvent = typeof notificationOutbox.$inferSelect;
+
+export const MAX_ATTEMPTS = 5;
+export const LEASE_DURATION_MS = 60_000;
+export const STALE_CLAIM_THRESHOLD_MS = 5 * 60_000;
 
 export const buildEventKey = (
   googleAdsLeadId: string | null,
@@ -18,16 +22,15 @@ export const buildEventKey = (
       ? `formspree:${submissionId}`
       : `contact:${contactId}`;
 
+export const getRetryDelayMs = (attempts: number): number =>
+  Math.min(1000 * 2 ** attempts, 60_000);
+
 export interface IOutboxService {
-  enqueueNewLeadEvent(
-    db: DrizzleDatabase,
-    contactId: string,
-    eventKey: string,
-  ): Promise<OutboxEvent | null>;
   claimPendingEvents(
     db: DrizzleDatabase,
     limit: number,
   ): Promise<OutboxEvent[]>;
+  recoverStaleClaims(db: DrizzleDatabase): Promise<number>;
   markSent(db: DrizzleDatabase, eventId: string): Promise<void>;
   markFailed(
     db: DrizzleDatabase,
@@ -37,50 +40,50 @@ export interface IOutboxService {
 }
 
 export class DatabaseOutboxService implements IOutboxService {
-  async enqueueNewLeadEvent(
-    db: DrizzleDatabase,
-    contactId: string,
-    eventKey: string,
-  ): Promise<OutboxEvent | null> {
-    const [event] = await db
-      .insert(notificationOutbox)
-      .values({
-        eventKey,
-        eventType: "new_lead",
-        contactId,
-        status: "pending",
-      })
-      .onConflictDoNothing()
-      .returning();
-    return event || null;
-  }
-
   async claimPendingEvents(
     db: DrizzleDatabase,
     limit: number,
   ): Promise<OutboxEvent[]> {
-    const events = await db
-      .select()
-      .from(notificationOutbox)
-      .where(eq(notificationOutbox.status, "pending"))
-      .orderBy(notificationOutbox.createdAt)
-      .limit(limit);
+    const now = new Date();
+    const leaseUntil = new Date(now.getTime() + LEASE_DURATION_MS);
 
-    if (events.length === 0) return [];
-
-    const ids = events.map((e) => e.id);
     const claimed = await db
       .update(notificationOutbox)
-      .set({ status: "sending", updatedAt: new Date() })
+      .set({
+        status: "sending",
+        updatedAt: now,
+        lastError: dsql`${leaseUntil.toISOString()}`,
+      })
       .where(
         and(
-          dsql`${notificationOutbox.id} = ANY(${ids})`,
           eq(notificationOutbox.status, "pending"),
+          lt(notificationOutbox.attempts, MAX_ATTEMPTS),
         ),
       )
       .returning();
 
-    return claimed;
+    return claimed.slice(0, limit);
+  }
+
+  async recoverStaleClaims(db: DrizzleDatabase): Promise<number> {
+    const staleThreshold = new Date(Date.now() - STALE_CLAIM_THRESHOLD_MS);
+
+    const recovered = await db
+      .update(notificationOutbox)
+      .set({
+        status: "pending",
+        updatedAt: new Date(),
+        lastError: null,
+      })
+      .where(
+        and(
+          eq(notificationOutbox.status, "sending"),
+          lt(notificationOutbox.updatedAt, staleThreshold),
+        ),
+      )
+      .returning();
+
+    return recovered.length;
   }
 
   async markSent(db: DrizzleDatabase, eventId: string): Promise<void> {
@@ -100,13 +103,24 @@ export class DatabaseOutboxService implements IOutboxService {
     eventId: string,
     errorCode: string,
   ): Promise<void> {
+    const [event] = await db
+      .select()
+      .from(notificationOutbox)
+      .where(eq(notificationOutbox.id, eventId))
+      .limit(1);
+
+    if (!event) return;
+
+    const newAttempts = event.attempts + 1;
+    const isDeadLetter = newAttempts >= MAX_ATTEMPTS;
+
     await db
       .update(notificationOutbox)
       .set({
-        status: "failed",
+        status: isDeadLetter ? "failed" : "pending",
         updatedAt: new Date(),
         lastError: errorCode,
-        attempts: dsql`${notificationOutbox.attempts} + 1`,
+        attempts: newAttempts,
       })
       .where(eq(notificationOutbox.id, eventId));
   }

@@ -5,7 +5,9 @@ const mocks = vi.hoisted(() => ({
   claimPendingEvents: vi.fn(),
   markSent: vi.fn(),
   markFailed: vi.fn(),
+  recoverStaleClaims: vi.fn(),
   isNotificationEnabled: vi.fn(),
+  sendGenericLeadAlert: vi.fn(),
 }));
 
 vi.mock("@/server/notification-outbox", () => ({
@@ -13,11 +15,13 @@ vi.mock("@/server/notification-outbox", () => ({
     claimPendingEvents: mocks.claimPendingEvents,
     markSent: mocks.markSent,
     markFailed: mocks.markFailed,
+    recoverStaleClaims: mocks.recoverStaleClaims,
   },
 }));
 
 vi.mock("@/server/dashboard-notifications", () => ({
   isNotificationEnabled: mocks.isNotificationEnabled,
+  sendGenericLeadAlert: mocks.sendGenericLeadAlert,
 }));
 
 vi.mock("@/server/db", () => ({
@@ -45,6 +49,8 @@ describe("notification worker POST", () => {
     mocks.claimPendingEvents.mockResolvedValue([]);
     mocks.markSent.mockResolvedValue(undefined);
     mocks.markFailed.mockResolvedValue(undefined);
+    mocks.recoverStaleClaims.mockResolvedValue(0);
+    mocks.sendGenericLeadAlert.mockResolvedValue(undefined);
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -78,8 +84,6 @@ describe("notification worker POST", () => {
     };
     mocks.claimPendingEvents.mockResolvedValue([event]);
 
-    global.fetch = vi.fn().mockResolvedValue({ ok: true });
-
     const response = await POST(buildRequest());
     expect(response.status).toBe(200);
     const body = await response.json();
@@ -87,6 +91,7 @@ describe("notification worker POST", () => {
     expect(body.sent).toBe(1);
     expect(body.failed).toBe(0);
     expect(mocks.markSent).toHaveBeenCalledWith(expect.anything(), "event-1");
+    expect(mocks.sendGenericLeadAlert).toHaveBeenCalledWith("event-1");
   });
 
   it("marks events failed when webhook returns an error", async () => {
@@ -103,8 +108,7 @@ describe("notification worker POST", () => {
       sentAt: null,
     };
     mocks.claimPendingEvents.mockResolvedValue([event]);
-
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+    mocks.sendGenericLeadAlert.mockRejectedValue(new Error("webhook_returned_500"));
 
     const response = await POST(buildRequest());
     expect(response.status).toBe(200);
@@ -134,17 +138,11 @@ describe("notification worker POST", () => {
     };
     mocks.claimPendingEvents.mockResolvedValue([event]);
 
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
-    global.fetch = fetchMock;
-
     await POST(buildRequest());
 
-    const callBody = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(callBody.subject).not.toContain("Jane");
-    expect(callBody.subject).not.toContain("Doe");
-    expect(callBody.body).not.toContain("jane@example.com");
-    expect(callBody.body).not.toContain("408-555");
-    expect(callBody.metadata).not.toHaveProperty("leadId");
-    expect(callBody.metadata).not.toHaveProperty("contactId");
+    expect(mocks.sendGenericLeadAlert).toHaveBeenCalledWith("event-3");
+    expect(mocks.sendGenericLeadAlert).not.toHaveBeenCalledWith(
+      expect.stringContaining("Jane"),
+    );
   });
 });

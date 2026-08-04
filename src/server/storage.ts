@@ -4,7 +4,6 @@ import type { PgDatabase } from "drizzle-orm/pg-core";
 import type * as schema from "@/server/schema";
 import {
   contacts,
-  notificationOutbox,
   users,
   type Contact,
   type InsertContactRecord,
@@ -14,7 +13,6 @@ import {
 } from "@/server/schema";
 import { db } from "@/server/db";
 import { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
-import { buildEventKey } from "@/server/notification-outbox";
 
 export { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
 
@@ -175,40 +173,108 @@ export class DatabaseStorage implements IStorage {
   async createContactWithOutbox(
     insertContact: InsertContactRecord,
   ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }> {
-    return this.database.transaction(async (tx) => {
-      const [contact] = await tx
-        .insert(contacts)
-        .values(insertContact)
-        .onConflictDoNothing()
-        .returning();
+    const result = await this.database.execute(dsql`
+      WITH inserted_contact AS (
+        INSERT INTO contacts (
+          first_name, last_name, email, phone, service, message,
+          request_type, preferred_date, preferred_time,
+          formspree_status, landing_page, referrer, cta_source,
+          utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+          gclid, gbraid, wbraid, consent_to_contact, consent_version,
+          lead_status, google_ads_lead_id, campaign_id, campaign_name,
+          ingested_via, is_test, raw_payload, submission_id
+        )
+        VALUES (
+          ${insertContact.firstName}, ${insertContact.lastName}, ${insertContact.email ?? null},
+          ${insertContact.phone ?? null}, ${insertContact.service ?? null}, ${insertContact.message ?? null},
+          ${insertContact.requestType ?? "contact"}, ${insertContact.preferredDate ?? null}, ${insertContact.preferredTime ?? null},
+          ${insertContact.formspreeStatus ?? null}, ${insertContact.landingPage ?? null}, ${insertContact.referrer ?? null},
+          ${insertContact.ctaSource ?? null}, ${insertContact.utmSource ?? null}, ${insertContact.utmMedium ?? null},
+          ${insertContact.utmCampaign ?? null}, ${insertContact.utmTerm ?? null}, ${insertContact.utmContent ?? null},
+          ${insertContact.gclid ?? null}, ${insertContact.gbraid ?? null}, ${insertContact.wbraid ?? null},
+          ${insertContact.consentToContact ?? false}, ${insertContact.consentVersion ?? null},
+          ${insertContact.leadStatus ?? "new"}, ${insertContact.googleAdsLeadId ?? null}, ${insertContact.campaignId ?? null},
+          ${insertContact.campaignName ?? null}, ${insertContact.ingestedVia ?? null}, ${insertContact.isTest ?? false},
+          ${insertContact.rawPayload ?? null}, ${insertContact.submissionId ?? null}
+        )
+        ON CONFLICT DO NOTHING
+        RETURNING *
+      ),
+      outbox_event AS (
+        INSERT INTO notification_outbox (event_key, event_type, contact_id, status)
+        SELECT
+          CASE
+            WHEN ic.google_ads_lead_id IS NOT NULL THEN 'google_ads:' || ic.google_ads_lead_id
+            WHEN ic.submission_id IS NOT NULL THEN 'formspree:' || ic.submission_id
+            ELSE 'contact:' || ic.id
+          END,
+          'new_lead',
+          ic.id,
+          'pending'
+        FROM inserted_contact ic
+        WHERE ic.is_test = false
+        ON CONFLICT (event_key) DO NOTHING
+        RETURNING id
+      )
+      SELECT
+        ic.*,
+        (SELECT COUNT(*) > 0 FROM outbox_event) AS outbox_enqueued
+      FROM inserted_contact ic
+    `);
 
-      if (!contact) {
-        return { contact: null, outboxEnqueued: false };
-      }
+    const rows = result.rows as Array<Record<string, unknown> & { outbox_enqueued: boolean }>;
+    if (rows.length === 0) {
+      return { contact: null, outboxEnqueued: false };
+    }
 
-      if (contact.isTest) {
-        return { contact, outboxEnqueued: false };
-      }
+    const row = rows[0];
+    const contact = this.mapRowToContact(row);
+    return { contact, outboxEnqueued: Boolean(row.outbox_enqueued) };
+  }
 
-      const eventKey = buildEventKey(
-        contact.googleAdsLeadId,
-        contact.submissionId,
-        contact.id,
-      );
-
-      const [event] = await tx
-        .insert(notificationOutbox)
-        .values({
-          eventKey,
-          eventType: "new_lead",
-          contactId: contact.id,
-          status: "pending",
-        })
-        .onConflictDoNothing()
-        .returning();
-
-      return { contact, outboxEnqueued: Boolean(event) };
-    });
+  private mapRowToContact(row: Record<string, unknown>): Contact {
+    return {
+      id: row.id as string,
+      submissionId: (row.submission_id as string) ?? null,
+      firstName: row.first_name as string,
+      lastName: row.last_name as string,
+      email: (row.email as string) ?? null,
+      phone: (row.phone as string) ?? null,
+      service: (row.service as string) ?? null,
+      message: (row.message as string) ?? null,
+      requestType: row.request_type as string,
+      preferredDate: (row.preferred_date as string) ?? null,
+      preferredTime: (row.preferred_time as string) ?? null,
+      formspreeStatus: (row.formspree_status as string) ?? null,
+      landingPage: (row.landing_page as string) ?? null,
+      referrer: (row.referrer as string) ?? null,
+      ctaSource: (row.cta_source as string) ?? null,
+      utmSource: (row.utm_source as string) ?? null,
+      utmMedium: (row.utm_medium as string) ?? null,
+      utmCampaign: (row.utm_campaign as string) ?? null,
+      utmTerm: (row.utm_term as string) ?? null,
+      utmContent: (row.utm_content as string) ?? null,
+      gclid: (row.gclid as string) ?? null,
+      gbraid: (row.gbraid as string) ?? null,
+      wbraid: (row.wbraid as string) ?? null,
+      consentToContact: row.consent_to_contact as boolean,
+      consentVersion: (row.consent_version as string) ?? null,
+      leadStatus: row.lead_status as LeadStatus,
+      contactedAt: row.contacted_at ? new Date(row.contacted_at as string) : null,
+      bookedAt: row.booked_at ? new Date(row.booked_at as string) : null,
+      arrivedAt: row.arrived_at ? new Date(row.arrived_at as string) : null,
+      lostReason: (row.lost_reason as string) ?? null,
+      staffNotes: (row.staff_notes as string) ?? null,
+      googleAdsLeadId: (row.google_ads_lead_id as string) ?? null,
+      campaignId: (row.campaign_id as string) ?? null,
+      campaignName: (row.campaign_name as string) ?? null,
+      ingestedVia: (row.ingested_via as Contact["ingestedVia"]) ?? null,
+      updatedBy: (row.updated_by as string) ?? null,
+      isTest: row.is_test as boolean,
+      rawPayload: (row.raw_payload as Contact["rawPayload"]) ?? null,
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
+    };
   }
 
   async getContact(id: string): Promise<Contact | undefined> {

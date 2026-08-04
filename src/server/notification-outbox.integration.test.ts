@@ -137,6 +137,6 @@ describe("Postgres outbox atomicity integration", () => {
     ]);
 
     const enqueued = [first.outboxEnqueued, second.outboxEnqueued].filter(Boolean);
-    expect(enqueued.length).toBeLessThanOrEqual(1);
+    expect(enqueued.length).toBe(1);
   });
 });

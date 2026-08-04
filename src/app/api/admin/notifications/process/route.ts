@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminBasicAuth } from "@/app/api/admin/contacts/admin-auth";
 import { db } from "@/server/db";
 import { outboxService } from "@/server/notification-outbox";
-import { isNotificationEnabled } from "@/server/dashboard-notifications";
+import {
+  isNotificationEnabled,
+  sendGenericLeadAlert,
+} from "@/server/dashboard-notifications";
 
 export const runtime = "nodejs";
 
@@ -35,6 +38,8 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  await outboxService.recoverStaleClaims(db);
+
   const events = await outboxService.claimPendingEvents(db, MAX_BATCH_SIZE);
 
   let sent = 0;
@@ -42,12 +47,12 @@ export async function POST(req: NextRequest) {
 
   for (const event of events) {
     try {
-      await sendGenericAlert();
+      await sendGenericLeadAlert(event.id);
       await outboxService.markSent(db, event.id);
       sent += 1;
     } catch {
       console.error("notification_outbox_send_failed", {
-        eventKey: event.eventKey,
+        outboxId: event.id,
         eventType: event.eventType,
       });
       await outboxService.markFailed(db, event.id, "send_failed");
@@ -62,28 +67,3 @@ export async function POST(req: NextRequest) {
     failed,
   });
 }
-
-const sendGenericAlert = async (): Promise<void> => {
-  const webhookUrl = process.env.LEAD_NOTIFICATION_WEBHOOK_URL;
-  if (!webhookUrl) {
-    throw new Error("webhook_not_configured");
-  }
-
-  const dashboardUrl =
-    process.env.LEAD_DASHBOARD_URL || "https://www.famfirstsmile.com/admin";
-
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      subject: "A new lead just came in",
-      body: `A new lead was received.\n\nView all leads: ${dashboardUrl}\n\nThis is an automated notification. No patient details are included.`,
-      metadata: { source: "lead_dashboard" },
-    }),
-    signal: AbortSignal.timeout(10_000),
-  });
-
-  if (!response.ok) {
-    throw new Error(`webhook_returned_${response.status}`);
-  }
-};

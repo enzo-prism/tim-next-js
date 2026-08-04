@@ -123,7 +123,9 @@ export const notificationOutbox = pgTable(
     id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
     eventKey: text("event_key").notNull(),
     eventType: text("event_type").notNull().default("new_lead"),
-    contactId: varchar("contact_id").notNull(),
+    contactId: varchar("contact_id")
+      .notNull()
+      .references(() => contacts.id),
     status: text("status").$type<OutboxStatus>().notNull().default("pending"),
     attempts: integer("attempts").notNull().default(0),
     lastError: text("last_error"),
