@@ -1,7 +1,8 @@
 import { timingSafeEqual } from "crypto";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { storage } from "@/server/storage";
+import { processOutboxBatch } from "@/server/notification-processor";
 
 export const runtime = "nodejs";
 
@@ -226,7 +227,9 @@ export async function POST(req: NextRequest) {
   try {
     const result = await storage.createContactWithOutbox(contactData);
     if (result.outboxEnqueued) {
-      triggerNotificationWorker().catch(() => undefined);
+      after(async () => {
+        await processOutboxBatch().catch(() => undefined);
+      });
     }
   } catch {
     console.error("google_ads_webhook_insert_failed");
@@ -235,17 +238,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({}, { status: 200 });
 }
-
-const triggerNotificationWorker = async (): Promise<void> => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
-  if (!username || !password) return;
-
-  const auth = Buffer.from(`${username}:${password}`).toString("base64");
-  await fetch(`${baseUrl}/api/admin/notifications/process`, {
-    method: "POST",
-    headers: { authorization: `Basic ${auth}` },
-    signal: AbortSignal.timeout(5_000),
-  }).catch(() => undefined);
-};

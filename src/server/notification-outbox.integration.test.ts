@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { eq } from "drizzle-orm";
 import pg from "pg";
 import * as schema from "@/server/schema";
 import { DatabaseStorage } from "@/server/storage";
+import { DatabaseOutboxService } from "@/server/notification-outbox";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -44,6 +46,7 @@ beforeAll(async () => {
     "0003_public_form_contract.sql",
     "0004_google_ads_lead_ingestion.sql",
     "0005_notification_outbox.sql",
+    "0006_outbox_lease_fields.sql",
   ];
   for (const file of migrations) {
     const sql = readFileSync(join(migrationDir, file), "utf-8");
@@ -138,5 +141,93 @@ describe("Postgres outbox atomicity integration", () => {
 
     const enqueued = [first.outboxEnqueued, second.outboxEnqueued].filter(Boolean);
     expect(enqueued.length).toBe(1);
+  });
+});
+
+describe("Postgres outbox claim/retry integration", () => {
+  const outboxService = new DatabaseOutboxService();
+
+  const seedLead = async (leadId: string) => {
+    const result = await storage.createContactWithOutbox({
+      firstName: "Test",
+      lastName: "Lead",
+      email: `${leadId}@example.com`,
+      requestType: "google_ads_lead",
+      googleAdsLeadId: leadId,
+      ingestedVia: "webhook",
+      leadStatus: "new",
+      consentToContact: true,
+      isTest: false,
+    });
+    return result;
+  };
+
+  it("claims exactly one event per worker with FOR UPDATE SKIP LOCKED", async () => {
+    await seedLead("pg-claim-lead-001");
+
+    const db = drizzle(client!, { schema });
+    const [batch1, batch2] = await Promise.all([
+      outboxService.claimPendingEvents(db, 10),
+      outboxService.claimPendingEvents(db, 10),
+    ]);
+
+    const allIds = [...batch1.map((e) => e.id), ...batch2.map((e) => e.id)];
+    const uniqueIds = new Set(allIds);
+    expect(allIds.length).toBe(uniqueIds.size);
+  });
+
+  it("marks sent only with matching lease_token", async () => {
+    const result = await seedLead("pg-lease-lead-001");
+    expect(result.outboxEnqueued).toBe(true);
+
+    const db = drizzle(client!, { schema });
+    const events = await outboxService.claimPendingEvents(db, 1);
+    expect(events.length).toBe(1);
+
+    const event = events[0];
+    const markedWithWrongToken = await outboxService.markSent(db, event.id, "wrong-token");
+    expect(markedWithWrongToken).toBe(false);
+
+    const markedWithCorrectToken = await outboxService.markSent(db, event.id, event.leaseToken);
+    expect(markedWithCorrectToken).toBe(true);
+  });
+
+  it("transitions to dead-letter after MAX_ATTEMPTS failures", async () => {
+    const result = await seedLead("pg-deadletter-lead-001");
+    expect(result.outboxEnqueued).toBe(true);
+
+    const db = drizzle(client!, { schema });
+
+    for (let i = 0; i < 5; i++) {
+      const events = await outboxService.claimPendingEvents(db, 1);
+      if (events.length === 0) break;
+      await outboxService.markFailed(db, events[0].id, events[0].leaseToken, "test_failure");
+    }
+
+    const remaining = await outboxService.claimPendingEvents(db, 10);
+    const deadLetterLead = remaining.find(
+      (e) => e.eventKey === "google_ads:pg-deadletter-lead-001",
+    );
+    expect(deadLetterLead).toBeUndefined();
+  });
+
+  it("sets next_attempt_at on failure for backoff eligibility", async () => {
+    const result = await seedLead("pg-backoff-lead-001");
+    expect(result.outboxEnqueued).toBe(true);
+
+    const db = drizzle(client!, { schema });
+    const events = await outboxService.claimPendingEvents(db, 1);
+    expect(events.length).toBe(1);
+
+    await outboxService.markFailed(db, events[0].id, events[0].leaseToken, "test_failure");
+
+    const [row] = await db
+      .select()
+      .from(schema.notificationOutbox)
+      .where(eq(schema.notificationOutbox.eventKey, "google_ads:pg-backoff-lead-001"))
+      .limit(1);
+
+    expect(row.nextAttemptAt).not.toBeNull();
+    expect(row.status).toBe("pending");
   });
 });

@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   createContactWithOutbox: vi.fn(),
+  processOutboxBatch: vi.fn(),
+  after: vi.fn((fn: () => Promise<void>) => fn()),
 }));
 
 vi.mock("@/server/storage", () => ({
@@ -10,6 +12,18 @@ vi.mock("@/server/storage", () => ({
     createContactWithOutbox: mocks.createContactWithOutbox,
   },
 }));
+
+vi.mock("@/server/notification-processor", () => ({
+  processOutboxBatch: mocks.processOutboxBatch,
+}));
+
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: mocks.after,
+  };
+});
 
 import { POST } from "@/app/api/webhooks/google-ads/route";
 

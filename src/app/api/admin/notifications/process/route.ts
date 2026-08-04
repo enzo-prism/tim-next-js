@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdminBasicAuth } from "@/app/api/admin/contacts/admin-auth";
-import { db } from "@/server/db";
-import { outboxService } from "@/server/notification-outbox";
-import {
-  isNotificationEnabled,
-  sendGenericLeadAlert,
-} from "@/server/dashboard-notifications";
+import { processOutboxBatch } from "@/server/notification-processor";
 
 export const runtime = "nodejs";
-
-const MAX_BATCH_SIZE = 10;
 
 const jsonResponse = (payload: unknown, init?: ResponseInit) => {
   const response = NextResponse.json(payload, init);
@@ -17,53 +9,35 @@ const jsonResponse = (payload: unknown, init?: ResponseInit) => {
   return response;
 };
 
-export async function POST(req: NextRequest) {
-  const authResponse = requireAdminBasicAuth(req);
-  if (authResponse) return authResponse;
-
-  if (!db) {
+const requireCronAuth = (req: NextRequest): NextResponse | null => {
+  const cronSecret = process.env.NOTIFICATION_CRON_SECRET;
+  if (!cronSecret) {
     return jsonResponse(
-      { ok: false, error: "storage_unavailable", message: "Database is not configured." },
+      { ok: false, error: "cron_not_configured", message: "Cron secret is not configured." },
       { status: 503 },
     );
   }
 
-  if (!isNotificationEnabled()) {
-    return jsonResponse({
-      ok: true,
-      processed: 0,
-      sent: 0,
-      failed: 0,
-      reason: "notifications_disabled",
-    });
+  const authHeader = req.headers.get("authorization");
+  const expected = `Bearer ${cronSecret}`;
+  if (authHeader !== expected) {
+    return jsonResponse(
+      { ok: false, error: "unauthorized", message: "Invalid cron authorization." },
+      { status: 401 },
+    );
   }
 
-  await outboxService.recoverStaleClaims(db);
+  return null;
+};
 
-  const events = await outboxService.claimPendingEvents(db, MAX_BATCH_SIZE);
+export async function POST(req: NextRequest) {
+  const authResponse = requireCronAuth(req);
+  if (authResponse) return authResponse;
 
-  let sent = 0;
-  let failed = 0;
-
-  for (const event of events) {
-    try {
-      await sendGenericLeadAlert(event.id);
-      await outboxService.markSent(db, event.id);
-      sent += 1;
-    } catch {
-      console.error("notification_outbox_send_failed", {
-        outboxId: event.id,
-        eventType: event.eventType,
-      });
-      await outboxService.markFailed(db, event.id, "send_failed");
-      failed += 1;
-    }
-  }
+  const result = await processOutboxBatch();
 
   return jsonResponse({
     ok: true,
-    processed: events.length,
-    sent,
-    failed,
+    ...result,
   });
 }

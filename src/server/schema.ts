@@ -129,6 +129,9 @@ export const notificationOutbox = pgTable(
     status: text("status").$type<OutboxStatus>().notNull().default("pending"),
     attempts: integer("attempts").notNull().default(0),
     lastError: text("last_error"),
+    leaseToken: text("lease_token"),
+    leaseExpiresAt: timestamp("lease_expires_at"),
+    nextAttemptAt: timestamp("next_attempt_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     sentAt: timestamp("sent_at"),
@@ -136,6 +139,10 @@ export const notificationOutbox = pgTable(
   (table) => [
     uniqueIndex("notification_outbox_event_key_idx").on(table.eventKey),
     index("notification_outbox_status_idx").on(table.status),
+    index("notification_outbox_next_attempt_idx").on(
+      table.status,
+      table.nextAttemptAt,
+    ),
     check(
       "notification_outbox_status_check",
       sql`${table.status} in ('pending', 'sending', 'sent', 'failed')`,

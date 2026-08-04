@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { and, eq, lt, sql as dsql } from "drizzle-orm";
 import { notificationOutbox } from "@/server/schema";
 import type { PgDatabase } from "drizzle-orm/pg-core";
@@ -29,40 +30,58 @@ export interface IOutboxService {
   claimPendingEvents(
     db: DrizzleDatabase,
     limit: number,
-  ): Promise<OutboxEvent[]>;
+  ): Promise<Array<OutboxEvent & { leaseToken: string }>>;
   recoverStaleClaims(db: DrizzleDatabase): Promise<number>;
-  markSent(db: DrizzleDatabase, eventId: string): Promise<void>;
+  markSent(
+    db: DrizzleDatabase,
+    eventId: string,
+    leaseToken: string,
+  ): Promise<boolean>;
   markFailed(
     db: DrizzleDatabase,
     eventId: string,
+    leaseToken: string,
     errorCode: string,
-  ): Promise<void>;
+  ): Promise<boolean>;
 }
 
 export class DatabaseOutboxService implements IOutboxService {
   async claimPendingEvents(
     db: DrizzleDatabase,
     limit: number,
-  ): Promise<OutboxEvent[]> {
+  ): Promise<Array<OutboxEvent & { leaseToken: string }>> {
+    const leaseToken = randomUUID();
     const now = new Date();
-    const leaseUntil = new Date(now.getTime() + LEASE_DURATION_MS);
+    const leaseExpiresAt = new Date(now.getTime() + LEASE_DURATION_MS);
 
-    const claimed = await db
-      .update(notificationOutbox)
-      .set({
-        status: "sending",
-        updatedAt: now,
-        lastError: dsql`${leaseUntil.toISOString()}`,
-      })
-      .where(
-        and(
-          eq(notificationOutbox.status, "pending"),
-          lt(notificationOutbox.attempts, MAX_ATTEMPTS),
-        ),
+    const result = await db.execute(dsql`
+      WITH claimable AS (
+        SELECT id
+        FROM notification_outbox
+        WHERE status = 'pending'
+          AND attempts < ${MAX_ATTEMPTS}
+          AND (next_attempt_at IS NULL OR next_attempt_at <= ${now})
+        ORDER BY created_at
+        LIMIT ${limit}
+        FOR UPDATE SKIP LOCKED
+      ),
+      claimed AS (
+        UPDATE notification_outbox
+        SET
+          status = 'sending',
+          lease_token = ${leaseToken},
+          lease_expires_at = ${leaseExpiresAt},
+          updated_at = ${now}
+        WHERE id IN (SELECT id FROM claimable)
+        RETURNING *
       )
-      .returning();
+      SELECT * FROM claimed
+    `);
 
-    return claimed.slice(0, limit);
+    return (result.rows as Array<Record<string, unknown>>).map((row) => ({
+      ...this.mapRowToOutboxEvent(row),
+      leaseToken,
+    }));
   }
 
   async recoverStaleClaims(db: DrizzleDatabase): Promise<number> {
@@ -73,12 +92,14 @@ export class DatabaseOutboxService implements IOutboxService {
       .set({
         status: "pending",
         updatedAt: new Date(),
+        leaseToken: null,
+        leaseExpiresAt: null,
         lastError: null,
       })
       .where(
         and(
           eq(notificationOutbox.status, "sending"),
-          lt(notificationOutbox.updatedAt, staleThreshold),
+          lt(notificationOutbox.leaseExpiresAt, staleThreshold),
         ),
       )
       .returning();
@@ -86,33 +107,58 @@ export class DatabaseOutboxService implements IOutboxService {
     return recovered.length;
   }
 
-  async markSent(db: DrizzleDatabase, eventId: string): Promise<void> {
-    await db
+  async markSent(
+    db: DrizzleDatabase,
+    eventId: string,
+    leaseToken: string,
+  ): Promise<boolean> {
+    const updated = await db
       .update(notificationOutbox)
       .set({
         status: "sent",
         sentAt: new Date(),
         updatedAt: new Date(),
         lastError: null,
+        leaseToken: null,
+        leaseExpiresAt: null,
       })
-      .where(eq(notificationOutbox.id, eventId));
+      .where(
+        and(
+          eq(notificationOutbox.id, eventId),
+          eq(notificationOutbox.leaseToken, leaseToken),
+          eq(notificationOutbox.status, "sending"),
+        ),
+      )
+      .returning();
+
+    return updated.length > 0;
   }
 
   async markFailed(
     db: DrizzleDatabase,
     eventId: string,
+    leaseToken: string,
     errorCode: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const [event] = await db
       .select()
       .from(notificationOutbox)
-      .where(eq(notificationOutbox.id, eventId))
+      .where(
+        and(
+          eq(notificationOutbox.id, eventId),
+          eq(notificationOutbox.leaseToken, leaseToken),
+          eq(notificationOutbox.status, "sending"),
+        ),
+      )
       .limit(1);
 
-    if (!event) return;
+    if (!event) return false;
 
     const newAttempts = event.attempts + 1;
     const isDeadLetter = newAttempts >= MAX_ATTEMPTS;
+    const nextAttemptAt = isDeadLetter
+      ? null
+      : new Date(Date.now() + getRetryDelayMs(newAttempts));
 
     await db
       .update(notificationOutbox)
@@ -121,8 +167,41 @@ export class DatabaseOutboxService implements IOutboxService {
         updatedAt: new Date(),
         lastError: errorCode,
         attempts: newAttempts,
+        nextAttemptAt,
+        leaseToken: null,
+        leaseExpiresAt: null,
       })
-      .where(eq(notificationOutbox.id, eventId));
+      .where(
+        and(
+          eq(notificationOutbox.id, eventId),
+          eq(notificationOutbox.leaseToken, leaseToken),
+          eq(notificationOutbox.status, "sending"),
+        ),
+      );
+
+    return true;
+  }
+
+  private mapRowToOutboxEvent(row: Record<string, unknown>): OutboxEvent {
+    return {
+      id: row.id as string,
+      eventKey: row.event_key as string,
+      eventType: row.event_type as string,
+      contactId: row.contact_id as string,
+      status: row.status as OutboxEvent["status"],
+      attempts: row.attempts as number,
+      lastError: (row.last_error as string) ?? null,
+      leaseToken: (row.lease_token as string) ?? null,
+      leaseExpiresAt: row.lease_expires_at
+        ? new Date(row.lease_expires_at as string)
+        : null,
+      nextAttemptAt: row.next_attempt_at
+        ? new Date(row.next_attempt_at as string)
+        : null,
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
+      sentAt: row.sent_at ? new Date(row.sent_at as string) : null,
+    };
   }
 }
 

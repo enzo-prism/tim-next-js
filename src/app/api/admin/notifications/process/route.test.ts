@@ -2,147 +2,73 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  claimPendingEvents: vi.fn(),
-  markSent: vi.fn(),
-  markFailed: vi.fn(),
-  recoverStaleClaims: vi.fn(),
-  isNotificationEnabled: vi.fn(),
-  sendGenericLeadAlert: vi.fn(),
+  processOutboxBatch: vi.fn(),
 }));
 
-vi.mock("@/server/notification-outbox", () => ({
-  outboxService: {
-    claimPendingEvents: mocks.claimPendingEvents,
-    markSent: mocks.markSent,
-    markFailed: mocks.markFailed,
-    recoverStaleClaims: mocks.recoverStaleClaims,
-  },
-}));
-
-vi.mock("@/server/dashboard-notifications", () => ({
-  isNotificationEnabled: mocks.isNotificationEnabled,
-  sendGenericLeadAlert: mocks.sendGenericLeadAlert,
-}));
-
-vi.mock("@/server/db", () => ({
-  db: {},
+vi.mock("@/server/notification-processor", () => ({
+  processOutboxBatch: mocks.processOutboxBatch,
 }));
 
 import { POST } from "@/app/api/admin/notifications/process/route";
 
-const auth = () =>
-  `Basic ${Buffer.from("office-admin:test-password").toString("base64")}`;
+const CRON_SECRET = "test-cron-secret";
 
 const buildRequest = (authenticated = true) =>
   new NextRequest("http://localhost/api/admin/notifications/process", {
     method: "POST",
-    headers: authenticated ? { authorization: auth() } : {},
+    headers: authenticated
+      ? { authorization: `Bearer ${CRON_SECRET}` }
+      : {},
   });
 
 describe("notification worker POST", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.ADMIN_USERNAME = "office-admin";
-    process.env.ADMIN_PASSWORD = "test-password";
-    process.env.LEAD_NOTIFICATION_WEBHOOK_URL = "https://example.com/webhook";
-    mocks.isNotificationEnabled.mockReturnValue(true);
-    mocks.claimPendingEvents.mockResolvedValue([]);
-    mocks.markSent.mockResolvedValue(undefined);
-    mocks.markFailed.mockResolvedValue(undefined);
-    mocks.recoverStaleClaims.mockResolvedValue(0);
-    mocks.sendGenericLeadAlert.mockResolvedValue(undefined);
+    process.env.NOTIFICATION_CRON_SECRET = CRON_SECRET;
+    mocks.processOutboxBatch.mockResolvedValue({ processed: 0, sent: 0, failed: 0 });
+  });
+
+  it("returns 503 when cron secret is not configured", async () => {
+    delete process.env.NOTIFICATION_CRON_SECRET;
+    const response = await POST(buildRequest(true));
+    expect(response.status).toBe(503);
+    expect(mocks.processOutboxBatch).not.toHaveBeenCalled();
   });
 
   it("returns 401 when not authenticated", async () => {
     const response = await POST(buildRequest(false));
     expect(response.status).toBe(401);
-    expect(mocks.claimPendingEvents).not.toHaveBeenCalled();
+    expect(mocks.processOutboxBatch).not.toHaveBeenCalled();
   });
 
-  it("returns notifications_disabled when not enabled", async () => {
-    mocks.isNotificationEnabled.mockReturnValue(false);
-    const response = await POST(buildRequest());
-    expect(response.status).toBe(200);
-    const body = await response.json();
-    expect(body.reason).toBe("notifications_disabled");
-    expect(body.processed).toBe(0);
-    expect(mocks.claimPendingEvents).not.toHaveBeenCalled();
+  it("returns 401 with wrong cron secret", async () => {
+    const request = new NextRequest("http://localhost/api/admin/notifications/process", {
+      method: "POST",
+      headers: { authorization: "Bearer wrong-secret" },
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(401);
+    expect(mocks.processOutboxBatch).not.toHaveBeenCalled();
   });
 
-  it("processes pending events and marks them sent", async () => {
-    const event = {
-      id: "event-1",
-      eventKey: "google_ads:lead-001",
-      eventType: "new_lead",
-      contactId: "contact-1",
-      status: "pending",
-      attempts: 0,
-      lastError: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      sentAt: null,
-    };
-    mocks.claimPendingEvents.mockResolvedValue([event]);
-
-    const response = await POST(buildRequest());
+  it("processes outbox batch when authenticated", async () => {
+    mocks.processOutboxBatch.mockResolvedValue({ processed: 2, sent: 1, failed: 1 });
+    const response = await POST(buildRequest(true));
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.processed).toBe(1);
+    expect(body.ok).toBe(true);
+    expect(body.processed).toBe(2);
     expect(body.sent).toBe(1);
-    expect(body.failed).toBe(0);
-    expect(mocks.markSent).toHaveBeenCalledWith(expect.anything(), "event-1");
-    expect(mocks.sendGenericLeadAlert).toHaveBeenCalledWith("event-1");
-  });
-
-  it("marks events failed when webhook returns an error", async () => {
-    const event = {
-      id: "event-2",
-      eventKey: "google_ads:lead-002",
-      eventType: "new_lead",
-      contactId: "contact-2",
-      status: "pending",
-      attempts: 0,
-      lastError: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      sentAt: null,
-    };
-    mocks.claimPendingEvents.mockResolvedValue([event]);
-    mocks.sendGenericLeadAlert.mockRejectedValue(new Error("webhook_returned_500"));
-
-    const response = await POST(buildRequest());
-    expect(response.status).toBe(200);
-    const body = await response.json();
-    expect(body.processed).toBe(1);
-    expect(body.sent).toBe(0);
     expect(body.failed).toBe(1);
-    expect(mocks.markFailed).toHaveBeenCalledWith(
-      expect.anything(),
-      "event-2",
-      "send_failed",
-    );
+    expect(mocks.processOutboxBatch).toHaveBeenCalledTimes(1);
   });
 
-  it("does not include patient details in webhook payload", async () => {
-    const event = {
-      id: "event-3",
-      eventKey: "google_ads:lead-003",
-      eventType: "new_lead",
-      contactId: "contact-3",
-      status: "pending",
-      attempts: 0,
-      lastError: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      sentAt: null,
-    };
-    mocks.claimPendingEvents.mockResolvedValue([event]);
-
-    await POST(buildRequest());
-
-    expect(mocks.sendGenericLeadAlert).toHaveBeenCalledWith("event-3");
-    expect(mocks.sendGenericLeadAlert).not.toHaveBeenCalledWith(
-      expect.stringContaining("Jane"),
-    );
+  it("does not include patient details in response", async () => {
+    mocks.processOutboxBatch.mockResolvedValue({ processed: 1, sent: 1, failed: 0 });
+    const response = await POST(buildRequest(true));
+    const body = await response.json();
+    expect(JSON.stringify(body)).not.toContain("Jane");
+    expect(JSON.stringify(body)).not.toContain("jane@example.com");
+    expect(JSON.stringify(body)).not.toContain("408-555");
   });
 });
