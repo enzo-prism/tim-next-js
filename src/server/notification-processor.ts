@@ -44,6 +44,10 @@ export const processOutboxBatch = async (): Promise<{
       await outboxService.markFailed(db, event.id, event.leaseToken, "send_failed");
       failed += 1;
     }
+
+    await outboxService.refreshLease(db, event.id, event.leaseToken).catch(
+      () => undefined,
+    );
   }
 
   return { processed: events.length, sent, failed };

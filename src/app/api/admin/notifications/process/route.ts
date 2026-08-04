@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { processOutboxBatch } from "@/server/notification-processor";
 
@@ -18,9 +19,11 @@ const requireCronAuth = (req: NextRequest): NextResponse | null => {
     );
   }
 
-  const authHeader = req.headers.get("authorization");
-  const expected = `Bearer ${cronSecret}`;
-  if (authHeader !== expected) {
+  const authHeader = req.headers.get("authorization") || "";
+  const provided = Buffer.from(authHeader, "utf-8");
+  const expected = Buffer.from(`Bearer ${cronSecret}`, "utf-8");
+
+  if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
     return jsonResponse(
       { ok: false, error: "unauthorized", message: "Invalid cron authorization." },
       { status: 401 },
@@ -30,14 +33,19 @@ const requireCronAuth = (req: NextRequest): NextResponse | null => {
   return null;
 };
 
+const handleProcess = async () => {
+  const result = await processOutboxBatch();
+  return jsonResponse({ ok: true, ...result });
+};
+
 export async function POST(req: NextRequest) {
   const authResponse = requireCronAuth(req);
   if (authResponse) return authResponse;
+  return handleProcess();
+}
 
-  const result = await processOutboxBatch();
-
-  return jsonResponse({
-    ok: true,
-    ...result,
-  });
+export async function GET(req: NextRequest) {
+  const authResponse = requireCronAuth(req);
+  if (authResponse) return authResponse;
+  return handleProcess();
 }

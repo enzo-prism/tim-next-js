@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { and, eq, lt, sql as dsql } from "drizzle-orm";
+import { and, eq, lte, or, isNull, sql as dsql } from "drizzle-orm";
 import { notificationOutbox } from "@/server/schema";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import type * as schema from "@/server/schema";
@@ -10,7 +10,6 @@ export type OutboxEvent = typeof notificationOutbox.$inferSelect;
 
 export const MAX_ATTEMPTS = 5;
 export const LEASE_DURATION_MS = 60_000;
-export const STALE_CLAIM_THRESHOLD_MS = 5 * 60_000;
 
 export const buildEventKey = (
   googleAdsLeadId: string | null,
@@ -42,6 +41,11 @@ export interface IOutboxService {
     eventId: string,
     leaseToken: string,
     errorCode: string,
+  ): Promise<boolean>;
+  refreshLease(
+    db: DrizzleDatabase,
+    eventId: string,
+    leaseToken: string,
   ): Promise<boolean>;
 }
 
@@ -85,13 +89,13 @@ export class DatabaseOutboxService implements IOutboxService {
   }
 
   async recoverStaleClaims(db: DrizzleDatabase): Promise<number> {
-    const staleThreshold = new Date(Date.now() - STALE_CLAIM_THRESHOLD_MS);
+    const now = new Date();
 
     const recovered = await db
       .update(notificationOutbox)
       .set({
         status: "pending",
-        updatedAt: new Date(),
+        updatedAt: now,
         leaseToken: null,
         leaseExpiresAt: null,
         lastError: null,
@@ -99,7 +103,10 @@ export class DatabaseOutboxService implements IOutboxService {
       .where(
         and(
           eq(notificationOutbox.status, "sending"),
-          lt(notificationOutbox.leaseExpiresAt, staleThreshold),
+          or(
+            lte(notificationOutbox.leaseExpiresAt, now),
+            isNull(notificationOutbox.leaseExpiresAt),
+          ),
         ),
       )
       .returning();
@@ -140,36 +147,45 @@ export class DatabaseOutboxService implements IOutboxService {
     leaseToken: string,
     errorCode: string,
   ): Promise<boolean> {
-    const [event] = await db
-      .select()
-      .from(notificationOutbox)
-      .where(
-        and(
-          eq(notificationOutbox.id, eventId),
-          eq(notificationOutbox.leaseToken, leaseToken),
-          eq(notificationOutbox.status, "sending"),
-        ),
-      )
-      .limit(1);
+    const now = new Date();
 
-    if (!event) return false;
+    const result = await db.execute(dsql`
+      UPDATE notification_outbox
+      SET
+        attempts = attempts + 1,
+        status = CASE
+          WHEN attempts + 1 >= ${MAX_ATTEMPTS} THEN 'failed'
+          ELSE 'pending'
+        END,
+        next_attempt_at = CASE
+          WHEN attempts + 1 >= ${MAX_ATTEMPTS} THEN NULL
+          ELSE NOW() + make_interval(secs => power(2, attempts + 1))
+        END,
+        last_error = ${errorCode},
+        lease_token = NULL,
+        lease_expires_at = NULL,
+        updated_at = ${now}
+      WHERE id = ${eventId}
+        AND lease_token = ${leaseToken}
+        AND status = 'sending'
+      RETURNING id
+    `);
 
-    const newAttempts = event.attempts + 1;
-    const isDeadLetter = newAttempts >= MAX_ATTEMPTS;
-    const nextAttemptAt = isDeadLetter
-      ? null
-      : new Date(Date.now() + getRetryDelayMs(newAttempts));
+    return (result.rows as Array<Record<string, unknown>>).length > 0;
+  }
 
-    await db
+  async refreshLease(
+    db: DrizzleDatabase,
+    eventId: string,
+    leaseToken: string,
+  ): Promise<boolean> {
+    const newExpiry = new Date(Date.now() + LEASE_DURATION_MS);
+
+    const updated = await db
       .update(notificationOutbox)
       .set({
-        status: isDeadLetter ? "failed" : "pending",
+        leaseExpiresAt: newExpiry,
         updatedAt: new Date(),
-        lastError: errorCode,
-        attempts: newAttempts,
-        nextAttemptAt,
-        leaseToken: null,
-        leaseExpiresAt: null,
       })
       .where(
         and(
@@ -177,9 +193,10 @@ export class DatabaseOutboxService implements IOutboxService {
           eq(notificationOutbox.leaseToken, leaseToken),
           eq(notificationOutbox.status, "sending"),
         ),
-      );
+      )
+      .returning();
 
-    return true;
+    return updated.length > 0;
   }
 
   private mapRowToOutboxEvent(row: Record<string, unknown>): OutboxEvent {

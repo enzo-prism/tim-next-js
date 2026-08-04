@@ -143,6 +143,30 @@ describe("admin middleware", () => {
     expect(validAfterFailures.status).toBe(200);
   });
 
+  it("exempts the notification processor path from Basic auth", () => {
+    vi.stubEnv("ADMIN_USERNAME", "office-admin");
+    vi.stubEnv("ADMIN_PASSWORD", "a-long-test-password");
+
+    const response = middleware(
+      new NextRequest("http://localhost/api/admin/notifications/process", {
+        headers: { authorization: "Bearer some-cron-secret" },
+      }),
+    );
+    expect(response.status).toBe(200);
+  });
+
+  it("still protects other /api/admin paths with Basic auth", () => {
+    vi.stubEnv("ADMIN_USERNAME", "office-admin");
+    vi.stubEnv("ADMIN_PASSWORD", "a-long-test-password");
+
+    const response = middleware(
+      new NextRequest("http://localhost/api/admin/contacts", {
+        headers: { authorization: "Bearer some-cron-secret" },
+      }),
+    );
+    expect(response.status).toBe(401);
+  });
+
   it("does not consume the credential limiter when the browser sends no credentials", () => {
     vi.stubEnv("ADMIN_USERNAME", "office-admin");
     vi.stubEnv("ADMIN_PASSWORD", "a-long-test-password");
