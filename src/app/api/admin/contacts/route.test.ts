@@ -4,12 +4,14 @@ import { NextRequest } from "next/server";
 const mocks = vi.hoisted(() => ({
   listContacts: vi.fn(),
   getLeadSourceSummary: vi.fn(),
+  getCountsByStatus: vi.fn(),
 }));
 
 vi.mock("@/server/storage", () => ({
   storage: {
     listContacts: mocks.listContacts,
     getLeadSourceSummary: mocks.getLeadSourceSummary,
+    getCountsByStatus: mocks.getCountsByStatus,
   },
 }));
 
@@ -50,6 +52,13 @@ const contact = {
   arrivedAt: null,
   lostReason: null,
   staffNotes: "Confirmed by phone.",
+  googleAdsLeadId: null,
+  campaignId: null,
+  campaignName: null,
+  ingestedVia: null,
+  updatedBy: null,
+  isTest: false,
+  rawPayload: null,
   createdAt: new Date("2026-07-15T15:00:00.000Z"),
   updatedAt: new Date("2026-07-15T17:00:00.000Z"),
 };
@@ -70,6 +79,7 @@ describe("admin contacts GET", () => {
         arrivalRate: 0,
       },
     ]);
+    mocks.getCountsByStatus.mockResolvedValue({ new: 0, booked: 1 });
   });
 
   it("rechecks Basic Auth inside the route handler", async () => {

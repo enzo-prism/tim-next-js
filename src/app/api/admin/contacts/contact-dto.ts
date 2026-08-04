@@ -1,4 +1,4 @@
-import type { AdminContactItem } from "@/app/api/admin/contacts/types";
+import type { AdminContactDetail, AdminContactItem } from "@/app/api/admin/contacts/types";
 import type { Contact } from "@/server/schema";
 import { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
 
@@ -22,6 +22,7 @@ export const toAdminContactItem = (contact: Contact): AdminContactItem => ({
   utmSource: contact.utmSource,
   utmMedium: contact.utmMedium,
   utmCampaign: contact.utmCampaign,
+  source: normalizeLeadSource(contact),
   leadSource: normalizeLeadSource(contact),
   leadStatus: contact.leadStatus,
   contactedAt: contact.contactedAt?.toISOString() ?? null,
@@ -29,4 +30,15 @@ export const toAdminContactItem = (contact: Contact): AdminContactItem => ({
   arrivedAt: contact.arrivedAt?.toISOString() ?? null,
   lostReason: contact.lostReason,
   staffNotes: contact.staffNotes,
+  googleAdsLeadId: contact.googleAdsLeadId,
+  campaignId: contact.campaignId,
+  campaignName: contact.campaignName,
+  ingestedVia: contact.ingestedVia,
+  updatedBy: contact.updatedBy,
+  isTest: contact.isTest,
+});
+
+export const toAdminContactDetail = (contact: Contact): AdminContactDetail => ({
+  ...toAdminContactItem(contact),
+  rawPayload: contact.rawPayload,
 });

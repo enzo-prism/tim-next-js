@@ -3,9 +3,11 @@ import {
   boolean,
   check,
   index,
+  jsonb,
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -21,6 +23,15 @@ export const LEAD_STATUS_VALUES = [
 
 export type LeadStatus = (typeof LEAD_STATUS_VALUES)[number];
 
+export const INGESTED_VIA_VALUES = [
+  "webhook",
+  "reconciliation",
+  "website-form",
+  "backfill",
+] as const;
+
+export type IngestedVia = (typeof INGESTED_VIA_VALUES)[number];
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -34,7 +45,7 @@ export const contacts = pgTable(
     submissionId: varchar("submission_id", { length: 36 }).unique(),
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
-    email: text("email").notNull(),
+    email: text("email"),
     phone: text("phone"),
     service: text("service"),
     message: text("message"),
@@ -61,23 +72,37 @@ export const contacts = pgTable(
     arrivedAt: timestamp("arrived_at"),
     lostReason: text("lost_reason"),
     staffNotes: text("staff_notes"),
+    googleAdsLeadId: text("google_ads_lead_id"),
+    campaignId: text("campaign_id"),
+    campaignName: text("campaign_name"),
+    ingestedVia: text("ingested_via").$type<IngestedVia>(),
+    updatedBy: text("updated_by"),
+    isTest: boolean("is_test").notNull().default(false),
+    rawPayload: jsonb("raw_payload"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     index("contacts_lead_status_idx").on(table.leadStatus),
     index("contacts_created_at_idx").on(table.createdAt.desc()),
+    uniqueIndex("contacts_google_ads_lead_id_idx")
+      .on(table.googleAdsLeadId)
+      .where(sql`${table.googleAdsLeadId} IS NOT NULL`),
     check(
       "contacts_lead_status_check",
       sql`${table.leadStatus} in ('new', 'contacted', 'booked', 'arrived', 'no-show', 'lost')`,
     ),
     check(
       "contacts_request_type_check",
-      sql`${table.requestType} in ('contact', 'appointment')`,
+      sql`${table.requestType} in ('contact', 'appointment', 'google_ads_lead')`,
     ),
     check(
       "contacts_formspree_status_check",
       sql`${table.formspreeStatus} is null or ${table.formspreeStatus} in ('failed', 'sending', 'delivered')`,
+    ),
+    check(
+      "contacts_ingested_via_check",
+      sql`${table.ingestedVia} is null or ${table.ingestedVia} in ('webhook', 'reconciliation', 'website-form', 'backfill')`,
     ),
   ],
 );

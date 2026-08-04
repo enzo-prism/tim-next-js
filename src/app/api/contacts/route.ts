@@ -180,7 +180,7 @@ export async function POST(request: Request) {
         requestType: "contact",
         firstName: claimed.firstName,
         lastName: claimed.lastName,
-        email: claimed.email,
+        email: claimed.email!,
         phone: claimed.phone,
         service: claimed.service,
         message: claimed.message,

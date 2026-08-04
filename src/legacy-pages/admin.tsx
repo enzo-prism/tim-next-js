@@ -1268,12 +1268,16 @@ export default function Admin() {
                               {row.firstName} {row.lastName}
                             </TableCell>
                             <TableCell className="text-sm">
-                              <a
-                                href={`mailto:${row.email}`}
-                                className="text-primary hover:underline"
-                              >
-                                {row.email}
-                              </a>
+                              {row.email ? (
+                                <a
+                                  href={`mailto:${row.email}`}
+                                  className="text-primary hover:underline"
+                                >
+                                  {row.email}
+                                </a>
+                              ) : (
+                                "-"
+                              )}
                             </TableCell>
                             <TableCell className="font-mono text-xs">
                               {row.phone || "-"}

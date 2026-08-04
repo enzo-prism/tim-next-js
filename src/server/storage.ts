@@ -106,7 +106,9 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getContact(id: string): Promise<Contact | undefined>;
   getContactBySubmissionId(submissionId: string): Promise<Contact | undefined>;
+  getContactByGoogleAdsLeadId(leadId: string): Promise<Contact | undefined>;
   createContact(contact: InsertContactRecord): Promise<Contact>;
+  createContactIgnoreDuplicate(contact: InsertContactRecord): Promise<Contact | null>;
   claimContactNotification(id: string): Promise<Contact | undefined>;
   updateContactFormspreeStatus(
     id: string,
@@ -114,6 +116,7 @@ export interface IStorage {
   ): Promise<Contact | undefined>;
   listContacts(options: ListContactsOptions): Promise<ListContactsResult>;
   getLeadSourceSummary(): Promise<LeadSourceSummary[]>;
+  getCountsByStatus(): Promise<Record<string, number>>;
   updateContactLifecycle(
     id: string,
     update: UpdateContactLifecycleInput,
@@ -151,6 +154,17 @@ export class DatabaseStorage implements IStorage {
     return contact;
   }
 
+  async createContactIgnoreDuplicate(
+    insertContact: InsertContactRecord,
+  ): Promise<Contact | null> {
+    const [contact] = await this.database
+      .insert(contacts)
+      .values(insertContact)
+      .onConflictDoNothing()
+      .returning();
+    return contact || null;
+  }
+
   async getContact(id: string): Promise<Contact | undefined> {
     const [contact] = await this.database
       .select()
@@ -165,6 +179,15 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(contacts)
       .where(eq(contacts.submissionId, submissionId))
+      .limit(1);
+    return contact || undefined;
+  }
+
+  async getContactByGoogleAdsLeadId(leadId: string): Promise<Contact | undefined> {
+    const [contact] = await this.database
+      .select()
+      .from(contacts)
+      .where(eq(contacts.googleAdsLeadId, leadId))
       .limit(1);
     return contact || undefined;
   }
@@ -250,6 +273,7 @@ export class DatabaseStorage implements IStorage {
         arrived: dsql<number>`count(*) FILTER (WHERE ${contacts.arrivedAt} IS NOT NULL)::int`,
       })
       .from(contacts)
+      .where(eq(contacts.isTest, false))
       .groupBy(leadSourceSql)
       .orderBy(desc(dsql`count(*)`));
 
@@ -266,6 +290,23 @@ export class DatabaseStorage implements IStorage {
         arrivalRate: leads ? arrived / leads : 0,
       };
     });
+  }
+
+  async getCountsByStatus(): Promise<Record<string, number>> {
+    const rows = await this.database
+      .select({
+        status: contacts.leadStatus,
+        count: dsql<number>`count(*)::int`,
+      })
+      .from(contacts)
+      .where(eq(contacts.isTest, false))
+      .groupBy(contacts.leadStatus);
+
+    const result: Record<string, number> = {};
+    for (const row of rows) {
+      result[row.status] = Number(row.count);
+    }
+    return result;
   }
 
   async updateContactLifecycle(
@@ -332,7 +373,7 @@ export class InMemoryStorage implements IStorage {
       submissionId: insertContact.submissionId ?? null,
       firstName: insertContact.firstName,
       lastName: insertContact.lastName,
-      email: insertContact.email,
+      email: insertContact.email ?? null,
       phone: insertContact.phone ?? null,
       service: insertContact.service ?? null,
       message: insertContact.message ?? null,
@@ -359,9 +400,28 @@ export class InMemoryStorage implements IStorage {
       arrivedAt: insertContact.arrivedAt ?? null,
       lostReason: insertContact.lostReason ?? null,
       staffNotes: insertContact.staffNotes ?? null,
+      googleAdsLeadId: insertContact.googleAdsLeadId ?? null,
+      campaignId: insertContact.campaignId ?? null,
+      campaignName: insertContact.campaignName ?? null,
+      ingestedVia: insertContact.ingestedVia ?? null,
+      updatedBy: insertContact.updatedBy ?? null,
+      isTest: insertContact.isTest ?? false,
+      rawPayload: insertContact.rawPayload ?? null,
     };
     this.contacts.set(contact.id, contact);
     return contact;
+  }
+
+  async createContactIgnoreDuplicate(
+    insertContact: InsertContactRecord,
+  ): Promise<Contact | null> {
+    if (insertContact.googleAdsLeadId) {
+      const existing = await this.getContactByGoogleAdsLeadId(
+        insertContact.googleAdsLeadId,
+      );
+      if (existing) return null;
+    }
+    return this.createContact(insertContact);
   }
 
   async getContact(id: string): Promise<Contact | undefined> {
@@ -371,6 +431,12 @@ export class InMemoryStorage implements IStorage {
   async getContactBySubmissionId(submissionId: string): Promise<Contact | undefined> {
     return Array.from(this.contacts.values()).find(
       (contact) => contact.submissionId === submissionId,
+    );
+  }
+
+  async getContactByGoogleAdsLeadId(leadId: string): Promise<Contact | undefined> {
+    return Array.from(this.contacts.values()).find(
+      (contact) => contact.googleAdsLeadId === leadId,
     );
   }
 
@@ -450,6 +516,7 @@ export class InMemoryStorage implements IStorage {
   async getLeadSourceSummary(): Promise<LeadSourceSummary[]> {
     const buckets = new Map<string, { leads: number; booked: number; arrived: number }>();
     for (const contact of this.contacts.values()) {
+      if (contact.isTest) continue;
       const source = normalizeLeadSource(contact);
       const bucket = buckets.get(source) ?? { leads: 0, booked: 0, arrived: 0 };
       bucket.leads += 1;
@@ -464,6 +531,15 @@ export class InMemoryStorage implements IStorage {
       bookingRate: value.leads ? value.booked / value.leads : 0,
       arrivalRate: value.leads ? value.arrived / value.leads : 0,
     })).sort((a, b) => b.leads - a.leads || a.source.localeCompare(b.source));
+  }
+
+  async getCountsByStatus(): Promise<Record<string, number>> {
+    const result: Record<string, number> = {};
+    for (const contact of this.contacts.values()) {
+      if (contact.isTest) continue;
+      result[contact.leadStatus] = (result[contact.leadStatus] ?? 0) + 1;
+    }
+    return result;
   }
 
   async updateContactLifecycle(
@@ -513,11 +589,19 @@ class UnavailableStorage implements IStorage {
     throw new Error(this.message);
   }
 
+  async createContactIgnoreDuplicate(): Promise<Contact | null> {
+    throw new Error(this.message);
+  }
+
   async getContact(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
 
   async getContactBySubmissionId(): Promise<Contact | undefined> {
+    throw new Error(this.message);
+  }
+
+  async getContactByGoogleAdsLeadId(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
 
@@ -534,6 +618,10 @@ class UnavailableStorage implements IStorage {
   }
 
   async getLeadSourceSummary(): Promise<LeadSourceSummary[]> {
+    throw new Error(this.message);
+  }
+
+  async getCountsByStatus(): Promise<Record<string, number>> {
     throw new Error(this.message);
   }
 
