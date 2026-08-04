@@ -1,5 +1,7 @@
 import { randomUUID } from "crypto";
 import { and, desc, eq, ilike, or, sql as dsql } from "drizzle-orm";
+import type { PgDatabase } from "drizzle-orm/pg-core";
+import type * as schema from "@/server/schema";
 import {
   contacts,
   users,
@@ -123,7 +125,7 @@ export interface IStorage {
   ): Promise<UpdateContactLifecycleResult>;
 }
 
-type DrizzleDatabase = NonNullable<typeof db>;
+type DrizzleDatabase = PgDatabase<any, typeof schema>;
 
 export class DatabaseStorage implements IStorage {
   constructor(private readonly database: DrizzleDatabase) {}

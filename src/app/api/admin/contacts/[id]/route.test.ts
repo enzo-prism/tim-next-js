@@ -3,15 +3,17 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   updateContactLifecycle: vi.fn(),
+  getContact: vi.fn(),
 }));
 
 vi.mock("@/server/storage", () => ({
   storage: {
     updateContactLifecycle: mocks.updateContactLifecycle,
+    getContact: mocks.getContact,
   },
 }));
 
-import { PATCH } from "@/app/api/admin/contacts/[id]/route";
+import { GET, PATCH } from "@/app/api/admin/contacts/[id]/route";
 
 const auth = () =>
   `Basic ${Buffer.from("office-admin:test-password").toString("base64")}`;
@@ -149,5 +151,78 @@ describe("admin contact lifecycle PATCH", () => {
     expect(await response.json()).toEqual(
       expect.objectContaining({ error: "invalid_update" }),
     );
+  });
+});
+
+const detailContact = {
+  ...updatedContact,
+  googleAdsLeadId: "google-lead-001",
+  campaignId: "12345678901",
+  campaignName: "Invisalign San Jose",
+  ingestedVia: "webhook" as const,
+  updatedBy: null,
+  isTest: false,
+  rawPayload: {
+    lead_id: "google-lead-001",
+    campaign_id: 12345678901,
+    user_column_data: [{ column_id: "FULL_NAME", string_value: "Jamie Lee" }],
+  },
+};
+
+const getDetail = (authenticated = true) =>
+  GET(
+    new NextRequest("http://localhost/api/admin/contacts/lead-1", {
+      headers: authenticated ? { authorization: auth() } : {},
+    }),
+    { params: Promise.resolve({ id: "lead-1" }) },
+  );
+
+describe("admin contact detail GET", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.ADMIN_USERNAME = "office-admin";
+    process.env.ADMIN_PASSWORD = "test-password";
+    mocks.getContact.mockResolvedValue(detailContact);
+  });
+
+  it("returns 401 when not authenticated", async () => {
+    const response = await getDetail(false);
+    expect(response.status).toBe(401);
+    expect(mocks.getContact).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 for a missing lead", async () => {
+    mocks.getContact.mockResolvedValue(undefined);
+    const response = await getDetail();
+    expect(response.status).toBe(404);
+  });
+
+  it("returns 200 with no-store header and sanitized payload", async () => {
+    const response = await getDetail();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    const body = await response.json();
+    expect(body.ok).toBe(true);
+    expect(body.item.rawPayload).not.toHaveProperty("google_key");
+    expect(body.item.rawPayload).toHaveProperty("lead_id", "google-lead-001");
+  });
+
+  it("strips google_key from stored rawPayload as defense-in-depth", async () => {
+    const contactWithKey = {
+      ...detailContact,
+      rawPayload: {
+        google_key: "secret-key-that-should-never-leak",
+        lead_id: "google-lead-001",
+        campaign_id: 12345678901,
+        user_column_data: [{ column_id: "FULL_NAME", string_value: "Jamie Lee" }],
+      },
+    };
+    mocks.getContact.mockResolvedValue(contactWithKey);
+
+    const response = await getDetail();
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.item.rawPayload).not.toHaveProperty("google_key");
+    expect(body.item.rawPayload).toHaveProperty("lead_id", "google-lead-001");
   });
 });

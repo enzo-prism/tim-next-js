@@ -38,7 +38,16 @@ export const toAdminContactItem = (contact: Contact): AdminContactItem => ({
   isTest: contact.isTest,
 });
 
+const sanitizeRawPayload = (payload: unknown): unknown => {
+  if (typeof payload !== "object" || payload === null) return payload;
+  const record = payload as Record<string, unknown>;
+  if (!("google_key" in record)) return payload;
+  const sanitized = { ...record };
+  delete sanitized.google_key;
+  return sanitized;
+};
+
 export const toAdminContactDetail = (contact: Contact): AdminContactDetail => ({
   ...toAdminContactItem(contact),
-  rawPayload: contact.rawPayload,
+  rawPayload: sanitizeRawPayload(contact.rawPayload),
 });

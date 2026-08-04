@@ -150,4 +150,22 @@ describe("admin contacts GET", () => {
     expect(response.status).toBe(400);
     expect(mocks.listContacts).not.toHaveBeenCalled();
   });
+
+  it("does not include rawPayload in list items", async () => {
+    const contactWithPayload = {
+      ...contact,
+      rawPayload: { lead_id: "google-lead-001", user_column_data: [] },
+    };
+    mocks.listContacts.mockResolvedValue({ total: 1, items: [contactWithPayload] });
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/admin/contacts", {
+        headers: { authorization: auth() },
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.items[0]).not.toHaveProperty("rawPayload");
+  });
 });

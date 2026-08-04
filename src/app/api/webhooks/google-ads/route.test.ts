@@ -289,4 +289,107 @@ describe("Google Ads webhook POST", () => {
     }
     expect(mocks.createContactIgnoreDuplicate).not.toHaveBeenCalled();
   });
+
+  it("preserves int64 campaign_id above MAX_SAFE_INTEGER as a string", async () => {
+    const largeId = "9223372036854775807";
+    const rawJson = JSON.stringify({
+      google_key: TEST_KEY,
+      lead_id: "int64-lead",
+      campaign_id: Number(largeId),
+      user_column_data: [
+        { column_id: "FULL_NAME", string_value: "Jane Doe" },
+        { column_id: "EMAIL", string_value: "jane@example.com" },
+      ],
+    }).replace(`"campaign_id":${Number(largeId)}`, `"campaign_id":${largeId}`);
+
+    const request = new NextRequest("http://localhost/api/webhooks/google-ads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: rawJson,
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        campaignId: largeId,
+        googleAdsLeadId: "int64-lead",
+      }),
+    );
+  });
+
+  it("stores sanitized rawPayload without google_key even if present in body", async () => {
+    const response = await POST(buildRequest(officialNumericSample));
+    expect(response.status).toBe(200);
+    const call = mocks.createContactIgnoreDuplicate.mock.calls[0][0];
+    expect(call.rawPayload).not.toHaveProperty("google_key");
+    expect(call.rawPayload).toHaveProperty("lead_id", "google-lead-001");
+  });
+
+  it("handles exact max int64 token 9223372036854775807 losslessly", async () => {
+    const maxInt64 = "9223372036854775807";
+    const rawJson = `{"google_key":"${TEST_KEY}","lead_id":"max-int64-lead","campaign_id":${maxInt64},"user_column_data":[{"column_id":"FULL_NAME","string_value":"Jane Doe"},{"column_id":"EMAIL","string_value":"jane@example.com"}]}`;
+
+    const request = new NextRequest("http://localhost/api/webhooks/google-ads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: rawJson,
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        campaignId: maxInt64,
+        googleAdsLeadId: "max-int64-lead",
+      }),
+    );
+  });
+
+  it("handles whitespace and newlines around numeric IDs", async () => {
+    const rawJson = `{
+      "google_key": "${TEST_KEY}",
+      "lead_id": "whitespace-lead",
+      "campaign_id" :  12345678901,
+      "form_id":
+        9876543210,
+      "user_column_data": [
+        { "column_id": "FULL_NAME", "string_value": "Jane Doe" },
+        { "column_id": "EMAIL", "string_value": "jane@example.com" }
+      ]
+    }`;
+
+    const request = new NextRequest("http://localhost/api/webhooks/google-ads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: rawJson,
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(mocks.createContactIgnoreDuplicate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        campaignId: "12345678901",
+        googleAdsLeadId: "whitespace-lead",
+      }),
+    );
+  });
+
+  it("does not corrupt custom-answer strings containing ID-like text", async () => {
+    const rawJson = `{"google_key":"${TEST_KEY}","lead_id":"id-like-answer-lead","campaign_id":12345678901,"user_column_data":[{"column_id":"FULL_NAME","string_value":"Jane Doe"},{"column_id":"EMAIL","string_value":"jane@example.com"},{"column_id":"CUSTOM_QUESTION_1","string_value":"My campaign_id is 9999999999999999999 and form_id is 8888888888888888888"}]}`;
+
+    const request = new NextRequest("http://localhost/api/webhooks/google-ads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: rawJson,
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    const call = mocks.createContactIgnoreDuplicate.mock.calls[0][0];
+    expect(call.rawPayload.user_column_data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          column_id: "CUSTOM_QUESTION_1",
+          string_value: "My campaign_id is 9999999999999999999 and form_id is 8888888888888888888",
+        }),
+      ]),
+    );
+  });
 });

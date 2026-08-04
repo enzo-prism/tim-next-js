@@ -7,6 +7,48 @@ export const runtime = "nodejs";
 
 const MAX_BODY_BYTES = 65_536;
 
+class WebhookPayloadTooLargeError extends Error {
+  constructor() {
+    super("Webhook payload too large");
+    this.name = "WebhookPayloadTooLargeError";
+  }
+}
+
+const readWebhookBody = async (request: Request): Promise<string> => {
+  const reader = request.body?.getReader();
+  if (!reader) return "";
+
+  const decoder = new TextDecoder();
+  let byteCount = 0;
+  let body = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    byteCount += value.byteLength;
+    if (byteCount > MAX_BODY_BYTES) {
+      await reader.cancel().catch(() => undefined);
+      throw new WebhookPayloadTooLargeError();
+    }
+    body += decoder.decode(value, { stream: true });
+  }
+
+  body += decoder.decode();
+  return body;
+};
+
+const ID_FIELD_PATTERN =
+  /("(?:campaign_id|form_id|adgroup_id|creative_id)"\s*:\s*)(\d+)/g;
+
+const preserveNumericIdsAsStrings = (rawBody: string): string =>
+  rawBody.replace(ID_FIELD_PATTERN, (_match, prefix: string, digits: string) => {
+    if (digits.length > 15 || Number(digits) > Number.MAX_SAFE_INTEGER) {
+      return `${prefix}"${digits}"`;
+    }
+    return `${prefix}${digits}`;
+  });
+
 const numericOrStringId = z.union([
   z.string().min(1),
   z.number().int().nonnegative(),
@@ -121,25 +163,19 @@ export async function POST(req: NextRequest) {
     return errorResponse("Webhook key not configured.", 503);
   }
 
-  const contentLength = Number(req.headers.get("content-length") || 0);
-  if (contentLength > MAX_BODY_BYTES) {
-    return errorResponse("Request body too large.", 413);
-  }
-
   let rawBody: string;
   try {
-    rawBody = await req.text();
-  } catch {
+    rawBody = await readWebhookBody(req);
+  } catch (error) {
+    if (error instanceof WebhookPayloadTooLargeError) {
+      return errorResponse("Request body too large.", 413);
+    }
     return errorResponse("Invalid request body.", 400);
-  }
-
-  if (rawBody.length > MAX_BODY_BYTES) {
-    return errorResponse("Request body too large.", 413);
   }
 
   let body: unknown;
   try {
-    body = JSON.parse(rawBody);
+    body = JSON.parse(preserveNumericIdsAsStrings(rawBody));
   } catch {
     return errorResponse("Invalid JSON.", 400);
   }
