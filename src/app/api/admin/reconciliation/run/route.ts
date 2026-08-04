@@ -50,7 +50,6 @@ const redactOutcome = (outcome: ReconciliationOutcome) => {
       totalExternal: outcome.totalExternal,
       totalStored: outcome.totalStored,
       missingInStored: outcome.missingInStored,
-      missingInExternal: outcome.missingInExternal,
     };
   }
   if (outcome.status === "failed") {

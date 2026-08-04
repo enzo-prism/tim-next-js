@@ -18,7 +18,6 @@ export type { DrizzleDatabase };
 
 export const RECONCILIATION_LEASE_DURATION_MS = 5 * 60_000;
 export const PROVIDER_TIMEOUT_MS = 3 * 60_000;
-export const INGESTION_OVERLAP_MS = 15 * 60_000;
 
 const ALLOWED_ERROR_CODES = new Set([
   "provider_not_configured",
@@ -26,6 +25,7 @@ const ALLOWED_ERROR_CODES = new Set([
   "provider_api_error",
   "database_error",
   "stale_run_recovered",
+  "lease_lost",
   "unknown_error",
 ]);
 
@@ -48,7 +48,6 @@ export type ReconciliationOutcome =
       totalExternal: number;
       totalStored: number;
       missingInStored: number;
-      missingInExternal: number;
     }
   | {
       status: "failed";
@@ -96,13 +95,11 @@ export const computeTimeWindow = (now: Date): ReconciliationTimeWindow => {
   if (slot === "am") {
     const prevDay = new Date(boundary.getTime() - 24 * 60 * 60 * 1000);
     const since = new Date(`${prevDay.toISOString().slice(0, 10)}T21:00:00Z`);
-    const until = new Date(boundary.getTime() + INGESTION_OVERLAP_MS);
-    return { since, until };
+    return { since, until: boundary };
   }
 
   const since = new Date(`${dateStr}T09:00:00Z`);
-  const until = new Date(boundary.getTime() + INGESTION_OVERLAP_MS);
-  return { since, until };
+  return { since, until: boundary };
 };
 
 export const deduplicateAndValidateIds = (ids: string[]): string[] => {
@@ -144,7 +141,6 @@ export interface IReconciliationService {
       totalExternal: number;
       totalStored: number;
       missingInStored: number;
-      missingInExternal: number;
     },
     discrepancies: Array<{ externalId: string; discrepancyType: string }>,
   ): Promise<boolean>;
@@ -292,54 +288,26 @@ export class DatabaseReconciliationService implements IReconciliationService {
       totalExternal: number;
       totalStored: number;
       missingInStored: number;
-      missingInExternal: number;
     },
     discrepancies: Array<{ externalId: string; discrepancyType: string }>,
   ): Promise<boolean> {
-    const now = new Date();
     const discrepanciesJson = JSON.stringify(discrepancies);
 
     const result = await db.execute(dsql`
-      WITH finalized AS (
-        UPDATE reconciliation_runs
-        SET
-          status = 'completed',
-          total_external = ${counts.totalExternal},
-          total_stored = ${counts.totalStored},
-          missing_in_stored = ${counts.missingInStored},
-          missing_in_external = ${counts.missingInExternal},
-          completed_at = ${now},
-          lease_token = NULL,
-          lease_expires_at = NULL
-        WHERE id = ${runId}
-          AND lease_token = ${leaseToken}
-          AND status = 'running'
-        RETURNING id
-      ),
-      cleared AS (
-        DELETE FROM reconciliation_discrepancies
-        WHERE run_id = ${runId}
-          AND EXISTS (SELECT 1 FROM finalized)
-        RETURNING id
-      ),
-      inserted AS (
-        INSERT INTO reconciliation_discrepancies (run_id, provider, external_id, discrepancy_type)
-        SELECT
-          ${runId},
-          ${provider},
-          item ->> 'externalId',
-          item ->> 'discrepancyType'
-        FROM finalized f
-        CROSS JOIN LATERAL json_array_elements(${discrepanciesJson}::json) as item
-        WHERE f.id = ${runId}
-        ON CONFLICT (run_id, provider, external_id, discrepancy_type) DO NOTHING
-        RETURNING id
-      )
-      SELECT COUNT(*) as cnt FROM finalized
+      SELECT finalize_reconciliation_run(
+        ${runId},
+        ${leaseToken},
+        ${provider},
+        ${counts.totalExternal},
+        ${counts.totalStored},
+        ${counts.missingInStored},
+        0,
+        ${discrepanciesJson}::json
+      ) as success
     `);
 
-    const rows = result.rows as Array<{ cnt: string }>;
-    return rows.length > 0 && Number(rows[0].cnt) === 1;
+    const rows = result.rows as Array<{ success: boolean }>;
+    return rows.length > 0 && rows[0].success === true;
   }
 
   async failRun(
@@ -390,50 +358,48 @@ export class DatabaseReconciliationService implements IReconciliationService {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     try {
-      const externalIdsPromise = providerAdapter.fetchExternalLeadIds(window);
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          controller.abort();
-          reject(new Error("provider_timeout"));
-        }, PROVIDER_TIMEOUT_MS);
-      });
-
       let rawExternalIds: string[];
       try {
-        rawExternalIds = await Promise.race([externalIdsPromise, timeoutPromise]);
+        rawExternalIds = await Promise.race([
+          providerAdapter.fetchExternalLeadIds(window, controller.signal),
+          new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => {
+              controller.abort();
+              reject(new Error("provider_timeout"));
+            }, PROVIDER_TIMEOUT_MS);
+          }),
+        ]);
       } finally {
         if (timeoutId !== undefined) clearTimeout(timeoutId);
+      }
+
+      const leaseValid = await this.refreshLease(db, runId, leaseToken);
+      if (!leaseValid) {
+        return { status: "failed", runKey, errorCode: "lease_lost" };
       }
 
       const externalIds = deduplicateAndValidateIds(rawExternalIds);
       const rawStoredIds = await this.getStoredLeadIds(db, providerAdapter.name, window);
       const storedIds = deduplicateAndValidateIds(rawStoredIds);
 
-      const externalSet = new Set(externalIds);
       const storedSet = new Set(storedIds);
-
       const missingInStored = externalIds.filter((id) => !storedSet.has(id));
-      const missingInExternal = storedIds.filter((id) => !externalSet.has(id));
 
-      const discrepancies = [
-        ...missingInStored.map((externalId) => ({
-          externalId,
-          discrepancyType: "missing_in_stored",
-        })),
-        ...missingInExternal.map((externalId) => ({
-          externalId,
-          discrepancyType: "missing_in_external",
-        })),
-      ];
+      const discrepancies = missingInStored.map((externalId) => ({
+        externalId,
+        discrepancyType: "missing_in_stored",
+      }));
 
       const counts = {
         totalExternal: externalIds.length,
         totalStored: storedIds.length,
         missingInStored: missingInStored.length,
-        missingInExternal: missingInExternal.length,
       };
 
-      await this.refreshLease(db, runId, leaseToken);
+      const leaseStillValid = await this.refreshLease(db, runId, leaseToken);
+      if (!leaseStillValid) {
+        return { status: "failed", runKey, errorCode: "lease_lost" };
+      }
 
       const finalized = await this.finalizeRun(
         db,

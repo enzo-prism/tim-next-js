@@ -3,7 +3,6 @@ import {
   computeRunKey,
   computeTimeWindow,
   computeCanonicalBoundary,
-  INGESTION_OVERLAP_MS,
 } from "@/server/reconciliation-service";
 import type { ReconciliationProviderName } from "@/server/schema";
 
@@ -91,19 +90,17 @@ describe("computeRunKey uses canonical boundary", () => {
   });
 });
 
-describe("computeTimeWindow with overlap", () => {
-  it("am run reconciles [21:00 prev, 09:00+overlap)", () => {
+describe("computeTimeWindow completed source-time windows", () => {
+  it("am run reconciles [21:00 prev, 09:00 today)", () => {
     const window = computeTimeWindow(new Date("2026-08-04T09:00:00Z"));
     expect(window.since.toISOString()).toBe("2026-08-03T21:00:00.000Z");
-    const expectedUntil = new Date("2026-08-04T09:00:00Z").getTime() + INGESTION_OVERLAP_MS;
-    expect(window.until.getTime()).toBe(expectedUntil);
+    expect(window.until.toISOString()).toBe("2026-08-04T09:00:00.000Z");
   });
 
-  it("pm run reconciles [09:00, 21:00+overlap)", () => {
+  it("pm run reconciles [09:00, 21:00)", () => {
     const window = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
     expect(window.since.toISOString()).toBe("2026-08-04T09:00:00.000Z");
-    const expectedUntil = new Date("2026-08-04T21:00:00Z").getTime() + INGESTION_OVERLAP_MS;
-    expect(window.until.getTime()).toBe(expectedUntil);
+    expect(window.until.toISOString()).toBe("2026-08-04T21:00:00.000Z");
   });
 
   it("delayed am cron at 14:00 uses same window as exact 09:00", () => {
@@ -121,20 +118,32 @@ describe("computeTimeWindow with overlap", () => {
   });
 });
 
-describe("consecutive-run coverage with overlap", () => {
-  it("overlap ensures no gaps between consecutive windows", () => {
+describe("consecutive-run coverage: no gaps or overlap", () => {
+  it("am and pm windows on the same day are contiguous", () => {
     const amWindow = computeTimeWindow(new Date("2026-08-04T09:00:00Z"));
     const pmWindow = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
-    const nextAmWindow = computeTimeWindow(new Date("2026-08-05T09:00:00Z"));
-
-    expect(amWindow.until.getTime()).toBeGreaterThan(pmWindow.since.getTime());
-    expect(pmWindow.until.getTime()).toBeGreaterThan(nextAmWindow.since.getTime());
+    expect(amWindow.until.getTime()).toBe(pmWindow.since.getTime());
   });
 
-  it("overlap is exactly INGESTION_OVERLAP_MS", () => {
-    const amWindow = computeTimeWindow(new Date("2026-08-04T09:00:00Z"));
-    const boundary = new Date("2026-08-04T09:00:00Z").getTime();
-    expect(amWindow.until.getTime() - boundary).toBe(INGESTION_OVERLAP_MS);
+  it("pm window and next-day am window are contiguous", () => {
+    const pmWindow = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
+    const nextAmWindow = computeTimeWindow(new Date("2026-08-05T09:00:00Z"));
+    expect(pmWindow.until.getTime()).toBe(nextAmWindow.since.getTime());
+  });
+
+  it("three consecutive runs cover exactly 36 hours with no gaps", () => {
+    const amDay1 = computeTimeWindow(new Date("2026-08-04T09:00:00Z"));
+    const pmDay1 = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
+    const amDay2 = computeTimeWindow(new Date("2026-08-05T09:00:00Z"));
+
+    const totalMs =
+      (amDay1.until.getTime() - amDay1.since.getTime()) +
+      (pmDay1.until.getTime() - pmDay1.since.getTime()) +
+      (amDay2.until.getTime() - amDay2.since.getTime());
+
+    expect(totalMs).toBe(36 * 60 * 60 * 1000);
+    expect(amDay1.until.getTime()).toBe(pmDay1.since.getTime());
+    expect(pmDay1.until.getTime()).toBe(amDay2.since.getTime());
   });
 });
 

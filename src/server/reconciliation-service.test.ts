@@ -29,7 +29,6 @@ import {
   computeTimeWindow,
   deduplicateAndValidateIds,
   sanitizeErrorCode,
-  INGESTION_OVERLAP_MS,
 } from "@/server/reconciliation-service";
 import type { IReconciliationProvider, ReconciliationTimeWindow } from "@/server/reconciliation-providers";
 
@@ -39,7 +38,7 @@ const makeProvider = (
 ): IReconciliationProvider => ({
   name,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  fetchExternalLeadIds: async (window: ReconciliationTimeWindow) => {
+  fetchExternalLeadIds: async (window: ReconciliationTimeWindow, signal: AbortSignal) => {
     if (ids instanceof Error) throw ids;
     return ids;
   },
@@ -98,20 +97,18 @@ describe("deduplicateAndValidateIds", () => {
 });
 
 describe("computeTimeWindow", () => {
-  it("am run reconciles [21:00 prev, 09:00+overlap)", () => {
+  it("am run reconciles [21:00 prev, 09:00 today)", () => {
     const now = new Date("2026-08-04T09:00:00Z");
     const window = computeTimeWindow(now);
     expect(window.since.toISOString()).toBe("2026-08-03T21:00:00.000Z");
-    const expectedUntil = now.getTime() + INGESTION_OVERLAP_MS;
-    expect(window.until.getTime()).toBe(expectedUntil);
+    expect(window.until.toISOString()).toBe("2026-08-04T09:00:00.000Z");
   });
 
-  it("pm run reconciles [09:00, 21:00+overlap)", () => {
+  it("pm run reconciles [09:00, 21:00)", () => {
     const now = new Date("2026-08-04T21:00:00Z");
     const window = computeTimeWindow(now);
     expect(window.since.toISOString()).toBe("2026-08-04T09:00:00.000Z");
-    const expectedUntil = now.getTime() + INGESTION_OVERLAP_MS;
-    expect(window.until.getTime()).toBe(expectedUntil);
+    expect(window.until.toISOString()).toBe("2026-08-04T21:00:00.000Z");
   });
 });
 
@@ -182,7 +179,8 @@ describe("DatabaseReconciliationService", () => {
       mocks.execute
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
-        .mockResolvedValueOnce({ rows: [{ cnt: "1" }] });
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ success: true }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),
@@ -199,7 +197,6 @@ describe("DatabaseReconciliationService", () => {
         totalExternal: 2,
         totalStored: 2,
         missingInStored: 0,
-        missingInExternal: 0,
       });
     });
 
@@ -242,7 +239,8 @@ describe("DatabaseReconciliationService", () => {
       mocks.execute
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
-        .mockResolvedValueOnce({ rows: [{ cnt: "1" }] });
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ success: true }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),
@@ -264,7 +262,8 @@ describe("DatabaseReconciliationService", () => {
       mocks.execute
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
-        .mockResolvedValueOnce({ rows: [{ cnt: "1" }] });
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ success: true }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),
