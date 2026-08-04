@@ -13,7 +13,8 @@ export interface IReconciliationProvider {
 export class GoogleAdsReconciliationProvider implements IReconciliationProvider {
   readonly name: ReconciliationProviderName = "google_ads";
 
-  async fetchExternalLeadIds(_window: ReconciliationTimeWindow): Promise<string[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fetchExternalLeadIds(window: ReconciliationTimeWindow): Promise<string[]> {
     throw new Error("provider_not_configured");
   }
 }
@@ -21,7 +22,8 @@ export class GoogleAdsReconciliationProvider implements IReconciliationProvider 
 export class FormspreeReconciliationProvider implements IReconciliationProvider {
   readonly name: ReconciliationProviderName = "formspree";
 
-  async fetchExternalLeadIds(_window: ReconciliationTimeWindow): Promise<string[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fetchExternalLeadIds(window: ReconciliationTimeWindow): Promise<string[]> {
     throw new Error("provider_not_configured");
   }
 }

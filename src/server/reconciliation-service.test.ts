@@ -37,7 +37,8 @@ const makeProvider = (
   ids: string[] | Error,
 ): IReconciliationProvider => ({
   name,
-  fetchExternalLeadIds: async (_window: ReconciliationTimeWindow) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fetchExternalLeadIds: async (window: ReconciliationTimeWindow) => {
     if (ids instanceof Error) throw ids;
     return ids;
   },
@@ -96,18 +97,18 @@ describe("deduplicateAndValidateIds", () => {
 });
 
 describe("computeTimeWindow", () => {
-  it("returns midnight-to-noon for am slot", () => {
+  it("am run reconciles preceding 12h: [21:00 prev day, 09:00 today)", () => {
     const now = new Date("2026-08-04T09:00:00Z");
     const window = computeTimeWindow(now);
-    expect(window.since.toISOString()).toBe("2026-08-04T00:00:00.000Z");
-    expect(window.until.toISOString()).toBe("2026-08-04T12:00:00.000Z");
+    expect(window.since.toISOString()).toBe("2026-08-03T21:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-04T09:00:00.000Z");
   });
 
-  it("returns noon-to-midnight for pm slot", () => {
+  it("pm run reconciles preceding 12h: [09:00 today, 21:00 today)", () => {
     const now = new Date("2026-08-04T21:00:00Z");
     const window = computeTimeWindow(now);
-    expect(window.since.toISOString()).toBe("2026-08-04T12:00:00.000Z");
-    expect(window.until.toISOString()).toBe("2026-08-05T00:00:00.000Z");
+    expect(window.since.toISOString()).toBe("2026-08-04T09:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-04T21:00:00.000Z");
   });
 });
 
@@ -177,7 +178,7 @@ describe("DatabaseReconciliationService", () => {
     it("returns completed with correct counts when no discrepancies", async () => {
       mocks.execute
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
-        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
+        .mockResolvedValueOnce({ rows: [{ cnt: "1" }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),
@@ -236,7 +237,7 @@ describe("DatabaseReconciliationService", () => {
     it("deduplicates external IDs before comparison", async () => {
       mocks.execute
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
-        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
+        .mockResolvedValueOnce({ rows: [{ cnt: "1" }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),
@@ -257,7 +258,7 @@ describe("DatabaseReconciliationService", () => {
     it("does not include patient fields in the outcome", async () => {
       mocks.execute
         .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
-        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] });
+        .mockResolvedValueOnce({ rows: [{ cnt: "1" }] });
 
       const selectChain = {
         from: vi.fn().mockReturnThis(),

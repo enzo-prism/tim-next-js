@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeRunKey } from "@/server/reconciliation-service";
+import { computeRunKey, computeTimeWindow } from "@/server/reconciliation-service";
 import type { ReconciliationProviderName } from "@/server/schema";
 
 describe("computeRunKey twice-daily scheduling", () => {
@@ -54,6 +54,78 @@ describe("computeRunKey twice-daily scheduling", () => {
   it("is deterministic for the same input", () => {
     const now = new Date("2026-08-04T09:30:00Z");
     expect(computeRunKey(provider, now)).toBe(computeRunKey(provider, now));
+  });
+});
+
+describe("computeTimeWindow anchors to preceding completed 12 hours", () => {
+  it("am run at 09:00 reconciles [21:00 prev day, 09:00 today)", () => {
+    const now = new Date("2026-08-04T09:00:00Z");
+    const window = computeTimeWindow(now);
+    expect(window.since.toISOString()).toBe("2026-08-03T21:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-04T09:00:00.000Z");
+  });
+
+  it("pm run at 21:00 reconciles [09:00 today, 21:00 today)", () => {
+    const now = new Date("2026-08-04T21:00:00Z");
+    const window = computeTimeWindow(now);
+    expect(window.since.toISOString()).toBe("2026-08-04T09:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-04T21:00:00.000Z");
+  });
+
+  it("am run at 00:00 still uses [21:00 prev day, 09:00 today)", () => {
+    const now = new Date("2026-08-04T00:00:00Z");
+    const window = computeTimeWindow(now);
+    expect(window.since.toISOString()).toBe("2026-08-03T21:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-04T09:00:00.000Z");
+  });
+
+  it("pm run at 23:59 still uses [09:00 today, 21:00 today)", () => {
+    const now = new Date("2026-08-04T23:59:59Z");
+    const window = computeTimeWindow(now);
+    expect(window.since.toISOString()).toBe("2026-08-04T09:00:00.000Z");
+    expect(window.until.toISOString()).toBe("2026-08-04T21:00:00.000Z");
+  });
+});
+
+describe("consecutive-run coverage: no gaps or overlap", () => {
+  it("am and pm windows on the same day are contiguous", () => {
+    const amWindow = computeTimeWindow(new Date("2026-08-04T09:00:00Z"));
+    const pmWindow = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
+
+    expect(amWindow.until.toISOString()).toBe(pmWindow.since.toISOString());
+  });
+
+  it("pm window and next-day am window are contiguous", () => {
+    const pmWindow = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
+    const nextAmWindow = computeTimeWindow(new Date("2026-08-05T09:00:00Z"));
+
+    expect(pmWindow.until.toISOString()).toBe(nextAmWindow.since.toISOString());
+  });
+
+  it("three consecutive runs cover exactly 36 hours with no gaps", () => {
+    const amDay1 = computeTimeWindow(new Date("2026-08-04T09:00:00Z"));
+    const pmDay1 = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
+    const amDay2 = computeTimeWindow(new Date("2026-08-05T09:00:00Z"));
+
+    const totalMs =
+      (amDay1.until.getTime() - amDay1.since.getTime()) +
+      (pmDay1.until.getTime() - pmDay1.since.getTime()) +
+      (amDay2.until.getTime() - amDay2.since.getTime());
+
+    expect(totalMs).toBe(36 * 60 * 60 * 1000);
+
+    expect(amDay1.until.getTime()).toBe(pmDay1.since.getTime());
+    expect(pmDay1.until.getTime()).toBe(amDay2.since.getTime());
+  });
+
+  it("half-open intervals: until of one run equals since of next (no overlap)", () => {
+    const amWindow = computeTimeWindow(new Date("2026-08-04T09:00:00Z"));
+    const pmWindow = computeTimeWindow(new Date("2026-08-04T21:00:00Z"));
+
+    const leadAtBoundary = amWindow.until;
+    expect(leadAtBoundary.getTime()).toBeGreaterThanOrEqual(amWindow.since.getTime());
+    expect(leadAtBoundary.getTime()).toBeLessThan(amWindow.until.getTime() + 1);
+    expect(leadAtBoundary.getTime()).toBeGreaterThanOrEqual(pmWindow.since.getTime());
   });
 });
 

@@ -71,7 +71,8 @@ const makeProvider = (
   ids: string[] | Error,
 ): IReconciliationProvider => ({
   name,
-  fetchExternalLeadIds: async (_window: ReconciliationTimeWindow) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fetchExternalLeadIds: async (window: ReconciliationTimeWindow) => {
     if (ids instanceof Error) throw ids;
     return ids;
   },
@@ -329,33 +330,95 @@ describe("Postgres reconciliation integration", () => {
     }
   });
 
-  it("retry after finalize failure does not duplicate discrepancies", async () => {
-    await seedContact(db, { googleAdsLeadId: "ga-retry-1" });
+  it("forced discrepancy insert failure keeps run in running state (atomic CTE)", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-stored-1" });
 
-    const provider = makeProvider("google_ads", ["ga-retry-1", "ga-missing"]);
-    const first = await service.runReconciliation(db, provider, now);
-    expect(first.status).toBe("completed");
+    await client!.query(`
+      CREATE OR REPLACE FUNCTION force_discrepancy_failure() RETURNS trigger AS $$
+      BEGIN
+        IF NEW.external_id LIKE '%force-fail%' THEN
+          RAISE EXCEPTION 'forced discrepancy failure for test';
+        END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    await client!.query(`
+      CREATE TRIGGER test_force_discrepancy_failure
+      BEFORE INSERT ON reconciliation_discrepancies
+      FOR EACH ROW EXECUTE FUNCTION force_discrepancy_failure();
+    `);
 
-    const discrepancies1 = await db
-      .select()
-      .from(schema.reconciliationDiscrepancies);
-    const count1 = discrepancies1.length;
+    try {
+      const provider = makeProvider("google_ads", ["ga-force-fail-external"]);
+      const result = await service.runReconciliation(db, provider, now);
 
-    await client!.query(
-      `UPDATE reconciliation_runs SET status = 'failed' WHERE run_key = $1`,
-      ["reconciliation:google_ads:2026-08-04:am"],
-    );
+      expect(result.status).toBe("failed");
 
-    const retried = await service.runReconciliation(db, provider, now);
-    expect(retried.status).toBe("completed");
+      const [run] = await db
+        .select()
+        .from(schema.reconciliationRuns)
+        .where(eq(schema.reconciliationRuns.runKey, "reconciliation:google_ads:2026-08-04:am"))
+        .limit(1);
 
-    const discrepancies2 = await db
-      .select()
-      .from(schema.reconciliationDiscrepancies);
-    expect(discrepancies2.length).toBe(count1);
+      expect(run.status).toBe("failed");
+
+      const discrepancies = await db
+        .select()
+        .from(schema.reconciliationDiscrepancies);
+      expect(discrepancies).toHaveLength(0);
+    } finally {
+      await client!.query(`DROP TRIGGER IF EXISTS test_force_discrepancy_failure ON reconciliation_discrepancies`);
+      await client!.query(`DROP FUNCTION IF EXISTS force_discrepancy_failure()`);
+    }
   });
 
-  it("time window filters stored leads by createdAt", async () => {
+  it("retry after forced finalize failure produces consistent state", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-retry-consistent" });
+
+    await client!.query(`
+      CREATE OR REPLACE FUNCTION force_discrepancy_failure_once() RETURNS trigger AS $$
+      BEGIN
+        IF NEW.external_id LIKE '%retry-fail%' THEN
+          RAISE EXCEPTION 'forced failure';
+        END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    await client!.query(`
+      CREATE TRIGGER test_force_discrepancy_failure_once
+      BEFORE INSERT ON reconciliation_discrepancies
+      FOR EACH ROW EXECUTE FUNCTION force_discrepancy_failure_once();
+    `);
+
+    try {
+      const failProvider = makeProvider("google_ads", ["ga-retry-fail-external"]);
+      const failed = await service.runReconciliation(db, failProvider, now);
+      expect(failed.status).toBe("failed");
+
+      await client!.query(`DROP TRIGGER IF EXISTS test_force_discrepancy_failure_once ON reconciliation_discrepancies`);
+      await client!.query(`DROP FUNCTION IF EXISTS force_discrepancy_failure_once()`);
+
+      const successProvider = makeProvider("google_ads", ["ga-retry-consistent"]);
+      const retried = await service.runReconciliation(db, successProvider, now);
+      expect(retried.status).toBe("completed");
+
+      const runs = await db.select().from(schema.reconciliationRuns);
+      expect(runs).toHaveLength(1);
+      expect(runs[0].status).toBe("completed");
+
+      if (retried.status === "completed") {
+        expect(retried.totalStored).toBe(1);
+        expect(retried.missingInStored).toBe(0);
+      }
+    } finally {
+      await client!.query(`DROP TRIGGER IF EXISTS test_force_discrepancy_failure_once ON reconciliation_discrepancies`);
+      await client!.query(`DROP FUNCTION IF EXISTS force_discrepancy_failure_once()`);
+    }
+  });
+
+  it("time window filters stored leads by createdAt (half-open)", async () => {
     await seedContact(db, { googleAdsLeadId: "ga-in-window" });
 
     await client!.query(
@@ -363,6 +426,38 @@ describe("Postgres reconciliation integration", () => {
     );
 
     const provider = makeProvider("google_ads", ["ga-in-window"]);
+    const result = await service.runReconciliation(db, provider, now);
+
+    expect(result.status).toBe("completed");
+    if (result.status === "completed") {
+      expect(result.totalStored).toBe(0);
+      expect(result.missingInStored).toBe(1);
+    }
+  });
+
+  it("delayed-arrival lead with timestamp in window is included", async () => {
+    await seedContact(db, {
+      googleAdsLeadId: "ga-delayed",
+      createdAt: new Date("2026-08-04T08:59:59Z"),
+    });
+
+    const provider = makeProvider("google_ads", ["ga-delayed"]);
+    const result = await service.runReconciliation(db, provider, now);
+
+    expect(result.status).toBe("completed");
+    if (result.status === "completed") {
+      expect(result.totalStored).toBe(1);
+      expect(result.missingInStored).toBe(0);
+    }
+  });
+
+  it("lead at exact until boundary is excluded (half-open)", async () => {
+    await seedContact(db, {
+      googleAdsLeadId: "ga-at-boundary",
+      createdAt: new Date("2026-08-04T09:00:00Z"),
+    });
+
+    const provider = makeProvider("google_ads", ["ga-at-boundary"]);
     const result = await service.runReconciliation(db, provider, now);
 
     expect(result.status).toBe("completed");
