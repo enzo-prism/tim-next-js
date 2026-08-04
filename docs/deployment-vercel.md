@@ -115,20 +115,24 @@ vercel env ls
 ## Database Provisioning and Schema
 
 1. Ensure `DATABASE_URL` points to the intended Vercel Postgres instance.
-2. Apply every checked-in migration in numeric order (preferred) or reconcile with Drizzle:
+2. Apply every checked-in migration in numeric order. **Do not use `db:push`** — migrations 0007–0009 contain PL/pgSQL functions and constraints that `db:push` cannot create:
 
 ```bash
 psql "$DATABASE_URL" -f drizzle/0000_base_schema.sql
 psql "$DATABASE_URL" -f drizzle/0001_growth_lead_attribution.sql
 psql "$DATABASE_URL" -f drizzle/0002_closed_loop_lead_pipeline.sql
 psql "$DATABASE_URL" -f drizzle/0003_public_form_contract.sql
-# Or, after reviewing the generated diff:
-npm run db:push
+psql "$DATABASE_URL" -f drizzle/0004_google_ads_lead_ingestion.sql
+psql "$DATABASE_URL" -f drizzle/0005_notification_outbox.sql
+psql "$DATABASE_URL" -f drizzle/0006_outbox_lease_fields.sql
+psql "$DATABASE_URL" -f drizzle/0007_reconciliation.sql
+psql "$DATABASE_URL" -f drizzle/0008_reconciliation_lease.sql
+psql "$DATABASE_URL" -f drizzle/0009_finalize_function.sql
 ```
 
-`0000_base_schema.sql` makes a fresh database bootstrapable and is safe to run against an existing database because it uses `IF NOT EXISTS`. Migration `0003` adds the public-form runtime columns to older databases and validates request-type and Formspree-state constraints. It intentionally stops if unexpected existing values need manual reconciliation.
+`0000_base_schema.sql` makes a fresh database bootstrapable and is safe to run against an existing database because it uses `IF NOT EXISTS`. Migration `0009` creates the `finalize_reconciliation_run()` PL/pgSQL function required by the reconciliation service.
 
-3. Read the production schema back before deployment. This checks every public-form runtime column, required defaults and nullability, the submission UUID index, lifecycle indexes, and validated state constraints:
+3. Read the production schema back before deployment. This checks every public-form runtime column, required defaults and nullability, the submission UUID index, lifecycle indexes, validated state constraints, reconciliation tables, and the finalize function:
 
 ```bash
 npm run db:verify

@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { and, eq, gte, isNotNull, lt, or, isNull, sql as dsql } from "drizzle-orm";
+import { and, eq, inArray, lt, or, isNull, sql as dsql } from "drizzle-orm";
 import {
   contacts,
   reconciliationRuns,
@@ -127,11 +127,11 @@ export interface IReconciliationService {
     runId: string,
     leaseToken: string,
   ): Promise<boolean>;
-  getStoredLeadIds(
+  checkStoredMembership(
     db: DrizzleDatabase,
     provider: ReconciliationProviderName,
-    window: ReconciliationTimeWindow,
-  ): Promise<string[]>;
+    externalIds: string[],
+  ): Promise<Set<string>>;
   finalizeRun(
     db: DrizzleDatabase,
     runId: string,
@@ -243,40 +243,39 @@ export class DatabaseReconciliationService implements IReconciliationService {
     return (result.rows as Array<{ id: string }>).length > 0;
   }
 
-  async getStoredLeadIds(
+  async checkStoredMembership(
     db: DrizzleDatabase,
     provider: ReconciliationProviderName,
-    window: ReconciliationTimeWindow,
-  ): Promise<string[]> {
-    if (provider === "google_ads") {
-      const rows = await db
-        .select({ id: contacts.googleAdsLeadId })
-        .from(contacts)
-        .where(
-          and(
-            isNotNull(contacts.googleAdsLeadId),
-            gte(contacts.createdAt, window.since),
-            lt(contacts.createdAt, window.until),
-          ),
-        );
-      return rows
-        .map((r) => r.id)
-        .filter((id): id is string => id !== null);
+    externalIds: string[],
+  ): Promise<Set<string>> {
+    if (externalIds.length === 0) return new Set();
+
+    const found = new Set<string>();
+    const BATCH_SIZE = 100;
+
+    for (let i = 0; i < externalIds.length; i += BATCH_SIZE) {
+      const batch = externalIds.slice(i, i + BATCH_SIZE);
+
+      if (provider === "google_ads") {
+        const rows = await db
+          .select({ id: contacts.googleAdsLeadId })
+          .from(contacts)
+          .where(inArray(contacts.googleAdsLeadId, batch));
+        for (const row of rows) {
+          if (row.id) found.add(row.id);
+        }
+      } else {
+        const rows = await db
+          .select({ id: contacts.submissionId })
+          .from(contacts)
+          .where(inArray(contacts.submissionId, batch));
+        for (const row of rows) {
+          if (row.id) found.add(row.id);
+        }
+      }
     }
 
-    const rows = await db
-      .select({ id: contacts.submissionId })
-      .from(contacts)
-      .where(
-        and(
-          isNotNull(contacts.submissionId),
-          gte(contacts.createdAt, window.since),
-          lt(contacts.createdAt, window.until),
-        ),
-      );
-    return rows
-      .map((r) => r.id)
-      .filter((id): id is string => id !== null);
+    return found;
   }
 
   async finalizeRun(
@@ -379,10 +378,8 @@ export class DatabaseReconciliationService implements IReconciliationService {
       }
 
       const externalIds = deduplicateAndValidateIds(rawExternalIds);
-      const rawStoredIds = await this.getStoredLeadIds(db, providerAdapter.name, window);
-      const storedIds = deduplicateAndValidateIds(rawStoredIds);
+      const storedSet = await this.checkStoredMembership(db, providerAdapter.name, externalIds);
 
-      const storedSet = new Set(storedIds);
       const missingInStored = externalIds.filter((id) => !storedSet.has(id));
 
       const discrepancies = missingInStored.map((externalId) => ({
@@ -392,7 +389,7 @@ export class DatabaseReconciliationService implements IReconciliationService {
 
       const counts = {
         totalExternal: externalIds.length,
-        totalStored: storedIds.length,
+        totalStored: storedSet.size,
         missingInStored: missingInStored.length,
       };
 

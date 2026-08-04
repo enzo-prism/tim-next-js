@@ -121,7 +121,7 @@ describe("Postgres reconciliation integration", () => {
       expect(result.totalExternal).toBe(2);
       expect(result.totalStored).toBe(2);
       expect(result.missingInStored).toBe(0);
-      
+
     }
   });
 
@@ -258,7 +258,7 @@ describe("Postgres reconciliation integration", () => {
       expect(result.totalExternal).toBe(2);
       expect(result.totalStored).toBe(1);
       expect(result.missingInStored).toBe(1);
-      
+
     }
   });
 
@@ -417,30 +417,14 @@ describe("Postgres reconciliation integration", () => {
     }
   });
 
-  it("time window filters stored leads by createdAt (half-open)", async () => {
-    await seedContact(db, { googleAdsLeadId: "ga-in-window" });
+  it("lead stored outside window is still found by membership check (no false missing)", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-late-stored" });
 
     await client!.query(
-      `UPDATE contacts SET created_at = '2026-08-01T00:00:00Z' WHERE google_ads_lead_id = 'ga-in-window'`,
+      `UPDATE contacts SET created_at = '2026-08-04T09:05:00Z' WHERE google_ads_lead_id = 'ga-late-stored'`,
     );
 
-    const provider = makeProvider("google_ads", ["ga-in-window"]);
-    const result = await service.runReconciliation(db, provider, now);
-
-    expect(result.status).toBe("completed");
-    if (result.status === "completed") {
-      expect(result.totalStored).toBe(0);
-      expect(result.missingInStored).toBe(1);
-    }
-  });
-
-  it("delayed-arrival lead with timestamp in window is included", async () => {
-    await seedContact(db, {
-      googleAdsLeadId: "ga-delayed",
-      createdAt: new Date("2026-08-04T08:59:59Z"),
-    });
-
-    const provider = makeProvider("google_ads", ["ga-delayed"]);
+    const provider = makeProvider("google_ads", ["ga-late-stored"]);
     const result = await service.runReconciliation(db, provider, now);
 
     expect(result.status).toBe("completed");
@@ -450,20 +434,44 @@ describe("Postgres reconciliation integration", () => {
     }
   });
 
-  it("lead at exact until boundary is excluded (half-open)", async () => {
+  it("lead submitted at 08:59 stored at 09:05 produces no discrepancy", async () => {
     await seedContact(db, {
-      googleAdsLeadId: "ga-at-boundary",
-      createdAt: new Date("2026-08-04T09:00:00Z"),
+      googleAdsLeadId: "ga-delayed-ingestion",
+      createdAt: new Date("2026-08-04T09:05:00Z"),
     });
 
-    const provider = makeProvider("google_ads", ["ga-at-boundary"]);
+    const provider = makeProvider("google_ads", ["ga-delayed-ingestion"]);
     const result = await service.runReconciliation(db, provider, now);
 
     expect(result.status).toBe("completed");
     if (result.status === "completed") {
-      expect(result.totalStored).toBe(0);
+      expect(result.missingInStored).toBe(0);
+    }
+
+    const discrepancies = await db
+      .select()
+      .from(schema.reconciliationDiscrepancies);
+    expect(discrepancies).toHaveLength(0);
+  });
+
+  it("truly missing external ID produces missing_in_stored discrepancy", async () => {
+    await seedContact(db, { googleAdsLeadId: "ga-existing" });
+
+    const provider = makeProvider("google_ads", ["ga-existing", "ga-truly-missing"]);
+    const result = await service.runReconciliation(db, provider, now);
+
+    expect(result.status).toBe("completed");
+    if (result.status === "completed") {
+      expect(result.totalExternal).toBe(2);
+      expect(result.totalStored).toBe(1);
       expect(result.missingInStored).toBe(1);
     }
+
+    const discrepancies = await db
+      .select()
+      .from(schema.reconciliationDiscrepancies);
+    expect(discrepancies).toHaveLength(1);
+    expect(discrepancies[0].externalId).toBe("ga-truly-missing");
   });
 
   it("old-nonempty discrepancies are exactly replaced by different-nonempty set", async () => {
@@ -473,7 +481,8 @@ describe("Postgres reconciliation integration", () => {
     const first = await service.runReconciliation(db, provider1, now);
     expect(first.status).toBe("completed");
     if (first.status === "completed") {
-      expect(first.totalStored).toBe(1);
+      expect(first.totalExternal).toBe(1);
+      expect(first.totalStored).toBe(0);
       expect(first.missingInStored).toBe(1);
     }
 
@@ -492,7 +501,8 @@ describe("Postgres reconciliation integration", () => {
     const second = await service.runReconciliation(db, provider2, now);
     expect(second.status).toBe("completed");
     if (second.status === "completed") {
-      expect(second.totalStored).toBe(1);
+      expect(second.totalExternal).toBe(1);
+      expect(second.totalStored).toBe(0);
       expect(second.missingInStored).toBe(1);
     }
 

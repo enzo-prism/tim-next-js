@@ -282,31 +282,99 @@ describe("DatabaseReconciliationService", () => {
     });
   });
 
-  describe("getStoredLeadIds", () => {
-    const window = { since: new Date("2026-08-04T00:00:00Z"), until: new Date("2026-08-04T12:00:00Z") };
-
-    it("queries googleAdsLeadId for google_ads provider", async () => {
+  describe("checkStoredMembership", () => {
+    it("returns found IDs for google_ads provider", async () => {
       const selectChain = {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockResolvedValue([{ id: "ga-1" }, { id: null }]),
       };
       mocks.select.mockReturnValue(selectChain);
 
-      const result = await service.getStoredLeadIds(mockDb, "google_ads", window);
+      const result = await service.checkStoredMembership(mockDb, "google_ads", ["ga-1", "ga-2"]);
 
-      expect(result).toEqual(["ga-1"]);
+      expect(result).toEqual(new Set(["ga-1"]));
     });
 
-    it("queries submissionId for formspree provider", async () => {
+    it("returns found IDs for formspree provider", async () => {
       const selectChain = {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockResolvedValue([{ id: "fs-1" }]),
       };
       mocks.select.mockReturnValue(selectChain);
 
-      const result = await service.getStoredLeadIds(mockDb, "formspree", window);
+      const result = await service.checkStoredMembership(mockDb, "formspree", ["fs-1", "fs-2"]);
 
-      expect(result).toEqual(["fs-1"]);
+      expect(result).toEqual(new Set(["fs-1"]));
+    });
+
+    it("returns empty set for empty input", async () => {
+      const result = await service.checkStoredMembership(mockDb, "google_ads", []);
+      expect(result).toEqual(new Set());
+      expect(mocks.select).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("AbortSignal and timeout", () => {
+    const now = new Date("2026-08-04T09:00:00Z");
+
+    it("provider receives AbortSignal parameter", async () => {
+      let receivedSignal: AbortSignal | undefined;
+      const provider: IReconciliationProvider = {
+        name: "google_ads",
+        fetchExternalLeadIds: async (_window, signal) => {
+          receivedSignal = signal;
+          return ["lead-1"];
+        },
+      };
+
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ success: true }] });
+
+      const selectChain = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockResolvedValue([{ id: "lead-1" }]),
+      };
+      mocks.select.mockReturnValue(selectChain);
+
+      await service.runReconciliation(mockDb, provider, now);
+
+      expect(receivedSignal).toBeDefined();
+      expect(receivedSignal).toBeInstanceOf(AbortSignal);
+    });
+
+    it("timeout error maps to provider_timeout via sanitizeErrorCode", () => {
+      expect(sanitizeErrorCode(new Error("provider_timeout"))).toBe("provider_timeout");
+      expect(sanitizeErrorCode(new Error("AbortError: signal aborted"))).toBe("provider_timeout");
+      expect(sanitizeErrorCode(new Error("request timeout after 180s"))).toBe("provider_timeout");
+    });
+
+    it("fast path leaves no dangling timer", async () => {
+      vi.useFakeTimers();
+
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ success: true }] });
+
+      const selectChain = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockResolvedValue([]),
+      };
+      mocks.select.mockReturnValue(selectChain);
+
+      const provider = makeProvider("google_ads", []);
+      const result = await service.runReconciliation(mockDb, provider, now);
+
+      expect(result.status).toBe("completed");
+
+      const timerCount = vi.getTimerCount();
+      expect(timerCount).toBe(0);
+
+      vi.useRealTimers();
     });
   });
 });
