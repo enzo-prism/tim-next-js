@@ -20,8 +20,16 @@ const safeTimingEqual = (a: string, b: string) => {
   return mismatch === 0;
 };
 
+const CRON_EXEMPT_PATHS = [
+  "/api/admin/notifications/process",
+  "/api/admin/reconciliation/run",
+];
+
 const isProtectedPath = (pathname: string) =>
   pathname === "/admin" || pathname.startsWith("/api/admin");
+
+const isCronExemptPath = (pathname: string) =>
+  CRON_EXEMPT_PATHS.includes(pathname);
 
 const exactCaseRedirects: Record<string, string> = {
   "/Book-Appointment": "/book-appointment",
@@ -135,7 +143,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl, 301);
   }
 
-  if (isProtectedPath(nextUrl.pathname)) {
+  if (isProtectedPath(nextUrl.pathname) && !isCronExemptPath(nextUrl.pathname)) {
     const rateLimitKey = getAdminRateLimitKey(req);
 
     if (

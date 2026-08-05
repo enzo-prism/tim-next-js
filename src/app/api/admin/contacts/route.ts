@@ -33,14 +33,16 @@ type ContactListInput = {
 
 const listContacts = async (input: ContactListInput) => {
   try {
-    const [contactsResult, sourceSummary] = await Promise.all([
+    const [contactsResult, sourceSummary, countsByStatus] = await Promise.all([
       storage.listContacts(input),
       storage.getLeadSourceSummary(),
+      storage.getCountsByStatus(),
     ]);
     const payload: AdminContactsResponse = {
       total: contactsResult.total,
       items: contactsResult.items.map(toAdminContactItem),
       sourceSummary,
+      countsByStatus,
     };
     return jsonResponse(payload);
   } catch {

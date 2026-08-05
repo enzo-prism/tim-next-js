@@ -1,4 +1,4 @@
-import type { LeadStatus } from "@/server/schema";
+import type { IngestedVia, LeadStatus } from "@/server/schema";
 
 export type AdminContactItem = {
   id: string;
@@ -6,7 +6,7 @@ export type AdminContactItem = {
   updatedAt: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   service: string | null;
   message: string | null;
@@ -20,6 +20,7 @@ export type AdminContactItem = {
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
+  source: string;
   leadSource: string;
   leadStatus: LeadStatus;
   contactedAt: string | null;
@@ -27,6 +28,16 @@ export type AdminContactItem = {
   arrivedAt: string | null;
   lostReason: string | null;
   staffNotes: string | null;
+  googleAdsLeadId: string | null;
+  campaignId: string | null;
+  campaignName: string | null;
+  ingestedVia: IngestedVia | null;
+  updatedBy: string | null;
+  isTest: boolean;
+};
+
+export type AdminContactDetail = AdminContactItem & {
+  rawPayload: unknown;
 };
 
 export type AdminLeadSourceSummary = {
@@ -42,6 +53,7 @@ export type AdminContactsResponse = {
   total: number;
   items: AdminContactItem[];
   sourceSummary: AdminLeadSourceSummary[];
+  countsByStatus: Record<string, number>;
 };
 
 export type UpdateAdminContactInput = {

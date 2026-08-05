@@ -1,7 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useIsFetching,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   CartesianGrid,
   Line,
@@ -13,15 +17,6 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -32,15 +27,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type {
-  AdminContactItem,
-  AdminContactsResponse,
-  UpdateAdminContactInput,
-  UpdateAdminContactResponse,
-} from "@/app/api/admin/contacts/types";
-import type { LeadStatus } from "@/server/schema";
+import { LeadsPanel } from "@/components/admin/leads-panel";
 
 type DaysOption = 7 | 30 | 90;
 
@@ -196,42 +184,6 @@ async function fetchJson<T>(url: string): Promise<T> {
   return payload as T;
 }
 
-async function patchJson<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: "PATCH",
-    credentials: "include",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const payload = (await res.json().catch(() => null)) as unknown;
-  if (!res.ok) {
-    const error: FetchJsonError = new Error(getPayloadMessage(payload) || res.statusText);
-    error.status = res.status;
-    error.payload = payload;
-    throw error;
-  }
-  return payload as T;
-}
-
-async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: "POST",
-    credentials: "include",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const payload = (await res.json().catch(() => null)) as unknown;
-  if (!res.ok) {
-    const error: FetchJsonError = new Error(getPayloadMessage(payload) || res.statusText);
-    error.status = res.status;
-    error.payload = payload;
-    throw error;
-  }
-  return payload as T;
-}
-
 const formatInt = (value: number) => value.toLocaleString();
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const formatPosition = (value: number) => value.toFixed(1);
@@ -243,135 +195,6 @@ const formatSearchPage = (value: string) => {
     return value || "(not set)";
   }
 };
-const formatDateTime = (value: string) => {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
-};
-
-const leadStatusOptions: Array<{ value: LeadStatus; label: string }> = [
-  { value: "new", label: "New" },
-  { value: "contacted", label: "Contacted" },
-  { value: "booked", label: "Booked" },
-  { value: "arrived", label: "Arrived" },
-  { value: "no-show", label: "No-show" },
-  { value: "lost", label: "Lost" },
-];
-
-const statusLabel = (value: LeadStatus) =>
-  leadStatusOptions.find((option) => option.value === value)?.label ?? value;
-
-function LeadLifecycleEditor({
-  row,
-  saving,
-  onSave,
-}: {
-  row: AdminContactItem;
-  saving: boolean;
-  onSave: (input: UpdateAdminContactInput) => Promise<void>;
-}) {
-  const [leadStatus, setLeadStatus] = useState<LeadStatus>(row.leadStatus);
-  const [lostReason, setLostReason] = useState(row.lostReason ?? "");
-  const [staffNotes, setStaffNotes] = useState(row.staffNotes ?? "");
-  const [error, setError] = useState<string | null>(null);
-
-  const isDirty =
-    leadStatus !== row.leadStatus ||
-    lostReason.trim() !== (row.lostReason ?? "") ||
-    staffNotes.trim() !== (row.staffNotes ?? "");
-  const lostReasonMissing = leadStatus === "lost" && !lostReason.trim();
-
-  const save = async () => {
-    setError(null);
-    try {
-      await onSave({
-        leadStatus,
-        lostReason: leadStatus === "lost" ? lostReason.trim() : null,
-        staffNotes: staffNotes.trim() || null,
-        expectedUpdatedAt: row.updatedAt,
-      });
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Update failed.");
-    }
-  };
-
-  return (
-    <div className="min-w-[300px] space-y-3">
-      <div className="space-y-1.5">
-        <Label htmlFor={`lead-status-${row.id}`} className="text-xs">
-          Patient stage
-        </Label>
-        <Select
-          value={leadStatus}
-          onValueChange={(value) => setLeadStatus(value as LeadStatus)}
-          disabled={saving}
-        >
-          <SelectTrigger id={`lead-status-${row.id}`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {leadStatusOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {leadStatus === "lost" ? (
-        <div className="space-y-1.5">
-          <Label htmlFor={`lost-reason-${row.id}`} className="text-xs">
-            Lost reason
-          </Label>
-          <Input
-            id={`lost-reason-${row.id}`}
-            value={lostReason}
-            onChange={(event) => setLostReason(event.target.value)}
-            maxLength={500}
-            placeholder="Insurance, timing, unreachable..."
-            disabled={saving}
-            aria-invalid={lostReasonMissing}
-          />
-        </div>
-      ) : null}
-
-      <div className="space-y-1.5">
-        <Label htmlFor={`staff-notes-${row.id}`} className="text-xs">
-          Private staff notes
-        </Label>
-        <Textarea
-          id={`staff-notes-${row.id}`}
-          value={staffNotes}
-          onChange={(event) => setStaffNotes(event.target.value)}
-          maxLength={4000}
-          rows={3}
-          placeholder="Follow-up details visible only in admin"
-          disabled={saving}
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-3">
-        <Button
-          type="button"
-          size="sm"
-          onClick={save}
-          disabled={!isDirty || lostReasonMissing || saving}
-        >
-          {saving ? "Saving..." : "Save stage"}
-        </Button>
-        <span className="text-xs text-muted-foreground" aria-live="polite">
-          {error || (isDirty ? "Unsaved changes" : "Saved")}
-        </span>
-      </div>
-
-      <div className="space-y-1 text-xs text-muted-foreground">
-        {row.contactedAt ? <div>Contacted {formatDateTime(row.contactedAt)}</div> : null}
-        {row.bookedAt ? <div>Booked {formatDateTime(row.bookedAt)}</div> : null}
-        {row.arrivedAt ? <div>Arrived {formatDateTime(row.arrivedAt)}</div> : null}
-      </div>
-    </div>
-  );
-}
 
 function QueryErrorCard({ error }: { error: unknown }) {
   const err = error as FetchJsonError;
@@ -443,19 +266,13 @@ function PartialDataNotice() {
 
 export default function Admin() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"changelog" | "ga4" | "gsc" | "contacts">(
-    "changelog",
-  );
+  const [tab, setTab] = useState<"leads" | "ga4" | "gsc" | "changelog">("leads");
   const [days, setDays] = useState<DaysOption>(30);
-  const [contactsSearch, setContactsSearch] = useState("");
-  const [contactsStatus, setContactsStatus] = useState<"all" | LeadStatus>("all");
-  const [contactsSource, setContactsSource] = useState("all");
-  const [contactsPage, setContactsPage] = useState(0);
-  const contactsLimit = 25;
 
   const changelogQuery = useQuery({
     queryKey: ["/api/admin/changelog"],
     queryFn: () => fetchJson<AdminChangelogResponse>("/api/admin/changelog"),
+    enabled: tab === "changelog",
   });
 
   const gaQueryKey = useMemo(
@@ -478,52 +295,13 @@ export default function Admin() {
     enabled: tab === "gsc",
   });
 
-  const contactsRequest = useMemo(() => {
-    const q = contactsSearch.trim();
-    return {
-      limit: contactsLimit,
-      offset: contactsPage * contactsLimit,
-      ...(q ? { q } : {}),
-      ...(contactsStatus !== "all" ? { status: contactsStatus } : {}),
-      ...(contactsSource !== "all" ? { source: contactsSource } : {}),
-    };
-  }, [contactsLimit, contactsPage, contactsSearch, contactsSource, contactsStatus]);
-  const contactsQuery = useQuery({
-    queryKey: ["admin-contacts", contactsRequest],
-    queryFn: () =>
-      postJson<AdminContactsResponse>("/api/admin/contacts", contactsRequest),
-    enabled: tab === "contacts",
-  });
-  const updateContactMutation = useMutation({
-    mutationFn: ({
-      id,
-      input,
-    }: {
-      id: string;
-      input: UpdateAdminContactInput;
-    }) =>
-      patchJson<UpdateAdminContactResponse>(
-        `/api/admin/contacts/${encodeURIComponent(id)}`,
-        input,
-      ),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0] === "admin-contacts",
-      });
-    },
-    onError: (error) => {
-      if ((error as FetchJsonError)?.status === 409) {
-        void queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
-      }
-    },
-  });
+  const contactsFetching = useIsFetching({ queryKey: ["admin-contacts"] }) > 0;
 
   const isRefreshing =
     changelogQuery.isFetching ||
     ga4Query.isFetching ||
     gscQuery.isFetching ||
-    contactsQuery.isFetching;
+    contactsFetching;
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["/api/admin/changelog"] });
@@ -533,28 +311,6 @@ export default function Admin() {
   };
 
   const showRange = tab === "ga4" || tab === "gsc";
-  const contactsTotal = contactsQuery.data?.total ?? 0;
-  const contactsItems = contactsQuery.data?.items ?? [];
-  const sourceSummary = contactsQuery.data?.sourceSummary ?? [];
-  const pipelineTotals = sourceSummary.reduce(
-    (totals, source) => ({
-      leads: totals.leads + source.leads,
-      booked: totals.booked + source.booked,
-      arrived: totals.arrived + source.arrived,
-    }),
-    { leads: 0, booked: 0, arrived: 0 },
-  );
-  const pipelineBookingRate = pipelineTotals.leads
-    ? pipelineTotals.booked / pipelineTotals.leads
-    : 0;
-  const pipelineArrivalRate = pipelineTotals.leads
-    ? pipelineTotals.arrived / pipelineTotals.leads
-    : 0;
-  const contactsStart = contactsTotal > 0 ? contactsPage * contactsLimit + 1 : 0;
-  const contactsEnd =
-    contactsTotal > 0 ? Math.min(contactsStart + contactsItems.length - 1, contactsTotal) : 0;
-  const canPrevContacts = contactsPage > 0;
-  const canNextContacts = (contactsPage + 1) * contactsLimit < contactsTotal;
 
   return (
     <div className="pt-16 pb-20 bg-white">
@@ -563,7 +319,7 @@ export default function Admin() {
           <div className="space-y-1">
             <h1 className="text-3xl font-bold text-gray-900">Admin</h1>
             <p className="text-sm text-gray-600">
-              Changelog, contacts, Google Analytics (GA4), and Search Console.
+              Leads, Google Analytics (GA4), Search Console, and changelog.
             </p>
           </div>
 
@@ -604,11 +360,15 @@ export default function Admin() {
 
         <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="mt-10">
           <TabsList className="w-full justify-start">
-            <TabsTrigger value="changelog">Changelog</TabsTrigger>
+            <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="ga4">Google Analytics</TabsTrigger>
             <TabsTrigger value="gsc">Search Console</TabsTrigger>
-            <TabsTrigger value="contacts">Contacts</TabsTrigger>
+            <TabsTrigger value="changelog">Changelog</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="leads" className="mt-6">
+            <LeadsPanel />
+          </TabsContent>
 
           <TabsContent value="changelog" className="mt-6">
             {changelogQuery.isLoading ? (
@@ -1034,314 +794,6 @@ export default function Admin() {
             )}
           </TabsContent>
 
-          <TabsContent value="contacts" className="mt-6 space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm text-muted-foreground">Captured leads</CardTitle>
-                </CardHeader>
-                <CardContent className="text-3xl font-bold">
-                  {formatInt(pipelineTotals.leads)}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm text-muted-foreground">Booked</CardTitle>
-                </CardHeader>
-                <CardContent className="text-3xl font-bold">
-                  {formatInt(pipelineTotals.booked)}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm text-muted-foreground">Lead to booking</CardTitle>
-                </CardHeader>
-                <CardContent className="text-3xl font-bold">
-                  {formatPercent(pipelineBookingRate)}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm text-muted-foreground">Lead to arrival</CardTitle>
-                </CardHeader>
-                <CardContent className="text-3xl font-bold">
-                  {formatPercent(pipelineArrivalRate)}
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Source to New Patient Results</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Source</TableHead>
-                      <TableHead className="text-right">Leads</TableHead>
-                      <TableHead className="text-right">Booked</TableHead>
-                      <TableHead className="text-right">Arrived</TableHead>
-                      <TableHead className="text-right">Booking rate</TableHead>
-                      <TableHead className="text-right">Arrival rate</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sourceSummary.length ? (
-                      sourceSummary.map((source) => (
-                        <TableRow key={source.source}>
-                          <TableCell className="font-medium">{source.source}</TableCell>
-                          <TableCell className="text-right font-mono text-xs">
-                            {formatInt(source.leads)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs">
-                            {formatInt(source.booked)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs">
-                            {formatInt(source.arrived)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs">
-                            {formatPercent(source.bookingRate)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs">
-                            {formatPercent(source.arrivalRate)}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-sm text-muted-foreground">
-                          Source results will appear after leads are captured.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Website Leads</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  <div className="grid flex-1 gap-3 sm:grid-cols-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="contacts-search" className="text-xs">
-                        Search
-                      </Label>
-                      <Input
-                        id="contacts-search"
-                        value={contactsSearch}
-                        onChange={(event) => {
-                          setContactsSearch(event.target.value);
-                          setContactsPage(0);
-                        }}
-                        placeholder="Name, service, campaign..."
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="contacts-status" className="text-xs">
-                        Patient stage
-                      </Label>
-                      <Select
-                        value={contactsStatus}
-                        onValueChange={(value) => {
-                          setContactsStatus(value as "all" | LeadStatus);
-                          setContactsPage(0);
-                        }}
-                      >
-                        <SelectTrigger id="contacts-status">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All stages</SelectItem>
-                          {leadStatusOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="contacts-source" className="text-xs">
-                        Source
-                      </Label>
-                      <Select
-                        value={contactsSource}
-                        onValueChange={(value) => {
-                          setContactsSource(value);
-                          setContactsPage(0);
-                        }}
-                      >
-                        <SelectTrigger id="contacts-source">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All sources</SelectItem>
-                          {sourceSummary.map((source) => (
-                            <SelectItem key={source.source} value={source.source}>
-                              {source.source}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-                    <div className="text-xs text-muted-foreground">
-                      {contactsQuery.isLoading ? (
-                        "Loading…"
-                      ) : contactsTotal ? (
-                        <>
-                          Showing{" "}
-                          <span className="font-mono">
-                            {contactsStart}-{contactsEnd}
-                          </span>{" "}
-                          of <span className="font-mono">{contactsTotal}</span>
-                        </>
-                      ) : (
-                        "No contacts"
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setContactsPage((p) => Math.max(0, p - 1))}
-                        disabled={!canPrevContacts || contactsQuery.isFetching}
-                      >
-                        Prev
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setContactsPage((p) => p + 1)}
-                        disabled={!canNextContacts || contactsQuery.isFetching}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {contactsQuery.isLoading ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-24 w-full" />
-                  </div>
-                ) : contactsQuery.isError ? (
-                  <QueryErrorCard error={contactsQuery.error} />
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[190px]">Received</TableHead>
-                        <TableHead className="w-[120px]">Type</TableHead>
-                        <TableHead className="w-[200px]">Name</TableHead>
-                        <TableHead className="w-[220px]">Email</TableHead>
-                        <TableHead className="w-[160px]">Phone</TableHead>
-                        <TableHead className="w-[180px]">Service</TableHead>
-                        <TableHead className="w-[220px]">Preferred Time</TableHead>
-                        <TableHead className="w-[220px]">Source</TableHead>
-                        <TableHead className="w-[340px]">Patient Lifecycle</TableHead>
-                        <TableHead className="w-[160px]">Notification</TableHead>
-                        <TableHead>Message</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {contactsItems.length ? (
-                        contactsItems.map((row) => (
-                          <TableRow key={`${row.id}:${row.updatedAt}`}>
-                            <TableCell className="font-mono text-xs">
-                              {formatDateTime(row.createdAt)}
-                            </TableCell>
-                            <TableCell>
-                              <span className="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700">
-                                {row.requestType || "contact"}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              {row.firstName} {row.lastName}
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              <a
-                                href={`mailto:${row.email}`}
-                                className="text-primary hover:underline"
-                              >
-                                {row.email}
-                              </a>
-                            </TableCell>
-                            <TableCell className="font-mono text-xs">
-                              {row.phone || "-"}
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              {row.service || "-"}
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              {row.preferredDate || row.preferredTime
-                                ? `${row.preferredDate || "Date TBD"}${row.preferredTime ? ` • ${row.preferredTime}` : ""}`
-                                : "-"}
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              <div className="space-y-1">
-                                <div className="font-medium text-gray-800">
-                                  {row.leadSource}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {[row.utmMedium, row.utmCampaign, row.ctaSource]
-                                    .filter(Boolean)
-                                    .join(" • ") || row.landingPage || "-"}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="align-top">
-                              <div className="mb-3 inline-flex rounded-lg bg-secondary/20 px-2.5 py-1 text-xs font-semibold text-accent-foreground">
-                                {statusLabel(row.leadStatus)}
-                              </div>
-                              <LeadLifecycleEditor
-                                row={row}
-                                saving={
-                                  updateContactMutation.isPending &&
-                                  updateContactMutation.variables?.id === row.id
-                                }
-                                onSave={async (input) => {
-                                  await updateContactMutation.mutateAsync({ id: row.id, input });
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              <span
-                                className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                                  row.formspreeStatus === "delivered"
-                                    ? "bg-sky-100 text-sky-800"
-                                    : "bg-blue-100 text-blue-800"
-                                }`}
-                              >
-                                {row.formspreeStatus || "pending"}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap">
-                              {row.message || "-"}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={11} className="text-sm text-muted-foreground">
-                            No contacts found.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
     </div>

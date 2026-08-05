@@ -3,9 +3,12 @@ import {
   boolean,
   check,
   index,
+  integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -21,6 +24,15 @@ export const LEAD_STATUS_VALUES = [
 
 export type LeadStatus = (typeof LEAD_STATUS_VALUES)[number];
 
+export const INGESTED_VIA_VALUES = [
+  "webhook",
+  "reconciliation",
+  "website-form",
+  "backfill",
+] as const;
+
+export type IngestedVia = (typeof INGESTED_VIA_VALUES)[number];
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -34,7 +46,7 @@ export const contacts = pgTable(
     submissionId: varchar("submission_id", { length: 36 }).unique(),
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
-    email: text("email").notNull(),
+    email: text("email"),
     phone: text("phone"),
     service: text("service"),
     message: text("message"),
@@ -61,23 +73,171 @@ export const contacts = pgTable(
     arrivedAt: timestamp("arrived_at"),
     lostReason: text("lost_reason"),
     staffNotes: text("staff_notes"),
+    googleAdsLeadId: text("google_ads_lead_id"),
+    campaignId: text("campaign_id"),
+    campaignName: text("campaign_name"),
+    ingestedVia: text("ingested_via").$type<IngestedVia>(),
+    updatedBy: text("updated_by"),
+    isTest: boolean("is_test").notNull().default(false),
+    rawPayload: jsonb("raw_payload"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     index("contacts_lead_status_idx").on(table.leadStatus),
     index("contacts_created_at_idx").on(table.createdAt.desc()),
+    uniqueIndex("contacts_google_ads_lead_id_idx")
+      .on(table.googleAdsLeadId)
+      .where(sql`${table.googleAdsLeadId} IS NOT NULL`),
     check(
       "contacts_lead_status_check",
       sql`${table.leadStatus} in ('new', 'contacted', 'booked', 'arrived', 'no-show', 'lost')`,
     ),
     check(
       "contacts_request_type_check",
-      sql`${table.requestType} in ('contact', 'appointment')`,
+      sql`${table.requestType} in ('contact', 'appointment', 'google_ads_lead')`,
     ),
     check(
       "contacts_formspree_status_check",
       sql`${table.formspreeStatus} is null or ${table.formspreeStatus} in ('failed', 'sending', 'delivered')`,
+    ),
+    check(
+      "contacts_ingested_via_check",
+      sql`${table.ingestedVia} is null or ${table.ingestedVia} in ('webhook', 'reconciliation', 'website-form', 'backfill')`,
+    ),
+  ],
+);
+
+export const OUTBOX_STATUS_VALUES = [
+  "pending",
+  "sending",
+  "sent",
+  "failed",
+] as const;
+
+export type OutboxStatus = (typeof OUTBOX_STATUS_VALUES)[number];
+
+export const notificationOutbox = pgTable(
+  "notification_outbox",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    eventKey: text("event_key").notNull(),
+    eventType: text("event_type").notNull().default("new_lead"),
+    contactId: varchar("contact_id")
+      .notNull()
+      .references(() => contacts.id),
+    status: text("status").$type<OutboxStatus>().notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    lastError: text("last_error"),
+    leaseToken: text("lease_token"),
+    leaseExpiresAt: timestamp("lease_expires_at"),
+    nextAttemptAt: timestamp("next_attempt_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    sentAt: timestamp("sent_at"),
+  },
+  (table) => [
+    uniqueIndex("notification_outbox_event_key_idx").on(table.eventKey),
+    index("notification_outbox_status_idx").on(table.status),
+    index("notification_outbox_next_attempt_idx").on(
+      table.status,
+      table.nextAttemptAt,
+    ),
+    check(
+      "notification_outbox_status_check",
+      sql`${table.status} in ('pending', 'sending', 'sent', 'failed')`,
+    ),
+    check(
+      "notification_outbox_event_type_check",
+      sql`${table.eventType} in ('new_lead')`,
+    ),
+  ],
+);
+
+export const RECONCILIATION_RUN_STATUS_VALUES = [
+  "running",
+  "completed",
+  "failed",
+] as const;
+
+export type ReconciliationRunStatus =
+  (typeof RECONCILIATION_RUN_STATUS_VALUES)[number];
+
+export const RECONCILIATION_PROVIDER_VALUES = [
+  "google_ads",
+  "formspree",
+] as const;
+
+export type ReconciliationProviderName =
+  (typeof RECONCILIATION_PROVIDER_VALUES)[number];
+
+export const DISCREPANCY_TYPE_VALUES = [
+  "missing_in_stored",
+  "missing_in_external",
+] as const;
+
+export type DiscrepancyType = (typeof DISCREPANCY_TYPE_VALUES)[number];
+
+export const reconciliationRuns = pgTable(
+  "reconciliation_runs",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    runKey: text("run_key").notNull(),
+    provider: text("provider").$type<ReconciliationProviderName>().notNull(),
+    status: text("status")
+      .$type<ReconciliationRunStatus>()
+      .notNull()
+      .default("running"),
+    totalExternal: integer("total_external"),
+    totalStored: integer("total_stored"),
+    missingInStored: integer("missing_in_stored"),
+    missingInExternal: integer("missing_in_external"),
+    errorCode: text("error_code"),
+    leaseToken: text("lease_token"),
+    leaseExpiresAt: timestamp("lease_expires_at"),
+    startedAt: timestamp("started_at").defaultNow().notNull(),
+    completedAt: timestamp("completed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("reconciliation_runs_run_key_idx").on(table.runKey),
+    index("reconciliation_runs_status_idx").on(table.status),
+    check(
+      "reconciliation_runs_status_check",
+      sql`${table.status} in ('running', 'completed', 'failed')`,
+    ),
+    check(
+      "reconciliation_runs_provider_check",
+      sql`${table.provider} in ('google_ads', 'formspree')`,
+    ),
+  ],
+);
+
+export const reconciliationDiscrepancies = pgTable(
+  "reconciliation_discrepancies",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    runId: varchar("run_id")
+      .notNull()
+      .references(() => reconciliationRuns.id),
+    provider: text("provider").$type<ReconciliationProviderName>().notNull(),
+    externalId: text("external_id").notNull(),
+    discrepancyType: text("discrepancy_type")
+      .$type<DiscrepancyType>()
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("reconciliation_discrepancies_run_id_idx").on(table.runId),
+    uniqueIndex("reconciliation_discrepancies_unique_idx").on(
+      table.runId,
+      table.provider,
+      table.externalId,
+      table.discrepancyType,
+    ),
+    check(
+      "reconciliation_discrepancies_type_check",
+      sql`${table.discrepancyType} in ('missing_in_stored', 'missing_in_external')`,
     ),
   ],
 );

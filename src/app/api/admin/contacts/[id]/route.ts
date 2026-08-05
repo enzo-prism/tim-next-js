@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminBasicAuth } from "@/app/api/admin/contacts/admin-auth";
-import { toAdminContactItem } from "@/app/api/admin/contacts/contact-dto";
+import { toAdminContactDetail, toAdminContactItem } from "@/app/api/admin/contacts/contact-dto";
 import type { UpdateAdminContactResponse } from "@/app/api/admin/contacts/types";
 import { LEAD_STATUS_VALUES } from "@/server/schema";
 import { storage } from "@/server/storage";
@@ -33,6 +33,39 @@ const jsonResponse = (payload: unknown, init?: ResponseInit) => {
   response.headers.set("Cache-Control", "no-store");
   return response;
 };
+
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  const authResponse = requireAdminBasicAuth(request);
+  if (authResponse) return authResponse;
+
+  const { id } = await context.params;
+  if (!id || id.length > 100) {
+    return jsonResponse(
+      { ok: false, error: "invalid_id", message: "Invalid contact id." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const contact = await storage.getContact(id);
+    if (!contact) {
+      return jsonResponse(
+        { ok: false, error: "not_found", message: "Lead not found." },
+        { status: 404 },
+      );
+    }
+    return jsonResponse({ ok: true, item: toAdminContactDetail(contact) });
+  } catch {
+    console.error("admin_contact_detail_fetch_failed");
+    return jsonResponse(
+      { ok: false, error: "server_error", message: "Failed to load lead." },
+      { status: 500 },
+    );
+  }
+}
 
 export async function PATCH(
   request: NextRequest,

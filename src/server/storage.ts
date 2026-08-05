@@ -1,5 +1,7 @@
 import { randomUUID } from "crypto";
 import { and, desc, eq, ilike, or, sql as dsql } from "drizzle-orm";
+import type { PgDatabase } from "drizzle-orm/pg-core";
+import type * as schema from "@/server/schema";
 import {
   contacts,
   users,
@@ -106,7 +108,12 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getContact(id: string): Promise<Contact | undefined>;
   getContactBySubmissionId(submissionId: string): Promise<Contact | undefined>;
+  getContactByGoogleAdsLeadId(leadId: string): Promise<Contact | undefined>;
   createContact(contact: InsertContactRecord): Promise<Contact>;
+  createContactIgnoreDuplicate(contact: InsertContactRecord): Promise<Contact | null>;
+  createContactWithOutbox(
+    contact: InsertContactRecord,
+  ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }>;
   claimContactNotification(id: string): Promise<Contact | undefined>;
   updateContactFormspreeStatus(
     id: string,
@@ -114,13 +121,14 @@ export interface IStorage {
   ): Promise<Contact | undefined>;
   listContacts(options: ListContactsOptions): Promise<ListContactsResult>;
   getLeadSourceSummary(): Promise<LeadSourceSummary[]>;
+  getCountsByStatus(): Promise<Record<string, number>>;
   updateContactLifecycle(
     id: string,
     update: UpdateContactLifecycleInput,
   ): Promise<UpdateContactLifecycleResult>;
 }
 
-type DrizzleDatabase = NonNullable<typeof db>;
+type DrizzleDatabase = PgDatabase<any, typeof schema>;
 
 export class DatabaseStorage implements IStorage {
   constructor(private readonly database: DrizzleDatabase) {}
@@ -151,6 +159,124 @@ export class DatabaseStorage implements IStorage {
     return contact;
   }
 
+  async createContactIgnoreDuplicate(
+    insertContact: InsertContactRecord,
+  ): Promise<Contact | null> {
+    const [contact] = await this.database
+      .insert(contacts)
+      .values(insertContact)
+      .onConflictDoNothing()
+      .returning();
+    return contact || null;
+  }
+
+  async createContactWithOutbox(
+    insertContact: InsertContactRecord,
+  ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }> {
+    const result = await this.database.execute(dsql`
+      WITH inserted_contact AS (
+        INSERT INTO contacts (
+          first_name, last_name, email, phone, service, message,
+          request_type, preferred_date, preferred_time,
+          formspree_status, landing_page, referrer, cta_source,
+          utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+          gclid, gbraid, wbraid, consent_to_contact, consent_version,
+          lead_status, google_ads_lead_id, campaign_id, campaign_name,
+          ingested_via, is_test, raw_payload, submission_id
+        )
+        VALUES (
+          ${insertContact.firstName}, ${insertContact.lastName}, ${insertContact.email ?? null},
+          ${insertContact.phone ?? null}, ${insertContact.service ?? null}, ${insertContact.message ?? null},
+          ${insertContact.requestType ?? "contact"}, ${insertContact.preferredDate ?? null}, ${insertContact.preferredTime ?? null},
+          ${insertContact.formspreeStatus ?? null}, ${insertContact.landingPage ?? null}, ${insertContact.referrer ?? null},
+          ${insertContact.ctaSource ?? null}, ${insertContact.utmSource ?? null}, ${insertContact.utmMedium ?? null},
+          ${insertContact.utmCampaign ?? null}, ${insertContact.utmTerm ?? null}, ${insertContact.utmContent ?? null},
+          ${insertContact.gclid ?? null}, ${insertContact.gbraid ?? null}, ${insertContact.wbraid ?? null},
+          ${insertContact.consentToContact ?? false}, ${insertContact.consentVersion ?? null},
+          ${insertContact.leadStatus ?? "new"}, ${insertContact.googleAdsLeadId ?? null}, ${insertContact.campaignId ?? null},
+          ${insertContact.campaignName ?? null}, ${insertContact.ingestedVia ?? null}, ${insertContact.isTest ?? false},
+          ${insertContact.rawPayload ?? null}, ${insertContact.submissionId ?? null}
+        )
+        ON CONFLICT DO NOTHING
+        RETURNING *
+      ),
+      outbox_event AS (
+        INSERT INTO notification_outbox (event_key, event_type, contact_id, status)
+        SELECT
+          CASE
+            WHEN ic.google_ads_lead_id IS NOT NULL THEN 'google_ads:' || ic.google_ads_lead_id
+            WHEN ic.submission_id IS NOT NULL THEN 'formspree:' || ic.submission_id
+            ELSE 'contact:' || ic.id
+          END,
+          'new_lead',
+          ic.id,
+          'pending'
+        FROM inserted_contact ic
+        WHERE ic.is_test = false
+        ON CONFLICT (event_key) DO NOTHING
+        RETURNING id
+      )
+      SELECT
+        ic.*,
+        (SELECT COUNT(*) > 0 FROM outbox_event) AS outbox_enqueued
+      FROM inserted_contact ic
+    `);
+
+    const rows = result.rows as Array<Record<string, unknown> & { outbox_enqueued: boolean }>;
+    if (rows.length === 0) {
+      return { contact: null, outboxEnqueued: false };
+    }
+
+    const row = rows[0];
+    const contact = this.mapRowToContact(row);
+    return { contact, outboxEnqueued: Boolean(row.outbox_enqueued) };
+  }
+
+  private mapRowToContact(row: Record<string, unknown>): Contact {
+    return {
+      id: row.id as string,
+      submissionId: (row.submission_id as string) ?? null,
+      firstName: row.first_name as string,
+      lastName: row.last_name as string,
+      email: (row.email as string) ?? null,
+      phone: (row.phone as string) ?? null,
+      service: (row.service as string) ?? null,
+      message: (row.message as string) ?? null,
+      requestType: row.request_type as string,
+      preferredDate: (row.preferred_date as string) ?? null,
+      preferredTime: (row.preferred_time as string) ?? null,
+      formspreeStatus: (row.formspree_status as string) ?? null,
+      landingPage: (row.landing_page as string) ?? null,
+      referrer: (row.referrer as string) ?? null,
+      ctaSource: (row.cta_source as string) ?? null,
+      utmSource: (row.utm_source as string) ?? null,
+      utmMedium: (row.utm_medium as string) ?? null,
+      utmCampaign: (row.utm_campaign as string) ?? null,
+      utmTerm: (row.utm_term as string) ?? null,
+      utmContent: (row.utm_content as string) ?? null,
+      gclid: (row.gclid as string) ?? null,
+      gbraid: (row.gbraid as string) ?? null,
+      wbraid: (row.wbraid as string) ?? null,
+      consentToContact: row.consent_to_contact as boolean,
+      consentVersion: (row.consent_version as string) ?? null,
+      leadStatus: row.lead_status as LeadStatus,
+      contactedAt: row.contacted_at ? new Date(row.contacted_at as string) : null,
+      bookedAt: row.booked_at ? new Date(row.booked_at as string) : null,
+      arrivedAt: row.arrived_at ? new Date(row.arrived_at as string) : null,
+      lostReason: (row.lost_reason as string) ?? null,
+      staffNotes: (row.staff_notes as string) ?? null,
+      googleAdsLeadId: (row.google_ads_lead_id as string) ?? null,
+      campaignId: (row.campaign_id as string) ?? null,
+      campaignName: (row.campaign_name as string) ?? null,
+      ingestedVia: (row.ingested_via as Contact["ingestedVia"]) ?? null,
+      updatedBy: (row.updated_by as string) ?? null,
+      isTest: row.is_test as boolean,
+      rawPayload: (row.raw_payload as Contact["rawPayload"]) ?? null,
+      createdAt: new Date(row.created_at as string),
+      updatedAt: new Date(row.updated_at as string),
+    };
+  }
+
   async getContact(id: string): Promise<Contact | undefined> {
     const [contact] = await this.database
       .select()
@@ -165,6 +291,15 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(contacts)
       .where(eq(contacts.submissionId, submissionId))
+      .limit(1);
+    return contact || undefined;
+  }
+
+  async getContactByGoogleAdsLeadId(leadId: string): Promise<Contact | undefined> {
+    const [contact] = await this.database
+      .select()
+      .from(contacts)
+      .where(eq(contacts.googleAdsLeadId, leadId))
       .limit(1);
     return contact || undefined;
   }
@@ -250,6 +385,7 @@ export class DatabaseStorage implements IStorage {
         arrived: dsql<number>`count(*) FILTER (WHERE ${contacts.arrivedAt} IS NOT NULL)::int`,
       })
       .from(contacts)
+      .where(eq(contacts.isTest, false))
       .groupBy(leadSourceSql)
       .orderBy(desc(dsql`count(*)`));
 
@@ -266,6 +402,23 @@ export class DatabaseStorage implements IStorage {
         arrivalRate: leads ? arrived / leads : 0,
       };
     });
+  }
+
+  async getCountsByStatus(): Promise<Record<string, number>> {
+    const rows = await this.database
+      .select({
+        status: contacts.leadStatus,
+        count: dsql<number>`count(*)::int`,
+      })
+      .from(contacts)
+      .where(eq(contacts.isTest, false))
+      .groupBy(contacts.leadStatus);
+
+    const result: Record<string, number> = {};
+    for (const row of rows) {
+      result[row.status] = Number(row.count);
+    }
+    return result;
   }
 
   async updateContactLifecycle(
@@ -332,7 +485,7 @@ export class InMemoryStorage implements IStorage {
       submissionId: insertContact.submissionId ?? null,
       firstName: insertContact.firstName,
       lastName: insertContact.lastName,
-      email: insertContact.email,
+      email: insertContact.email ?? null,
       phone: insertContact.phone ?? null,
       service: insertContact.service ?? null,
       message: insertContact.message ?? null,
@@ -359,9 +512,37 @@ export class InMemoryStorage implements IStorage {
       arrivedAt: insertContact.arrivedAt ?? null,
       lostReason: insertContact.lostReason ?? null,
       staffNotes: insertContact.staffNotes ?? null,
+      googleAdsLeadId: insertContact.googleAdsLeadId ?? null,
+      campaignId: insertContact.campaignId ?? null,
+      campaignName: insertContact.campaignName ?? null,
+      ingestedVia: insertContact.ingestedVia ?? null,
+      updatedBy: insertContact.updatedBy ?? null,
+      isTest: insertContact.isTest ?? false,
+      rawPayload: insertContact.rawPayload ?? null,
     };
     this.contacts.set(contact.id, contact);
     return contact;
+  }
+
+  async createContactIgnoreDuplicate(
+    insertContact: InsertContactRecord,
+  ): Promise<Contact | null> {
+    if (insertContact.googleAdsLeadId) {
+      const existing = await this.getContactByGoogleAdsLeadId(
+        insertContact.googleAdsLeadId,
+      );
+      if (existing) return null;
+    }
+    return this.createContact(insertContact);
+  }
+
+  async createContactWithOutbox(
+    insertContact: InsertContactRecord,
+  ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }> {
+    const contact = await this.createContactIgnoreDuplicate(insertContact);
+    if (!contact) return { contact: null, outboxEnqueued: false };
+    if (contact.isTest) return { contact, outboxEnqueued: false };
+    return { contact, outboxEnqueued: true };
   }
 
   async getContact(id: string): Promise<Contact | undefined> {
@@ -371,6 +552,12 @@ export class InMemoryStorage implements IStorage {
   async getContactBySubmissionId(submissionId: string): Promise<Contact | undefined> {
     return Array.from(this.contacts.values()).find(
       (contact) => contact.submissionId === submissionId,
+    );
+  }
+
+  async getContactByGoogleAdsLeadId(leadId: string): Promise<Contact | undefined> {
+    return Array.from(this.contacts.values()).find(
+      (contact) => contact.googleAdsLeadId === leadId,
     );
   }
 
@@ -450,6 +637,7 @@ export class InMemoryStorage implements IStorage {
   async getLeadSourceSummary(): Promise<LeadSourceSummary[]> {
     const buckets = new Map<string, { leads: number; booked: number; arrived: number }>();
     for (const contact of this.contacts.values()) {
+      if (contact.isTest) continue;
       const source = normalizeLeadSource(contact);
       const bucket = buckets.get(source) ?? { leads: 0, booked: 0, arrived: 0 };
       bucket.leads += 1;
@@ -464,6 +652,15 @@ export class InMemoryStorage implements IStorage {
       bookingRate: value.leads ? value.booked / value.leads : 0,
       arrivalRate: value.leads ? value.arrived / value.leads : 0,
     })).sort((a, b) => b.leads - a.leads || a.source.localeCompare(b.source));
+  }
+
+  async getCountsByStatus(): Promise<Record<string, number>> {
+    const result: Record<string, number> = {};
+    for (const contact of this.contacts.values()) {
+      if (contact.isTest) continue;
+      result[contact.leadStatus] = (result[contact.leadStatus] ?? 0) + 1;
+    }
+    return result;
   }
 
   async updateContactLifecycle(
@@ -513,11 +710,26 @@ class UnavailableStorage implements IStorage {
     throw new Error(this.message);
   }
 
+  async createContactIgnoreDuplicate(): Promise<Contact | null> {
+    throw new Error(this.message);
+  }
+
+  async createContactWithOutbox(): Promise<{
+    contact: Contact | null;
+    outboxEnqueued: boolean;
+  }> {
+    throw new Error(this.message);
+  }
+
   async getContact(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
 
   async getContactBySubmissionId(): Promise<Contact | undefined> {
+    throw new Error(this.message);
+  }
+
+  async getContactByGoogleAdsLeadId(): Promise<Contact | undefined> {
     throw new Error(this.message);
   }
 
@@ -534,6 +746,10 @@ class UnavailableStorage implements IStorage {
   }
 
   async getLeadSourceSummary(): Promise<LeadSourceSummary[]> {
+    throw new Error(this.message);
+  }
+
+  async getCountsByStatus(): Promise<Record<string, number>> {
     throw new Error(this.message);
   }
 
