@@ -405,7 +405,7 @@ export function LeadsPanel() {
                     key={`${row.id}:${row.updatedAt}`}
                     data-testid="lead-row"
                     className={cn(
-                      isFreshNewLead(row) && "shadow-[inset_2px_0_0_#38BDF8]",
+                      isFreshNewLead(row) && "border-l-2 border-l-[#38BDF8]",
                     )}
                   >
                     <TableCell>

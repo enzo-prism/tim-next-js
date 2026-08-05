@@ -117,20 +117,33 @@ vercel env ls
 1. Ensure `DATABASE_URL` points to the intended Vercel Postgres instance.
 2. Apply every checked-in migration in numeric order. **Do not use `db:push`** — migrations 0007–0009 contain PL/pgSQL functions and constraints that `db:push` cannot create:
 
+Two Neon-specific requirements, both of which fail loudly if you miss them. The `neondb_owner` role has an empty `search_path`, so unqualified table names in the migrations resolve to nothing and the first statement fails with `relation "contacts" does not exist`; you must set it explicitly. And Neon's **pooled** endpoint rejects `search_path` as a startup parameter, so the migration run has to go over `DATABASE_URL_UNPOOLED`. Run the whole set in one transaction so a mid-run failure rolls everything back:
+
 ```bash
-psql "$DATABASE_URL" -f drizzle/0000_base_schema.sql
-psql "$DATABASE_URL" -f drizzle/0001_growth_lead_attribution.sql
-psql "$DATABASE_URL" -f drizzle/0002_closed_loop_lead_pipeline.sql
-psql "$DATABASE_URL" -f drizzle/0003_public_form_contract.sql
-psql "$DATABASE_URL" -f drizzle/0004_google_ads_lead_ingestion.sql
-psql "$DATABASE_URL" -f drizzle/0005_notification_outbox.sql
-psql "$DATABASE_URL" -f drizzle/0006_outbox_lease_fields.sql
-psql "$DATABASE_URL" -f drizzle/0007_reconciliation.sql
-psql "$DATABASE_URL" -f drizzle/0008_reconciliation_lease.sql
-psql "$DATABASE_URL" -f drizzle/0009_finalize_function.sql
+PGOPTIONS="--search_path=public" psql "$DATABASE_URL_UNPOOLED" \
+  -v ON_ERROR_STOP=1 --single-transaction \
+  -f drizzle/0000_base_schema.sql \
+  -f drizzle/0001_growth_lead_attribution.sql \
+  -f drizzle/0002_closed_loop_lead_pipeline.sql \
+  -f drizzle/0003_public_form_contract.sql \
+  -f drizzle/0004_google_ads_lead_ingestion.sql \
+  -f drizzle/0005_notification_outbox.sql \
+  -f drizzle/0006_outbox_lease_fields.sql \
+  -f drizzle/0007_reconciliation.sql \
+  -f drizzle/0008_reconciliation_lease.sql \
+  -f drizzle/0009_finalize_function.sql
 ```
 
 `0000_base_schema.sql` makes a fresh database bootstrapable and is safe to run against an existing database because it uses `IF NOT EXISTS`. Migration `0009` creates the `finalize_reconciliation_run()` PL/pgSQL function required by the reconciliation service.
+
+Before running `0004` against a database with existing rows, confirm nothing violates the constraints it tightens. `0004` replaces the request-type check and drops `NOT NULL` from `email`:
+
+```bash
+psql "$DATABASE_URL" -At -c \
+  "select request_type, count(*) from contacts group by 1"
+```
+
+Every value must already be `contact`, `appointment`, or `google_ads_lead`.
 
 3. Read the production schema back before deployment. This checks every public-form runtime column, required defaults and nullability, the submission UUID index, lifecycle indexes, validated state constraints, reconciliation tables, and the finalize function:
 

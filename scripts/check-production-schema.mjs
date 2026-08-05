@@ -11,7 +11,8 @@ const expectedColumns = [
   { name: "submission_id", type: "character varying", nullable: true, maxLength: 36 },
   { name: "first_name", type: "text", nullable: false },
   { name: "last_name", type: "text", nullable: false },
-  { name: "email", type: "text", nullable: false },
+  // Nullable since 0004: Google Ads lead forms do not always return an email.
+  { name: "email", type: "text", nullable: true },
   { name: "phone", type: "text", nullable: true },
   { name: "service", type: "text", nullable: true },
   { name: "message", type: "text", nullable: true },
@@ -38,6 +39,14 @@ const expectedColumns = [
   { name: "arrived_at", type: "timestamp without time zone", nullable: true },
   { name: "lost_reason", type: "text", nullable: true },
   { name: "staff_notes", type: "text", nullable: true },
+  // 0004: Google Ads lead ingestion.
+  { name: "google_ads_lead_id", type: "text", nullable: true },
+  { name: "campaign_id", type: "text", nullable: true },
+  { name: "campaign_name", type: "text", nullable: true },
+  { name: "ingested_via", type: "text", nullable: true },
+  { name: "updated_by", type: "text", nullable: true },
+  { name: "is_test", type: "boolean", nullable: false, defaultIncludes: "false" },
+  { name: "raw_payload", type: "jsonb", nullable: true },
   {
     name: "created_at",
     type: "timestamp without time zone",
@@ -126,8 +135,38 @@ const constraints = await sql`
       'contacts_pkey',
       'contacts_lead_status_check',
       'contacts_request_type_check',
-      'contacts_formspree_status_check'
+      'contacts_formspree_status_check',
+      'contacts_ingested_via_check'
     )
+`;
+
+// 0004-0009: ingestion, outbox, and reconciliation objects. Without these the
+// admin leads API selects columns and tables that do not exist and returns 500.
+const expectedTables = [
+  "notification_outbox",
+  "reconciliation_runs",
+  "reconciliation_discrepancies",
+];
+const tableRows = await sql`
+  SELECT table_name
+  FROM information_schema.tables
+  WHERE table_schema = 'public' AND table_name = ANY(${expectedTables})
+`;
+const presentTables = new Set(tableRows.map((row) => row.table_name));
+const tableProblems = expectedTables
+  .filter((name) => !presentTables.has(name))
+  .map((name) => `${name}: missing`);
+
+const leadIdIndexes = await sql`
+  SELECT indexname
+  FROM pg_indexes
+  WHERE schemaname = 'public'
+    AND tablename = 'contacts'
+    AND indexname = 'contacts_google_ads_lead_id_idx'
+`;
+
+const finalizeFunctions = await sql`
+  SELECT proname FROM pg_proc WHERE proname = 'finalize_reconciliation_run'
 `;
 const constraintsByName = new Map(constraints.map((row) => [row.conname, row]));
 const constraintProblems = [];
@@ -137,7 +176,11 @@ const expectedConstraintValues = new Map([
     "contacts_lead_status_check",
     ["new", "contacted", "booked", "arrived", "no-show", "lost"],
   ],
-  ["contacts_request_type_check", ["contact", "appointment"]],
+  ["contacts_request_type_check", ["contact", "appointment", "google_ads_lead"]],
+  [
+    "contacts_ingested_via_check",
+    ["webhook", "reconciliation", "website-form", "backfill"],
+  ],
   ["contacts_formspree_status_check", ["failed", "sending", "delivered"]],
 ]);
 
@@ -164,15 +207,26 @@ if (
   columnProblems.length > 0 ||
   uniqueIndexes.length === 0 ||
   lifecycleIndexes.length < 2 ||
-  constraintProblems.length > 0
+  constraintProblems.length > 0 ||
+  tableProblems.length > 0 ||
+  leadIdIndexes.length === 0 ||
+  finalizeFunctions.length === 0
 ) {
   for (const problem of columnProblems) console.error(`Column mismatch: ${problem}`);
   if (uniqueIndexes.length === 0) console.error("Missing unique submission_id index.");
   if (lifecycleIndexes.length < 2) console.error("Missing lifecycle status or created-at index.");
   for (const problem of constraintProblems) console.error(`Constraint mismatch: ${problem}`);
+  for (const problem of tableProblems) console.error(`Table mismatch: ${problem}`);
+  if (leadIdIndexes.length === 0) {
+    console.error("Missing unique contacts_google_ads_lead_id_idx index.");
+  }
+  if (finalizeFunctions.length === 0) {
+    console.error("Missing finalize_reconciliation_run() function (migration 0009).");
+  }
   process.exit(1);
 }
 
 console.log(
-  "Lead schema verified: runtime columns, defaults, constraints, and indexes are present.",
+  "Lead schema verified: runtime columns, defaults, constraints, indexes, " +
+    "ingestion and reconciliation tables, and the finalize function are present.",
 );

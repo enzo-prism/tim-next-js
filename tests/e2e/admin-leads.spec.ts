@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { adminCredentials } from "./admin-credentials";
 import { installAdminContactsMock } from "../fixtures/admin-contacts";
 
 /**
@@ -8,10 +9,7 @@ import { installAdminContactsMock } from "../fixtures/admin-contacts";
  */
 
 test.use({
-  httpCredentials: {
-    username: process.env.ADMIN_USERNAME ?? "admin",
-    password: process.env.ADMIN_PASSWORD ?? "tim",
-  },
+  httpCredentials: adminCredentials,
 });
 
 const stubExternalServices = async (page: Page) => {
@@ -252,10 +250,7 @@ test.describe("admin leads dashboard (desktop 1440px)", () => {
   }) => {
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
-      httpCredentials: {
-        username: process.env.ADMIN_USERNAME ?? "admin",
-        password: process.env.ADMIN_PASSWORD ?? "tim",
-      },
+      httpCredentials: adminCredentials,
       permissions: ["clipboard-read", "clipboard-write"],
     });
     const page = await context.newPage();
