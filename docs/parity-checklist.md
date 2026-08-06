@@ -60,8 +60,8 @@ Use this checklist before cutting traffic fully to Vercel production.
 - [ ] unknown services, past preferred dates, oversized bodies, and untrusted browser origins are rejected
 - [ ] `POST /api/appointments` returns `201` when DB + relay succeed
 - [ ] `POST /api/appointments` returns `202 delivered:false` when relay fails but DB persists
-- [ ] `/admin` requires Basic Auth
-- [ ] `/api/admin/contacts` requires Basic Auth
+- [ ] `/admin` redirects to `/admin/login` when signed out
+- [ ] `/api/admin/contacts` returns 401 without a session cookie
 - [ ] `/api/admin/changelog` returns payload
 - [ ] admin contacts pagination and search work
 - [ ] admin contacts status/source filters and pagination work

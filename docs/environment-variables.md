@@ -11,7 +11,7 @@ cp .env.example .env.local
 - `DATABASE_URL`
   - Postgres connection string
   - Required for contact persistence and admin contacts listing
-- `ADMIN_USERNAME` and `ADMIN_PASSWORD`
+- `ADMIN_PASSWORD` (single password for the dashboard; defaults to `Tim` when unset)
   - Both are required by middleware for `/admin` and `/api/admin/*`
   - Use non-default, randomly generated values
   - If either is missing in production, admin routes return `503 missing_config`

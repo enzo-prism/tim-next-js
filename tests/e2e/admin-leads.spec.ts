@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { adminCredentials } from "./admin-credentials";
+import { signInToAdmin } from "./admin-credentials";
 import { installAdminContactsMock } from "../fixtures/admin-contacts";
 
 /**
@@ -7,10 +7,6 @@ import { installAdminContactsMock } from "../fixtures/admin-contacts";
  * (tests/fixtures/admin-contacts.ts) served through route interception;
  * no database or real lead data is involved.
  */
-
-test.use({
-  httpCredentials: adminCredentials,
-});
 
 const stubExternalServices = async (page: Page) => {
   await page.route("https://www.googletagmanager.com/**", (route) =>
@@ -24,7 +20,7 @@ const stubExternalServices = async (page: Page) => {
 const openLeadsDashboard = async (page: Page) => {
   await stubExternalServices(page);
   const mock = await installAdminContactsMock(page);
-  await page.goto("/admin");
+  await signInToAdmin(page);
   await expect(page.getByTestId("lead-row").first()).toBeVisible();
   return mock;
 };
@@ -250,7 +246,6 @@ test.describe("admin leads dashboard (desktop 1440px)", () => {
   }) => {
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
-      httpCredentials: adminCredentials,
       permissions: ["clipboard-read", "clipboard-write"],
     });
     const page = await context.newPage();
@@ -339,7 +334,7 @@ test.describe("admin leads dashboard (mobile 390px)", () => {
   }) => {
     await stubExternalServices(page);
     await installAdminContactsMock(page);
-    await page.goto("/admin");
+    await signInToAdmin(page);
     const cards = page.getByTestId("lead-card");
     await expect(cards.first()).toBeVisible();
 
@@ -361,7 +356,7 @@ test.describe("admin leads dashboard (mobile 390px)", () => {
   test("full-card tap opens a full-screen drawer", async ({ page }) => {
     await stubExternalServices(page);
     await installAdminContactsMock(page);
-    await page.goto("/admin");
+    await signInToAdmin(page);
     const firstCard = page.getByTestId("lead-card").first();
     await expect(firstCard).toBeVisible();
 

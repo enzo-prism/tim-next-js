@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { ADMIN_SESSION_COOKIE, createSessionToken } from "@/server/admin-session";
 
 const mocks = vi.hoisted(() => ({
   updateContactLifecycle: vi.fn(),
@@ -15,8 +16,7 @@ vi.mock("@/server/storage", () => ({
 
 import { GET, PATCH } from "@/app/api/admin/contacts/[id]/route";
 
-const auth = () =>
-  `Basic ${Buffer.from("office-admin:test-password").toString("base64")}`;
+const sessionCookie = `${ADMIN_SESSION_COOKIE}=${await createSessionToken("test-password")}`;
 
 const expectedUpdatedAt = "2026-07-15T16:30:00.000Z";
 
@@ -26,7 +26,7 @@ const patch = (body: unknown, authenticated = true) =>
       method: "PATCH",
       headers: {
         "content-type": "application/json",
-        ...(authenticated ? { authorization: auth() } : {}),
+        ...(authenticated ? { cookie: sessionCookie } : {}),
       },
       body: JSON.stringify(body),
     }),
@@ -72,15 +72,14 @@ const updatedContact = {
 describe("admin contact lifecycle PATCH", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.ADMIN_USERNAME = "office-admin";
-    process.env.ADMIN_PASSWORD = "test-password";
+        process.env.ADMIN_PASSWORD = "test-password";
     mocks.updateContactLifecycle.mockResolvedValue({
       status: "updated",
       contact: updatedContact,
     });
   });
 
-  it("rejects requests that bypass Basic Auth", async () => {
+  it("rejects requests that bypass the admin session", async () => {
     const response = await patch({ leadStatus: "booked", expectedUpdatedAt }, false);
 
     expect(response.status).toBe(401);
@@ -172,7 +171,7 @@ const detailContact = {
 const getDetail = (authenticated = true) =>
   GET(
     new NextRequest("http://localhost/api/admin/contacts/lead-1", {
-      headers: authenticated ? { authorization: auth() } : {},
+      headers: authenticated ? { cookie: sessionCookie } : {},
     }),
     { params: Promise.resolve({ id: "lead-1" }) },
   );
@@ -180,8 +179,7 @@ const getDetail = (authenticated = true) =>
 describe("admin contact detail GET", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.ADMIN_USERNAME = "office-admin";
-    process.env.ADMIN_PASSWORD = "test-password";
+        process.env.ADMIN_PASSWORD = "test-password";
     mocks.getContact.mockResolvedValue(detailContact);
   });
 

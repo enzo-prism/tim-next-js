@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { adminCredentials } from "./tests/e2e/admin-credentials";
+import { adminPassword } from "./tests/e2e/admin-credentials";
 
 const port = 3100;
 const baseURL = `http://127.0.0.1:${port}`;
@@ -22,12 +22,10 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120_000,
-    // `npm run start` runs in production mode, where the middleware makes every
-    // /admin path unreachable unless both admin variables are set. CI provides
-    // no admin secrets, so the admin specs need these test-only values.
+    // CI provides no admin secret, so the server and the specs agree on a
+    // test-only password rather than falling back to the shipped default.
     env: {
-      ADMIN_USERNAME: adminCredentials.username,
-      ADMIN_PASSWORD: adminCredentials.password,
+      ADMIN_PASSWORD: adminPassword,
     },
   },
   projects: [

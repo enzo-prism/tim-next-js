@@ -7,7 +7,7 @@ All APIs are implemented as Next.js route handlers in `src/app/api/**`.
 - Public endpoint:
   - `POST /api/contacts`
   - `POST /api/appointments`
-- Admin endpoints (Basic Auth required, enforced by middleware):
+- Admin endpoints (admin session cookie required, enforced by middleware):
   - `/api/admin/*`
 
 Unauthorized admin calls return:

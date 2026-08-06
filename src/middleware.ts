@@ -1,35 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { InMemoryRateLimiter } from "@/server/in-memory-rate-limit";
-
-const DEFAULT_ADMIN_PASSWORD = "tim";
-const DEFAULT_ADMIN_USERNAME = "admin";
-const ADMIN_AUTH_WINDOW_MS = 15 * 60 * 1000;
-const ADMIN_AUTH_MAX_ATTEMPTS = 5;
-const adminAuthAttempts = new InMemoryRateLimiter({
-  maxAttempts: ADMIN_AUTH_MAX_ATTEMPTS,
-  maxEntries: 2_000,
-  windowMs: ADMIN_AUTH_WINDOW_MS,
-});
-
-const safeTimingEqual = (a: string, b: string) => {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) {
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return mismatch === 0;
-};
+import { ADMIN_SESSION_COOKIE, isValidSessionToken } from "@/server/admin-session";
 
 const CRON_EXEMPT_PATHS = [
   "/api/admin/notifications/process",
   "/api/admin/reconciliation/run",
 ];
 
+// The sign-in surface itself cannot sit behind the gate it feeds.
+const AUTH_EXEMPT_PATHS = ["/admin/login", "/api/admin/session"];
+
 const isProtectedPath = (pathname: string) =>
-  pathname === "/admin" || pathname.startsWith("/api/admin");
+  pathname === "/admin" ||
+  pathname.startsWith("/admin/") ||
+  pathname.startsWith("/api/admin");
 
 const isCronExemptPath = (pathname: string) =>
   CRON_EXEMPT_PATHS.includes(pathname);
+
+const isAuthExemptPath = (pathname: string) =>
+  AUTH_EXEMPT_PATHS.includes(pathname);
 
 const exactCaseRedirects: Record<string, string> = {
   "/Book-Appointment": "/book-appointment",
@@ -46,27 +35,12 @@ const getCanonicalHost = () => {
   }
 };
 
-const getClientAddress = (req: NextRequest) =>
-  (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("cf-connecting-ip") ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  ).slice(0, 100);
-
-const getAdminRateLimitKey = (req: NextRequest) => {
-  const userAgent = (req.headers.get("user-agent") || "unknown").slice(0, 160);
-  const scope = req.nextUrl.pathname.startsWith("/api/admin") ? "api-admin" : "admin";
-  return `${scope}:${getClientAddress(req)}:${userAgent}`;
-};
-
 function unauthorizedResponse() {
   return new NextResponse(
     JSON.stringify({ ok: false, error: "unauthorized", message: "Unauthorized" }),
     {
       status: 401,
       headers: {
-        "WWW-Authenticate": 'Basic realm="Admin"',
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
       },
@@ -74,46 +48,18 @@ function unauthorizedResponse() {
   );
 }
 
-function rateLimitedResponse(retryAfterSeconds: number) {
-  return new NextResponse(
-    JSON.stringify({
-      ok: false,
-      error: "too_many_attempts",
-      message: "Too many failed sign-in attempts. Please try again later.",
-    }),
-    {
-      status: 429,
-      headers: {
-        // Browsers only reopen the Basic-auth dialog on a challenge. Without
-        // this, staff who mistyped once keep auto-resending cached bad
-        // credentials and cannot enter the correct ones until the window ends.
-        "WWW-Authenticate": 'Basic realm="Admin"',
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-        "Retry-After": String(retryAfterSeconds),
-      },
-    },
-  );
+function signInRedirect(req: NextRequest) {
+  const url = new URL("/admin/login", req.url);
+  const target = `${req.nextUrl.pathname}${req.nextUrl.search}`;
+  if (target && target !== "/admin") {
+    url.searchParams.set("next", target);
+  }
+  const response = NextResponse.redirect(url);
+  response.headers.set("Cache-Control", "no-store");
+  return response;
 }
 
-function missingAdminCredentialsResponse() {
-  return new NextResponse(
-    JSON.stringify({
-      ok: false,
-      error: "missing_config",
-      message: "ADMIN_USERNAME and ADMIN_PASSWORD are required in production.",
-    }),
-    {
-      status: 503,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-      },
-    },
-  );
-}
-
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const host = req.headers.get("host") || nextUrl.host || "";
   const canonicalHost = getCanonicalHost();
@@ -143,50 +89,20 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl, 301);
   }
 
-  if (isProtectedPath(nextUrl.pathname) && !isCronExemptPath(nextUrl.pathname)) {
-    const rateLimitKey = getAdminRateLimitKey(req);
-
-    if (
-      process.env.NODE_ENV === "production" &&
-      (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD)
-    ) {
-      return missingAdminCredentialsResponse();
+  if (
+    isProtectedPath(nextUrl.pathname) &&
+    !isCronExemptPath(nextUrl.pathname) &&
+    !isAuthExemptPath(nextUrl.pathname)
+  ) {
+    const token = req.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    if (!(await isValidSessionToken(token))) {
+      // API callers need a status code they can branch on; a browser landing on
+      // the dashboard needs the sign-in form.
+      return nextUrl.pathname.startsWith("/api/admin")
+        ? unauthorizedResponse()
+        : signInRedirect(req);
     }
 
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Basic ")) {
-      return unauthorizedResponse();
-    }
-
-    let decoded = "";
-    try {
-      decoded = atob(authHeader.slice("Basic ".length));
-    } catch {
-      return unauthorizedResponse();
-    }
-
-    const separator = decoded.indexOf(":");
-    if (separator < 0) {
-      return unauthorizedResponse();
-    }
-
-    const providedUsername = decoded.slice(0, separator);
-    const providedPassword = decoded.slice(separator + 1);
-    const expectedUsername =
-      process.env.ADMIN_USERNAME ||
-      (process.env.NODE_ENV === "production" ? "" : DEFAULT_ADMIN_USERNAME);
-    const expectedPassword =
-      process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === "production" ? "" : DEFAULT_ADMIN_PASSWORD);
-
-    if (
-      !safeTimingEqual(providedUsername, expectedUsername) ||
-      !safeTimingEqual(providedPassword, expectedPassword)
-    ) {
-      const attempt = adminAuthAttempts.consume(rateLimitKey);
-      return attempt.ok ? unauthorizedResponse() : rateLimitedResponse(attempt.retryAfterSeconds);
-    }
-
-    adminAuthAttempts.reset(rateLimitKey);
     const response = NextResponse.next();
     response.headers.set("Cache-Control", "no-store");
     return response;
@@ -198,7 +114,3 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
-
-export function resetAdminAuthRateLimiterForTests() {
-  adminAuthAttempts.resetAll();
-}

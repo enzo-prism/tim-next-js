@@ -85,7 +85,10 @@ export const ingestionProvenance = (row: AdminContactItem) => {
     case "reconciliation":
       return `via twice-daily reconciliation${leadId}`;
     case "backfill":
-      return "via Formspree backfill";
+      // Backfill covers two imports: the original Formspree history, and the
+      // Google Ads lead emails that predate the webhook. Only the latter
+      // carries a lead id.
+      return leadId ? `via Google Ads backfill${leadId}` : "via Formspree backfill";
     default:
       return null;
   }

@@ -5,7 +5,7 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 ## What This Repo Contains
 
 - Full public website route parity
-- Admin dashboard protected with Basic Auth
+- Admin dashboard protected with a single-password sign-in
 - Contact and appointment persistence plus new-patient lifecycle reporting using Postgres via Drizzle ORM
 - First-party forms with duplicate protection, campaign attribution, consent records, and Formspree office notifications
 - Vercel Web Analytics + GA4 + query-by-page Google Search Console opportunity reporting

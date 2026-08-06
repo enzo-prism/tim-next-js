@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { ADMIN_SESSION_COOKIE, createSessionToken } from "@/server/admin-session";
 
 const mocks = vi.hoisted(() => ({
   listContacts: vi.fn(),
@@ -17,8 +18,7 @@ vi.mock("@/server/storage", () => ({
 
 import { GET, POST } from "@/app/api/admin/contacts/route";
 
-const auth = () =>
-  `Basic ${Buffer.from("office-admin:test-password").toString("base64")}`;
+const sessionCookie = `${ADMIN_SESSION_COOKIE}=${await createSessionToken("test-password")}`;
 
 const contact = {
   id: "lead-1",
@@ -66,8 +66,7 @@ const contact = {
 describe("admin contacts GET", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.ADMIN_USERNAME = "office-admin";
-    process.env.ADMIN_PASSWORD = "test-password";
+        process.env.ADMIN_PASSWORD = "test-password";
     mocks.listContacts.mockResolvedValue({ total: 1, items: [contact] });
     mocks.getLeadSourceSummary.mockResolvedValue([
       {
@@ -82,7 +81,7 @@ describe("admin contacts GET", () => {
     mocks.getCountsByStatus.mockResolvedValue({ new: 0, booked: 1 });
   });
 
-  it("rechecks Basic Auth inside the route handler", async () => {
+  it("rechecks the admin session inside the route handler", async () => {
     const response = await GET(
       new NextRequest("http://localhost/api/admin/contacts"),
     );
@@ -96,7 +95,7 @@ describe("admin contacts GET", () => {
       new NextRequest("http://localhost/api/admin/contacts", {
         method: "POST",
         headers: {
-          authorization: auth(),
+          cookie: sessionCookie,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -129,7 +128,7 @@ describe("admin contacts GET", () => {
   it("rejects private search terms in the URL", async () => {
     const response = await GET(
       new NextRequest("http://localhost/api/admin/contacts?q=Jamie", {
-        headers: { authorization: auth() },
+        headers: { cookie: sessionCookie },
       }),
     );
 
@@ -143,7 +142,7 @@ describe("admin contacts GET", () => {
   it("rejects unknown lifecycle status filters", async () => {
     const response = await GET(
       new NextRequest("http://localhost/api/admin/contacts?status=invalid", {
-        headers: { authorization: auth() },
+        headers: { cookie: sessionCookie },
       }),
     );
 
@@ -160,7 +159,7 @@ describe("admin contacts GET", () => {
 
     const response = await GET(
       new NextRequest("http://localhost/api/admin/contacts", {
-        headers: { authorization: auth() },
+        headers: { cookie: sessionCookie },
       }),
     );
     const body = await response.json();
