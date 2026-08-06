@@ -24,19 +24,24 @@ export const statusPillClasses: Record<LeadStatus, string> = {
   lost: "bg-[#F1F5F9] text-[#64748B] line-through",
 };
 
+// These values are the canonical source strings the API derives and filters on
+// (`leadSourceSql` in src/server/storage.ts, `normalizeLeadSource` in
+// src/app/api/admin/contacts/lead-source.ts). They are not slugs: the source
+// filter is an equality match against exactly these strings, so a mismatch here
+// silently returns zero leads.
 export const leadSourceOptions = [
-  { value: "google-ads", label: "Google Ads" },
-  { value: "website", label: "Website" },
-  { value: "formspree-historical", label: "Formspree" },
+  { value: "Google Ads", label: "Google Ads" },
+  { value: "Website form", label: "Website form" },
+  { value: "Referral", label: "Referral" },
 ] as const;
 
 export const sourceLabel = (value: string) =>
   leadSourceOptions.find((option) => option.value === value)?.label ?? value;
 
 export const sourceBadgeClasses: Record<string, string> = {
-  "google-ads": "bg-[#E0F2FE] text-[#075985]",
-  website: "bg-gray-100 text-gray-700",
-  "formspree-historical": "bg-[#F1F5F9] text-[#475569]",
+  "Google Ads": "bg-[#E0F2FE] text-[#075985]",
+  "Website form": "bg-[#F0F9FF] text-[#0C4A6E]",
+  Referral: "bg-[#F1F5F9] text-[#475569]",
 };
 
 export const requestTypeOptions = [

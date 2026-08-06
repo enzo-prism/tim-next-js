@@ -99,7 +99,7 @@ const leadSourceSql = dsql<string>`CASE
     NULLIF(BTRIM(${contacts.wbraid}), '')
   ) IS NOT NULL THEN 'Google Ads'
   WHEN NULLIF(BTRIM(${contacts.referrer}), '') IS NOT NULL THEN 'Referral'
-  ELSE 'Direct / unknown'
+  ELSE 'Website form'
 END`;
 
 export interface IStorage {

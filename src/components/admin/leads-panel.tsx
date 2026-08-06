@@ -189,7 +189,6 @@ export function LeadsPanel() {
   const items = contactsQuery.data?.items ?? [];
   const sourceSummary = contactsQuery.data?.sourceSummary ?? [];
   const countsByStatus = contactsQuery.data?.countsByStatus ?? {};
-  const newCount = countsByStatus.new ?? 0;
 
   // Operational view hides test leads by default; the Type chip filters
   // client-side because the list endpoint has no requestType filter yet.
@@ -289,15 +288,6 @@ export function LeadsPanel() {
       <div className="space-y-4 rounded-lg border border-border bg-white p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
-            <FilterChip
-              pressed={status === "new"}
-              onClick={() => {
-                setStatus("new");
-                setPage(0);
-              }}
-            >
-              {newCount} new
-            </FilterChip>
             <div className="space-y-1.5">
               <Label htmlFor="leads-search" className="text-xs">
                 Search leads
@@ -310,7 +300,7 @@ export function LeadsPanel() {
                   setPage(0);
                 }}
                 placeholder="Name, service, campaign..."
-                className="w-full sm:w-[240px]"
+                className="w-full sm:w-[280px]"
               />
             </div>
           </div>
