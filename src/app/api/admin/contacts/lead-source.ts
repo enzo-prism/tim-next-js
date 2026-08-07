@@ -29,8 +29,11 @@ export const normalizeLeadSource = (contact: {
   const utmSource = contact.utmSource?.trim();
   if (utmSource) return canonicalizeUtmSource(utmSource);
   if (contact.gclid || contact.gbraid || contact.wbraid) return "Google Ads";
-  if (contact.referrer?.trim()) return "Referral";
-  // Every remaining lead reached us through a form on the site, so name that
-  // rather than reporting an absence of attribution.
+  // A bare HTTP referrer used to promote a lead to "Referral". It should not.
+  // Someone who searched the practice on Google and then filled in the form
+  // arrived with referrer=www.google.com, and calling that a referral both
+  // hides that they came through our own website and, in a dental practice,
+  // reads as a patient referral. The referrer is still shown on the lead; it
+  // just no longer decides where the lead came from.
   return "Website form";
 };

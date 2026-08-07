@@ -18,6 +18,7 @@ import { patchJson, postJson } from "@/components/admin/admin-fetch";
 import { LeadDetailDrawer } from "@/components/admin/lead-detail-drawer";
 import {
   NewMarker,
+  NoContactBadge,
   SourceBadge,
   StatusPill,
   TestBadge,
@@ -26,10 +27,13 @@ import {
   formatAbsoluteDateTime,
   formatReceivedRelative,
   fullName,
+  hasContactDetails,
   isFreshNewLead,
   leadSourceOptions,
   leadStatusOptions,
   requestTypeOptions,
+  sourceAccentClasses,
+  sourceKindLabel,
 } from "@/components/admin/lead-meta";
 import type {
   AdminContactItem,
@@ -240,12 +244,49 @@ export function LeadsPanel() {
     setSelected(response.item);
   };
 
-  const renderBadges = (row: AdminContactItem) => (
-    <span className="inline-flex flex-wrap items-center gap-1.5">
-      <SourceBadge source={row.source} />
-      {row.isTest ? <TestBadge /> : null}
+  // Source cell: the badge answers "where from", the line under it answers
+  // "which ad" — the two questions the practice asks about a paid lead. The
+  // campaign only exists on Google Ads rows, so nothing is reserved for it.
+  const renderSource = (row: AdminContactItem) => (
+    <span className="block space-y-1">
+      <span className="inline-flex flex-wrap items-center gap-1.5">
+        <SourceBadge source={row.source} />
+        {row.isTest ? <TestBadge /> : null}
+      </span>
+      <span className="block text-xs text-muted-foreground">
+        {row.campaignName || sourceKindLabel(row.source)}
+      </span>
     </span>
   );
+
+  // Phone and email on the row itself. Without this the front desk has to open
+  // every lead one at a time just to read a number, which is the whole job.
+  const renderContact = (row: AdminContactItem) => {
+    if (!hasContactDetails(row)) return <NoContactBadge />;
+    return (
+      <span className="block space-y-0.5 text-sm">
+        {row.phone ? (
+          <a
+            href={`tel:${row.phone}`}
+            onClick={(event) => event.stopPropagation()}
+            className="block font-medium text-[#0369A1] hover:underline"
+          >
+            {row.phone}
+          </a>
+        ) : null}
+        {row.email ? (
+          <a
+            href={`mailto:${row.email}`}
+            onClick={(event) => event.stopPropagation()}
+            className="block max-w-[220px] truncate text-xs text-muted-foreground hover:underline"
+            title={row.email}
+          >
+            {row.email}
+          </a>
+        ) : null}
+      </span>
+    );
+  };
 
   const renderEmptyState = () => {
     if (items.length === 0 && !hasActiveFilters) {
@@ -437,10 +478,13 @@ export function LeadsPanel() {
                   <TableHead scope="col" className="w-[170px]">
                     Received
                   </TableHead>
-                  <TableHead scope="col" className="w-[220px]">
+                  <TableHead scope="col" className="w-[200px]">
                     Name
                   </TableHead>
-                  <TableHead scope="col" className="w-[150px]">
+                  <TableHead scope="col" className="w-[200px]">
+                    Contact
+                  </TableHead>
+                  <TableHead scope="col" className="w-[170px]">
                     Source
                   </TableHead>
                   <TableHead scope="col">Service</TableHead>
@@ -454,8 +498,10 @@ export function LeadsPanel() {
                   <TableRow
                     key={`${row.id}:${row.updatedAt}`}
                     data-testid="lead-row"
+                    data-source={row.source}
                     className={cn(
-                      isFreshNewLead(row) && "border-l-2 border-l-[#38BDF8]",
+                      "border-l-4",
+                      sourceAccentClasses[row.source] ?? "border-l-[#CBD5E1]",
                     )}
                   >
                     <TableCell>
@@ -480,7 +526,8 @@ export function LeadsPanel() {
                         {fullName(row)}
                       </button>
                     </TableCell>
-                    <TableCell>{renderBadges(row)}</TableCell>
+                    <TableCell>{renderContact(row)}</TableCell>
+                    <TableCell>{renderSource(row)}</TableCell>
                     <TableCell>
                       <span className="block max-w-[260px] truncate text-sm">
                         {row.service || "-"}
@@ -502,10 +549,11 @@ export function LeadsPanel() {
                 type="button"
                 data-testid="lead-card"
                 onClick={(event) => openLead(row, event.currentTarget)}
+                data-source={row.source}
                 className={cn(
-                  "block w-full space-y-2 rounded-lg border border-border bg-white p-4 text-left",
+                  "block w-full space-y-2 rounded-lg border border-border border-l-4 bg-white p-4 text-left",
                   "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  isFreshNewLead(row) && "border-l-2 border-l-[#38BDF8]",
+                  sourceAccentClasses[row.source] ?? "border-l-[#CBD5E1]",
                 )}
               >
                 <span className="flex items-center gap-2 text-sm text-gray-700">
@@ -524,8 +572,27 @@ export function LeadsPanel() {
                   {fullName(row)}
                 </span>
                 <span className="block">
+                  <span className="sr-only">Contact</span>
+                  {hasContactDetails(row) ? (
+                    <>
+                      {row.phone ? (
+                        <span className="block text-sm font-medium text-gray-700">
+                          {row.phone}
+                        </span>
+                      ) : null}
+                      {row.email ? (
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {row.email}
+                        </span>
+                      ) : null}
+                    </>
+                  ) : (
+                    <NoContactBadge />
+                  )}
+                </span>
+                <span className="block">
                   <span className="sr-only">Source</span>
-                  {renderBadges(row)}
+                  {renderSource(row)}
                 </span>
                 <span className="block truncate text-sm text-gray-700">
                   <span className="sr-only">Service</span>

@@ -34,10 +34,23 @@ export function SourceBadge({ source }: { source: string }) {
       data-testid="source-badge"
       className={cn(
         "inline-flex items-center rounded-lg px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide",
-        sourceBadgeClasses[source] ?? "bg-gray-100 text-gray-700",
+        sourceBadgeClasses[source] ?? "border border-[#CBD5E1] bg-white text-gray-700",
       )}
     >
       {sourceLabel(source)}
+    </span>
+  );
+}
+
+// Reads on the row itself so an unworkable lead is never mistaken for one the
+// front desk simply has not called yet.
+export function NoContactBadge() {
+  return (
+    <span
+      data-testid="no-contact-badge"
+      className="inline-flex items-center rounded-lg border border-dashed border-[#94A3B8] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#475569]"
+    >
+      No contact info
     </span>
   );
 }

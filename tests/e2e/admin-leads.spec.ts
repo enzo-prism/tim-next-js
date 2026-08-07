@@ -50,18 +50,22 @@ test.describe("admin leads dashboard (desktop 1440px)", () => {
 
     const table = page.getByTestId("leads-table");
     await expect(table).toBeVisible();
-    for (const column of ["Received", "Name", "Source", "Service", "Status"]) {
+    for (const column of [
+      "Received",
+      "Name",
+      "Contact",
+      "Source",
+      "Service",
+      "Status",
+    ]) {
       await expect(
         table.getByRole("columnheader", { name: column }),
       ).toHaveAttribute("scope", "col");
     }
 
     // Page 1 is a 25-row server window; one fixture row is a test lead, which
-    // the operational view hides by default. Phone/email never appear here.
+    // the operational view hides by default.
     await expect(page.getByTestId("lead-row")).toHaveCount(24);
-    const tableText = (await table.textContent()) ?? "";
-    expect(tableText).not.toContain("example.test");
-    expect(tableText).not.toContain("+1555");
 
     const firstRow = page.getByTestId("lead-row").first();
     await expect(firstRow).toContainText("Test Patient Phoneonly");
@@ -69,6 +73,65 @@ test.describe("admin leads dashboard (desktop 1440px)", () => {
     await expect(firstRow.locator("time")).toContainText(/ago|Just now/);
     await expect(firstRow.getByTestId("source-badge")).toHaveText("Google Ads");
     await expect(firstRow.getByTestId("status-pill")).toHaveText("New");
+  });
+
+  test("puts phone and email on the row so the desk can work the list", async ({
+    page,
+  }) => {
+    await openLeadsDashboard(page);
+
+    // seed-0031 is phone-only: the number is a tel: link, and no email line is
+    // invented to fill the gap.
+    const phoneOnly = page
+      .getByTestId("lead-row")
+      .filter({ hasText: "Patient Phoneonly" });
+    await expect(
+      phoneOnly.getByRole("link", { name: "+15550001031" }),
+    ).toHaveAttribute("href", "tel:+15550001031");
+    await expect(phoneOnly.getByRole("link", { name: /@/ })).toHaveCount(0);
+
+    // seed-0005 is email-only, the mirror case.
+    const emailOnly = page
+      .getByTestId("lead-row")
+      .filter({ hasText: "Patient Epsilon" });
+    await expect(
+      emailOnly.getByRole("link", { name: "test.epsilon@example.test" }),
+    ).toHaveAttribute("href", "mailto:test.epsilon@example.test");
+  });
+
+  test("labels a lead that nobody can contact instead of leaving it blank", async ({
+    page,
+  }) => {
+    await openLeadsDashboard(page);
+
+    // seed-0011 is a historical row with no name, phone or email.
+    const blankRow = page
+      .getByTestId("lead-row")
+      .filter({ hasText: "No name given" });
+    await expect(blankRow).toHaveCount(1);
+    await expect(blankRow.getByTestId("no-contact-badge")).toBeVisible();
+  });
+
+  test("separates paid leads from website leads on every row", async ({
+    page,
+  }) => {
+    await openLeadsDashboard(page);
+
+    const paidRow = page
+      .getByTestId("lead-row")
+      .filter({ hasText: "Patient Phoneonly" });
+    await expect(paidRow).toHaveAttribute("data-source", "Google Ads");
+    // The campaign is the second half of the answer for a paid lead.
+    await expect(paidRow).toContainText("Emergency - Search");
+
+    const websiteRow = page
+      .getByTestId("lead-row")
+      .filter({ hasText: "Patient Phi" });
+    await expect(websiteRow).toHaveAttribute("data-source", "Website form");
+    await expect(websiteRow.getByTestId("source-badge")).toHaveText(
+      "Website form",
+    );
+    await expect(websiteRow).toContainText("Own site");
   });
 
   test("marks fresh new leads with a NEW marker and skips older ones", async ({
@@ -209,6 +272,54 @@ test.describe("admin leads dashboard (desktop 1440px)", () => {
     await expect(nameButton).toBeFocused();
   });
 
+  test("drawer carries every field the record holds", async ({ page }) => {
+    await openLeadsDashboard(page);
+
+    // seed-0003 is the fully attributed website lead.
+    await page
+      .getByRole("button", { name: "Test Patient Gamma", exact: true })
+      .click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+
+    await expect(dialog.getByText("What they asked for")).toBeVisible();
+    await expect(dialog.getByText("Where they came from")).toBeVisible();
+    for (const value of [
+      "/book-appointment", // landing page
+      "hero", // button clicked
+      "family dentist", // utm term
+      "hero-cta", // utm content
+      "gclid-synthetic-0003", // click id
+      // exact: "hero" is also a substring of the utm content value "hero-cta".
+    ]) {
+      await expect(dialog.getByText(value, { exact: true })).toBeVisible();
+    }
+
+    await dialog.getByText("Record details").click();
+    await expect(
+      dialog.getByText("Yes, agreed to be contacted"),
+    ).toBeVisible();
+    await expect(dialog.getByText("sub-synthetic-0003")).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  });
+
+  test("says why a paid lead has no message instead of showing nothing", async ({
+    page,
+  }) => {
+    await openLeadsDashboard(page);
+
+    // seed-0017 is a Google Ads lead with no message.
+    await page
+      .getByRole("button", { name: "Test Patient Pi", exact: true })
+      .click();
+    const dialog = page.getByRole("dialog");
+    await expect(
+      dialog.getByText(/Google Ads lead form collects a name, email and phone/),
+    ).toBeVisible();
+  });
+
   test("drawer closes on backdrop click", async ({ page }) => {
     await openLeadsDashboard(page);
     await page
@@ -329,7 +440,7 @@ test.describe("admin leads dashboard (mobile 390px)", () => {
     );
   });
 
-  test("renders stacked cards with the same five fields, table hidden", async ({
+  test("renders stacked cards with the same fields, table hidden", async ({
     page,
   }) => {
     await stubExternalServices(page);
@@ -345,12 +456,16 @@ test.describe("admin leads dashboard (mobile 390px)", () => {
     const firstCard = cards.first();
     const text = (await firstCard.textContent()) ?? "";
     expect(text).toContain("Test Patient Phoneonly"); // name
+    expect(text).toContain("+15550001031"); // phone, so the card is workable
     expect(text).toContain("Google Ads"); // source badge
+    expect(text).toContain("Emergency - Search"); // campaign
     expect(text).toContain("emergency"); // service
     expect(text).toContain("New"); // status pill + NEW marker
     await expect(firstCard.locator("time")).toHaveAttribute("title", /.+/); // received
-    expect(text).not.toContain("example.test");
-    expect(text).not.toContain("+1555");
+
+    // The card is one tap target, so contact details are text here rather than
+    // nested tel:/mailto: links, which a button may not contain.
+    await expect(firstCard.getByRole("link")).toHaveCount(0);
   });
 
   test("full-card tap opens a full-screen drawer", async ({ page }) => {
