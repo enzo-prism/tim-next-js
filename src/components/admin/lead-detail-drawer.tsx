@@ -12,16 +12,20 @@ import {
 import { LeadLifecycleEditor } from "@/components/admin/lead-lifecycle-editor";
 import {
   NewMarker,
+  SourceBadge,
   StatusPill,
   TestBadge,
 } from "@/components/admin/lead-badges";
 import {
+  consentLabel,
   formatAbsoluteDateTime,
   formatReceivedRelative,
+  formspreeStatusLabel,
   fullName,
   ingestionProvenance,
   isFreshNewLead,
   requestTypeLabel,
+  sourceKindLabel,
   sourceLabel,
 } from "@/components/admin/lead-meta";
 import type {
@@ -66,12 +70,25 @@ function CopyValueButton({ value, label }: { value: string; label: string }) {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
+// `always` keeps a row on screen when the value is empty. Use it for the few
+// fields where "the form asked and they left it blank" is itself the answer --
+// silently dropping those reads as though the question was never put.
+function DetailRow({
+  label,
+  value,
+  always = false,
+}: {
+  label: string;
+  value: string | null;
+  always?: boolean;
+}) {
+  if (!value && !always) return null;
   return (
-    <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+    <div className="grid grid-cols-[128px_1fr] gap-2 text-sm">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="break-words">{value}</dd>
+      <dd className="break-words">
+        {value || <span className="text-muted-foreground">Not provided</span>}
+      </dd>
     </div>
   );
 }
@@ -140,16 +157,9 @@ function DrawerBody({
 }) {
   const name = fullName(row);
   const provenance = ingestionProvenance(row);
-  const hasAttribution =
-    row.campaignName ||
-    row.landingPage ||
-    row.referrer ||
-    row.ctaSource ||
-    row.utmSource ||
-    row.utmMedium ||
-    row.utmCampaign ||
-    row.googleAdsLeadId ||
-    provenance;
+  const isPaidLead = row.source === "Google Ads";
+  const clickId = row.gclid || row.gbraid || row.wbraid;
+  const delivery = formspreeStatusLabel(row.formspreeStatus);
 
   return (
     <SheetContent
@@ -166,6 +176,14 @@ function DrawerBody({
           {isFreshNewLead(row) ? <NewMarker /> : null}
           {row.isTest ? <TestBadge /> : null}
           <StatusPill status={row.leadStatus} />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <SourceBadge source={row.source} />
+          <span className="text-xs text-muted-foreground">
+            {row.campaignName
+              ? `${sourceKindLabel(row.source)} · ${row.campaignName}`
+              : sourceKindLabel(row.source)}
+          </span>
         </div>
         <SheetDescription>
           Received{" "}
@@ -220,10 +238,10 @@ function DrawerBody({
           />
         </DrawerSection>
 
-        <DrawerSection title="Request details">
+        <DrawerSection title="What they asked for">
           <dl className="space-y-2">
-            <DetailRow label="Type" value={requestTypeLabel(row.requestType)} />
-            <DetailRow label="Service" value={row.service} />
+            <DetailRow label="Request" value={requestTypeLabel(row.requestType)} />
+            <DetailRow label="Service" value={row.service} always />
             <DetailRow label="Preferred date" value={row.preferredDate} />
             <DetailRow label="Preferred time" value={row.preferredTime} />
           </dl>
@@ -231,28 +249,46 @@ function DrawerBody({
             <p className="whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">
               {row.message}
             </p>
-          ) : null}
+          ) : (
+            <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+              {isPaidLead
+                ? "No message. The Google Ads lead form collects a name, email and phone number only, so a paid lead never carries a reason for reaching out."
+                : "They did not leave a message."}
+            </p>
+          )}
         </DrawerSection>
 
-        {hasAttribution ? (
-          <details className="rounded-md border border-border p-3">
-            <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Source &amp; attribution
-            </summary>
-            <dl className="mt-3 space-y-2">
-              <DetailRow label="Source" value={sourceLabel(row.source)} />
-              <DetailRow label="Campaign" value={row.campaignName} />
-              <DetailRow label="Lead ID" value={row.googleAdsLeadId} />
-              <DetailRow label="Landing page" value={row.landingPage} />
-              <DetailRow label="Referrer" value={row.referrer} />
-              <DetailRow label="CTA" value={row.ctaSource} />
-              <DetailRow label="UTM source" value={row.utmSource} />
-              <DetailRow label="UTM medium" value={row.utmMedium} />
-              <DetailRow label="UTM campaign" value={row.utmCampaign} />
-              <DetailRow label="Provenance" value={provenance} />
-            </dl>
-          </details>
-        ) : null}
+        <DrawerSection title="Where they came from">
+          <dl className="space-y-2">
+            <DetailRow label="Source" value={sourceLabel(row.source)} />
+            <DetailRow label="Campaign" value={row.campaignName} />
+            <DetailRow label="Campaign ID" value={row.campaignId} />
+            <DetailRow label="Google lead ID" value={row.googleAdsLeadId} />
+            <DetailRow label="Click ID" value={clickId} />
+            <DetailRow label="Landing page" value={row.landingPage} />
+            <DetailRow label="Referrer" value={row.referrer} />
+            <DetailRow label="Button clicked" value={row.ctaSource} />
+            <DetailRow label="UTM source" value={row.utmSource} />
+            <DetailRow label="UTM medium" value={row.utmMedium} />
+            <DetailRow label="UTM campaign" value={row.utmCampaign} />
+            <DetailRow label="UTM term" value={row.utmTerm} />
+            <DetailRow label="UTM content" value={row.utmContent} />
+            <DetailRow label="How it arrived" value={provenance} />
+          </dl>
+        </DrawerSection>
+
+        <details className="rounded-md border border-border p-3">
+          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Record details
+          </summary>
+          <dl className="mt-3 space-y-2">
+            <DetailRow label="Consent" value={consentLabel(row)} always />
+            <DetailRow label="Consent version" value={row.consentVersion} />
+            <DetailRow label="Notification" value={delivery} />
+            <DetailRow label="Submission ID" value={row.submissionId} />
+            <DetailRow label="Record ID" value={row.id} />
+          </dl>
+        </details>
 
         <DrawerSection title="History">
           <dl className="space-y-2">

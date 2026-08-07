@@ -78,12 +78,25 @@ describe("lead source attribution", () => {
     ).toBe("Newsletter");
   });
 
-  it("separates paid search, referral, and direct leads", () => {
+  it("separates paid search from leads that came through our own site", () => {
     expect(normalizeLeadSource({ gclid: "click" })).toBe("Google Ads");
     expect(normalizeLeadSource({ utmSource: "GOOGLE" })).toBe("Google Ads");
     expect(normalizeLeadSource({ utmSource: "instagram" })).toBe("Meta");
-    expect(normalizeLeadSource({ referrer: "https://example.com" })).toBe("Referral");
     expect(normalizeLeadSource({})).toBe("Website form");
+  });
+
+  it("does not turn an organic-search referrer into a referral", () => {
+    // The visitor searched for the practice, landed on the site, and filled in
+    // the form. That is a website lead whose referrer happens to be Google,
+    // not a patient referral.
+    expect(normalizeLeadSource({ referrer: "https://www.google.com/" })).toBe(
+      "Website form",
+    );
+    expect(normalizeLeadSource({ referrer: "https://example.com" })).toBe(
+      "Website form",
+    );
+    // An explicit campaign tag still names its own source.
+    expect(normalizeLeadSource({ utmSource: "referral" })).toBe("Referral");
   });
 });
 

@@ -13,6 +13,7 @@ export type AdminContactItem = {
   requestType: string;
   preferredDate: string | null;
   preferredTime: string | null;
+  submissionId: string | null;
   formspreeStatus: string | null;
   landingPage: string | null;
   referrer: string | null;
@@ -20,6 +21,13 @@ export type AdminContactItem = {
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
+  utmTerm: string | null;
+  utmContent: string | null;
+  gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
+  consentToContact: boolean;
+  consentVersion: string | null;
   source: string;
   leadSource: string;
   leadStatus: LeadStatus;

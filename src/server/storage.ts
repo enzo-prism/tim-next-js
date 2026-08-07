@@ -98,7 +98,9 @@ const leadSourceSql = dsql<string>`CASE
     NULLIF(BTRIM(${contacts.gbraid}), ''),
     NULLIF(BTRIM(${contacts.wbraid}), '')
   ) IS NOT NULL THEN 'Google Ads'
-  WHEN NULLIF(BTRIM(${contacts.referrer}), '') IS NOT NULL THEN 'Referral'
+  -- Deliberately no referrer branch: see normalizeLeadSource in
+  -- src/app/api/admin/contacts/lead-source.ts. These two must agree, or the
+  -- Source filter matches a string the list never displays.
   ELSE 'Website form'
 END`;
 

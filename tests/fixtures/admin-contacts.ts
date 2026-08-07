@@ -41,6 +41,12 @@ type LeadSeed = {
   utmSource?: string | null;
   utmMedium?: string | null;
   utmCampaign?: string | null;
+  utmTerm?: string | null;
+  utmContent?: string | null;
+  gclid?: string | null;
+  consentToContact?: boolean;
+  consentVersion?: string | null;
+  submissionId?: string | null;
   contactedAt?: string | null;
   bookedAt?: string | null;
   arrivedAt?: string | null;
@@ -94,6 +100,12 @@ const SEEDS: LeadSeed[] = [
     preferredDate: "2026-08-11", preferredTime: "morning", source: "Website form",
     leadStatus: "new", ingestedVia: "website-form", landingPage: "/book-appointment",
     ctaSource: "hero",
+    // Fully attributed website lead: exercises every field the drawer can show.
+    submissionId: "sub-synthetic-0003", referrer: "https://www.example.test/search",
+    utmSource: "google", utmMedium: "organic", utmCampaign: "brand",
+    utmTerm: "family dentist", utmContent: "hero-cta",
+    gclid: "gclid-synthetic-0003",
+    consentToContact: true, consentVersion: "2026-01",
   },
   {
     id: "seed-0004", ageMinutes: 2600, firstName: "Test", lastName: "Patient Delta",
@@ -228,11 +240,14 @@ const SEEDS: LeadSeed[] = [
     leadStatus: "lost", ingestedVia: "backfill", lostReason: "Price shopping",
   },
   {
-    id: "seed-0011", ageMinutes: 58000, firstName: "Test", lastName: "Patient Kappa",
-    email: "test.kappa@example.test", phone: "+15550001011", service: "dentures",
-    message: "Asking about insurance coverage.", source: "Website form",
+    // Historical shape: rows exist from before the current form guard with
+    // every field blank, so the UI has to say "nobody can call this" rather
+    // than render an anonymous, unworkable row.
+    id: "seed-0011", ageMinutes: 58000, firstName: "", lastName: "",
+    email: null, phone: null, service: null,
+    message: null, source: "Website form",
     leadStatus: "lost", ingestedVia: "backfill",
-    lostReason: "Went with in-network provider", contactedAt: "2026-07-25T10:00:00Z",
+    lostReason: "No contact details captured", contactedAt: "2026-07-25T10:00:00Z",
   },
   {
     id: "seed-0016", ageMinutes: 80000, firstName: "Test", lastName: "Patient Omicron",
@@ -307,6 +322,7 @@ const toContactItem = (seed: LeadSeed, now: number): AdminContactItem => {
     requestType: seed.requestType ?? "contact",
     preferredDate: seed.preferredDate ?? null,
     preferredTime: seed.preferredTime ?? null,
+    submissionId: seed.submissionId ?? null,
     formspreeStatus:
       seed.source === "formspree-historical" || seed.source === "website"
         ? "delivered"
@@ -317,6 +333,13 @@ const toContactItem = (seed: LeadSeed, now: number): AdminContactItem => {
     utmSource: seed.utmSource ?? null,
     utmMedium: seed.utmMedium ?? null,
     utmCampaign: seed.utmCampaign ?? null,
+    utmTerm: seed.utmTerm ?? null,
+    utmContent: seed.utmContent ?? null,
+    gclid: seed.gclid ?? null,
+    gbraid: null,
+    wbraid: null,
+    consentToContact: seed.consentToContact ?? false,
+    consentVersion: seed.consentVersion ?? null,
     source: seed.source,
     leadSource: seed.source,
     leadStatus: seed.leadStatus,
