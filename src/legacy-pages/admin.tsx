@@ -29,6 +29,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LeadsPanel } from "@/components/admin/leads-panel";
+import { SignOutButton } from "@/components/admin/sign-out-button";
 
 type DaysOption = 7 | 30 | 90;
 
@@ -207,9 +208,14 @@ function QueryErrorCard({ error }: { error: unknown }) {
           <CardTitle className="text-base">Unauthorized</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>Refresh the page and enter the admin password again.</p>
-          <Button variant="outline" onClick={() => window.location.reload()}>
-            Reload & Authenticate
+          <p>Your session has expired. Sign in again to keep working.</p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              window.location.href = "/admin/login";
+            }}
+          >
+            Sign in again
           </Button>
         </CardContent>
       </Card>
@@ -313,13 +319,18 @@ export default function Admin() {
   const showRange = tab === "ga4" || tab === "gsc";
 
   return (
-    <div className="pt-16 pb-20 bg-white">
+    <div className="min-h-screen bg-background pt-16 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-gray-900">Admin</h1>
-            <p className="text-sm text-gray-600">
-              Leads, Google Analytics (GA4), Search Console, and changelog.
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">
+              Family First Smile Care
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              Patient leads
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Everyone who has asked to be contacted, newest first.
             </p>
           </div>
 
@@ -352,18 +363,21 @@ export default function Admin() {
               </div>
             ) : null}
 
-            <Button variant="outline" onClick={refresh} disabled={isRefreshing}>
-              {isRefreshing ? "Refreshing..." : "Refresh"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={refresh} disabled={isRefreshing}>
+                {isRefreshing ? "Refreshing..." : "Refresh"}
+              </Button>
+              <SignOutButton />
+            </div>
           </div>
         </div>
 
         <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="mt-10">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="ga4">Google Analytics</TabsTrigger>
-            <TabsTrigger value="gsc">Search Console</TabsTrigger>
-            <TabsTrigger value="changelog">Changelog</TabsTrigger>
+            <TabsTrigger value="ga4">Website traffic</TabsTrigger>
+            <TabsTrigger value="gsc">Google Search</TabsTrigger>
+            <TabsTrigger value="changelog">Updates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="leads" className="mt-6">

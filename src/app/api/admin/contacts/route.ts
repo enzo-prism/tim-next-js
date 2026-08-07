@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireAdminBasicAuth } from "@/app/api/admin/contacts/admin-auth";
+import { requireAdminSession } from "@/app/api/admin/contacts/admin-auth";
 import { toAdminContactItem } from "@/app/api/admin/contacts/contact-dto";
 import type { AdminContactsResponse } from "@/app/api/admin/contacts/types";
 import { LEAD_STATUS_VALUES, type LeadStatus } from "@/server/schema";
@@ -59,7 +59,7 @@ const listContacts = async (input: ContactListInput) => {
 };
 
 export async function GET(req: NextRequest) {
-  const authResponse = requireAdminBasicAuth(req);
+  const authResponse = await requireAdminSession(req);
   if (authResponse) return authResponse;
 
   if (req.nextUrl.searchParams.has("q")) {
@@ -102,7 +102,7 @@ const searchSchema = z
   .strict();
 
 export async function POST(req: NextRequest) {
-  const authResponse = requireAdminBasicAuth(req);
+  const authResponse = await requireAdminSession(req);
   if (authResponse) return authResponse;
 
   const contentLength = Number(req.headers.get("content-length") || 0);

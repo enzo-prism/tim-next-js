@@ -91,6 +91,48 @@ function ChipGroup({
   );
 }
 
+// The four numbers the front desk actually acts on, in the order the lead
+// moves through them. Deliberately not every status: "no-show" and "lost" are
+// filters, not headlines.
+const SUMMARY_STATUSES: Array<{ value: LeadStatus; label: string }> = [
+  { value: "new", label: "New" },
+  { value: "contacted", label: "Contacted" },
+  { value: "booked", label: "Booked" },
+  { value: "arrived", label: "Arrived" },
+];
+
+function SummaryTile({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-lg border p-4 text-left transition-colors",
+        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        active
+          ? "border-primary bg-[#E0F2FE]"
+          : "border-border bg-white hover:bg-[#F0F9FF]",
+      )}
+    >
+      <div className="text-2xl font-bold tabular-nums text-foreground">{count}</div>
+      <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+    </button>
+  );
+}
+
 export function LeadsPanel() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -147,7 +189,6 @@ export function LeadsPanel() {
   const items = contactsQuery.data?.items ?? [];
   const sourceSummary = contactsQuery.data?.sourceSummary ?? [];
   const countsByStatus = contactsQuery.data?.countsByStatus ?? {};
-  const newCount = countsByStatus.new ?? 0;
 
   // Operational view hides test leads by default; the Type chip filters
   // client-side because the list endpoint has no requestType filter yet.
@@ -226,18 +267,27 @@ export function LeadsPanel() {
 
   return (
     <div className="space-y-4">
+      <div
+        className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+        data-testid="lead-summary"
+      >
+        {SUMMARY_STATUSES.map((entry) => (
+          <SummaryTile
+            key={entry.value}
+            label={entry.label}
+            count={countsByStatus[entry.value] ?? 0}
+            active={status === entry.value}
+            onClick={() => {
+              setStatus((current) => (current === entry.value ? "all" : entry.value));
+              setPage(0);
+            }}
+          />
+        ))}
+      </div>
+
       <div className="space-y-4 rounded-lg border border-border bg-white p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
-            <FilterChip
-              pressed={status === "new"}
-              onClick={() => {
-                setStatus("new");
-                setPage(0);
-              }}
-            >
-              {newCount} new
-            </FilterChip>
             <div className="space-y-1.5">
               <Label htmlFor="leads-search" className="text-xs">
                 Search leads
@@ -250,7 +300,7 @@ export function LeadsPanel() {
                   setPage(0);
                 }}
                 placeholder="Name, service, campaign..."
-                className="w-full sm:w-[240px]"
+                className="w-full sm:w-[280px]"
               />
             </div>
           </div>

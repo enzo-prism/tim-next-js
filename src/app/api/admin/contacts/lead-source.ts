@@ -30,5 +30,7 @@ export const normalizeLeadSource = (contact: {
   if (utmSource) return canonicalizeUtmSource(utmSource);
   if (contact.gclid || contact.gbraid || contact.wbraid) return "Google Ads";
   if (contact.referrer?.trim()) return "Referral";
-  return "Direct / unknown";
+  // Every remaining lead reached us through a form on the site, so name that
+  // rather than reporting an absence of attribution.
+  return "Website form";
 };

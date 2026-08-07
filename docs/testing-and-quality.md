@@ -163,7 +163,7 @@ Priority order:
 ## Security Coverage Notes
 
 - Public form throttling is still best-effort unless a shared store or edge/WAF rate limit is added in front of the app.
-- Admin auth now has middleware throttling for repeated failures, but it is still shared Basic Auth rather than per-person identity.
+- Admin auth throttles repeated failed sign-ins, but it is still one shared password rather than per-person identity.
 - CSP is in `report-only` mode first so violations can be observed before enforcement.
 
 ## Release Readiness Checklist

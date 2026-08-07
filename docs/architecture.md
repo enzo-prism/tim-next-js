@@ -54,7 +54,7 @@ Primary design goals:
 
 ### Admin flow
 
-1. Middleware guards `/admin` and `/api/admin/*` using Basic Auth (`src/middleware.ts`).
+1. Middleware guards `/admin`, `/admin/*` and `/api/admin/*` with a single-password session cookie (`src/middleware.ts`, `src/server/admin-session.ts`). `/admin/login` and `/api/admin/session` are exempt so sign-in can happen.
 2. Admin UI (`src/legacy-pages/admin.tsx`) queries:
    - `/api/admin/changelog`
    - `/api/admin/contacts`
@@ -101,10 +101,10 @@ Primary design goals:
 
 ## Security Model
 
-- Middleware-enforced Basic Auth for admin routes
+- Middleware-enforced session-cookie gate for admin routes
 - Timing-safe password comparison logic
 - `Cache-Control: no-store` on protected responses
-- Production hard requirement for both `ADMIN_USERNAME` and `ADMIN_PASSWORD`
+- `ADMIN_PASSWORD` overrides the shipped default password when set
 - Security headers set in `next.config.ts`:
   - `Strict-Transport-Security`
   - `X-Frame-Options: SAMEORIGIN`

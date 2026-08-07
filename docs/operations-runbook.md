@@ -9,7 +9,7 @@ Provide a fast, repeatable response guide for production incidents and routine o
 - Public site: Next.js app on Vercel
 - Contact persistence: Postgres via Drizzle (`contacts` table)
 - Appointment relay: `POST /api/appointments` -> internal DB + Formspree relay
-- Admin auth: middleware Basic Auth (`/admin`, `/api/admin/*`)
+- Admin auth: single-password session cookie (`/admin`, `/admin/*`, `/api/admin/*`); sign in at `/admin/login`
 - Admin auth throttling: repeated failed attempts return `429` with `Retry-After`
 - ElevenLabs widget: pinned custom-element embed on public routes only
 - Analytics APIs:
@@ -79,7 +79,7 @@ Symptoms:
 
 Actions:
 
-1. Check `ADMIN_USERNAME` and `ADMIN_PASSWORD` exist in Vercel production env.
+1. Check `ADMIN_PASSWORD` in Vercel production env, or confirm the shipped default is intended.
 2. Re-test using:
    - `curl -i -u "<username>:<password>" https://<domain>/api/admin/contacts`
 3. If `503 missing_config`, set both admin credentials and redeploy.
@@ -88,7 +88,7 @@ Actions:
 
 ## Admin auth hardening path
 
-The current production control is shared Basic Auth plus failure throttling. A stronger path requires infrastructure that is not part of this repo today:
+The current production control is a shared password plus sign-in throttling. A stronger path requires infrastructure that is not part of this repo today:
 
 1. move admin access behind an identity-aware proxy or SSO-capable edge product
 2. issue individual accounts instead of one shared password

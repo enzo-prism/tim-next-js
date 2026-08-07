@@ -23,7 +23,6 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `vercel whoami`
 5. Production secrets available:
    - `DATABASE_URL`
-   - `ADMIN_USERNAME`
    - `ADMIN_PASSWORD`
    - `FORMSPREE_APPOINTMENT_ENDPOINT`
    - `FORMSPREE_CONTACT_ENDPOINT`
@@ -90,7 +89,6 @@ Set variables in Vercel for `production` (and `preview` where needed):
 
 ```bash
 vercel env add DATABASE_URL production
-vercel env add ADMIN_USERNAME production
 vercel env add ADMIN_PASSWORD production
 vercel env add CANONICAL_HOST production
 vercel env add NEXT_PUBLIC_CANONICAL_HOST production
@@ -259,9 +257,13 @@ curl -i https://www.famfirstsmile.com/api/admin/contacts
 Admin authorized check:
 
 ```bash
-curl -sS -o /dev/null -w '%{http_code}\n' \
-  -u "${ADMIN_USERNAME}:${ADMIN_PASSWORD}" \
+cookie_jar="$(mktemp)"
+curl -sS -c "$cookie_jar" -H 'Content-Type: application/json' \
+  -d "{\"password\":\"${ADMIN_PASSWORD}\"}" \
+  -o /dev/null "https://www.famfirstsmile.com/api/admin/session"
+curl -sS -b "$cookie_jar" -o /dev/null -w '%{http_code}\n' \
   "https://www.famfirstsmile.com/api/admin/contacts?limit=1&offset=0"
+rm -f "$cookie_jar"
 ```
 
 The authorized status-only check should print `200` without placing patient records in terminal output or logs.

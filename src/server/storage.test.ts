@@ -83,7 +83,7 @@ describe("lead source attribution", () => {
     expect(normalizeLeadSource({ utmSource: "GOOGLE" })).toBe("Google Ads");
     expect(normalizeLeadSource({ utmSource: "instagram" })).toBe("Meta");
     expect(normalizeLeadSource({ referrer: "https://example.com" })).toBe("Referral");
-    expect(normalizeLeadSource({})).toBe("Direct / unknown");
+    expect(normalizeLeadSource({})).toBe("Website form");
   });
 });
 

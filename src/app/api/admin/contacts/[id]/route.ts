@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireAdminBasicAuth } from "@/app/api/admin/contacts/admin-auth";
+import { requireAdminSession } from "@/app/api/admin/contacts/admin-auth";
 import { toAdminContactDetail, toAdminContactItem } from "@/app/api/admin/contacts/contact-dto";
 import type { UpdateAdminContactResponse } from "@/app/api/admin/contacts/types";
 import { LEAD_STATUS_VALUES } from "@/server/schema";
@@ -38,7 +38,7 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  const authResponse = requireAdminBasicAuth(request);
+  const authResponse = await requireAdminSession(request);
   if (authResponse) return authResponse;
 
   const { id } = await context.params;
@@ -71,7 +71,7 @@ export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  const authResponse = requireAdminBasicAuth(request);
+  const authResponse = await requireAdminSession(request);
   if (authResponse) return authResponse;
 
   const contentLength = Number(request.headers.get("content-length") || 0);
