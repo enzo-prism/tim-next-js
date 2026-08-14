@@ -29,6 +29,8 @@ const getCanonicalHost = () => {
   const raw = process.env.CANONICAL_HOST?.trim() || "https://www.famfirstsmile.com";
   try {
     const host = new URL(raw).host;
+    // Vercel currently 308s apex → www. Forcing www here keeps one tagged
+    // host and avoids a middleware 301 / Vercel 308 redirect loop.
     return host === "famfirstsmile.com" ? "www.famfirstsmile.com" : host;
   } catch {
     return "";

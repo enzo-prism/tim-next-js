@@ -53,7 +53,7 @@ Configured in `next.config.ts` and middleware:
 - `/?page_id=1073` -> `/patient-info` (middleware)
 - `/Book-Appointment` -> `/book-appointment` (middleware; preserves campaign query parameters)
 - `/Services/Invisalign` -> `/services/invisalign` (middleware; preserves campaign query parameters)
-- apex and other noncanonical custom hosts -> `https://www.famfirstsmile.com` (middleware)
+- apex and other noncanonical custom hosts -> `https://www.famfirstsmile.com` (middleware; Vercel also 308s apex → www, so only www is tagged)
 
 ## Metadata Strategy
 

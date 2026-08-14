@@ -63,6 +63,10 @@ declare global {
 
 let gtagInitialized = false;
 
+export const resetGtagInitialization = () => {
+  gtagInitialized = false;
+};
+
 const getStoredAnalyticsConsent = (): AnalyticsConsent | null => {
   if (typeof window === "undefined") return null;
   try {
@@ -192,8 +196,11 @@ const ensureGtag = () => {
 
   window.dataLayer = window.dataLayer || [];
   if (!window.gtag) {
-    window.gtag = function gtag(...args: any[]) {
-      window.dataLayer.push(args);
+    // Push the Arguments object, not a rest-parameter array. gtag.js replays
+    // the queue and expects the same shape as the official snippet.
+    window.gtag = function gtag() {
+      // eslint-disable-next-line prefer-rest-params -- gtag.js queue replay
+      window.dataLayer.push(arguments);
     };
   }
 

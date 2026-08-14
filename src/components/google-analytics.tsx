@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import Script from "next/script";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
@@ -11,7 +10,6 @@ import {
   ANALYTICS_CONSENT_STORAGE_KEY,
   initGA,
   setAnalyticsConsent,
-  trackPageView,
 } from "@/lib/analytics";
 
 type ConsentState = "loading" | "prompt" | "granted" | "denied";
@@ -20,10 +18,34 @@ const VercelAnalytics = dynamic(() => import("@/components/vercel-analytics"), {
   ssr: false,
 });
 
+const GTAG_SCRIPT_ID = "google-analytics";
+
+const loadGtagScript = () => {
+  if (typeof document === "undefined") return;
+
+  const existing = document.getElementById(GTAG_SCRIPT_ID) as HTMLScriptElement | null;
+  if (existing) {
+    initGA();
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.id = GTAG_SCRIPT_ID;
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  script.addEventListener(
+    "load",
+    () => {
+      initGA();
+    },
+    { once: true },
+  );
+  document.head.appendChild(script);
+};
+
 export default function GoogleAnalytics() {
   const pathname = usePathname();
   const [consent, setConsent] = useState<ConsentState>("loading");
-  const trackCurrentPageOnReadyRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -34,10 +56,14 @@ export default function GoogleAnalytics() {
     }
   }, []);
 
+  useEffect(() => {
+    if (consent !== "granted") return;
+    loadGtagScript();
+  }, [consent]);
+
   if (pathname === "/admin" || pathname.startsWith("/admin/")) return null;
 
   const chooseConsent = (nextConsent: "granted" | "denied") => {
-    trackCurrentPageOnReadyRef.current = nextConsent === "granted";
     setAnalyticsConsent(nextConsent);
     setConsent(nextConsent);
     window.setTimeout(() => {
@@ -47,23 +73,7 @@ export default function GoogleAnalytics() {
 
   return (
     <>
-      {consent === "granted" ? (
-        <>
-          <Script
-            id="google-analytics"
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-            strategy="afterInteractive"
-            onReady={() => {
-              initGA();
-              if (trackCurrentPageOnReadyRef.current) {
-                trackCurrentPageOnReadyRef.current = false;
-                trackPageView(window.location.pathname);
-              }
-            }}
-          />
-          <VercelAnalytics />
-        </>
-      ) : null}
+      {consent === "granted" ? <VercelAnalytics /> : null}
 
       {consent === "prompt" ? (
         <section

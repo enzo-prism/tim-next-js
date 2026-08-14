@@ -1,5 +1,18 @@
-export const GA_MEASUREMENT_ID =
-  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-L7MH47XYXL";
+export const CANONICAL_GA_MEASUREMENT_ID = "G-L7MH47XYXL";
+
+/** Vite-era measurement ID for retired GA4 property 500238593. Never send hits. */
+export const RETIRED_GA_MEASUREMENT_IDS: readonly string[] = ["G-54ESSN4BF8"];
+
+export const resolveGaMeasurementId = (raw?: string | null) => {
+  const value = raw?.trim() ?? "";
+  // Property 518867337 is the only live GA4 destination. Empty, whitespace,
+  // retired (G-54ESSN4BF8 / 500238593), and any other G- ID are ignored.
+  return value === CANONICAL_GA_MEASUREMENT_ID ? value : CANONICAL_GA_MEASUREMENT_ID;
+};
+
+export const GA_MEASUREMENT_ID = resolveGaMeasurementId(
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+);
 
 export const GOOGLE_ADS_TAG_ID =
   process.env.NEXT_PUBLIC_GOOGLE_ADS_TAG_ID || "AW-11373090310";

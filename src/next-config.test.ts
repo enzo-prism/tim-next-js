@@ -43,5 +43,7 @@ describe("next config regressions", () => {
     expect(csp).toContain(
       "report-uri https://www.famfirstsmile.com/api/security/csp-report",
     );
+    expect(csp).toContain("https://analytics.google.com");
+    expect(csp).toContain("https://www.googletagmanager.com");
   });
 });

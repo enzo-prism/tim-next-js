@@ -5,6 +5,7 @@ import {
   GOOGLE_ADS_TAG_ID,
 } from "@/lib/tracking-config";
 import {
+  resetGtagInitialization,
   sanitizeSiteEventPayload,
   trackAppointmentBookingAbandonment,
   trackAppointmentBookingStepComplete,
@@ -71,6 +72,7 @@ const setupBrowserGlobals = (
 describe("analytics custom events", () => {
   beforeEach(() => {
     vercelTrackMock.mockClear();
+    resetGtagInitialization();
   });
 
   afterEach(() => {
@@ -184,6 +186,7 @@ describe("analytics custom events", () => {
       "https://famfirstsmile.com/?utm_source=google&utm_medium=cpc&utm_campaign=los-gatos&gclid=abc123",
     );
     expect(payload.page_path).toBe("/");
+    expect(payload.send_to).toBe("G-L7MH47XYXL");
   });
 
   it("drops non-campaign query parameters from page_location", () => {
