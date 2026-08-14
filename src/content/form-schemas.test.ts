@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   appointmentDetailsStepSchema,
   appointmentFormSchema,
@@ -10,6 +10,15 @@ import {
 } from "@/content/form-schemas";
 
 describe("public lead schemas", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-24T16:00:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("requires explicit contact consent", () => {
     const result = contactFormSchema.safeParse({
       company: "",
