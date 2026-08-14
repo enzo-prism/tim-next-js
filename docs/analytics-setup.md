@@ -7,7 +7,7 @@
 Nothing described in this document runs before the visitor opts in.
 
 1. `src/app/layout.tsx` sets `gtag('consent', 'default', ...)` to `denied` for `analytics_storage`, `ad_storage`, `ad_user_data`, and `ad_personalization`, with `wait_for_update: 500`, before any tag loads.
-2. `src/components/google-analytics.tsx` renders the consent prompt and mounts the GA script and Vercel Analytics only after consent is granted. The choice persists in `localStorage` under `ffsc_analytics_consent_v1`.
+2. `src/components/google-analytics.tsx` renders the consent prompt and injects `gtag.js` plus Vercel Analytics only after consent is granted. The tag is appended with `document.createElement("script")` (not a conditionally rendered `next/script`, which can fail to load). The choice persists in `localStorage` under `ffsc_analytics_consent_v1`.
 3. Every helper in `src/lib/analytics.ts` re-checks stored consent, so a denied or undecided visitor emits nothing even if a helper is called directly.
 
 Expect reported traffic and conversions to be lower than raw visits. That is the consent gate working, not a tracking fault.
@@ -84,13 +84,16 @@ Vercel custom events require a Vercel plan that supports custom events. Pageview
 
 ### GA4 page tracking
 
-1. `src/components/google-analytics.tsx` loads `gtag.js` and initializes GA4 using:
-   - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (fallback `G-L7MH47XYXL`)
+1. `src/components/google-analytics.tsx` loads `gtag.js` after Allow and initializes GA4 using measurement ID `G-L7MH47XYXL` only. `NEXT_PUBLIC_GA_MEASUREMENT_ID` is accepted when it matches that ID; empty, retired, or any other value is ignored.
 2. GA4 is configured with `send_page_view: false`.
-3. `src/components/route-analytics.tsx` listens for route changes.
+3. `src/components/route-analytics.tsx` listens for route changes **and** for `ffsc:analytics-consent`, so the first `page_view` after Allow does not depend on the script `load` callback.
 4. `trackPageView(...)` in `src/lib/analytics.ts` sends explicit `page_view` events to GA4, with `page_location` built through the shared URL policy so campaign parameters survive.
 
 This pattern is intentional for App Router SPA navigation accuracy. It only stays accurate while the GA4 property-side setting described in "Required GA4 property configuration" is left off.
+
+Retired property `500238593` (historical measurement ID `G-54ESSN4BF8` from the Vite app) must not receive hits. Do not add a second GA4 ID, GTM container, or `gtag('config', ...)` destination.
+
+Live tagging host is `www.famfirstsmile.com`. Apex `famfirstsmile.com` 308s there at Vercel, and middleware keeps www authoritative so the two hosts cannot loop. Configure the GA4 stream website URL as `https://www.famfirstsmile.com`.
 
 ### Google Ads conversion tracking
 
@@ -152,7 +155,7 @@ A primary conversion action that cannot fire makes every campaign bid toward a t
 
 ### Public tracking vars
 
-- `NEXT_PUBLIC_GA_MEASUREMENT_ID` (currently `G-L7MH47XYXL`)
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` (must be `G-L7MH47XYXL`; any other value is ignored)
 - `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`
 - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
 
@@ -180,7 +183,7 @@ Google-provided base snippet for this property:
 </script>
 ```
 
-This project already implements an equivalent setup in `src/app/layout.tsx`.
+This project already implements an equivalent setup: consent defaults in `src/app/layout.tsx`, then `gtag.js` injected from `src/components/google-analytics.tsx` after Allow.
 
 ## Validation Checklist (Production)
 
@@ -219,6 +222,7 @@ Then:
    - service account email is not added as an owner/user in Search Console property.
 4. Route transitions not tracked:
    - `RouteAnalytics` removed or `trackPageView` not firing on pathname change.
+   - First page view after Allow missing: consent event listener removed, so collection waits on a script callback that never runs.
 5. Vercel Analytics stays blank after deploy:
    - Web Analytics is not enabled in the Vercel project, an ad/content blocker is suppressing the script, or nobody has visited the deployed site since the change.
 6. Custom events appear in GA4 but not as breakdowns:
@@ -233,6 +237,8 @@ Then:
    - the Ads conversion is firing without `send_to`, so gtag is broadcasting it to the GA4 destination as well.
 11. Google Ads reports far fewer conversions than GA4 reports leads:
    - check what the primary conversion actions on the "Submit lead form" goal are actually keyed to. A page-load conversion pointed at a domain this site does not serve will sit at zero forever while still driving bidding.
+12. GA4 "no data received in the past 48 hours" with the consent prompt still appearing:
+   - `gtag.js` was mounted with a conditionally rendered `next/script`. Load it with a DOM `<script>` after Allow, and send `page_view` from `RouteAnalytics` on the consent event.
 
 ## Hardening Recommendations
 

@@ -29,7 +29,8 @@ cp .env.example .env.local
 These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
 
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID`
-  - default fallback: `G-L7MH47XYXL`
+  - live ID: `G-L7MH47XYXL` (property `518867337`)
+  - empty, whitespace, `G-54ESSN4BF8` (retired property `500238593`), and any other value are ignored
 - `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`
   - default fallback: `AW-11373090310`
 - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`

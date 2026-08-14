@@ -20,7 +20,7 @@ const reportOnlyCsp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://i.postimg.cc https://www.google-analytics.com https://www.googletagmanager.com https://www.instagram.com https://*.cdninstagram.com https://lh3.googleusercontent.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://vitals.vercel-insights.com https://*.vercel-insights.com https://api.elevenlabs.io https://*.elevenlabs.io https://formspree.io https://cdn.jsdelivr.net https://www.instagram.com",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://vitals.vercel-insights.com https://*.vercel-insights.com https://api.elevenlabs.io https://*.elevenlabs.io https://formspree.io https://cdn.jsdelivr.net https://www.instagram.com",
   "media-src 'self' blob: https://*.vimeocdn.com https://vod-progressive.akamaized.net",
   "frame-src 'self' https://player.vimeo.com https://www.instagram.com https://platform.instagram.com",
   `report-uri ${cspReportUrl}`,
