@@ -97,6 +97,8 @@ describe("appointment API", () => {
   });
 
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-24T16:00:00.000Z"));
     vi.clearAllMocks();
     mocks.getContactBySubmissionId.mockResolvedValue(undefined);
     mocks.createContact.mockResolvedValue(storedAppointment());
