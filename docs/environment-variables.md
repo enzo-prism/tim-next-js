@@ -32,8 +32,10 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
   - live ID: `G-L7MH47XYXL` (property `518867337`)
   - empty, whitespace, `G-54ESSN4BF8` (retired property `500238593`), and any other value are ignored
 - `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`
-  - default fallback: `AW-11373090310`
+  - optional; empty, whitespace, and the rejected Exquisite Dentistry Ads fallback are treated as unset
+  - there is no default Ads tag
 - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
+  - used only when a valid Ads tag is configured
   - default fallback: `ads_conversion_Submit_lead_form_1`
 ## Vercel Web Analytics
 

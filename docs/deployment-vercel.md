@@ -93,8 +93,9 @@ vercel env add ADMIN_PASSWORD production
 vercel env add CANONICAL_HOST production
 vercel env add NEXT_PUBLIC_CANONICAL_HOST production
 vercel env add NEXT_PUBLIC_GA_MEASUREMENT_ID production
-vercel env add NEXT_PUBLIC_GOOGLE_ADS_TAG_ID production
-vercel env add NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT production
+# Ads tagging is optional. Do not set the rejected Exquisite Dentistry Ads fallback.
+# vercel env add NEXT_PUBLIC_GOOGLE_ADS_TAG_ID production
+# vercel env add NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT production
 vercel env add FORMSPREE_APPOINTMENT_ENDPOINT production
 vercel env add FORMSPREE_CONTACT_ENDPOINT production
 vercel env add GA4_PROPERTY_ID production

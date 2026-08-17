@@ -3,6 +3,7 @@ import {
   CANONICAL_GA_MEASUREMENT_ID,
   RETIRED_GA_MEASUREMENT_IDS,
   resolveGaMeasurementId,
+  resolveGoogleAdsTagId,
 } from "@/lib/tracking-config";
 
 describe("GA4 measurement ID", () => {
@@ -30,5 +31,34 @@ describe("GA4 measurement ID", () => {
 
     const { GA_MEASUREMENT_ID } = await import("@/lib/tracking-config");
     expect(GA_MEASUREMENT_ID).toBe("G-L7MH47XYXL");
+  });
+});
+
+describe("Google Ads tag ID", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it("treats empty or whitespace env as unset", () => {
+    expect(resolveGoogleAdsTagId(undefined)).toBeUndefined();
+    expect(resolveGoogleAdsTagId("")).toBeUndefined();
+    expect(resolveGoogleAdsTagId("   ")).toBeUndefined();
+  });
+
+  it("rejects the Exquisite Dentistry Ads fallback", () => {
+    expect(resolveGoogleAdsTagId(`AW-${11373090310}`)).toBeUndefined();
+  });
+
+  it("accepts a non-rejected Ads tag", () => {
+    expect(resolveGoogleAdsTagId("AW-00000000000")).toBe("AW-00000000000");
+  });
+
+  it("rejects the Exquisite Dentistry Ads fallback even when the env is set", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GOOGLE_ADS_TAG_ID", `AW-${11373090310}`);
+    vi.resetModules();
+
+    const { GOOGLE_ADS_TAG_ID } = await import("@/lib/tracking-config");
+    expect(GOOGLE_ADS_TAG_ID).toBeUndefined();
   });
 });

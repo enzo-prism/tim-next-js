@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   GA_MEASUREMENT_ID,
   GOOGLE_ADS_CONVERSION_EVENT,
-  GOOGLE_ADS_TAG_ID,
 } from "@/lib/tracking-config";
 import {
   resetGtagInitialization,
@@ -76,6 +75,7 @@ describe("analytics custom events", () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
 
@@ -204,18 +204,31 @@ describe("analytics custom events", () => {
     expect(payload.page_location).not.toContain("note");
   });
 
-  it("scopes the Ads conversion to the Ads destination only", () => {
+  it("does not send an Ads conversion when no Ads tag is configured", () => {
     const { gtagMock } = setupBrowserGlobals("/book-appointment");
 
     trackAppointmentSubmitSuccess("invisalign", "e2f1c0aa-1111-4222-8333-444455556666");
 
-    expect(gtagMock).toHaveBeenCalledWith("event", GOOGLE_ADS_CONVERSION_EVENT, {
-      send_to: GOOGLE_ADS_TAG_ID,
-      transaction_id: "e2f1c0aa-1111-4222-8333-444455556666",
-    });
+    expect(
+      gtagMock.mock.calls.some((call) => call[1] === GOOGLE_ADS_CONVERSION_EVENT),
+    ).toBe(false);
+    expect(gtagMock.mock.calls.some((call) => call[0] === "config" && call[1] !== GA_MEASUREMENT_ID)).toBe(
+      false,
+    );
+    expect(gtagMock).toHaveBeenCalledWith(
+      "event",
+      "generate_lead",
+      expect.objectContaining({
+        form_type: "appointment",
+        lead_source: "appointment_form",
+        location: "book_appointment_page",
+        page_path: "/book-appointment",
+        service_id: "invisalign",
+      }),
+    );
   });
 
-  it("tracks appointment success as an Ads conversion and GA4 lead", () => {
+  it("tracks appointment success as a GA4 lead without an Ads send_to event", () => {
     const { gtagMock } = setupBrowserGlobals("/book-appointment");
 
     trackAppointmentSubmitSuccess(
@@ -223,10 +236,9 @@ describe("analytics custom events", () => {
       "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
     );
 
-    expect(gtagMock).toHaveBeenCalledWith("event", GOOGLE_ADS_CONVERSION_EVENT, {
-      send_to: GOOGLE_ADS_TAG_ID,
-      transaction_id: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
-    });
+    expect(
+      gtagMock.mock.calls.some((call) => call[1] === GOOGLE_ADS_CONVERSION_EVENT),
+    ).toBe(false);
     expect(gtagMock).toHaveBeenCalledWith(
       "event",
       "generate_lead",
@@ -246,6 +258,29 @@ describe("analytics custom events", () => {
         service_id: "dental-exams",
       }),
     );
+  });
+
+  it("scopes the Ads conversion to a configured Ads tag", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GOOGLE_ADS_TAG_ID", "AW-00000000000");
+    vi.resetModules();
+
+    const { trackAppointmentSubmitSuccess, resetGtagInitialization } = await import(
+      "@/lib/analytics"
+    );
+    const { GOOGLE_ADS_CONVERSION_EVENT, GOOGLE_ADS_TAG_ID } = await import(
+      "@/lib/tracking-config"
+    );
+    resetGtagInitialization();
+    const { gtagMock } = setupBrowserGlobals("/book-appointment");
+
+    trackAppointmentSubmitSuccess("invisalign", "e2f1c0aa-1111-4222-8333-444455556666");
+
+    expect(GOOGLE_ADS_TAG_ID).toBe("AW-00000000000");
+    expect(gtagMock).toHaveBeenCalledWith("config", "AW-00000000000");
+    expect(gtagMock).toHaveBeenCalledWith("event", GOOGLE_ADS_CONVERSION_EVENT, {
+      send_to: "AW-00000000000",
+      transaction_id: "e2f1c0aa-1111-4222-8333-444455556666",
+    });
   });
 
   it("tracks the two-step appointment funnel without patient details", () => {
