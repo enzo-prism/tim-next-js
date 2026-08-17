@@ -34,4 +34,21 @@ describe("GA4 collection contracts", () => {
     expect(tag).not.toContain("G-54ESSN4BF8");
     expect(analytics).not.toMatch(/G-[A-Z0-9]{6,}/);
   });
+
+  it("renders the consent prompt in the initial UI state", () => {
+    const source = read("./google-analytics.tsx");
+
+    expect(source).toContain('useState<ConsentState>("prompt")');
+    expect(source).not.toContain('"loading"');
+    expect(source).toContain('aria-label="Allow analytics"');
+  });
+
+  it("does not ship a hardcoded Google Ads tag", () => {
+    const tracking = read("../lib/tracking-config.ts");
+    const analytics = read("../lib/analytics.ts");
+
+    expect(tracking).not.toMatch(/AW-\d+/);
+    expect(analytics).not.toMatch(/AW-\d+/);
+    expect(tracking).toContain("rejected Exquisite Dentistry Ads fallback");
+  });
 });

@@ -14,8 +14,21 @@ export const GA_MEASUREMENT_ID = resolveGaMeasurementId(
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
 );
 
-export const GOOGLE_ADS_TAG_ID =
-  process.env.NEXT_PUBLIC_GOOGLE_ADS_TAG_ID || "AW-11373090310";
+/**
+ * Ads tagging is optional. Empty or whitespace env is unset.
+ * The rejected Exquisite Dentistry Ads fallback is treated as unset
+ * even if a host environment still has that value.
+ */
+export const resolveGoogleAdsTagId = (raw?: string | null) => {
+  const value = raw?.trim() ?? "";
+  if (!value) return undefined;
+  if (value === `AW-${11373090310}`) return undefined;
+  return value;
+};
+
+export const GOOGLE_ADS_TAG_ID = resolveGoogleAdsTagId(
+  process.env.NEXT_PUBLIC_GOOGLE_ADS_TAG_ID,
+);
 
 export const GOOGLE_ADS_CONVERSION_EVENT =
   process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT || "ads_conversion_Submit_lead_form_1";

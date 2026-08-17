@@ -12,7 +12,7 @@ import {
   setAnalyticsConsent,
 } from "@/lib/analytics";
 
-type ConsentState = "loading" | "prompt" | "granted" | "denied";
+type ConsentState = "prompt" | "granted" | "denied";
 
 const VercelAnalytics = dynamic(() => import("@/components/vercel-analytics"), {
   ssr: false,
@@ -45,14 +45,16 @@ const loadGtagScript = () => {
 
 export default function GoogleAnalytics() {
   const pathname = usePathname();
-  const [consent, setConsent] = useState<ConsentState>("loading");
+  const [consent, setConsent] = useState<ConsentState>("prompt");
 
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY);
-      setConsent(stored === "granted" || stored === "denied" ? stored : "prompt");
+      if (stored === "granted" || stored === "denied") {
+        setConsent(stored);
+      }
     } catch {
-      setConsent("prompt");
+      // Keep the SSR prompt if storage is unavailable.
     }
   }, []);
 
@@ -78,7 +80,7 @@ export default function GoogleAnalytics() {
       {consent === "prompt" ? (
         <section
           aria-label="Analytics privacy choices"
-          className="fixed inset-x-3 bottom-3 z-40 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-80 md:w-auto"
+          className="fixed bottom-3 left-3 z-[100] w-[min(20rem,calc(100vw-5.5rem))] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 sm:bottom-5 sm:left-5 sm:w-80 md:w-auto"
         >
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
             <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground md:whitespace-nowrap">

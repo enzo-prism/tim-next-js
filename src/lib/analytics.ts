@@ -238,16 +238,18 @@ export const triggerGoogleAdsConversion = (
   if (!initGA()) return;
   if (!window.gtag) return;
 
-  // Scope the conversion to the Ads destination. Without send_to, gtag
-  // broadcasts it to every configured target and GA4 also records a stray
-  // ads_conversion_* event next to generate_lead.
+  // Scope the conversion to the Ads destination when a valid tag exists.
+  // Without send_to, gtag broadcasts it to every configured target and GA4
+  // also records a stray ads_conversion_* event next to generate_lead.
   //
   // The submission UUID doubles as the Ads transaction ID so a double submit
   // or a reloaded confirmation cannot be counted as two conversions.
-  window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT, {
-    send_to: GOOGLE_ADS_TAG_ID,
-    ...(transactionId ? { transaction_id: transactionId } : {}),
-  });
+  if (GOOGLE_ADS_TAG_ID) {
+    window.gtag("event", GOOGLE_ADS_CONVERSION_EVENT, {
+      send_to: GOOGLE_ADS_TAG_ID,
+      ...(transactionId ? { transaction_id: transactionId } : {}),
+    });
+  }
 
   if (!url) return;
   if (target === "_blank") {
@@ -289,7 +291,9 @@ export const initGA = () => {
   window.gtag("consent", "update", consentPayload("granted"));
   window.gtag("js", new Date());
   window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
-  window.gtag("config", GOOGLE_ADS_TAG_ID);
+  if (GOOGLE_ADS_TAG_ID) {
+    window.gtag("config", GOOGLE_ADS_TAG_ID);
+  }
   gtagInitialized = true;
   return true;
 };

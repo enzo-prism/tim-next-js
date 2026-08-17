@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import {
-  GOOGLE_ADS_CONVERSION_EVENT,
-  GOOGLE_ADS_TAG_ID,
-} from "../../src/lib/tracking-config";
+import { GOOGLE_ADS_CONVERSION_EVENT } from "../../src/lib/tracking-config";
 
 const countDataLayerEvents = async (
   page: Page,
@@ -18,17 +15,11 @@ const countDataLayerEvents = async (
 
 const countAppointmentAdsConversions = async (page: Page) =>
   page.evaluate(
-    ({ eventName, destination }) =>
+    (eventName) =>
       window.dataLayer.filter(
-        (entry) =>
-          entry?.[0] === "event" &&
-          entry?.[1] === eventName &&
-          entry?.[2]?.send_to === destination,
+        (entry) => entry?.[0] === "event" && entry?.[1] === eventName,
       ).length,
-    {
-      eventName: GOOGLE_ADS_CONVERSION_EVENT,
-      destination: GOOGLE_ADS_TAG_ID,
-    },
+    GOOGLE_ADS_CONVERSION_EVENT,
   );
 
 test.describe("appointment request rendering and retry", () => {
@@ -91,7 +82,7 @@ test.describe("appointment request rendering and retry", () => {
     await expect(page.getByRole("heading", { name: "Your request was saved" })).toBeVisible();
     await expect(page.getByRole("status")).toBeFocused();
     await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
-    await expect.poll(() => countAppointmentAdsConversions(page)).toBe(1);
+    await expect.poll(() => countAppointmentAdsConversions(page)).toBe(0);
     await expect.poll(() => countDataLayerEvents(page, "form_submit_fallback")).toBe(1);
     await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide")));
     expect(
@@ -114,7 +105,7 @@ test.describe("appointment request rendering and retry", () => {
       page.getByRole("heading", { name: "Your appointment request was received" }),
     ).toBeVisible();
     await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
-    await expect.poll(() => countAppointmentAdsConversions(page)).toBe(1);
+    await expect.poll(() => countAppointmentAdsConversions(page)).toBe(0);
     await expect.poll(() => countDataLayerEvents(page, "form_submit_fallback")).toBe(1);
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[1]?.submissionId).toBe(requestBodies[0]?.submissionId);

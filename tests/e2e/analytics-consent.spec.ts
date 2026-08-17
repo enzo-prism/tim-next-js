@@ -11,6 +11,15 @@ const countDataLayerEvents = async (page: Page, eventName: string) =>
   );
 
 test.describe("GA4 consent collection", () => {
+  test("includes Allow and No thanks in the first HTML", async ({ request }) => {
+    const response = await request.get("/");
+    expect(response.ok()).toBeTruthy();
+    const html = await response.text();
+    expect(html).toContain('aria-label="Allow analytics"');
+    expect(html).toContain("No thanks");
+    expect(html).toContain("Analytics privacy choices");
+  });
+
   test("loads G-L7MH47XYXL and records page_view after Allow", async ({ page }) => {
     const gtagRequests: string[] = [];
 

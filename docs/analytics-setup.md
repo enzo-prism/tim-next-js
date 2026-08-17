@@ -14,9 +14,11 @@ Expect reported traffic and conversions to be lower than raw visits. That is the
 
 ### The consent prompt UI
 
-The prompt is deliberately low-emphasis: a compact bar pinned above the mobile safe area with
+The prompt is deliberately low-emphasis: a compact left-aligned bar in the first HTML, with
 muted 12px text, a plain `Privacy` link to `/privacy-policy`, and two text buttons. Neither choice
 is a filled CTA, so the presentation does not strongly nudge the visitor toward granting consent.
+The initial UI state is `prompt` so Allow / No thanks are present before hydration. After mount,
+a stored granted or denied choice hides the bar.
 
 Three constraints to preserve when restyling it:
 
@@ -97,10 +99,9 @@ Live tagging host is `www.famfirstsmile.com`. Apex `famfirstsmile.com` 308s ther
 
 ### Google Ads conversion tracking
 
-- `initGA()` configures Google Ads with `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`.
-- `triggerGoogleAdsConversion(...)` sends event name from:
-  - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
-- The event is scoped with `send_to: NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`. Without it, gtag broadcasts the conversion to every configured destination and GA4 records a stray `ads_conversion_*` event beside `generate_lead`.
+- Ads tagging is optional. `initGA()` configures Google Ads only when `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID` is a valid tag. Empty, whitespace, and the rejected Exquisite Dentistry Ads fallback are treated as unset.
+- `triggerGoogleAdsConversion(...)` no-ops the Ads event when no tag is configured. GA4 `generate_lead` still fires.
+- When a tag is present, the event name comes from `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT` and is scoped with `send_to` that tag. Without `send_to`, gtag broadcasts the conversion to every configured destination and GA4 records a stray `ads_conversion_*` event beside `generate_lead`.
 - The appointment and contact forms emit GA4 `generate_lead` only after a lead is durably
   created, even if the office relay is delayed.
 - Only the appointment form also calls the direct Google Ads conversion helper.
@@ -135,7 +136,7 @@ Property `518867337`, stream `13261242785`, measurement ID `G-L7MH47XYXL`.
 
 Account `353-904-6031`. Auto-tagging is **on**, so `gclid` is appended to landing URLs; GA4 only sees it because `page_location` preserves it.
 
-The account's Google tag bundles several IDs including `AW-11373090310`. It also contains historical conversion actions belonging to other properties, which must never be primary:
+This site does not ship a default Ads tag. The account may still contain historical conversion actions belonging to other properties, which must never be primary:
 
 | Conversion action | State | Note |
 | --- | --- | --- |
@@ -156,8 +157,8 @@ A primary conversion action that cannot fire makes every campaign bid toward a t
 ### Public tracking vars
 
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` (must be `G-L7MH47XYXL`; any other value is ignored)
-- `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID`
-- `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
+- `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID` (optional; rejected Exquisite Dentistry Ads fallback is ignored)
+- `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT` (used only when a valid Ads tag is set)
 
 ### Admin reporting vars
 
