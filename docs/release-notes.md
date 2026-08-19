@@ -1,5 +1,26 @@
 # Release Notes
 
+## 2026-08-19 — Google Review Snapshot Refresh
+
+### Public experience
+
+- Updated the displayed Google review total from 52 to the 82-review count verified directly on the Google Business Profile.
+- Added four recent August 2026 Google review excerpts to the testimonials page.
+- Replaced the April snapshot label with a Google-specific August 19 verification label across the homepage, testimonials page, and Santa Cruz page.
+
+### Operations
+
+- Documented the manual review-refresh source of truth, content locations, verification surfaces, and production read-back checks.
+- Documented that the total includes every Google rating while the website excerpts remain curated.
+- Recorded the current Google Business Profile API quota limitation and signed-in Google UI fallback.
+- Added regression coverage for the verified count and newly selected review entries.
+
+### Verification
+
+- `npm run check` (224 tests)
+- `npm run build`
+- Production-mode rendered checks for `/`, `/testimonials`, and `/areas-we-serve/santa-cruz`
+
 ## 2026-07-29 — Conversion, SEO, Accessibility, and Performance
 
 ### Public experience

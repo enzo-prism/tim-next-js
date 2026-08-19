@@ -209,6 +209,25 @@ Actions:
 
 ## Routine Operational Tasks
 
+## Refresh the public Google review snapshot
+
+The website uses a manually verified review snapshot; it does not fetch Google reviews at runtime.
+
+1. Open the direct Google Business Profile for **Tim J Chuang, DDS - Family First Smile Care** and confirm the Los Gatos address before copying any data.
+2. Record the live Google review count, displayed average rating, verification date, and the recent public reviews selected for the website. The total includes every rating; the website excerpts remain curated and do not represent every review.
+3. Treat Google as the count source of truth. Prefer the authenticated Business Profile API when it is healthy. As of August 19, 2026, the Account Management API quota for project `prism-website-462504` is configured at zero requests per minute, so use the signed-in Google Business Profile UI and record that limitation. Google-synced third-party listings are corroboration only.
+4. Update `src/content/testimonials.ts`:
+   - `testimonialsPageSummary` controls the Google count on the homepage and Santa Cruz page.
+   - `testimonialsReviewLibrarySummary` controls the combined Google and Yelp label on `/testimonials`; change only the Google portion unless Yelp was separately reverified.
+   - `publicReviewFeedSections` contains the selected public review excerpts.
+   - `verifiedAtLabel` must say exactly what was verified and when.
+5. Preserve each selected reviewer's displayed name, rating, meaning, and posted date. Use a short verbatim excerpt instead of silently rewriting the review.
+6. Update `src/content/testimonials.test.ts`, then run `npm run quality:all`.
+7. Render `/`, `/testimonials`, and `/areas-we-serve/santa-cruz` locally and confirm the count, verification label, reviewer names, ratings, and dates.
+8. After deployment, read the same three production pages back and confirm the production deployment commit matches GitHub `main`.
+
+This workflow is read-only on Google. Publishing or deleting a business reply, reporting a review, or editing the Business Profile is a separate external action and is not part of a website refresh.
+
 ## Rotate admin password
 
 1. Create new strong value for `ADMIN_PASSWORD`.

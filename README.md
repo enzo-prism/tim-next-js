@@ -61,13 +61,13 @@ npm run quality:all
 
 ## Current Release
 
-The July 29, 2026 release improves the public conversion path, consent UI,
-accessibility, SEO/Ads landing-route compatibility, and client bundle size.
-It also corrects lead conversion tracking so a newly persisted appointment or
-contact lead is counted once even when the office notification is delayed.
+The August 19, 2026 release refreshes the public Google review snapshot from 52
+to 82 reviews, adds four recent August review excerpts, and documents the
+repeatable Google-to-website verification workflow.
 
 See [Release Notes](docs/release-notes.md) for the complete scope and
-verification record.
+verification record, and [Operations Runbook](docs/operations-runbook.md) for
+the manual review-refresh procedure.
 
 ## Tech Stack
 
