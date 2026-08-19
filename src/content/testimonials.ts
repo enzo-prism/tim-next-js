@@ -63,21 +63,21 @@ export type PublicReviewFeedSection = {
 
 export const testimonialsPageSummary: TestimonialSummary = {
   averageRating: "5.0",
-  reviewCountLabel: "52 Google reviews",
+  reviewCountLabel: "82 Google reviews",
   sourceLabel: "Public Google reviews",
   sourceUrl: googleBusinessProfileUrl,
   editorialNote:
     "Selected excerpts from publicly posted Google reviews shared by patients and families.",
-  verifiedAtLabel: "Review snapshot verified April 16, 2026",
+  verifiedAtLabel: "Google review count verified August 19, 2026",
 };
 
 export const testimonialsReviewLibrarySummary: ReviewLibrarySummary = {
   averageRating: "5.0",
-  reviewCountLabel: "52 Google reviews + 6 Yelp reviews",
+  reviewCountLabel: "82 Google reviews + 6 Yelp reviews",
   sourceLabel: "Public Google and Yelp review listings",
   editorialNote:
     "This page includes public Google review excerpts plus Yelp excerpts surfaced through Yahoo Local's Yelp feed.",
-  verifiedAtLabel: "Review snapshot verified April 16, 2026",
+  verifiedAtLabel: "Google review count verified August 19, 2026",
 };
 
 export const publicReviewFeedSections: PublicReviewFeedSection[] = [
@@ -90,6 +90,32 @@ export const publicReviewFeedSections: PublicReviewFeedSection[] = [
     sourceLabel: "Read all Google reviews",
     sourceUrl: googleBusinessProfileUrl,
     reviews: [
+      {
+        name: "l",
+        rating: 5,
+        dateLabel: "Aug 13, 2026",
+        quote: "I had a consultation with Dr. Tim Chuang for a second opinion.",
+      },
+      {
+        name: "Laura Manthey",
+        rating: 5,
+        dateLabel: "Aug 12, 2026",
+        quote:
+          "The atmosphere is warm and friendly. The office is well appointed and attractive. I was made to feel comfortable throughout the visit.",
+      },
+      {
+        name: "Leung Lok",
+        rating: 5,
+        dateLabel: "Aug 01, 2026",
+        quote: "Dr. Chuang and his team are always warm and courteous.",
+      },
+      {
+        name: "Elsie C",
+        rating: 5,
+        dateLabel: "Aug 01, 2026",
+        quote:
+          "Visiting Dr. Chuang is a pleasant experience. He took time to explain the procedure and paid attention to my concerns.",
+      },
       {
         name: "Veronica Rajasekar",
         rating: 5,
