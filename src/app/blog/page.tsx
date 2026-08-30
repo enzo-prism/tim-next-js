@@ -91,7 +91,7 @@ export default function BlogIndexPage() {
               </p>
             </div>
 
-            <aside className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">What you will find here</div>
               <p className="mt-4 text-base leading-7 text-slate-600">
                 Helpful, practical articles about first visits, preventive care, and the small
@@ -100,7 +100,7 @@ export default function BlogIndexPage() {
               <Button asChild className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   <Link href="/book-appointment?source=blog_index_hero">Request an appointment</Link>
               </Button>
-            </aside>
+            </div>
           </div>
         </div>
       </section>
@@ -150,13 +150,13 @@ export default function BlogIndexPage() {
           <div className="rounded-xl bg-primary px-8 py-10 text-white shadow-sm sm:px-10">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
               <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/95">
                   Need care now?
                 </div>
                 <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
                   Get answers online, then get care from a local team that keeps things gentle.
                 </h2>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-white/85">
+                <p className="mt-4 max-w-2xl text-base leading-7 text-white/95">
                   If you have questions about your child's first visit, brushing habits, or what to
                   expect at the office, we are happy to help you plan the next step.
                 </p>

@@ -11,10 +11,12 @@ cp .env.example .env.local
 - `DATABASE_URL`
   - Postgres connection string
   - Required for contact persistence and admin contacts listing
-- `ADMIN_PASSWORD` (single password for the dashboard; defaults to `Tim` when unset)
-  - Both are required by middleware for `/admin` and `/api/admin/*`
-  - Use non-default, randomly generated values
-  - If either is missing in production, admin routes return `503 missing_config`
+- `ADMIN_PASSWORD`
+  - the only dashboard sign-in credential; `ADMIN_USERNAME` is intentionally unused
+  - required in every deployed environment; there is no built-in password fallback
+  - use a non-default, randomly generated value stored in the password manager
+  - a successful sign-in creates an HTTP-only session cookie; missing configuration returns
+    `503 missing_config`, and unauthenticated admin APIs return `401`
 
 ## Core Site and Canonical
 
@@ -55,6 +57,8 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
 - `FORMSPREE_CONTACT_ENDPOINT`
   - server-side notification target for `POST /api/contacts`
   - falls back to the appointment endpoint when omitted
+  - guarded production releases require both endpoint names explicitly; this practice uses
+    `https://formspree.io/f/mojngolr` for both
 
 ## Admin Analytics Variables
 
@@ -75,6 +79,8 @@ At least one credential mode must be configured for GA4/GSC admin APIs:
    - raw JSON key as string
 2. `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`
    - base64-encoded JSON key
+   - recommended for Vercel because it has no dependency on a runtime file path
+   - add it as a sensitive production variable and never commit or print the decoded key
 3. `GOOGLE_APPLICATION_CREDENTIALS`
    - absolute file path to JSON key (runtime file access required)
 

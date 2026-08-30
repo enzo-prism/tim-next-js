@@ -165,9 +165,10 @@ A primary conversion action that cannot fire makes every campaign bid toward a t
 - `GA4_PROPERTY_ID` (numeric property id, currently `518867337`)
 - `GSC_SITE_URL` (`sc-domain:famfirstsmile.com` recommended)
 - one credential mode:
+  - `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64` (preferred for Vercel), or
   - `GOOGLE_SERVICE_ACCOUNT_JSON`, or
-  - `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`, or
-  - `GOOGLE_APPLICATION_CREDENTIALS`
+  - `GOOGLE_APPLICATION_CREDENTIALS` (local runtimes only; a workstation path is not available
+    inside Vercel)
 
 ## Manual GA4 Tag Confirmation
 

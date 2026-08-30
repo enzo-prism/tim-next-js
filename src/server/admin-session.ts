@@ -14,10 +14,8 @@ export const ADMIN_SESSION_COOKIE = "ffsc_admin_session";
 // Long enough that the front desk signs in once and stays signed in.
 export const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-export const DEFAULT_ADMIN_PASSWORD = "Tim";
-
 export const getExpectedAdminPassword = () =>
-  process.env.ADMIN_PASSWORD?.trim() || DEFAULT_ADMIN_PASSWORD;
+  process.env.ADMIN_PASSWORD?.trim() || null;
 
 const encoder = new TextEncoder();
 
@@ -47,7 +45,9 @@ export const safeCompare = (a: string, b: string) => {
 
 export const isValidSessionToken = async (token: string | undefined) => {
   if (!token) return false;
-  const expected = await createSessionToken(getExpectedAdminPassword());
+  const password = getExpectedAdminPassword();
+  if (!password) return false;
+  const expected = await createSessionToken(password);
   return safeCompare(token, expected);
 };
 

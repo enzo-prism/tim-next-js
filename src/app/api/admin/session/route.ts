@@ -65,7 +65,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!safeCompare(parsed.data.password, getExpectedAdminPassword())) {
+  const expectedPassword = getExpectedAdminPassword();
+  if (!expectedPassword) {
+    return noStore(
+      NextResponse.json(
+        {
+          ok: false,
+          error: "missing_config",
+          message: "Admin sign-in is not configured.",
+        },
+        { status: 503 },
+      ),
+    );
+  }
+
+  if (!safeCompare(parsed.data.password, expectedPassword)) {
     const attempt = signInAttempts.consume(rateLimitKey);
     if (!attempt.ok) {
       return noStore(
@@ -97,7 +111,7 @@ export async function POST(request: NextRequest) {
 
   signInAttempts.reset(rateLimitKey);
 
-  const token = await createSessionToken(getExpectedAdminPassword());
+  const token = await createSessionToken(expectedPassword);
   const response = noStore(NextResponse.json({ ok: true }));
   response.headers.set(
     "Set-Cookie",

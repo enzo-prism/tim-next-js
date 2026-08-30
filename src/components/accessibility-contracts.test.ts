@@ -68,6 +68,29 @@ describe("accessibility component contracts", () => {
     expect(serviceCard).toContain('<h4 className="font-semibold');
   });
 
+  it("keeps visible link text inside the practice address accessible name", () => {
+    const source = read("./location/PracticeAddressLink.tsx");
+
+    expect(source).toContain("`${practiceInfo.addressText}. Open ${practiceInfo.name}");
+  });
+
+  it("uses distinct navigation and supporting-content landmarks", () => {
+    const tableOfContents = read("./blog/blog-table-of-contents.tsx");
+    const article = read("../app/blog/[slug]/page.tsx");
+
+    expect(tableOfContents).toContain('aria-label="On this page"');
+    expect(tableOfContents).not.toContain("<aside");
+    expect(article).toContain('aria-labelledby="helpful-next-steps-heading"');
+  });
+
+  it("shows article ownership and material update dates", () => {
+    const article = read("../app/blog/[slug]/page.tsx");
+
+    expect(article).toContain("By Family First Smile Care Editorial Team");
+    expect(article).toContain("post.updatedAt !== post.publishedAt");
+    expect(article).toContain("format(parseISO(post.updatedAt)");
+  });
+
   it("places the skip link before analytics choices in keyboard order", () => {
     const layout = read("../app/layout.tsx");
 

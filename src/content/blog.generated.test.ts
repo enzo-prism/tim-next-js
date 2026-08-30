@@ -6,6 +6,33 @@ const badBreathPost = additionalBlogPosts.find(
     post.slug === "why-does-my-child-have-bad-breath-even-after-brushing-los-gatos",
 );
 
+const spaceMaintainerPost = additionalBlogPosts.find(
+  (post) => post.slug === "does-my-child-need-a-space-maintainer-los-gatos",
+);
+
+describe("child space-maintainer article", () => {
+  it("uses a current, non-diagnostic quick answer without repeating the introduction", () => {
+    expect(spaceMaintainerPost).toBeDefined();
+    expect(spaceMaintainerPost!.updatedAt).toBe("2026-08-30");
+    expect(spaceMaintainerPost!.quickAnswer).toMatch(/may be considered/i);
+    expect(spaceMaintainerPost!.quickAnswer).toMatch(/not every child needs one/i);
+    expect(spaceMaintainerPost!.intro).not.toContain(spaceMaintainerPost!.quickAnswer);
+  });
+
+  it("links to the specific authoritative sources", () => {
+    expect(spaceMaintainerPost!.sources.map((source) => source.href)).toEqual([
+      "https://www.aapd.org/media/Policies_Guidelines/BP_DevelopDentition.pdf",
+      "https://commons.ada.org/journalmichigandentalassociation/vol105/iss1/3/",
+    ]);
+  });
+
+  it("does not claim that Dr. Chuang medically reviewed the article", () => {
+    const serializedPost = JSON.stringify(spaceMaintainerPost);
+    expect(serializedPost).not.toMatch(/medically reviewed/i);
+    expect(serializedPost).not.toMatch(/reviewed by dr\. chuang/i);
+  });
+});
+
 describe("child bad-breath article", () => {
   it("uses a search title no longer than 60 characters", () => {
     expect(badBreathPost).toBeDefined();

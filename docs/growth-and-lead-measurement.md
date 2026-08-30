@@ -75,9 +75,11 @@ Do not optimize only for raw form volume. The durable business outcome is confir
 
 Before production deployment:
 
-1. Apply all `drizzle/*.sql` migrations in numeric order to the intended production database, including the safe `0000` baseline and public-form contract migration.
+1. If the release adds migrations, identify and apply only the unapplied `drizzle/*.sql` files in
+   numeric order. Use the safe `0000` baseline only when bootstrapping a fresh database, and never
+   replay non-idempotent production migrations.
 2. Run `npm run db:verify` against that database.
-3. Confirm GA4, Ads, Formspree, canonical host, and both admin credentials are configured.
+3. Confirm GA4, Ads, Formspree, canonical host, and `ADMIN_PASSWORD` are configured.
 4. Run `npm run quality:all` and CI E2E.
 5. Test one realistic synthetic submission in preview, not production.
 6. After deployment, use invalid public API payloads for non-mutating guard checks and verify authorized admin access using status-only output.

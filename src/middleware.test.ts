@@ -4,14 +4,13 @@ import { middleware } from "@/middleware";
 import {
   ADMIN_SESSION_COOKIE,
   createSessionToken,
-  DEFAULT_ADMIN_PASSWORD,
 } from "@/server/admin-session";
 
-const signedIn = async (url: string) => {
+const signedIn = async (url: string, password: string) => {
   const request = new NextRequest(url);
   request.cookies.set(
     ADMIN_SESSION_COOKIE,
-    await createSessionToken(process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD),
+    await createSessionToken(password),
   );
   return request;
 };
@@ -29,10 +28,23 @@ describe("admin middleware", () => {
   });
 
   it("lets a valid session cookie through", async () => {
-    vi.stubEnv("ADMIN_PASSWORD", "a-long-test-password");
+    const password = "a-long-test-password";
+    vi.stubEnv("ADMIN_PASSWORD", password);
 
-    const response = await middleware(await signedIn("http://localhost/admin"));
+    const response = await middleware(
+      await signedIn("http://localhost/admin", password),
+    );
     expect(response.status).toBe(200);
+  });
+
+  it("fails closed when ADMIN_PASSWORD is missing", async () => {
+    vi.stubEnv("ADMIN_PASSWORD", "");
+    const response = await middleware(
+      await signedIn("http://localhost/admin", "Tim"),
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost/admin/login");
   });
 
   it("rejects a session cookie minted from a different password", async () => {

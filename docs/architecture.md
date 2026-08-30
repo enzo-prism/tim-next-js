@@ -104,7 +104,7 @@ Primary design goals:
 - Middleware-enforced session-cookie gate for admin routes
 - Timing-safe password comparison logic
 - `Cache-Control: no-store` on protected responses
-- `ADMIN_PASSWORD` overrides the shipped default password when set
+- `ADMIN_PASSWORD` is required; admin authentication fails closed when it is absent
 - Security headers set in `next.config.ts`:
   - `Strict-Transport-Security`
   - `X-Frame-Options: SAMEORIGIN`

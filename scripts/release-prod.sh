@@ -40,8 +40,8 @@ REPO_URL="${REPO_URL:-https://github.com/${REPO_SLUG}.git}"
 VERCEL_PROJECT_NAME="${VERCEL_PROJECT_NAME:-tim-next-js}"
 VERCEL_PROJECT_ID="${VERCEL_PROJECT_ID:-prj_bzwJ806oFI1FxU70DEIi2iyV0sl1}"
 VERCEL_ORG_ID="${VERCEL_ORG_ID:-team_NbogaPSGlnnTm8RNaeS0B4Pl}"
-REQUIRED_PRODUCTION_ENVS_CSV="${REQUIRED_PRODUCTION_ENVS_CSV:-DATABASE_URL,ADMIN_USERNAME,ADMIN_PASSWORD,CANONICAL_HOST,NEXT_PUBLIC_CANONICAL_HOST,NEXT_PUBLIC_GA_MEASUREMENT_ID,FORMSPREE_APPOINTMENT_ENDPOINT,FORMSPREE_CONTACT_ENDPOINT,GA4_PROPERTY_ID,GSC_SITE_URL}"
-REQUIRED_PRODUCTION_ENV_GROUPS_CSV="${REQUIRED_PRODUCTION_ENV_GROUPS_CSV:-GOOGLE_SERVICE_ACCOUNT_JSON|GOOGLE_SERVICE_ACCOUNT_JSON_BASE64|GOOGLE_APPLICATION_CREDENTIALS}"
+REQUIRED_PRODUCTION_ENVS_CSV="${REQUIRED_PRODUCTION_ENVS_CSV:-DATABASE_URL,ADMIN_PASSWORD,CANONICAL_HOST,NEXT_PUBLIC_CANONICAL_HOST,NEXT_PUBLIC_GA_MEASUREMENT_ID,FORMSPREE_APPOINTMENT_ENDPOINT,FORMSPREE_CONTACT_ENDPOINT,GA4_PROPERTY_ID,GSC_SITE_URL}"
+REQUIRED_PRODUCTION_ENV_GROUPS_CSV="${REQUIRED_PRODUCTION_ENV_GROUPS_CSV:-GOOGLE_SERVICE_ACCOUNT_JSON|GOOGLE_SERVICE_ACCOUNT_JSON_BASE64}"
 
 validate_production_envs() {
   local env_list_log
@@ -106,6 +106,26 @@ if (missing.length > 0 || missingGroups.length > 0) {
 NODE
 
   rm -f "$env_list_log"
+}
+
+find_matching_production_deployment() {
+  local deployment_list_log
+  local guard_output
+  deployment_list_log="$(mktemp)"
+
+  if ! vercel ls "$VERCEL_PROJECT_NAME" --scope "$VERCEL_ORG_ID" --format json >"$deployment_list_log" 2>&1; then
+    cat "$deployment_list_log" >&2
+    rm -f "$deployment_list_log"
+    exit 1
+  fi
+
+  if ! guard_output="$(node scripts/release-deployment-guard.mjs "$deployment_list_log" "$local_sha")"; then
+    rm -f "$deployment_list_log"
+    exit 1
+  fi
+
+  rm -f "$deployment_list_log"
+  printf '%s' "$guard_output"
 }
 
 repo_root="$(git rev-parse --show-toplevel)"
@@ -196,6 +216,35 @@ if [[ "$SKIP_CHECK" -eq 0 ]]; then
   npm run quality:all
 else
   echo "Skipping quality checks (--skip-check)."
+fi
+
+matching_deployment="$(find_matching_production_deployment)"
+if [[ -n "$matching_deployment" ]]; then
+  IFS=$'\t' read -r matching_class matching_state matching_url <<<"$matching_deployment"
+  case "$matching_class" in
+    ready)
+      echo "A ready production deployment already exists for commit $local_sha."
+      echo "URL: https://$matching_url"
+      echo "Skipping the CLI deployment to avoid creating a duplicate release."
+      exit 0
+      ;;
+    in_progress)
+      echo "A production deployment for commit $local_sha is still $matching_state." >&2
+      echo "URL: https://$matching_url" >&2
+      echo "Wait for it to finish, then verify it instead of creating a duplicate." >&2
+      exit 75
+      ;;
+    failed)
+      echo "The production deployment for commit $local_sha is $matching_state." >&2
+      echo "URL: https://$matching_url" >&2
+      echo "Inspect and resolve that deployment before attempting a fallback." >&2
+      exit 1
+      ;;
+    *)
+      echo "Unknown deployment classification: $matching_class" >&2
+      exit 1
+      ;;
+  esac
 fi
 
 echo "Deploying to Vercel production..."

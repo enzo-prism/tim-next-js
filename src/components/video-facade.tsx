@@ -11,6 +11,7 @@ interface VideoFacadeProps {
   poster: StaticImageData | string;
   posterAlt: string;
   posterSizes?: string;
+  posterQuality?: number;
   posterPriority?: boolean;
   posterFetchPriority?: "high" | "low" | "auto";
   playLabel?: string;
@@ -28,6 +29,7 @@ export default function VideoFacade({
   poster,
   posterAlt,
   posterSizes,
+  posterQuality = 70,
   posterPriority = false,
   posterFetchPriority,
   playLabel = "Play video",
@@ -92,6 +94,7 @@ export default function VideoFacade({
         alt={posterAlt}
         fill
         sizes={posterSizes}
+        quality={posterQuality}
         priority={posterPriority}
         fetchPriority={posterFetchPriority}
         className="object-cover"

@@ -191,12 +191,12 @@ export default function About() {
               </Link>
               , or{" "}
               <Link
-                href="/contact"
+                href="/book-appointment?source=about_story"
                 className="text-primary font-semibold hover:text-primary transition-colors"
               >
-                contact us
+                request a visit
               </Link>
-              {" "}to schedule a visit.
+              {" "}online.
             </motion.p>
           </motion.div>
           <motion.div

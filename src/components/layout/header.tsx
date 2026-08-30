@@ -233,7 +233,7 @@ export default function Header() {
             </Button>
             <Button asChild className="inline-flex h-9 whitespace-nowrap bg-primary px-3 text-primary-foreground hover:bg-primary/90">
               <Link href={buildAppointmentUrl({ source: "header_compact" })} onClick={() => handleAppointmentClick("header_compact")}>
-                Request
+                Request visit
               </Link>
             </Button>
             <Sheet open={isOpen} onOpenChange={setIsOpen}>

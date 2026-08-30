@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const PUBLIC_ROUTES = ["/", "/blog"];
 const SUPPRESSED_ROUTES = ["/contact", "/book-appointment"];
+const CONSENT_STORAGE_KEY = "ffsc_analytics_consent_v1";
 const WIDGET_SCRIPT_URL =
   "https://cdn.jsdelivr.net/npm/@elevenlabs/convai-widget-embed@0.11.4";
 
@@ -263,20 +264,13 @@ async function installWidgetStub(page: Page) {
 
 async function gotoWithLauncher(page: Page, route: string) {
   await installWidgetStub(page);
+  await page.addInitScript((key) => {
+    window.localStorage.setItem(key, "denied");
+  }, CONSENT_STORAGE_KEY);
   await page.goto(route, { waitUntil: "domcontentloaded" });
-  const privacyPanel = page.getByRole("region", { name: "Analytics privacy choices" });
-  await expect
-    .poll(async () => {
-      return (
-        (await privacyPanel.isVisible()) ||
-        (await page.locator('[data-testid="assistant-launcher"]').isVisible())
-      );
-    })
-    .toBeTruthy();
-  if (await privacyPanel.isVisible()) {
-    await page.getByRole("button", { name: "No thanks" }).click();
-  }
-  await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible();
+  await expect(page.locator('[data-testid="assistant-launcher"]')).toBeVisible({
+    timeout: 10_000,
+  });
   await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(0);
 }
 

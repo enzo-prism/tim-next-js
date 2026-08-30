@@ -1,5 +1,39 @@
 # Release Notes
 
+## 2026-08-30 — Public-Site Usability, Trust, and Release Safety
+
+### Public experience
+
+- Added an intent-led service guide and clearer appointment-request actions across the public site.
+- Reduced mobile office-tour media work while keeping the full desktop experience.
+- Added visible article authorship and updated dates, strengthened the space-maintainer guide, and
+  linked its professional sources directly.
+- Improved landmarks, address naming, contrast, reduced-motion behavior, and mobile navigation.
+
+### Release reliability and security
+
+- Removed the obsolete `ADMIN_USERNAME` release requirement; the protected dashboard uses the
+  existing password-and-session-cookie flow.
+- Removed the built-in admin password fallback so missing production configuration fails closed.
+- Made both Formspree production endpoint names explicit and documented the Vercel-safe Google
+  service-account credential mode.
+- Updated vulnerable transitive production dependencies and made the assistant layout test
+  independent from the separately tested consent prompt.
+- Clarified that a matching Git-integrated production deployment and a guarded CLI deployment are
+  alternative release paths, not two steps to run together.
+- Added an exact-commit deployment guard to the CLI fallback: ready releases exit cleanly,
+  in-progress releases pause with a retryable status, and failed releases stop for investigation.
+
+### Verification
+
+- 244 Vitest tests passed.
+- 109 applicable Playwright checks passed across desktop, tablet, and mobile; 38 project-specific
+  checks were skipped as designed.
+- The formerly flaky assistant layout check passed 15 consecutive repeated runs.
+- Typecheck, lint, design contracts, minimal-design guard, and the 69-page production build passed.
+- Production dependency audit reported zero vulnerabilities, and the production lead schema
+  read-back passed without modifying data.
+
 ## 2026-08-19 — Google Review Snapshot Refresh
 
 ### Public experience

@@ -179,13 +179,14 @@ export default function Home() {
                 variants={scaleIn}
               >
                 <div className="relative rounded-xl border border-border bg-card p-2 shadow-sm">
-                  <div className="relative aspect-[9/16] overflow-hidden rounded-xl bg-slate-900">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-900 sm:aspect-[9/16]">
                     <VideoFacade
                       videoSrc={OFFICE_TOUR_VIDEO_SRC}
                       title="Family First Smile Care Office Tour"
                       poster={officeTourPoster}
                       posterAlt="Inside the Family First Smile Care office in Los Gatos"
-                      posterSizes="(max-width: 640px) 320px, 390px"
+                      posterSizes="(max-width: 639px) calc(100vw - 5.5rem), (max-width: 1023px) 360px, 390px"
+                      posterQuality={65}
                       posterPriority
                       posterFetchPriority="high"
                       playLabel="Play office tour"

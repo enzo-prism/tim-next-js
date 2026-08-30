@@ -12,6 +12,7 @@ export default function TestimonialCarousel() {
   const prefersReducedMotion = useReducedMotion();
   const [isUserPaused, setIsUserPaused] = useState(false);
   const [isInteractionPaused, setIsInteractionPaused] = useState(false);
+  const isMotionPreferencePaused = Boolean(prefersReducedMotion);
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -26,14 +27,14 @@ export default function TestimonialCarousel() {
   };
 
   useEffect(() => {
-    if (prefersReducedMotion || isUserPaused || isInteractionPaused) return;
+    if (isMotionPreferencePaused || isUserPaused || isInteractionPaused) return;
 
     const timer = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }, 8000);
 
     return () => window.clearInterval(timer);
-  }, [prefersReducedMotion, isUserPaused, isInteractionPaused]);
+  }, [isMotionPreferencePaused, isUserPaused, isInteractionPaused]);
 
   return (
     <div
@@ -62,7 +63,7 @@ export default function TestimonialCarousel() {
                 aria-hidden={index !== currentIndex}
               >
                 <div className="grid gap-7 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
-                  <aside className="rounded-xl border border-slate-200/80 bg-slate-50/90 px-4 py-5 text-center lg:px-5 lg:py-6">
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/90 px-4 py-5 text-center lg:px-5 lg:py-6">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Google Review</p>
                     <p className="mx-auto mt-3 inline-flex rounded-lg bg-sky-50 px-3 py-1 text-sm font-semibold text-sky-900 ring-1 ring-sky-200/70">
                       {testimonial.rating}.0 rating
@@ -70,7 +71,7 @@ export default function TestimonialCarousel() {
                     <p className="mt-3 text-xs text-slate-500">
                       {testimonial.id + 1} of {testimonials.length}
                     </p>
-                  </aside>
+                  </div>
                   <div className="min-w-0 text-center lg:text-left">
                     <p className="text-xl leading-relaxed text-slate-700 italic sm:text-2xl sm:leading-relaxed">
                       "{testimonial.content}"
@@ -100,9 +101,10 @@ export default function TestimonialCarousel() {
               variant="outline"
               className="min-h-11 border-slate-300 bg-white px-4"
               onClick={() => setIsUserPaused((paused) => !paused)}
-              aria-pressed={isUserPaused}
+              aria-pressed={isMotionPreferencePaused || isUserPaused}
+              disabled={isMotionPreferencePaused}
             >
-              {isUserPaused ? "Resume" : "Pause"}
+              {isMotionPreferencePaused ? "Auto-rotate off" : isUserPaused ? "Resume" : "Pause"}
             </Button>
             <Button
               variant="outline"

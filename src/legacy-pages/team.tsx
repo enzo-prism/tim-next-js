@@ -149,7 +149,7 @@ export default function Team() {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Join Our Dental Family</h2>
           <p className="text-gray-600 mb-6">Experience the difference that compassionate, personalized dental care can make for you and your family.</p>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 py-3">
-            <Link href="/contact">Meet Us Today</Link>
+            <Link href="/book-appointment?source=team_final">Request an Appointment</Link>
           </Button>
         </div>
       </div>

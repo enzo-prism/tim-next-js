@@ -173,7 +173,8 @@ A release is ready when:
 1. CI checks pass on target commit.
 2. Preview deployment smoke tests pass.
 3. Route and redirect parity checklist passes.
-4. Production schema migration is applied and `npm run db:verify` passes against the intended database.
+4. If migration files changed, the new migrations are applied in numeric order; `npm run db:verify`
+   always passes against the intended production database.
 5. A synthetic contact/appointment submission is verified in preview or another non-production environment; production smoke tests use invalid payloads so they cannot create leads.
 6. Admin protection and an authorized status-only read are verified without printing patient records.
 7. GA4 script and pageview flow verified on preview or production.

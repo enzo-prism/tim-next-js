@@ -20,7 +20,7 @@ export default function PracticeAddressLink({
   className,
   iconClassName,
   showExternalIcon = false,
-  ariaLabel = `Open ${practiceInfo.name} in Google Maps (opens in a new tab)`,
+  ariaLabel = `${practiceInfo.addressText}. Open ${practiceInfo.name} in Google Maps (opens in a new tab)`,
   trackingLocation = "practice_address_link",
 }: PracticeAddressLinkProps) {
   return (

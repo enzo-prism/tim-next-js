@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -169,8 +169,16 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
 
               <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-500">
                 <span className="inline-flex items-center gap-2">
-                  Published {format(new Date(post.publishedAt), "MMMM d, yyyy")}
+                  By Family First Smile Care Editorial Team
                 </span>
+                <span className="inline-flex items-center gap-2">
+                  Published {format(parseISO(post.publishedAt), "MMMM d, yyyy")}
+                </span>
+                {post.updatedAt !== post.publishedAt ? (
+                  <span className="inline-flex items-center gap-2">
+                    Updated {format(parseISO(post.updatedAt), "MMMM d, yyyy")}
+                  </span>
+                ) : null}
                 <span className="inline-flex items-center gap-2">
                   {post.readingTimeMinutes} min read
                 </span>
@@ -180,7 +188,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
               </div>
             </div>
 
-            <aside className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 Short answer
               </div>
@@ -190,7 +198,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
               <p className="mt-4 text-sm leading-6 text-slate-600">
                 {post.quickAnswerSupport}
               </p>
-            </aside>
+            </div>
           </div>
         </div>
       </section>
@@ -285,10 +293,13 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
             <div className="space-y-6 lg:sticky lg:top-24">
               <BlogTableOfContents items={tableOfContents} />
 
-              <aside className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+              <section
+                aria-labelledby="helpful-next-steps-heading"
+                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <h2 id="helpful-next-steps-heading" className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                   Helpful next steps
-                </div>
+                </h2>
                 <div className="mt-5 space-y-4">
                   {post.relatedLinks.slice(0, 3).map((link) => (
                     <div key={link.href}>
@@ -299,7 +310,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                     </div>
                   ))}
                 </div>
-              </aside>
+              </section>
             </div>
           </div>
 

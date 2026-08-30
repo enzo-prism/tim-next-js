@@ -26,7 +26,8 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `ADMIN_PASSWORD`
    - `FORMSPREE_APPOINTMENT_ENDPOINT`
    - `FORMSPREE_CONTACT_ENDPOINT`
-   - analytics variables from `docs/environment-variables.md`
+   - analytics variables and one Google service-account credential mode from
+     `docs/environment-variables.md`
 6. Vercel Web Analytics enabled for the production Vercel project
 
 ## Critical Deployment Guardrails
@@ -100,8 +101,22 @@ vercel env add FORMSPREE_APPOINTMENT_ENDPOINT production
 vercel env add FORMSPREE_CONTACT_ENDPOINT production
 vercel env add GA4_PROPERTY_ID production
 vercel env add GSC_SITE_URL production
-vercel env add GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 production
 ```
+
+For this practice, both Formspree endpoint values are
+`https://formspree.io/f/mojngolr`. `ADMIN_PASSWORD` is the only admin sign-in credential;
+do not create an `ADMIN_USERNAME` variable.
+
+For Vercel, stream the service-account key into a sensitive base64 variable so the value does not
+appear in command output or depend on a local runtime path:
+
+```bash
+node -e 'const fs=require("node:fs");process.stdout.write(fs.readFileSync(process.argv[1]).toString("base64"))' \
+  /secure/path/service-account.json |
+  vercel env add GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 production --sensitive
+```
+
+Never commit the JSON key, its base64 representation, or a pulled production env file.
 
 Vercel Web Analytics does not require an app env var in this repo. It is controlled from the Vercel project dashboard plus the `@vercel/analytics` component already mounted in the app layout.
 
@@ -114,9 +129,15 @@ vercel env ls
 ## Database Provisioning and Schema
 
 1. Ensure `DATABASE_URL` points to the intended Vercel Postgres instance.
-2. Apply every checked-in migration in numeric order. **Do not use `db:push`** — migrations 0007–0009 contain PL/pgSQL functions and constraints that `db:push` cannot create:
+2. If the release adds migrations, identify which migration files are not yet applied and apply
+only those files in numeric order. Never replay non-idempotent production migrations. **Do not use
+`db:push`** — migrations 0007–0009 contain PL/pgSQL functions and constraints that `db:push`
+cannot create.
 
-Two Neon-specific requirements, both of which fail loudly if you miss them. The `neondb_owner` role has an empty `search_path`, so unqualified table names in the migrations resolve to nothing and the first statement fails with `relation "contacts" does not exist`; you must set it explicitly. And Neon's **pooled** endpoint rejects `search_path` as a startup parameter, so the migration run has to go over `DATABASE_URL_UNPOOLED`. Run the whole set in one transaction so a mid-run failure rolls everything back:
+Two Neon-specific requirements, both of which fail loudly if you miss them. The `neondb_owner` role has an empty `search_path`, so unqualified table names in the migrations resolve to nothing and the first statement fails with `relation "contacts" does not exist`; you must set it explicitly. And Neon's **pooled** endpoint rejects `search_path` as a startup parameter, so the migration run has to go over `DATABASE_URL_UNPOOLED`. Run the verified unapplied set in one transaction so a mid-run failure rolls everything back.
+
+The command below is for a **fresh database bootstrap only**. For an existing production database,
+remove every `-f` entry except the files independently verified as unapplied:
 
 ```bash
 PGOPTIONS="--search_path=public" psql "$DATABASE_URL_UNPOOLED" \
@@ -150,13 +171,23 @@ Every value must already be `contact`, `appointment`, or `google_ads_lead`.
 npm run db:verify
 ```
 
-Use production credentials locally only in a controlled release window.
+`db:verify` is SELECT-only. Use production credentials locally only in a controlled release window.
+If credentials are pulled into a transient env file, create it with owner-only permissions, remove it
+immediately after verification, and never commit or log it.
 
 ## Deploy Flow
 
-### Recommended guarded production release (fast path)
+### Git-integrated production release (default)
 
-After applying the migration and verifying its read-back, run one command from clean `main`:
+After applying the migration, verifying its read-back, and passing local checks, push the reviewed
+commit to `main`. Wait for the Git-connected Vercel deployment whose source commit matches GitHub
+`main`. When that deployment is `READY`, verify the production aliases and stop; do not create a
+second deployment with the CLI.
+
+### Guarded CLI fallback
+
+If no matching Git deployment appears, run the guarded fallback from clean `main` aligned with
+`origin/main`:
 
 ```bash
 npm run release:prod -- --schema-synced
@@ -172,7 +203,12 @@ This script enforces:
 6. required production env names present in Vercel without exposing their values
 7. explicit confirmation that the production schema was applied and verified
 8. full quality checks (`npm run quality:all`)
-9. production deploy via Vercel CLI
+9. a recent-deployment check for the exact Git commit: `READY` exits successfully, an in-progress
+   deployment exits with retryable status `75`, and a failed terminal state exits with an error
+10. production deploy via Vercel CLI only when the exact commit has no production deployment
+
+Use this fallback only when the Git-integrated deployment did not already create the intended
+production release.
 
 ### Preview deploy
 
@@ -255,19 +291,10 @@ Admin unauthorized check:
 curl -i https://www.famfirstsmile.com/api/admin/contacts
 ```
 
-Admin authorized check:
-
-```bash
-cookie_jar="$(mktemp)"
-curl -sS -c "$cookie_jar" -H 'Content-Type: application/json' \
-  -d "{\"password\":\"${ADMIN_PASSWORD}\"}" \
-  -o /dev/null "https://www.famfirstsmile.com/api/admin/session"
-curl -sS -b "$cookie_jar" -o /dev/null -w '%{http_code}\n' \
-  "https://www.famfirstsmile.com/api/admin/contacts?limit=1&offset=0"
-rm -f "$cookie_jar"
-```
-
-The authorized status-only check should print `200` without placing patient records in terminal output or logs.
+For the authorized check, use the password-manager-backed browser session: sign in at
+`/admin/login`, then request `/api/admin/contacts?limit=1&offset=0` in the same session and confirm
+only the `200` status. Do not interpolate `ADMIN_PASSWORD` into a command, and do not copy patient
+records into terminal output, logs, or screenshots.
 
 ## Rollback Strategy
 

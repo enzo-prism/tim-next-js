@@ -61,9 +61,9 @@ npm run quality:all
 
 ## Current Release
 
-The August 19, 2026 release refreshes the public Google review snapshot from 52
-to 82 reviews, adds four recent August review excerpts, and documents the
-repeatable Google-to-website verification workflow.
+The August 30, 2026 release improves service discovery, appointment-request
+clarity, mobile media loading, article trust signals, accessibility, release
+guardrails, and production dependency security.
 
 See [Release Notes](docs/release-notes.md) for the complete scope and
 verification record, and [Operations Runbook](docs/operations-runbook.md) for
@@ -92,8 +92,9 @@ npm run build
 npm run check
 npm run test:e2e
 
-# Database schema review/push and production read-back (requires the intended DATABASE_URL)
+# Local schema prototyping only; never use db:push against production
 npm run db:push
+# Read-only production schema verification (requires the intended DATABASE_URL)
 npm run db:verify
 ```
 
@@ -102,14 +103,20 @@ npm run db:verify
 1. Keep GitHub default branch set to `main`.
 2. Ensure Vercel Git integration is connected to `enzo-prism/tim-next-js`.
 3. Ensure required env vars are configured.
-4. Apply all checked-in database migrations in numeric order, then run `npm run db:verify` against production. Start with `0000_base_schema.sql` when bootstrapping a fresh database.
-5. Verify the migration succeeded, then run the guarded release:
+4. If the release adds migrations, determine which files are not yet applied and apply only those
+   in numeric order. Never replay non-idempotent migrations. Always run `npm run db:verify`
+   against production; start with `0000_base_schema.sql` only when bootstrapping a fresh database.
+5. Verify the migration succeeded, then push the reviewed commit to `main` and wait for the
+   Git-connected Vercel production deployment.
+6. If no matching Git deployment appears, run the guarded CLI fallback from clean, aligned
+   `main`:
 
 ```bash
 npm run release:prod -- --schema-synced
 ```
 
-6. Run smoke tests on routes, redirects, APIs, and admin auth.
+7. Run smoke tests on routes, redirects, APIs, and admin auth. Do not run a second CLI deployment
+   after the matching Git deployment is `READY`.
 
 See [Deployment on Vercel](docs/deployment-vercel.md) for full details.
 

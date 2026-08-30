@@ -13,7 +13,9 @@
 1. [Deployment on Vercel](./deployment-vercel.md)
 2. [Operations Runbook](./operations-runbook.md)
 3. [Migration Parity Checklist](./parity-checklist.md)
-4. Release command after schema migration/read-back: `npm run release:prod -- --schema-synced`
+4. Default release: push the reviewed commit to `main`, wait for the matching Git-connected Vercel
+   deployment, and verify production. Use `npm run release:prod -- --schema-synced` only if no
+   deployment for that exact commit appears.
 
 ## Quality and Analytics
 

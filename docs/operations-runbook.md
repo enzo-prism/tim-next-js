@@ -74,17 +74,19 @@ Run these checks before a production release that touches the widget:
 
 Symptoms:
 
-- `/admin` returns `401` for valid credentials, or
-- `/admin` returns `503 missing_config`
+- `/admin/login` rejects the expected password, or
+- authenticated admin API requests return `401`
 
 Actions:
 
-1. Check `ADMIN_PASSWORD` in Vercel production env, or confirm the shipped default is intended.
-2. Re-test using:
-   - `curl -i -u "<username>:<password>" https://<domain>/api/admin/contacts`
-3. If `503 missing_config`, set both admin credentials and redeploy.
-4. If still failing, rotate secret and update password manager entry.
-5. If repeated failures are being throttled (`429`), wait for the `Retry-After` window or rotate the shared credential after confirming the caller is legitimate.
+1. Confirm the `ADMIN_PASSWORD` name is present in Vercel production without printing its value.
+2. Open `/admin/login` and sign in with the password-manager entry. There is no username or
+   browser Basic Auth prompt.
+3. Confirm `/admin` loads and a status-only request to `/api/admin/contacts?limit=1` returns `200`
+   in the same authenticated browser. Do not copy lead data into logs or screenshots.
+4. If the password is still rejected, rotate `ADMIN_PASSWORD`, update the password manager, and
+   deploy once so the new runtime receives it.
+5. If repeated failures are throttled (`429`), wait for the `Retry-After` window before retrying.
 
 ## Admin auth hardening path
 
@@ -106,10 +108,11 @@ Actions:
 1. Check Vercel function logs for storage error.
 2. Confirm `DATABASE_URL` is set for production.
 3. Confirm database connectivity.
-4. Run schema push if table drift is suspected:
-   - `npm run db:push`
+4. Run the read-only schema verifier:
    - `npm run db:verify`
-5. Re-test submit flow without using real patient information.
+5. If drift is confirmed, inspect the checked-in migrations and apply only the missing migration
+   files in numeric order. Never use `npm run db:push` against production.
+6. Re-test submit flow without using real patient information.
 
 ## Incident: Appointment relay degraded (Formspree down)
 
@@ -162,10 +165,9 @@ Symptoms:
 Actions:
 
 1. Validate `GA4_PROPERTY_ID` and `GSC_SITE_URL`.
-2. Validate one credential mode:
-   - `GOOGLE_SERVICE_ACCOUNT_JSON`, or
-   - `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`, or
-   - `GOOGLE_APPLICATION_CREDENTIALS`
+2. On Vercel, validate `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64` (preferred) or
+   `GOOGLE_SERVICE_ACCOUNT_JSON`. Use `GOOGLE_APPLICATION_CREDENTIALS` only for a local runtime
+   where the referenced file actually exists.
 3. Confirm service account permissions in:
    - GA4 property access
    - Search Console property access
@@ -201,7 +203,8 @@ Actions:
 2. If not `main`, stop and correct the repository setting as a separate explicit administrative action.
 3. Reconnect Vercel Git integration:
    - `vercel git connect https://github.com/enzo-prism/tim-next-js.git`
-4. Run guarded release:
+4. If no deployment for the exact `main` commit appears after reconnecting, run the guarded CLI
+   fallback:
    - `npm run release:prod -- --schema-synced`
 5. If the guarded release fails on env validation, add the missing production env names in Vercel before retrying.
 6. Confirm new production deployment is Ready:
