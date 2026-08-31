@@ -1,5 +1,25 @@
 # Release Notes
 
+## 2026-08-31 — Remove On-Site Admin Leads Dashboard
+
+### Public experience
+
+- Patient-facing pages, contact and appointment forms, Formspree office notifications, first-party
+  duplicate protection, GA4 `G-L7MH47XYXL`, and Vercel Web Analytics are unchanged.
+
+### Operations
+
+- Removed the password-protected `/admin` leads and performance dashboard from the public website.
+- `/admin`, `/admin/login`, and the staff-facing contacts, session, changelog, GA4, and GSC APIs
+  now 404 instead of offering a login that could expose patient contact details.
+- Form persistence and cron-authenticated notification/reconciliation jobs remain so office
+  notifications continue to retry. Staff reporting belongs in a separate dedicated dashboard.
+
+### Verification
+
+- Unit, lint, typecheck, and Playwright coverage confirm the retired dashboard routes 404 and
+  public form routes still render.
+
 ## 2026-08-30 — Public-Site Usability, Trust, and Release Safety
 
 ### Public experience

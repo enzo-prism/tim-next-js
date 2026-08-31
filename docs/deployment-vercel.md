@@ -5,7 +5,6 @@
 Deploy the Next.js app from `main` to Vercel with full production parity:
 
 - public routes and redirects
-- admin auth and APIs
 - contact persistence (Postgres)
 - SEO assets (`robots.txt`, `sitemap.xml`, `llms.txt`)
 - Vercel Web Analytics pageview collection on public routes
@@ -23,11 +22,9 @@ Deploy the Next.js app from `main` to Vercel with full production parity:
    - `vercel whoami`
 5. Production secrets available:
    - `DATABASE_URL`
-   - `ADMIN_PASSWORD`
    - `FORMSPREE_APPOINTMENT_ENDPOINT`
    - `FORMSPREE_CONTACT_ENDPOINT`
-   - analytics variables and one Google service-account credential mode from
-     `docs/environment-variables.md`
+   - public analytics variables from `docs/environment-variables.md`
 6. Vercel Web Analytics enabled for the production Vercel project
 
 ## Critical Deployment Guardrails
@@ -70,7 +67,7 @@ vercel link --yes --project prj_bzwJ806oFI1FxU70DEIi2iyV0sl1 --team team_NbogaPS
 
 `.vercel/project.json` is local and intentionally ignored. The guarded release script links this exact project when the checkout is not linked, and it fails fast if the checkout is linked to any other Vercel project.
 
-Before any production deploy, the guarded release script also validates production env names without printing secret values. It blocks the release if a required env is missing, including the Google credential one-of group used by admin analytics.
+Before any production deploy, the guarded release script also validates production env names without printing secret values. It blocks the release if a required public-site env is missing.
 
 ## Pre-Deploy Local Checks
 
@@ -90,7 +87,6 @@ Set variables in Vercel for `production` (and `preview` where needed):
 
 ```bash
 vercel env add DATABASE_URL production
-vercel env add ADMIN_PASSWORD production
 vercel env add CANONICAL_HOST production
 vercel env add NEXT_PUBLIC_CANONICAL_HOST production
 vercel env add NEXT_PUBLIC_GA_MEASUREMENT_ID production
@@ -99,24 +95,10 @@ vercel env add NEXT_PUBLIC_GA_MEASUREMENT_ID production
 # vercel env add NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT production
 vercel env add FORMSPREE_APPOINTMENT_ENDPOINT production
 vercel env add FORMSPREE_CONTACT_ENDPOINT production
-vercel env add GA4_PROPERTY_ID production
-vercel env add GSC_SITE_URL production
 ```
 
 For this practice, both Formspree endpoint values are
-`https://formspree.io/f/mojngolr`. `ADMIN_PASSWORD` is the only admin sign-in credential;
-do not create an `ADMIN_USERNAME` variable.
-
-For Vercel, stream the service-account key into a sensitive base64 variable so the value does not
-appear in command output or depend on a local runtime path:
-
-```bash
-node -e 'const fs=require("node:fs");process.stdout.write(fs.readFileSync(process.argv[1]).toString("base64"))' \
-  /secure/path/service-account.json |
-  vercel env add GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 production --sensitive
-```
-
-Never commit the JSON key, its base64 representation, or a pulled production env file.
+`https://formspree.io/f/mojngolr`.
 
 Vercel Web Analytics does not require an app env var in this repo. It is controlled from the Vercel project dashboard plus the `@vercel/analytics` component already mounted in the app layout.
 
@@ -285,16 +267,13 @@ curl -i -X POST https://www.famfirstsmile.com/api/appointments \
 
 Both should return `400` and must not create a database row.
 
-Admin unauthorized check:
+Retired dashboard check — these must 404 and must not return a login or lead list:
 
 ```bash
+curl -i https://www.famfirstsmile.com/admin
+curl -i https://www.famfirstsmile.com/admin/login
 curl -i https://www.famfirstsmile.com/api/admin/contacts
 ```
-
-For the authorized check, use the password-manager-backed browser session: sign in at
-`/admin/login`, then request `/api/admin/contacts?limit=1&offset=0` in the same session and confirm
-only the `200` status. Do not interpolate `ADMIN_PASSWORD` into a command, and do not copy patient
-records into terminal output, logs, or screenshots.
 
 ## Rollback Strategy
 

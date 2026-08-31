@@ -12,9 +12,9 @@ import {
   type User,
 } from "@/server/schema";
 import { db } from "@/server/db";
-import { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
+import { normalizeLeadSource } from "@/server/lead-source";
 
-export { normalizeLeadSource } from "@/app/api/admin/contacts/lead-source";
+export { normalizeLeadSource } from "@/server/lead-source";
 
 type ListContactsOptions = {
   limit: number;
@@ -99,8 +99,8 @@ const leadSourceSql = dsql<string>`CASE
     NULLIF(BTRIM(${contacts.wbraid}), '')
   ) IS NOT NULL THEN 'Google Ads'
   -- Deliberately no referrer branch: see normalizeLeadSource in
-  -- src/app/api/admin/contacts/lead-source.ts. These two must agree, or the
-  -- Source filter matches a string the list never displays.
+  -- src/server/lead-source.ts. These two must agree, or stored source
+  -- summaries would not match the normalized value used in application code.
   ELSE 'Website form'
 END`;
 

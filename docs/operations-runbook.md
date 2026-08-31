@@ -9,12 +9,9 @@ Provide a fast, repeatable response guide for production incidents and routine o
 - Public site: Next.js app on Vercel
 - Contact persistence: Postgres via Drizzle (`contacts` table)
 - Appointment relay: `POST /api/appointments` -> internal DB + Formspree relay
-- Admin auth: single-password session cookie (`/admin`, `/admin/*`, `/api/admin/*`); sign in at `/admin/login`
-- Admin auth throttling: repeated failed attempts return `429` with `Retry-After`
+- Staff leads dashboard: not served from this public site; `/admin` 404s
+- Cron jobs: notification retries and reconciliation under `/api/admin/*`, authenticated with `CRON_SECRET`
 - ElevenLabs widget: pinned custom-element embed on public routes only
-- Analytics APIs:
-  - GA4: `/api/admin/ga4/overview`
-  - GSC: `/api/admin/gsc/overview`
 
 ## Daily and Weekly Checks
 
@@ -33,19 +30,18 @@ Provide a fast, repeatable response guide for production incidents and routine o
    - `/robots.txt`
    - `/sitemap.xml`
    - `/llms.txt`
-2. Verify admin analytics endpoints return healthy payloads.
-3. Confirm Vercel Analytics, GA4 Realtime, and Search Console data are flowing.
-4. Confirm the ElevenLabs widget still loads from the pinned `0.11.4` embed URL.
-5. Review unworked `new` leads, `failed` and `sending` notification rows, source booking rates, and Search Console opportunity candidates.
-6. Review CSP report-only logs for new blocked domains before switching to enforcing mode.
-7. Compare Google Ads conversions against GA4 `generate_lead` for the same window. A large gap means a primary conversion action is keyed to something that cannot fire, not that leads stopped. See "Google Ads account configuration" in [Analytics Setup](./analytics-setup.md).
-8. Confirm GA4 traffic acquisition still shows `google / cpc` for paid visits. A drift back to `(direct)` or `googleads.g.doubleclick.net / referral` means campaign parameters stopped reaching `page_location`.
+2. Confirm Vercel Analytics, GA4 Realtime, and Search Console data are flowing.
+3. Confirm the ElevenLabs widget still loads from the pinned `0.11.4` embed URL.
+4. Review `failed` and `sending` notification rows in the database or the dedicated dashboard.
+5. Review CSP report-only logs for new blocked domains before switching to enforcing mode.
+6. Compare Google Ads conversions against GA4 `generate_lead` for the same window. A large gap means a primary conversion action is keyed to something that cannot fire, not that leads stopped. See "Google Ads account configuration" in [Analytics Setup](./analytics-setup.md).
+7. Confirm GA4 traffic acquisition still shows `google / cpc` for paid visits. A drift back to `(direct)` or `googleads.g.doubleclick.net / referral` means campaign parameters stopped reaching `page_location`.
 
 ## ElevenLabs Widget Notes
 
 - Agent ID: `agent_4801kn7ednjse6drbr2cnt62kkp2`
 - Bundle URL: `https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4`
-- Route scope: all public pages, excluded from `/admin`
+- Route scope: public content pages; excluded from `/admin` and form routes
 - Expected placement: bottom-right, collapsed by default, dismissible, text input enabled
 - Host-side text overrides are applied with the widget's supported `text-contents` JSON attribute.
 - Allowlist hosts must be exact hostnames in ElevenLabs. `localhost:3000`, `127.0.0.1:3000`, and the production domain should always be present.
@@ -70,33 +66,6 @@ Run these checks before a production release that touches the widget:
 
 ## Incident Playbooks
 
-## Incident: Admin login suddenly fails
-
-Symptoms:
-
-- `/admin/login` rejects the expected password, or
-- authenticated admin API requests return `401`
-
-Actions:
-
-1. Confirm the `ADMIN_PASSWORD` name is present in Vercel production without printing its value.
-2. Open `/admin/login` and sign in with the password-manager entry. There is no username or
-   browser Basic Auth prompt.
-3. Confirm `/admin` loads and a status-only request to `/api/admin/contacts?limit=1` returns `200`
-   in the same authenticated browser. Do not copy lead data into logs or screenshots.
-4. If the password is still rejected, rotate `ADMIN_PASSWORD`, update the password manager, and
-   deploy once so the new runtime receives it.
-5. If repeated failures are throttled (`429`), wait for the `Retry-After` window before retrying.
-
-## Admin auth hardening path
-
-The current production control is a shared password plus sign-in throttling. A stronger path requires infrastructure that is not part of this repo today:
-
-1. move admin access behind an identity-aware proxy or SSO-capable edge product
-2. issue individual accounts instead of one shared password
-3. require MFA at the identity layer
-4. keep the current middleware only as a narrow fallback during migration
-
 ## Incident: Contact form returns 500
 
 Symptoms:
@@ -119,7 +88,7 @@ Actions:
 Symptoms:
 
 - `POST /api/appointments` returns `202 delivered:false`
-- appointments still appear in admin contacts with `requestType=appointment`
+- appointments still persist in `contacts` with `requestType=appointment`
 - `formspreeStatus` remains `failed` or `sending`
 
 Actions:
@@ -134,44 +103,15 @@ Actions:
 6. Never bulk-reset `sending` rows or retry them without provider evidence; the original notification may have succeeded.
 7. Manually notify the front desk to call back any lead whose notification is not confirmed.
 
-## Incident: Admin contacts list fails
-
-Symptoms:
-
-- `/api/admin/contacts` returns `500`
-
-Actions:
-
-1. Verify auth first (401 vs 500).
-2. Check Postgres connectivity and table existence.
-3. Verify no schema mismatch in `contacts` columns.
-4. Confirm environment has correct `DATABASE_URL`.
-5. Run `npm run db:verify` to confirm lifecycle columns, constraints, and indexes are present.
-
 ## Lead lifecycle operating rule
+
+Stored lifecycle fields remain available for a dedicated dashboard outside this repo.
 
 1. Move a new lead to `contacted` after a real outreach attempt.
 2. Use `booked` only after the office confirms an appointment; a website request alone is not booked.
 3. Use `arrived` after the first confirmed visit occurs.
 4. Use `no-show` when the confirmed first visit is missed.
 5. Use `lost` only with a short operational reason. Keep clinical details out of staff notes.
-
-## Incident: GA4/GSC cards show missing config
-
-Symptoms:
-
-- endpoint returns `503` + `missing_config`
-
-Actions:
-
-1. Validate `GA4_PROPERTY_ID` and `GSC_SITE_URL`.
-2. On Vercel, validate `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64` (preferred) or
-   `GOOGLE_SERVICE_ACCOUNT_JSON`. Use `GOOGLE_APPLICATION_CREDENTIALS` only for a local runtime
-   where the referenced file actually exists.
-3. Confirm service account permissions in:
-   - GA4 property access
-   - Search Console property access
-4. Re-test endpoints.
 
 ## Incident: Legacy redirects broken
 
@@ -231,14 +171,6 @@ The website uses a manually verified review snapshot; it does not fetch Google r
 
 This workflow is read-only on Google. Publishing or deleting a business reply, reporting a review, or editing the Business Profile is a separate external action and is not part of a website refresh.
 
-## Rotate admin password
-
-1. Create new strong value for `ADMIN_PASSWORD`.
-2. Update Vercel env:
-   - `vercel env add ADMIN_PASSWORD production`
-3. Redeploy production.
-4. Validate with authenticated admin API request.
-
 ## Add a new public route to sitemap
 
 1. Add route in `src/content/routes.ts`.
@@ -255,7 +187,7 @@ This workflow is read-only on Google. Publishing or deleting a business reply, r
 When escalating, include:
 
 1. Incident start time (UTC and local)
-2. Blast radius (public routes, admin only, API only)
+2. Blast radius (public routes, form APIs, cron jobs)
 3. First failing endpoint and status code
 4. Recent deployment SHA
 5. Logs excerpt and attempted mitigations

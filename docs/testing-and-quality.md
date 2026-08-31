@@ -14,10 +14,10 @@ CI workflow (`.github/workflows/ci.yml`) runs:
 
 `npm run test` uses Vitest. The current suite covers analytics sanitization and conversion dedupe,
 booking-step events, form schemas, request guards, atomic notification claims,
-contact/appointment persistence and lifecycle behavior, concurrent idempotency recovery, GSC
-opportunity scoring, metadata and internal-link contracts, mixed-case Ads redirects, accessibility
-source contracts, and admin middleware. Playwright covers key browser-level design, mobile
-navigation, widget behavior, and durable-lead conversion behavior in CI.
+contact/appointment persistence and lifecycle behavior, concurrent idempotency recovery,
+metadata and internal-link contracts, mixed-case Ads redirects, accessibility
+source contracts, and public middleware. Playwright covers key browser-level design, mobile
+navigation, widget behavior, retired-admin 404s, and durable-lead conversion behavior in CI.
 
 `npm run test:e2e` now exercises the production runtime instead of `next dev`:
 
@@ -29,7 +29,7 @@ navigation, widget behavior, and durable-lead conversion behavior in CI.
 
 - Widget bundle is pinned to `https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4`
 - Agent ID is `agent_4801kn7ednjse6drbr2cnt62kkp2`
-- Widget renders on all public routes and is intentionally excluded from `/admin`
+- Widget renders on public content routes and is intentionally excluded from form routes and `/admin`
 - The launcher remains hidden until the visitor resolves the analytics consent choice
 - Host-side launcher copy is applied through the widget's supported `text-contents` JSON attribute for `0.11.4`
 - Browser coverage lives in Playwright under `tests/e2e/elevenlabs-widget.spec.ts`
@@ -105,24 +105,16 @@ Validate these redirect as expected:
 - a concurrent duplicate insert resolves to the existing lead without a second relay
 - a notification claim failure keeps the saved lead and returns the fallback response
 
-### Admin API auth
+### Retired admin dashboard
 
-- no auth returns `401` with `WWW-Authenticate`
-- wrong auth returns `401`
-- valid auth returns `200` for:
-  - `/api/admin/contacts`
-  - `/api/admin/changelog`
+- `/admin`, `/admin/login`, and `/admin/leads` return `404`
+- `/api/admin/contacts`, `/api/admin/session`, `/api/admin/changelog`, `/api/admin/ga4/overview`, and `/api/admin/gsc/overview` return `404`
+- the 404 page does not render a leads board or password sign-in
 
-### Lead lifecycle
+### Lead lifecycle persistence
 
-- status filtering and source filtering return only matching rows
-- lifecycle updates set the relevant timestamp and require a lost reason for `lost`
+- stored lifecycle fields remain available to form persistence and a separate dashboard
 - source summaries calculate lead, booked, and arrived rates without sending patient data to analytics
-
-### Analytics API behavior
-
-- missing config returns `503` with `missing_config`
-- configured state returns expected payload shapes
 
 ## 3) SEO and crawl checks
 

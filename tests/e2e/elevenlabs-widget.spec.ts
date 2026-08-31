@@ -515,21 +515,10 @@ test.describe("ElevenLabs widget integration", () => {
     }
   });
 
-  test("does not render on the admin route", async ({ browser }, testInfo) => {
-    const context = await browser.newContext({
-      baseURL: String(testInfo.project.use.baseURL),
-      httpCredentials: {
-        username: "admin",
-        password: "tim",
-      },
-    });
-    const page = await context.newPage();
-
-    await installWidgetStub(page);
+  test("does not render on the retired admin path", async ({ page }) => {
     await page.goto("/admin");
-
+    await expect(page.getByRole("heading", { name: /page not found/i })).toBeVisible();
     await expect(page.locator('[data-widget="elevenlabs-convai"]')).toHaveCount(0);
-
-    await context.close();
+    await expect(page.locator('[data-testid="assistant-launcher"]')).toHaveCount(0);
   });
 });
