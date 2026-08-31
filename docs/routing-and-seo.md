@@ -29,8 +29,8 @@ Implemented App Router pages:
 - `/privacy-policy`
 - `/sitemap`
 - `/font-test`
-- `/admin` (auth-protected)
 - custom 404
+- `/admin` and `/admin/*` are retired and 404; they are not public site routes
 
 ## Service Route Behavior
 

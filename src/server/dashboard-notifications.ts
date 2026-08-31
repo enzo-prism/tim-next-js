@@ -1,7 +1,7 @@
 export type DashboardNotificationConfig = {
   enabled: boolean;
   recipients: string[];
-  dashboardUrl: string;
+  dashboardUrl: string | null;
   webhookUrl: string | null;
 };
 
@@ -11,8 +11,7 @@ const getNotificationConfig = (): DashboardNotificationConfig => {
     .split(",")
     .map((r) => r.trim())
     .filter(Boolean);
-  const dashboardUrl =
-    process.env.LEAD_DASHBOARD_URL || "https://www.famfirstsmile.com/admin";
+  const dashboardUrl = process.env.LEAD_DASHBOARD_URL?.trim() || null;
   const webhookUrl = process.env.LEAD_NOTIFICATION_WEBHOOK_URL || null;
 
   return { enabled, recipients, dashboardUrl, webhookUrl };
@@ -39,6 +38,10 @@ export const sendGenericLeadAlert = async (
     throw new Error("webhook_not_configured");
   }
 
+  const dashboardLine = config.dashboardUrl
+    ? `\n\nView all leads: ${config.dashboardUrl}`
+    : "";
+
   const response = await fetch(config.webhookUrl, {
     method: "POST",
     headers: {
@@ -47,7 +50,7 @@ export const sendGenericLeadAlert = async (
     },
     body: JSON.stringify({
       subject: "A new lead just came in",
-      body: `A new lead was received.\n\nView all leads: ${config.dashboardUrl}\n\nThis is an automated notification. No patient details are included.`,
+      body: `A new lead was received.${dashboardLine}\n\nThis is an automated notification. No patient details are included.`,
       to: config.recipients,
       metadata: { source: "lead_dashboard" },
     }),

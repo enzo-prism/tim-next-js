@@ -1,5 +1,4 @@
 import { defineConfig, devices } from "@playwright/test";
-import { adminPassword } from "./tests/e2e/admin-credentials";
 
 const port = 3100;
 const baseURL = `http://127.0.0.1:${port}`;
@@ -22,11 +21,6 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120_000,
-    // CI provides no admin secret, so the server and the specs agree on a
-    // test-only password rather than falling back to the shipped default.
-    env: {
-      ADMIN_PASSWORD: adminPassword,
-    },
   },
   projects: [
     {

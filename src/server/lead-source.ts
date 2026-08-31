@@ -33,7 +33,7 @@ export const normalizeLeadSource = (contact: {
   // Someone who searched the practice on Google and then filled in the form
   // arrived with referrer=www.google.com, and calling that a referral both
   // hides that they came through our own website and, in a dental practice,
-  // reads as a patient referral. The referrer is still shown on the lead; it
+  // reads as a patient referral. The referrer is still stored with the lead; it
   // just no longer decides where the lead came from.
   return "Website form";
 };

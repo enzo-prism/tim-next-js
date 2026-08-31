@@ -51,7 +51,7 @@ Use this checklist before cutting traffic fully to Vercel production.
 - [ ] `/sitemap.xml` includes all canonical routes
 - [ ] `/llms.txt` reachable
 
-## Contact + Admin Features
+## Contact Features
 
 - [ ] `POST /api/contacts` persists valid submissions
 - [ ] invalid contact payload returns `400` with errors
@@ -60,14 +60,7 @@ Use this checklist before cutting traffic fully to Vercel production.
 - [ ] unknown services, past preferred dates, oversized bodies, and untrusted browser origins are rejected
 - [ ] `POST /api/appointments` returns `201` when DB + relay succeed
 - [ ] `POST /api/appointments` returns `202 delivered:false` when relay fails but DB persists
-- [ ] `/admin` redirects to `/admin/login` when signed out
-- [ ] `/api/admin/contacts` returns 401 without a session cookie
-- [ ] `/api/admin/changelog` returns payload
-- [ ] admin contacts pagination and search work
-- [ ] admin contacts status/source filters and pagination work
-- [ ] staff can update lifecycle stage, private notes, and required lost reason
-- [ ] source summary shows lead, booking, and arrival rates
-- [ ] admin contacts table shows request type, preferred date/time, Formspree status, and lifecycle
+- [ ] `/admin`, `/admin/login`, and `/api/admin/contacts` 404 and do not expose a leads board
 
 ## Analytics
 
@@ -78,9 +71,6 @@ Use this checklist before cutting traffic fully to Vercel production.
 - [ ] Google Ads conversion includes the submission UUID as `transaction_id`
 - [ ] landing page, external referrer host, CTA source, UTM values, and Google click IDs persist with the lead
 - [ ] public event payloads contain no names, email addresses, phone numbers, messages, or query-string values
-- [ ] `/api/admin/ga4/overview` returns valid data or expected `missing_config`
-- [ ] `/api/admin/gsc/overview` returns valid data or expected `missing_config`
-- [ ] GSC query-by-page opportunity rows contain positions 4-20 and no patient data
 - [ ] booking step view/complete/abandon events contain no form values or patient identifiers
 
 ## Performance and Accessibility

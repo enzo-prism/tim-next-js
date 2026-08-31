@@ -62,12 +62,10 @@ Review these by landing page, service, campaign, and device where volume permits
 4. Completion rate: `generate_lead / form_start`.
 5. Failure rate: `(form_submit_error + form_submit_fallback) / form_submit_attempt`.
 6. Call intent: `phone_click / landing sessions`.
-7. Booking rate: admin `booked / leads` by stored source.
-8. Arrival rate: admin `arrived / leads` by stored source.
+7. Booking rate: stored `booked / leads` by source, reviewed in the dedicated dashboard.
+8. Arrival rate: stored `arrived / leads` by source, reviewed in the dedicated dashboard.
 
-Office staff maintain the outcome in the protected admin dashboard using `new`, `contacted`, `booked`, `arrived`, `no-show`, or `lost`. Private notes and lost reasons stay in Postgres and are never copied into public analytics.
-
-Search Console opportunities pair each query with its ranking page, keep average positions 4-20, and rank candidates using impressions, proximity to position 4, and remaining CTR headroom. Use the score to choose content/CTA tests; do not treat it as a traffic forecast.
+Lifecycle fields can still be stored with the lead in Postgres. Staff reporting is not served from this public website. Private notes and lost reasons stay in Postgres and are never copied into public analytics.
 
 Do not optimize only for raw form volume. The durable business outcome is confirmed new-patient appointments, while analytics and stored attribution explain which pages and campaigns contributed.
 
@@ -79,7 +77,7 @@ Before production deployment:
    numeric order. Use the safe `0000` baseline only when bootstrapping a fresh database, and never
    replay non-idempotent production migrations.
 2. Run `npm run db:verify` against that database.
-3. Confirm GA4, Ads, Formspree, canonical host, and `ADMIN_PASSWORD` are configured.
+3. Confirm GA4, Ads, Formspree, and canonical host are configured.
 4. Run `npm run quality:all` and CI E2E.
 5. Test one realistic synthetic submission in preview, not production.
-6. After deployment, use invalid public API payloads for non-mutating guard checks and verify authorized admin access using status-only output.
+6. After deployment, use invalid public API payloads for non-mutating guard checks and confirm `/admin` 404s.

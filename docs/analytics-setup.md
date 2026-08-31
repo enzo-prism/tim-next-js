@@ -110,15 +110,6 @@ Live tagging host is `www.famfirstsmile.com`. Apex `famfirstsmile.com` 308s ther
   appointment retry also does not emit another Ads conversion.
 - CTA clicks remain non-conversion navigation events.
 
-### Admin analytics APIs (server-side)
-
-- `GET /api/admin/ga4/overview`
-  - reads GA4 data through Google Analytics Data API
-- `GET /api/admin/gsc/overview`
-  - reads Search Console data through Google Search Console API
-  - returns query-by-page rows plus ranked positions 4-20 opportunities
-- both return `503 missing_config` when credentials/env are incomplete
-
 ## Required GA4 Property Configuration
 
 These are set in the GA4 property, not in this repo, and they will silently corrupt reporting if changed back.
@@ -160,16 +151,6 @@ A primary conversion action that cannot fire makes every campaign bid toward a t
 - `NEXT_PUBLIC_GOOGLE_ADS_TAG_ID` (optional; rejected Exquisite Dentistry Ads fallback is ignored)
 - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT` (used only when a valid Ads tag is set)
 
-### Admin reporting vars
-
-- `GA4_PROPERTY_ID` (numeric property id, currently `518867337`)
-- `GSC_SITE_URL` (`sc-domain:famfirstsmile.com` recommended)
-- one credential mode:
-  - `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64` (preferred for Vercel), or
-  - `GOOGLE_SERVICE_ACCOUNT_JSON`, or
-  - `GOOGLE_APPLICATION_CREDENTIALS` (local runtimes only; a workstation path is not available
-    inside Vercel)
-
 ## Manual GA4 Tag Confirmation
 
 Google-provided base snippet for this property:
@@ -202,48 +183,40 @@ Then:
 4. In browser devtools Network tab, confirm `collect`/`g/collect` hits after page load.
 5. Navigate to a second route and confirm another GA hit is sent.
 6. In GA4 Realtime, verify active users and route page views appear.
-7. Confirm admin route `/admin` does not emit normal public pageview tracking in either Vercel Analytics or GA4.
+7. Confirm the retired `/admin` path 404s and does not emit normal public pageview tracking in either Vercel Analytics or GA4.
 8. Verify appointment CTAs emit only `cta_click`; the Google Ads conversion must fire only after the API confirms a newly created durable appointment lead.
 9. Confirm representative custom events fire without exposing form data:
    - appointment CTA: `cta_click`
    - appointment/contact submit success: `generate_lead`
    - phone/map/pay/review/social links: corresponding click event
-10. Verify admin API connectivity:
-   - `GET /api/admin/ga4/overview?days=30`
-   - `GET /api/admin/gsc/overview?days=30`
-11. Start, advance, and exit the appointment flow; verify step events contain no form values or patient identifiers.
+10. Start, advance, and exit the appointment flow; verify step events contain no form values or patient identifiers.
 
 ## Common Failure Modes
 
 1. GA detected by Tag Assistant but no page data in reports:
    - usually `NEXT_PUBLIC_GA_MEASUREMENT_ID` mismatch or filtering in GA4 property.
    - also check consent: nothing is emitted until the visitor opts in, and a fresh browser profile starts undecided.
-2. Admin GA4/GSC cards show missing config:
-   - missing `GA4_PROPERTY_ID`, `GSC_SITE_URL`, or service account credentials.
-3. Search Console returns permission errors:
-   - service account email is not added as an owner/user in Search Console property.
-4. Route transitions not tracked:
+2. Route transitions not tracked:
    - `RouteAnalytics` removed or `trackPageView` not firing on pathname change.
    - First page view after Allow missing: consent event listener removed, so collection waits on a script callback that never runs.
-5. Vercel Analytics stays blank after deploy:
+3. Vercel Analytics stays blank after deploy:
    - Web Analytics is not enabled in the Vercel project, an ad/content blocker is suppressing the script, or nobody has visited the deployed site since the change.
-6. Custom events appear in GA4 but not as breakdowns:
+4. Custom events appear in GA4 but not as breakdowns:
    - GA4 custom parameters need matching custom dimensions/metrics before they appear in standard reports.
-7. Vercel pageviews appear but custom events do not:
+5. Vercel pageviews appear but custom events do not:
    - the Vercel project plan may not include custom events, or the event has not been triggered in production yet.
-8. Paid traffic reports as `(direct) / (none)` or `googleads.g.doubleclick.net / referral`, and Paid Search shows zero sessions:
+6. Paid traffic reports as `(direct) / (none)` or `googleads.g.doubleclick.net / referral`, and Paid Search shows zero sessions:
    - `page_location` is being sent without campaign parameters. GA4 reads source/medium from that field, so a query-stripped URL destroys attribution even though auto-tagging is on. Verify `sanitizeAnalyticsUrl()` still preserves `gclid` and the `utm_*` keys.
-9. Page views roughly double, or engagement rate looks implausibly low:
+7. Page views roughly double, or engagement rate looks implausibly low:
    - "Page changes based on browser history events" was re-enabled in Enhanced measurement. See "Required GA4 property configuration".
-10. GA4 shows a stray `ads_conversion_*` event next to `generate_lead`:
+8. GA4 shows a stray `ads_conversion_*` event next to `generate_lead`:
    - the Ads conversion is firing without `send_to`, so gtag is broadcasting it to the GA4 destination as well.
-11. Google Ads reports far fewer conversions than GA4 reports leads:
+9. Google Ads reports far fewer conversions than GA4 reports leads:
    - check what the primary conversion actions on the "Submit lead form" goal are actually keyed to. A page-load conversion pointed at a domain this site does not serve will sit at zero forever while still driving bidding.
-12. GA4 "no data received in the past 48 hours" with the consent prompt still appearing:
+10. GA4 "no data received in the past 48 hours" with the consent prompt still appearing:
    - `gtag.js` was mounted with a conditionally rendered `next/script`. Load it with a DOM `<script>` after Allow, and send `page_view` from `RouteAnalytics` on the consent event.
 
 ## Hardening Recommendations
 
 1. Add a Playwright smoke script that asserts both the Vercel Insights script and GA script load on public routes.
-2. Add dashboard heartbeat endpoint for analytics config status.
-3. Add weekly manual verification against Vercel Analytics, GA4 Realtime, and conversion diagnostics.
+2. Add weekly manual verification against Vercel Analytics, GA4 Realtime, and conversion diagnostics.

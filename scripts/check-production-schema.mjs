@@ -141,7 +141,7 @@ const constraints = await sql`
 `;
 
 // 0004-0009: ingestion, outbox, and reconciliation objects. Without these the
-// admin leads API selects columns and tables that do not exist and returns 500.
+// public form notification and reconciliation jobs cannot persist or retry.
 const expectedTables = [
   "notification_outbox",
   "reconciliation_runs",

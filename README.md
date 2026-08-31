@@ -5,10 +5,10 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 ## What This Repo Contains
 
 - Full public website route parity
-- Admin dashboard protected with a single-password sign-in
-- Contact and appointment persistence plus new-patient lifecycle reporting using Postgres via Drizzle ORM
+- Contact and appointment persistence using Postgres via Drizzle ORM
 - First-party forms with duplicate protection, campaign attribution, consent records, and Formspree office notifications
-- Vercel Web Analytics + GA4 + query-by-page Google Search Console opportunity reporting
+- Vercel Web Analytics + GA4 public measurement
+- No on-site staff leads dashboard; `/admin` is not part of the public site
 - Canonical SEO + schema.org JSON-LD + sitemap/robots/llms assets
 - Vercel-ready routing, headers, and deployment flow
 
@@ -61,9 +61,10 @@ npm run quality:all
 
 ## Current Release
 
-The August 30, 2026 release improves service discovery, appointment-request
-clarity, mobile media loading, article trust signals, accessibility, release
-guardrails, and production dependency security.
+The August 31, 2026 release removes the password-protected on-site leads
+dashboard from the public website. Staff reporting now lives outside this repo.
+Public forms, Formspree office notifications, first-party duplicate protection,
+GA4, and Vercel Web Analytics stay in place.
 
 See [Release Notes](docs/release-notes.md) for the complete scope and
 verification record, and [Operations Runbook](docs/operations-runbook.md) for
@@ -74,7 +75,7 @@ the manual review-refresh procedure.
 - Next.js 15 (App Router)
 - TypeScript (strict)
 - Tailwind CSS + component primitives
-- React Query (client data fetching in admin)
+- React Query (client data fetching for public forms)
 - Drizzle ORM + Postgres
 - Vercel runtime + middleware
 
@@ -115,8 +116,8 @@ npm run db:verify
 npm run release:prod -- --schema-synced
 ```
 
-7. Run smoke tests on routes, redirects, APIs, and admin auth. Do not run a second CLI deployment
-   after the matching Git deployment is `READY`.
+7. Run smoke tests on public routes, redirects, and form APIs. Confirm `/admin` 404s. Do not run a
+   second CLI deployment after the matching Git deployment is `READY`.
 
 See [Deployment on Vercel](docs/deployment-vercel.md) for full details.
 

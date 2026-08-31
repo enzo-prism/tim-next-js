@@ -8,9 +8,9 @@ Primary design goals:
 
 - Preserve public route and SEO parity
 - Turn qualified local traffic into measurable new-patient leads
-- Keep admin functionality behind auth
 - Persist contacts in production Postgres
-- Keep analytics/reporting endpoints explicit, privacy-safe, and debuggable
+- Keep public analytics privacy-safe and debuggable
+- Keep staff-facing lead dashboards off this public website
 
 ## Runtime Model
 
@@ -52,17 +52,9 @@ Primary design goals:
    - known failure -> state returns to `failed`, the DB record is retained, and the API returns `202 delivered:false`.
    - indeterminate `sending` -> no automatic resend; staff must reconcile provider and application records before changing the state.
 
-### Admin flow
+### Staff dashboard
 
-1. Middleware guards `/admin`, `/admin/*` and `/api/admin/*` with a single-password session cookie (`src/middleware.ts`, `src/server/admin-session.ts`). `/admin/login` and `/api/admin/session` are exempt so sign-in can happen.
-2. Admin UI (`src/legacy-pages/admin.tsx`) queries:
-   - `/api/admin/changelog`
-   - `/api/admin/contacts`
-   - `/api/admin/ga4/overview`
-   - `/api/admin/gsc/overview`
-3. GA4/GSC endpoints use Google service account auth (`src/server/admin/google.ts`) and return `missing_config` (`503`) when setup is incomplete.
-4. Office staff can move leads through `new`, `contacted`, `booked`, `arrived`, `no-show`, or `lost`, add private notes/lost reasons, and compare booking/arrival rates by stored acquisition source.
-5. Search Console reporting includes query-by-page rows and ranks positions 4-20 by impressions, rank potential, and CTR headroom. The score prioritizes work; it is not a traffic forecast.
+The former on-site password-protected leads dashboard is not part of this public website. `/admin`, `/admin/login`, and the staff-facing contacts/analytics APIs 404. Form persistence, Formspree office notifications, and cron-authenticated notification/reconciliation jobs remain so public forms keep working. Staff reporting lives in a separate dedicated dashboard.
 
 ### Attribution and conversion flow
 
@@ -80,7 +72,7 @@ Primary design goals:
 - `src/legacy-pages`: Main page implementations reused by App Router wrappers
 - `src/components`: Shared UI and layout components
 - `src/content`: Structured content and SEO/schema definitions
-- `src/server`: DB schema/storage and admin server helpers
+- `src/server`: DB schema/storage and form-processing server helpers
 - `src/lib`: Metadata/tracking/internal linking utilities
 - `src/types`: Public TypeScript DTO contracts
 - `public`: Static assets and `llms.txt`
@@ -101,10 +93,6 @@ Primary design goals:
 
 ## Security Model
 
-- Middleware-enforced session-cookie gate for admin routes
-- Timing-safe password comparison logic
-- `Cache-Control: no-store` on protected responses
-- `ADMIN_PASSWORD` is required; admin authentication fails closed when it is absent
 - Security headers set in `next.config.ts`:
   - `Strict-Transport-Security`
   - `X-Frame-Options: SAMEORIGIN`
@@ -114,7 +102,7 @@ Primary design goals:
 - Public forms use validation, streamed size limits, origin checks, honeypots, rate limiting, consent records, and idempotency keys.
 - Hotjar/session replay is intentionally not used on patient-facing pages.
 - Analytics and ad measurement are opt-in; nothing is loaded or emitted until the visitor consents.
-- Admin lead search is sent in a POST body so patient names never enter query strings, access logs, or browser history.
+- Cron notification and reconciliation jobs authenticate with `CRON_SECRET`, not a browser session.
 
 ## Key Architectural Decisions
 
@@ -122,9 +110,7 @@ Primary design goals:
    - Keeps migration stable while preserving exact page behavior.
 2. Shared Zod form contracts plus Drizzle persistence schema:
    - Browser, API, and persistence expectations stay aligned without shipping the database toolchain to the browser.
-3. Explicit missing-config API responses:
-   - Admin analytics endpoints fail with actionable diagnostics, not silent zeros.
-4. Canonical override for TMJ:
+3. Canonical override for TMJ:
    - `/services/tmj` redirects/canonicalizes to `/tmj`.
 
 ## Recommended Next Refactor Milestones
@@ -132,4 +118,3 @@ Primary design goals:
 1. Incrementally migrate `src/legacy-pages/*` into colocated App Router components.
 2. Add a managed, cross-instance rate-limit store if abuse exceeds the current Vercel-instance guard.
 3. Add a provider-supported idempotent notification outbox if manual follow-up on `failed` and `sending` rows becomes operationally expensive.
-4. Replace ad-hoc changelog generation with a build artifact step.

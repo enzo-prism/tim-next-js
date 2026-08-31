@@ -10,13 +10,7 @@ cp .env.example .env.local
 
 - `DATABASE_URL`
   - Postgres connection string
-  - Required for contact persistence and admin contacts listing
-- `ADMIN_PASSWORD`
-  - the only dashboard sign-in credential; `ADMIN_USERNAME` is intentionally unused
-  - required in every deployed environment; there is no built-in password fallback
-  - use a non-default, randomly generated value stored in the password manager
-  - a successful sign-in creates an HTTP-only session cookie; missing configuration returns
-    `503 missing_config`, and unauthenticated admin APIs return `401`
+  - Required for contact and appointment persistence
 
 ## Core Site and Canonical
 
@@ -39,6 +33,7 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
 - `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT`
   - used only when a valid Ads tag is configured
   - default fallback: `ads_conversion_Submit_lead_form_1`
+
 ## Vercel Web Analytics
 
 - no repo-level env var is required for Vercel Web Analytics in this codebase
@@ -60,50 +55,10 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
   - guarded production releases require both endpoint names explicitly; this practice uses
     `https://formspree.io/f/mojngolr` for both
 
-## Admin Analytics Variables
-
-- `GA4_PROPERTY_ID`
-  - used by `/api/admin/ga4/overview`
-  - expected format: numeric property ID (for this site currently `518867337`)
-- `GSC_SITE_URL`
-  - used by `/api/admin/gsc/overview`
-  - either:
-    - `sc-domain:famfirstsmile.com`
-    - `https://www.famfirstsmile.com/`
-
-## Google Service Account Credentials (One Required Mode)
-
-At least one credential mode must be configured for GA4/GSC admin APIs:
-
-1. `GOOGLE_SERVICE_ACCOUNT_JSON`
-   - raw JSON key as string
-2. `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`
-   - base64-encoded JSON key
-   - recommended for Vercel because it has no dependency on a runtime file path
-   - add it as a sensitive production variable and never commit or print the decoded key
-3. `GOOGLE_APPLICATION_CREDENTIALS`
-   - absolute file path to JSON key (runtime file access required)
-
-If none are set, admin analytics endpoints return:
-
-```json
-{
-  "ok": false,
-  "error": "missing_config",
-  "missing": [
-    "GOOGLE_SERVICE_ACCOUNT_JSON",
-    "GOOGLE_SERVICE_ACCOUNT_JSON_BASE64",
-    "GOOGLE_APPLICATION_CREDENTIALS"
-  ]
-}
-```
-
 ## Local Development Notes
 
 - Without `DATABASE_URL` in development:
   - app uses in-memory storage for contacts
-- Without Google credentials:
-  - GA4/GSC admin API routes return `503 missing_config`
 
 ## Vercel Notes
 
