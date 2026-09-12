@@ -161,10 +161,16 @@ const preferredTimeFromColumns = (columns: Record<string, string>): string | nul
   if (!raw) return null;
   const lower = raw.toLowerCase();
   if (PREFERRED_TIMES.has(lower)) return lower;
-  if (/\bmorning\b|\bam\b|before\s*noon/.test(lower)) return "morning";
-  if (/\bafternoon\b|\bevening\b|after\s*(12|noon|[3-6])|\bpm\b|p\.m\.|[3-6]\s*p/.test(lower)) {
-    return "afternoon";
+
+  const meridians = [
+    ...lower.matchAll(/(?:0?[1-9]|1[0-2])(?::[0-5]\d)?\s*(a\.?m\.?|p\.?m\.?)\b/g),
+  ].map((match) => match[1]);
+  if (meridians.length > 0) {
+    return meridians[meridians.length - 1].startsWith("a") ? "morning" : "afternoon";
   }
+
+  if (/\bmorning\b|before\s*noon/.test(lower)) return "morning";
+  if (/\bafternoon\b|\bevening\b|after\s*(?:12|noon|[3-6])\b/.test(lower)) return "afternoon";
   if (/\bflexible\b|any\s*time|anytime/.test(lower)) return "flexible";
   return null;
 };

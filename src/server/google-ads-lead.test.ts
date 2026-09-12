@@ -89,6 +89,27 @@ describe("google ads lead mapping", () => {
     expect(contact.message).toContain("afternoon after 4pm");
   });
 
+  const contactFromPreferredTime = (value: string) =>
+    mapGoogleAdsColumnsToContact({
+      leadId: "lead-time",
+      ingestedVia: "webhook",
+      columns: parseGoogleAdsColumnData([
+        { column_id: "EMAIL", string_value: "jane@example.com" },
+        { column_id: "PREFERRED_CONTACT_TIME", string_value: value },
+      ]),
+      rawPayload: {},
+    });
+
+  it("does not treat the English word am as morning", () => {
+    expect(contactFromPreferredTime("I am available after 5").preferredTime).toBe("afternoon");
+    expect(contactFromPreferredTime("I am free").preferredTime).toBeNull();
+  });
+
+  it("maps compact clock times like 9am to morning", () => {
+    expect(contactFromPreferredTime("9am").preferredTime).toBe("morning");
+    expect(contactFromPreferredTime("5pm").preferredTime).toBe("afternoon");
+  });
+
   it("folds custom questions, location, and contact method into message", () => {
     const namedColumns = [
       { column_id: "FULL_NAME", column_name: "Full name", string_value: "Jane Doe" },
