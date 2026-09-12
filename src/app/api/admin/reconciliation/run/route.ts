@@ -1,5 +1,4 @@
-import { timingSafeEqual } from "crypto";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { db } from "@/server/db";
 import {
   ALL_RECONCILIATION_PROVIDERS,
@@ -7,37 +6,9 @@ import {
 } from "@/server/reconciliation-providers";
 import { reconciliationService } from "@/server/reconciliation-service";
 import type { ReconciliationOutcome } from "@/server/reconciliation-service";
+import { cronJsonResponse, requireCronAuth } from "@/server/cron-auth";
 
 export const runtime = "nodejs";
-
-const jsonResponse = (payload: unknown, init?: ResponseInit) => {
-  const response = NextResponse.json(payload, init);
-  response.headers.set("Cache-Control", "no-store");
-  return response;
-};
-
-const requireCronAuth = (req: NextRequest): NextResponse | null => {
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    return jsonResponse(
-      { ok: false, error: "cron_not_configured", message: "Cron secret is not configured." },
-      { status: 503 },
-    );
-  }
-
-  const authHeader = req.headers.get("authorization") || "";
-  const provided = Buffer.from(authHeader, "utf-8");
-  const expected = Buffer.from(`Bearer ${cronSecret}`, "utf-8");
-
-  if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
-    return jsonResponse(
-      { ok: false, error: "unauthorized", message: "Invalid cron authorization." },
-      { status: 401 },
-    );
-  }
-
-  return null;
-};
 
 const isReconciliationEnabled = (): boolean =>
   process.env.RECONCILIATION_ENABLED === "true";
@@ -50,6 +21,7 @@ const redactOutcome = (outcome: ReconciliationOutcome) => {
       totalExternal: outcome.totalExternal,
       totalStored: outcome.totalStored,
       missingInStored: outcome.missingInStored,
+      inserted: outcome.inserted,
     };
   }
   if (outcome.status === "failed") {
@@ -71,7 +43,7 @@ export async function GET(req: NextRequest) {
   if (authResponse) return authResponse;
 
   if (!isReconciliationEnabled()) {
-    return jsonResponse({
+    return cronJsonResponse({
       ok: true,
       disabled: true,
       message: "Reconciliation is disabled.",
@@ -80,7 +52,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (!db) {
-    return jsonResponse(
+    return cronJsonResponse(
       { ok: false, error: "database_unavailable", message: "Database is not configured." },
       { status: 503 },
     );
@@ -99,11 +71,11 @@ export async function GET(req: NextRequest) {
   const anyFailed = results.some((r) => r.status === "failed");
 
   if (anyFailed) {
-    return jsonResponse(
+    return cronJsonResponse(
       { ok: false, disabled: false, results },
       { status: 502 },
     );
   }
 
-  return jsonResponse({ ok: true, disabled: false, results });
+  return cronJsonResponse({ ok: true, disabled: false, results });
 }

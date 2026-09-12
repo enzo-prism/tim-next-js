@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  after: vi.fn((fn: () => Promise<void>) => fn()),
   claimContactNotification: vi.fn(),
-  createContact: vi.fn(),
+  createContactWithOutbox: vi.fn(),
+  enqueueLeadOutbox: vi.fn(),
   getContactBySubmissionId: vi.fn(),
+  processOutboxBatch: vi.fn(),
   relayLeadNotification: vi.fn(),
   updateContactFormspreeStatus: vi.fn(),
 }));
@@ -11,15 +14,26 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/server/storage", () => ({
   storage: {
     claimContactNotification: mocks.claimContactNotification,
-    createContact: mocks.createContact,
+    createContactWithOutbox: mocks.createContactWithOutbox,
+    enqueueLeadOutbox: mocks.enqueueLeadOutbox,
     getContactBySubmissionId: mocks.getContactBySubmissionId,
     updateContactFormspreeStatus: mocks.updateContactFormspreeStatus,
   },
 }));
 
-vi.mock("@/server/lead-notifications", () => ({
+vi.mock("@/server/lead-notifications", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/lead-notifications")>()),
   relayLeadNotification: mocks.relayLeadNotification,
 }));
+
+vi.mock("@/server/notification-processor", () => ({
+  processOutboxBatch: mocks.processOutboxBatch,
+}));
+
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, after: mocks.after };
+});
 
 vi.mock("@/server/public-form-guard", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/server/public-form-guard")>()),
@@ -101,7 +115,12 @@ describe("appointment API", () => {
     vi.setSystemTime(new Date("2026-07-24T16:00:00.000Z"));
     vi.clearAllMocks();
     mocks.getContactBySubmissionId.mockResolvedValue(undefined);
-    mocks.createContact.mockResolvedValue(storedAppointment());
+    mocks.createContactWithOutbox.mockResolvedValue({
+      contact: storedAppointment(),
+      outboxEnqueued: true,
+    });
+    mocks.enqueueLeadOutbox.mockResolvedValue(false);
+    mocks.processOutboxBatch.mockResolvedValue({ processed: 0, sent: 0, failed: 0 });
     mocks.claimContactNotification.mockResolvedValue(
       storedAppointment({ formspreeStatus: "sending" }),
     );
@@ -122,10 +141,11 @@ describe("appointment API", () => {
       serviceId: "invisalign",
     });
     expect(body).not.toHaveProperty("email");
-    expect(mocks.createContact).toHaveBeenCalledWith(
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
       expect.objectContaining({
         submissionId: payload.submissionId,
         formspreeStatus: "failed",
+        ingestedVia: "website-form",
         landingPage: "/services/invisalign",
       }),
     );
@@ -159,7 +179,7 @@ describe("appointment API", () => {
       leadId: "lead-existing",
       serviceId: "invisalign",
     });
-    expect(mocks.createContact).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
     expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
   });
 
@@ -206,7 +226,7 @@ describe("appointment API", () => {
 
     expect([first.status, second.status].sort()).toEqual([200, 202]);
     expect(mocks.relayLeadNotification).toHaveBeenCalledTimes(1);
-    expect(mocks.createContact).not.toHaveBeenCalled();
+    expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 
   it("releases a failed relay claim so the same submission can retry once", async () => {
@@ -258,7 +278,7 @@ describe("appointment API", () => {
     mocks.getContactBySubmissionId
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(storedAppointment({ id: "lead-concurrent" }));
-    mocks.createContact.mockRejectedValue(new Error("unique violation"));
+    mocks.createContactWithOutbox.mockRejectedValue(new Error("unique violation"));
 
     const response = await post();
 
@@ -304,7 +324,10 @@ describe("appointment API", () => {
 
   it("relays the canonical stored appointment data", async () => {
     const canonical = storedAppointment({ formspreeStatus: "sending" });
-    mocks.createContact.mockResolvedValue({ ...canonical, formspreeStatus: "failed" });
+    mocks.createContactWithOutbox.mockResolvedValue({
+      contact: { ...canonical, formspreeStatus: "failed" },
+      outboxEnqueued: true,
+    });
     mocks.claimContactNotification.mockResolvedValue(canonical);
 
     await post();

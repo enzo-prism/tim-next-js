@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { relayLeadNotification } from "@/server/lead-notifications";
+import { relayLeadNotification, toFormspreePayload } from "@/server/lead-notifications";
 
 describe("lead notification relay", () => {
   afterEach(() => {
@@ -54,5 +54,48 @@ describe("lead notification relay", () => {
         consentToContact: true,
       }),
     ).rejects.toThrow("status 503");
+  });
+
+  it("maps stored website leads to Formspree payloads and skips Google Ads rows", () => {
+    const contact = {
+      id: "lead-1",
+      submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+      firstName: "Jamie",
+      lastName: "Lee",
+      email: "jamie@example.com",
+      phone: "408-555-1212",
+      service: "family-dentistry",
+      message: "Hello",
+      requestType: "contact",
+      preferredDate: null,
+      preferredTime: null,
+      landingPage: "/contact",
+      referrer: null,
+      ctaSource: "contact_page",
+      utmSource: null,
+      utmMedium: null,
+      utmCampaign: null,
+      utmTerm: null,
+      utmContent: null,
+      gclid: null,
+      gbraid: null,
+      wbraid: null,
+      consentToContact: true,
+      consentVersion: "2026-07-15",
+    };
+    expect(toFormspreePayload(contact as never)).toEqual(
+      expect.objectContaining({
+        leadId: "lead-1",
+        requestType: "contact",
+        email: "jamie@example.com",
+      }),
+    );
+    expect(
+      toFormspreePayload({
+        ...contact,
+        requestType: "google_ads_lead",
+        submissionId: null,
+      } as never),
+    ).toBeNull();
   });
 });

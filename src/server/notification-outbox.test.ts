@@ -59,4 +59,23 @@ describe("notification outbox via InMemoryStorage", () => {
     expect(second.contact).toBeNull();
     expect(second.outboxEnqueued).toBe(false);
   });
+
+  it("enqueues website-form leads by submission UUID", async () => {
+    const result = await storage.createContactWithOutbox({
+      firstName: "Jamie",
+      lastName: "Lee",
+      email: "jamie@example.com",
+      requestType: "contact",
+      submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+      ingestedVia: "website-form",
+      formspreeStatus: "failed",
+      leadStatus: "new",
+      consentToContact: true,
+      isTest: false,
+    });
+    expect(result.outboxEnqueued).toBe(true);
+    expect(
+      await storage.enqueueLeadOutbox(result.contact!),
+    ).toBe(false);
+  });
 });

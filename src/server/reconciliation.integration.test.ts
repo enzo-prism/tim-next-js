@@ -105,6 +105,7 @@ describe("Postgres reconciliation integration", () => {
   beforeEach(async () => {
     await client!.query(`DELETE FROM reconciliation_discrepancies`);
     await client!.query(`DELETE FROM reconciliation_runs`);
+    await client!.query(`DELETE FROM notification_outbox`);
     await client!.query(`DELETE FROM contacts`);
     db = drizzle(client!, { schema }) as unknown as DrizzleDatabase;
   });
@@ -226,6 +227,62 @@ describe("Postgres reconciliation integration", () => {
       .where(undefined);
 
     expect(after).toEqual(before);
+  });
+
+  it("inserts missing leads without updating existing contact rows", async () => {
+    await seedContact(db, {
+      googleAdsLeadId: "ga-keep",
+      firstName: "Existing",
+      lastName: "Row",
+    });
+
+    const [beforeExisting] = await db
+      .select()
+      .from(schema.contacts)
+      .where(eq(schema.contacts.googleAdsLeadId, "ga-keep"));
+
+    const provider: IReconciliationProvider = {
+      name: "google_ads",
+      fetchExternalLeadIds: async () => ["ga-keep", "ga-backfill"],
+      fetchExternalLeads: async () => [
+        { externalId: "ga-keep" },
+        {
+          externalId: "ga-backfill",
+          contact: {
+            firstName: "Ada",
+            lastName: "Lovelace",
+            email: "ada-backfill@example.com",
+            requestType: "google_ads_lead",
+            googleAdsLeadId: "ga-backfill",
+            consentToContact: true,
+            leadStatus: "new",
+            ingestedVia: "webhook",
+          },
+        },
+      ],
+    };
+
+    const result = await service.runReconciliation(db, provider, now);
+    expect(result.status).toBe("completed");
+    if (result.status === "completed") {
+      expect(result.inserted).toBe(1);
+      expect(result.missingInStored).toBe(0);
+    }
+
+    const [existing] = await db
+      .select()
+      .from(schema.contacts)
+      .where(eq(schema.contacts.googleAdsLeadId, "ga-keep"));
+    expect(existing.firstName).toBe("Existing");
+    expect(existing.updatedAt).toEqual(beforeExisting.updatedAt);
+
+    const inserted = await db
+      .select()
+      .from(schema.contacts)
+      .where(eq(schema.contacts.googleAdsLeadId, "ga-backfill"));
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0].ingestedVia).toBe("reconciliation");
+    expect(inserted[0].firstName).toBe("Ada");
   });
 
   it("outcome contains no patient fields", async () => {

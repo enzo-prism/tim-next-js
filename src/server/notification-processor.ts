@@ -1,4 +1,5 @@
 import { db } from "@/server/db";
+import { retryFailedFormspreeNotifications } from "@/server/formspree-retry";
 import { outboxService } from "@/server/notification-outbox";
 import {
   isNotificationEnabled,
@@ -53,4 +54,10 @@ export const processOutboxBatch = async (): Promise<{
   }
 
   return { processed: events.length, sent, failed };
+};
+
+export const processScheduledNotifications = async () => {
+  const outbox = await processOutboxBatch();
+  const formspree = await retryFailedFormspreeNotifications();
+  return { ...outbox, formspree };
 };

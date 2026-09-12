@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  after: vi.fn((fn: () => Promise<void>) => fn()),
   claimContactNotification: vi.fn(),
-  createContact: vi.fn(),
+  createContactWithOutbox: vi.fn(),
+  enqueueLeadOutbox: vi.fn(),
   getContactBySubmissionId: vi.fn(),
+  processOutboxBatch: vi.fn(),
   relayLeadNotification: vi.fn(),
   updateContactFormspreeStatus: vi.fn(),
 }));
@@ -11,15 +14,26 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/server/storage", () => ({
   storage: {
     claimContactNotification: mocks.claimContactNotification,
-    createContact: mocks.createContact,
+    createContactWithOutbox: mocks.createContactWithOutbox,
+    enqueueLeadOutbox: mocks.enqueueLeadOutbox,
     getContactBySubmissionId: mocks.getContactBySubmissionId,
     updateContactFormspreeStatus: mocks.updateContactFormspreeStatus,
   },
 }));
 
-vi.mock("@/server/lead-notifications", () => ({
+vi.mock("@/server/lead-notifications", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/lead-notifications")>()),
   relayLeadNotification: mocks.relayLeadNotification,
 }));
+
+vi.mock("@/server/notification-processor", () => ({
+  processOutboxBatch: mocks.processOutboxBatch,
+}));
+
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, after: mocks.after };
+});
 
 vi.mock("@/server/public-form-guard", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/server/public-form-guard")>()),
@@ -94,7 +108,12 @@ describe("contact API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getContactBySubmissionId.mockResolvedValue(undefined);
-    mocks.createContact.mockResolvedValue(storedContact());
+    mocks.createContactWithOutbox.mockResolvedValue({
+      contact: storedContact(),
+      outboxEnqueued: true,
+    });
+    mocks.enqueueLeadOutbox.mockResolvedValue(false);
+    mocks.processOutboxBatch.mockResolvedValue({ processed: 0, sent: 0, failed: 0 });
     mocks.claimContactNotification.mockResolvedValue(
       storedContact({ formspreeStatus: "sending" }),
     );
@@ -107,7 +126,10 @@ describe("contact API", () => {
       ctaSource: "contact_page",
       formspreeStatus: "sending",
     });
-    mocks.createContact.mockResolvedValue({ ...contactWithAttribution, formspreeStatus: "failed" });
+    mocks.createContactWithOutbox.mockResolvedValue({
+      contact: { ...contactWithAttribution, formspreeStatus: "failed" },
+      outboxEnqueued: true,
+    });
     mocks.claimContactNotification.mockResolvedValue(contactWithAttribution);
     const response = await POST(request({ ctaSource: "contact_page" }));
 
@@ -119,6 +141,14 @@ describe("contact API", () => {
       leadId: "contact-1",
       serviceId: "family-dentistry",
     });
+    expect(mocks.createContactWithOutbox).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestType: "contact",
+        ingestedVia: "website-form",
+        formspreeStatus: "failed",
+        ctaSource: "contact_page",
+      }),
+    );
     expect(mocks.relayLeadNotification).toHaveBeenCalledWith(
       expect.objectContaining({ requestType: "contact", ctaSource: "contact_page" }),
     );

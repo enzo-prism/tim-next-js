@@ -55,6 +55,35 @@ These are exposed to the browser because they are prefixed with `NEXT_PUBLIC_`.
   - guarded production releases require both endpoint names explicitly; this practice uses
     `https://formspree.io/f/mojngolr` for both
 
+## Capture, cron, and staff alerts (server variables)
+
+These fail closed when unset. Generate secrets with `openssl rand -hex 32`. Do not put them in git.
+
+- `CRON_SECRET`
+  - required for `/api/admin/notifications/process` and `/api/admin/reconciliation/run`
+  - Vercel Cron sends `Authorization: Bearer $CRON_SECRET` automatically once the env exists
+- `GOOGLE_ADS_WEBHOOK_KEY`
+  - required for `POST /api/webhooks/google-ads`
+  - paste the same value as `google_key` on the Google Ads Lead Form webhook pointing at `https://www.famfirstsmile.com/api/webhooks/google-ads`
+- `RECONCILIATION_ENABLED`
+  - set to `true` only after provider credentials below are in place
+- `FORMSPREE_API_KEY`
+  - Formspree Forms API key that can list submissions for form `mojngolr`
+- `GOOGLE_ADS_DEVELOPER_TOKEN`
+- `GOOGLE_ADS_CUSTOMER_ID`
+  - Family First account `353-904-6031`; dashes optional
+- `GOOGLE_ADS_OAUTH_CLIENT_ID`
+- `GOOGLE_ADS_OAUTH_CLIENT_SECRET`
+- `GOOGLE_ADS_REFRESH_TOKEN`
+- `LEAD_DASHBOARD_NOTIFICATIONS_ENABLED`
+  - set to `true` to send no-PII “new lead” alerts from the outbox
+- `LEAD_DASHBOARD_NOTIFICATION_RECIPIENTS`
+  - comma-separated staff emails for the alert webhook
+- `LEAD_DASHBOARD_URL`
+  - optional link included in the alert body; the live staff board is `https://chuang-leads-dashboard.vercel.app`
+- `LEAD_NOTIFICATION_WEBHOOK_URL`
+  - HTTPS endpoint that accepts `{ subject, body, to, metadata }` with no patient fields
+
 ## Local Development Notes
 
 - Without `DATABASE_URL` in development:
