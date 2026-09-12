@@ -20,6 +20,18 @@ export const GOOGLE_ADS_COLUMN_IDS = {
 
 const PREFERRED_TIMES = new Set(["morning", "afternoon", "flexible"]);
 
+const leadFormFieldText = (value: unknown): string | null =>
+  typeof value === "string" && value.trim() ? value.trim() : null;
+
+export type LeadFormFieldLike = {
+  field_type?: unknown;
+  fieldType?: unknown;
+  field_value?: unknown;
+  fieldValue?: unknown;
+  question_text?: unknown;
+  questionText?: unknown;
+};
+
 export const parseGoogleAdsColumnData = (
   columns: Array<{ column_id?: string; string_value?: string | null }>,
 ): Record<string, string> => {
@@ -33,12 +45,18 @@ export const parseGoogleAdsColumnData = (
 };
 
 export const columnsFromLeadFormFields = (
-  fields: Array<{ field_type?: string; field_value?: string | null }>,
+  fields: LeadFormFieldLike[],
 ): Record<string, string> => {
   const result: Record<string, string> = {};
   for (const field of fields) {
-    if (field.field_type && field.field_value) {
-      result[field.field_type] = field.field_value;
+    const type =
+      leadFormFieldText(field.field_type) ??
+      leadFormFieldText(field.fieldType) ??
+      leadFormFieldText(field.question_text) ??
+      leadFormFieldText(field.questionText);
+    const value = leadFormFieldText(field.field_value) ?? leadFormFieldText(field.fieldValue);
+    if (type && value) {
+      result[type] = value;
     }
   }
   return result;

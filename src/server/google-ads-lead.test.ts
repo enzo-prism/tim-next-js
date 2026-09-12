@@ -47,6 +47,23 @@ describe("google ads lead mapping", () => {
     expect(contact.phone).toBe("408-555-0100");
   });
 
+  it("maps Ads search JSON camelCase fieldType and questionText columns", () => {
+    const columns = columnsFromLeadFormFields([
+      { fieldType: "EMAIL", fieldValue: "ada@example.com" },
+      { fieldType: "PHONE_NUMBER", fieldValue: "408-555-0100" },
+      { questionText: "SERVICE", fieldValue: "Invisalign" },
+    ]);
+    const contact = mapGoogleAdsColumnsToContact({
+      leadId: "lead-2b",
+      ingestedVia: "reconciliation",
+      columns,
+      rawPayload: {},
+    });
+    expect(contact.email).toBe("ada@example.com");
+    expect(contact.phone).toBe("408-555-0100");
+    expect(contact.service).toBe("Invisalign");
+  });
+
   it("leaves free-text preferred times unmapped", () => {
     const columns = parseGoogleAdsColumnData([
       { column_id: "FULL_NAME", string_value: "Jane Doe" },

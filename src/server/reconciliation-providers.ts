@@ -4,6 +4,7 @@ import {
   columnsFromLeadFormFields,
   googleAdsLeadIdFromResourceName,
   mapGoogleAdsColumnsToContact,
+  type LeadFormFieldLike,
 } from "@/server/google-ads-lead";
 import {
   FORMSPREE_RECONCILIATION_SETUP,
@@ -34,7 +35,7 @@ export interface IReconciliationProvider {
 
 const FORMSPREE_HASH_PATTERN = /formspree\.io\/f\/([A-Za-z0-9]+)/i;
 const DEFAULT_FORMSPREE_HASH = "mojngolr";
-const GOOGLE_ADS_API_VERSION = "v18";
+export const GOOGLE_ADS_API_VERSION = "v25";
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -43,6 +44,16 @@ const asRecord = (value: unknown): Record<string, unknown> | null =>
 
 const asString = (value: unknown): string | null =>
   typeof value === "string" && value.trim() ? value.trim() : null;
+
+const asLeadFormFields = (value: unknown): LeadFormFieldLike[] => {
+  if (!Array.isArray(value)) return [];
+  const fields: LeadFormFieldLike[] = [];
+  for (const item of value) {
+    const record = asRecord(item);
+    if (record) fields.push(record);
+  }
+  return fields;
+};
 
 export const formspreeHashIdsFromEnv = (): string[] => {
   const urls = [
@@ -159,28 +170,15 @@ export const mapGoogleAdsSearchRow = (row: Record<string, unknown>): ExternalLea
     asString(lead.id) ?? googleAdsLeadIdFromResourceName(resourceName);
   if (!leadId) return null;
 
-  const fields = Array.isArray(lead.leadFormSubmissionFields)
-    ? lead.leadFormSubmissionFields
-    : Array.isArray(lead.lead_form_submission_fields)
-      ? lead.lead_form_submission_fields
-      : [];
-  const customFields = Array.isArray(lead.customLeadFormSubmissionFields)
-    ? lead.customLeadFormSubmissionFields
-    : Array.isArray(lead.custom_lead_form_submission_fields)
-      ? lead.custom_lead_form_submission_fields
-      : [];
+  const fields = asLeadFormFields(
+    lead.leadFormSubmissionFields ?? lead.lead_form_submission_fields,
+  );
+  const customFields = asLeadFormFields(
+    lead.customLeadFormSubmissionFields ?? lead.custom_lead_form_submission_fields,
+  );
 
-  const standardColumns = columnsFromLeadFormFields(
-    fields as Array<{ field_type?: string; field_value?: string | null }>,
-  );
-  const customColumns = columnsFromLeadFormFields(
-    (customFields as Array<{ question_text?: string; field_value?: string | null }>).map(
-      (field) => ({
-        field_type: asString((field as { question_text?: string }).question_text) ?? undefined,
-        field_value: asString((field as { field_value?: string }).field_value),
-      }),
-    ),
-  );
+  const standardColumns = columnsFromLeadFormFields(fields);
+  const customColumns = columnsFromLeadFormFields(customFields);
   const columns = { ...customColumns, ...standardColumns };
   const email = columns.EMAIL?.trim() || null;
   const phone = columns.PHONE_NUMBER?.trim() || null;
@@ -262,7 +260,7 @@ export class GoogleAdsReconciliationProvider implements IReconciliationProvider 
             "developer-token": creds.developerToken,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ query, pageToken, pageSize: 1000 }),
+          body: JSON.stringify(pageToken ? { query, pageToken } : { query }),
           signal,
         },
       );
