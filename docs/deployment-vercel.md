@@ -95,6 +95,8 @@ vercel env add NEXT_PUBLIC_GA_MEASUREMENT_ID production
 # vercel env add NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_EVENT production
 vercel env add FORMSPREE_APPOINTMENT_ENDPOINT production
 vercel env add FORMSPREE_CONTACT_ENDPOINT production
+vercel env add CRON_SECRET production
+vercel env add GOOGLE_ADS_WEBHOOK_KEY production
 ```
 
 For this practice, both Formspree endpoint values are

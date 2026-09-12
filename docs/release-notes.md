@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2026-09-12 — Persist website leads into the staff pipeline
+
+### Operations
+
+- Website and appointment inserts now set `ingestedVia="website-form"` and enqueue `notification_outbox`.
+- The 15-minute cron retries Formspree for `failed` rows and separately drains no-PII staff alerts. Docs no longer claim the outbox is a Formspree retry.
+- Reconciliation providers can fetch Formspree and Google Ads lead-form records when credentials exist, then insert missing contacts. Unconfigured providers still fail closed.
+- Missing `CRON_SECRET` or `GOOGLE_ADS_WEBHOOK_KEY` still returns 503, now with exact Vercel and Google Ads setup steps.
+
 ## 2026-08-31 — Remove On-Site Admin Leads Dashboard
 
 ### Public experience

@@ -82,6 +82,7 @@ describe("reconciliation run GET", () => {
       totalExternal: 5,
       totalStored: 5,
       missingInStored: 0,
+      inserted: 0,
     });
 
     const response = await GET(buildRequest(true));

@@ -73,7 +73,9 @@ describe("Google Ads webhook POST", () => {
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(503);
     const json = await response.json();
-    expect(json.message).toBeDefined();
+    expect(json.message).toBe("Webhook key not configured.");
+    expect(json.error).toBe("webhook_key_not_configured");
+    expect(json.setup).toContain("GOOGLE_ADS_WEBHOOK_KEY");
     expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
   });
 

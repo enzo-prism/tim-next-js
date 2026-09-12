@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { and, desc, eq, ilike, or, sql as dsql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, sql as dsql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import type * as schema from "@/server/schema";
 import {
@@ -12,6 +12,7 @@ import {
   type User,
 } from "@/server/schema";
 import { db } from "@/server/db";
+import { buildEventKey } from "@/server/notification-outbox";
 import { normalizeLeadSource } from "@/server/lead-source";
 
 export { normalizeLeadSource } from "@/server/lead-source";
@@ -116,6 +117,10 @@ export interface IStorage {
   createContactWithOutbox(
     contact: InsertContactRecord,
   ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }>;
+  enqueueLeadOutbox(
+    contact: Pick<Contact, "id" | "googleAdsLeadId" | "submissionId" | "isTest">,
+  ): Promise<boolean>;
+  listFailedFormspreeLeads(limit: number): Promise<Contact[]>;
   claimContactNotification(id: string): Promise<Contact | undefined>;
   updateContactFormspreeStatus(
     id: string,
@@ -232,6 +237,41 @@ export class DatabaseStorage implements IStorage {
     const row = rows[0];
     const contact = this.mapRowToContact(row);
     return { contact, outboxEnqueued: Boolean(row.outbox_enqueued) };
+  }
+
+  async enqueueLeadOutbox(
+    contact: Pick<Contact, "id" | "googleAdsLeadId" | "submissionId" | "isTest">,
+  ): Promise<boolean> {
+    if (contact.isTest) return false;
+
+    const eventKey = buildEventKey(
+      contact.googleAdsLeadId,
+      contact.submissionId,
+      contact.id,
+    );
+    const result = await this.database.execute(dsql`
+      INSERT INTO notification_outbox (event_key, event_type, contact_id, status)
+      VALUES (${eventKey}, 'new_lead', ${contact.id}, 'pending')
+      ON CONFLICT (event_key) DO NOTHING
+      RETURNING id
+    `);
+
+    return (result.rows as Array<Record<string, unknown>>).length > 0;
+  }
+
+  async listFailedFormspreeLeads(limit: number): Promise<Contact[]> {
+    return this.database
+      .select()
+      .from(contacts)
+      .where(
+        and(
+          eq(contacts.formspreeStatus, "failed"),
+          inArray(contacts.requestType, ["contact", "appointment"]),
+          eq(contacts.isTest, false),
+        ),
+      )
+      .orderBy(contacts.createdAt, contacts.id)
+      .limit(limit);
   }
 
   private mapRowToContact(row: Record<string, unknown>): Contact {
@@ -461,6 +501,7 @@ export class DatabaseStorage implements IStorage {
 export class InMemoryStorage implements IStorage {
   private readonly users = new Map<string, User>();
   private readonly contacts = new Map<string, Contact>();
+  private readonly outboxKeys = new Set<string>();
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
@@ -535,6 +576,10 @@ export class InMemoryStorage implements IStorage {
       );
       if (existing) return null;
     }
+    if (insertContact.submissionId) {
+      const existing = await this.getContactBySubmissionId(insertContact.submissionId);
+      if (existing) return null;
+    }
     return this.createContact(insertContact);
   }
 
@@ -543,8 +588,37 @@ export class InMemoryStorage implements IStorage {
   ): Promise<{ contact: Contact | null; outboxEnqueued: boolean }> {
     const contact = await this.createContactIgnoreDuplicate(insertContact);
     if (!contact) return { contact: null, outboxEnqueued: false };
-    if (contact.isTest) return { contact, outboxEnqueued: false };
-    return { contact, outboxEnqueued: true };
+    const outboxEnqueued = await this.enqueueLeadOutbox(contact);
+    return { contact, outboxEnqueued };
+  }
+
+  async enqueueLeadOutbox(
+    contact: Pick<Contact, "id" | "googleAdsLeadId" | "submissionId" | "isTest">,
+  ): Promise<boolean> {
+    if (contact.isTest) return false;
+    const eventKey = buildEventKey(
+      contact.googleAdsLeadId,
+      contact.submissionId,
+      contact.id,
+    );
+    if (this.outboxKeys.has(eventKey)) return false;
+    this.outboxKeys.add(eventKey);
+    return true;
+  }
+
+  async listFailedFormspreeLeads(limit: number): Promise<Contact[]> {
+    return Array.from(this.contacts.values())
+      .filter(
+        (contact) =>
+          contact.formspreeStatus === "failed" &&
+          (contact.requestType === "contact" || contact.requestType === "appointment") &&
+          !contact.isTest,
+      )
+      .sort(
+        (a, b) =>
+          a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id),
+      )
+      .slice(0, limit);
   }
 
   async getContact(id: string): Promise<Contact | undefined> {
@@ -720,6 +794,14 @@ class UnavailableStorage implements IStorage {
     contact: Contact | null;
     outboxEnqueued: boolean;
   }> {
+    throw new Error(this.message);
+  }
+
+  async enqueueLeadOutbox(): Promise<boolean> {
+    throw new Error(this.message);
+  }
+
+  async listFailedFormspreeLeads(): Promise<Contact[]> {
     throw new Error(this.message);
   }
 

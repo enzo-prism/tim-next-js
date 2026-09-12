@@ -197,7 +197,64 @@ describe("DatabaseReconciliationService", () => {
         totalExternal: 2,
         totalStored: 2,
         missingInStored: 0,
+        inserted: 0,
       });
+    });
+
+    it("inserts missing leads when the provider supplies contact payloads", async () => {
+      const insertMissingLead = vi.fn().mockResolvedValue(true);
+      service = new DatabaseReconciliationService(insertMissingLead);
+
+      mocks.execute
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ id: "run-1" }] })
+        .mockResolvedValueOnce({ rows: [{ success: true }] });
+
+      const selectChain = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockResolvedValue([]),
+      };
+      mocks.select.mockReturnValue(selectChain);
+
+      const provider: IReconciliationProvider = {
+        name: "google_ads",
+        fetchExternalLeadIds: async () => ["new-lead"],
+        fetchExternalLeads: async () => [
+          {
+            externalId: "new-lead",
+            contact: {
+              firstName: "Ada",
+              lastName: "Lovelace",
+              email: "ada@example.com",
+              requestType: "google_ads_lead",
+              googleAdsLeadId: "new-lead",
+              consentToContact: true,
+              leadStatus: "new",
+            },
+          },
+        ],
+      };
+
+      const result = await service.runReconciliation(mockDb, provider, now);
+
+      expect(insertMissingLead).toHaveBeenCalledTimes(1);
+      expect(insertMissingLead.mock.calls[0][1]).toEqual(
+        expect.objectContaining({
+          googleAdsLeadId: "new-lead",
+          ingestedVia: "reconciliation",
+        }),
+      );
+      expect(result).toEqual({
+        status: "completed",
+        runKey: "reconciliation:google_ads:2026-08-04:am",
+        totalExternal: 1,
+        totalStored: 1,
+        missingInStored: 0,
+        inserted: 1,
+      });
+      expect(JSON.stringify(result)).not.toContain("Ada");
+      expect(JSON.stringify(result)).not.toContain("ada@example.com");
     });
 
     it("returns failed with sanitized error code when provider throws", async () => {

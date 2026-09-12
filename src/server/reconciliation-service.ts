@@ -7,8 +7,11 @@ import {
 } from "@/server/schema";
 import type {
   IReconciliationProvider,
+  ExternalLeadRecord,
   ReconciliationTimeWindow,
 } from "@/server/reconciliation-providers";
+import { DatabaseStorage } from "@/server/storage";
+import type { InsertContactRecord } from "@/server/schema";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import type * as schema from "@/server/schema";
 
@@ -48,6 +51,7 @@ export type ReconciliationOutcome =
       totalExternal: number;
       totalStored: number;
       missingInStored: number;
+      inserted: number;
     }
   | {
       status: "failed";
@@ -157,7 +161,26 @@ export interface IReconciliationService {
   ): Promise<ReconciliationOutcome>;
 }
 
+export const insertReconciledLead = async (
+  db: DrizzleDatabase,
+  contact: InsertContactRecord,
+): Promise<boolean> => {
+  const storage = new DatabaseStorage(db);
+  const result = await storage.createContactWithOutbox({
+    ...contact,
+    ingestedVia: "reconciliation",
+  });
+  return Boolean(result.contact);
+};
+
 export class DatabaseReconciliationService implements IReconciliationService {
+  constructor(
+    private readonly insertMissingLead: (
+      db: DrizzleDatabase,
+      contact: InsertContactRecord,
+    ) => Promise<boolean> = insertReconciledLead,
+  ) {}
+
   async acquireRunLock(
     db: DrizzleDatabase,
     runKey: string,
@@ -357,10 +380,14 @@ export class DatabaseReconciliationService implements IReconciliationService {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     try {
-      let rawExternalIds: string[];
+      let records: ExternalLeadRecord[];
       try {
-        rawExternalIds = await Promise.race([
-          providerAdapter.fetchExternalLeadIds(window, controller.signal),
+        records = await Promise.race([
+          providerAdapter.fetchExternalLeads
+            ? providerAdapter.fetchExternalLeads(window, controller.signal)
+            : providerAdapter.fetchExternalLeadIds(window, controller.signal).then((ids) =>
+                ids.map((externalId) => ({ externalId })),
+              ),
           new Promise<never>((_, reject) => {
             timeoutId = setTimeout(() => {
               controller.abort();
@@ -377,8 +404,32 @@ export class DatabaseReconciliationService implements IReconciliationService {
         return { status: "failed", runKey, errorCode: "lease_lost" };
       }
 
-      const externalIds = deduplicateAndValidateIds(rawExternalIds);
+      const externalIds = deduplicateAndValidateIds(records.map((record) => record.externalId));
       const storedSet = await this.checkStoredMembership(db, providerAdapter.name, externalIds);
+      const recordById = new Map<string, ExternalLeadRecord>();
+      for (const record of records) {
+        const id = record.externalId?.trim();
+        if (id && !recordById.has(id)) recordById.set(id, record);
+      }
+
+      let inserted = 0;
+      for (const id of externalIds) {
+        if (storedSet.has(id)) continue;
+        const record = recordById.get(id);
+        if (!record?.contact) continue;
+        try {
+          const created = await this.insertMissingLead(db, {
+            ...record.contact,
+            ingestedVia: "reconciliation",
+          });
+          if (created) {
+            inserted += 1;
+            storedSet.add(id);
+          }
+        } catch {
+          console.error("reconciliation_insert_failed", { provider: providerAdapter.name });
+        }
+      }
 
       const missingInStored = externalIds.filter((id) => !storedSet.has(id));
 
@@ -411,7 +462,7 @@ export class DatabaseReconciliationService implements IReconciliationService {
         return { status: "failed", runKey, errorCode: "unknown_error" };
       }
 
-      return { status: "completed", runKey, ...counts };
+      return { status: "completed", runKey, ...counts, inserted };
     } catch (error) {
       const errorCode = sanitizeErrorCode(error);
       await this.failRun(db, runId, leaseToken, errorCode);

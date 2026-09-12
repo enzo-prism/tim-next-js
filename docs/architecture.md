@@ -27,8 +27,8 @@ Primary design goals:
 2. The public-form guard enforces JSON, trusted browser origin, actual streamed body size, honeypot, and a best-effort per-instance rate limit.
 3. The shared Zod contract validates contact details, a known service or the contact-only `"other"` choice, consent, submission UUID, and bounded attribution fields.
 4. The submission UUID is checked before insert and is protected by a unique database index, preventing duplicate leads. It is also bound to the form type and normalized stored payload. Reusing it with changed data returns `409` instead of changing or relaying a different lead.
-5. The lead starts with `formspreeStatus="failed"`. Before relay, the server atomically claims it by changing the state to `sending`, so concurrent requests cannot both notify the office.
-6. A known relay failure returns the state to `failed` for a later retry. Success changes it to `delivered`.
+5. The lead starts with `formspreeStatus="failed"` and `ingestedVia="website-form"`. Insert also enqueues a no-PII `notification_outbox` event so a staff dashboard can be alerted. Before Formspree relay, the server atomically claims the lead by changing the state to `sending`, so concurrent requests cannot both notify the office.
+6. A known relay failure returns the state to `failed` for a later retry from the browser or the 15-minute cron. Success changes it to `delivered`.
 7. An indeterminate `sending` state is not retried automatically. It requires manual reconciliation because Formspree does not provide a verified idempotency key and an automatic retry could create a duplicate notification.
 8. Storage backend is selected by environment:
    - Production: Postgres-backed `DatabaseStorage` (requires `DATABASE_URL`)
@@ -54,7 +54,7 @@ Primary design goals:
 
 ### Staff dashboard
 
-The former on-site password-protected leads dashboard is not part of this public website. `/admin`, `/admin/login`, and the staff-facing contacts/analytics APIs 404. Form persistence, Formspree office notifications, and cron-authenticated notification/reconciliation jobs remain so public forms keep working. Staff reporting lives in a separate dedicated dashboard.
+The former on-site password-protected leads dashboard is not part of this public website. `/admin`, `/admin/login`, and the staff-facing contacts/analytics APIs 404. Form persistence, Formspree office notifications, outbox alerts, and cron-authenticated notification/reconciliation jobs remain so public forms keep working. Staff reporting lives in a separate dedicated dashboard that reads the same Postgres `contacts` table.
 
 ### Attribution and conversion flow
 
@@ -117,4 +117,3 @@ The former on-site password-protected leads dashboard is not part of this public
 
 1. Incrementally migrate `src/legacy-pages/*` into colocated App Router components.
 2. Add a managed, cross-instance rate-limit store if abuse exceeds the current Vercel-instance guard.
-3. Add a provider-supported idempotent notification outbox if manual follow-up on `failed` and `sending` rows becomes operationally expensive.

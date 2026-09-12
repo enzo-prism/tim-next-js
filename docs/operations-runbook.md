@@ -96,7 +96,7 @@ Actions:
 1. Confirm DB persistence is still healthy (this is source of truth for lead capture).
 2. Check Vercel logs for relay errors from `/api/appointments`.
 3. Validate `FORMSPREE_APPOINTMENT_ENDPOINT` in Vercel env.
-4. Treat `failed` as a known failed attempt. The same submission can retry after Formspree recovers.
+4. Treat `failed` as a known failed attempt. The 15-minute cron retries `failed` website/appointment rows. The same submission can also retry from the browser after Formspree recovers.
 5. Treat `sending` as indeterminate. Check Formspree submission history and Vercel logs before changing it:
    - confirmed delivered -> manually mark the row `delivered`
    - confirmed not delivered -> manually mark the row `failed`, then retry

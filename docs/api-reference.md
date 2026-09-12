@@ -156,10 +156,15 @@ Responses:
 
 ## `GET|POST /api/admin/notifications/process`
 
-Cron job that retries Formspree office notifications from the outbox. Requires `Authorization: Bearer $CRON_SECRET`.
+Cron job authenticated with `Authorization: Bearer $CRON_SECRET`. Missing `CRON_SECRET` returns `503 cron_not_configured` with setup steps.
+
+It does two separate jobs:
+
+1. Drain `notification_outbox` for no-PII staff alerts (`LEAD_NOTIFICATION_WEBHOOK_URL`). This is not a Formspree retry.
+2. Retry Formspree office notifications for website/appointment rows still in `formspreeStatus="failed"`. Rows in `sending` are never auto-retried.
 
 ## `GET /api/admin/reconciliation/run`
 
-Cron job that compares stored leads with provider records when `RECONCILIATION_ENABLED=true`. Requires `Authorization: Bearer $CRON_SECRET`. Outcomes are redacted and do not include patient contact details.
+Cron job that compares stored leads with Formspree and Google Ads when `RECONCILIATION_ENABLED=true`. Requires `Authorization: Bearer $CRON_SECRET`. When a provider returns a full lead that is missing from Postgres, the job inserts it (`ingestedVia="reconciliation"`) and enqueues the outbox. Outcomes are redacted and do not include patient contact details. Unconfigured providers fail closed with `provider_not_configured`.
 
 The former staff-dashboard APIs (`/api/admin/contacts`, `/api/admin/session`, `/api/admin/changelog`, `/api/admin/ga4/overview`, `/api/admin/gsc/overview`) are removed and 404.

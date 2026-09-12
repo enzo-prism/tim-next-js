@@ -1,8 +1,13 @@
-import { timingSafeEqual } from "crypto";
 import { after, NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { storage } from "@/server/storage";
 import { processOutboxBatch } from "@/server/notification-processor";
+import {
+  mapGoogleAdsColumnsToContact,
+  parseGoogleAdsColumnData,
+} from "@/server/google-ads-lead";
+import { GOOGLE_ADS_WEBHOOK_KEY_SETUP } from "@/server/lead-capture-setup";
 
 export const runtime = "nodejs";
 
@@ -76,35 +81,6 @@ const googleAdsWebhookSchema = z.object({
 
 export type GoogleAdsWebhookPayload = z.infer<typeof googleAdsWebhookSchema>;
 
-const COLUMN_IDS = {
-  FULL_NAME: "FULL_NAME",
-  FIRST_NAME: "FIRST_NAME",
-  LAST_NAME: "LAST_NAME",
-  EMAIL: "EMAIL",
-  PHONE_NUMBER: "PHONE_NUMBER",
-  CITY: "CITY",
-  POSTAL_CODE: "POSTAL_CODE",
-  COUNTRY: "COUNTRY",
-  STATE: "STATE",
-  STREET_ADDRESS: "STREET_ADDRESS",
-  COMMENT: "COMMENT",
-  SERVICE: "SERVICE",
-  PREFERRED_CONTACT_METHOD: "PREFERRED_CONTACT_METHOD",
-  PREFERRED_CONTACT_TIME: "PREFERRED_CONTACT_TIME",
-} as const;
-
-const parseColumnData = (
-  columns: Array<{ column_id: string; string_value?: string | null }>,
-): Record<string, string> => {
-  const result: Record<string, string> = {};
-  for (const col of columns) {
-    if (col.string_value) {
-      result[col.column_id] = col.string_value;
-    }
-  }
-  return result;
-};
-
 const verifyGoogleKey = (providedKey: string): boolean => {
   const configuredKey = process.env.GOOGLE_ADS_WEBHOOK_KEY;
   if (!configuredKey) return false;
@@ -114,44 +90,8 @@ const verifyGoogleKey = (providedKey: string): boolean => {
   return timingSafeEqual(provided, expected);
 };
 
-const parseName = (
-  columns: Record<string, string>,
-  email?: string,
-): { firstName: string; lastName: string } => {
-  const fullName = columns[COLUMN_IDS.FULL_NAME]?.trim();
-  if (fullName) {
-    const parts = fullName.split(/\s+/);
-    if (parts.length >= 2) {
-      return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
-    }
-    return { firstName: fullName, lastName: "Lead" };
-  }
-
-  const firstName = columns[COLUMN_IDS.FIRST_NAME]?.trim();
-  const lastName = columns[COLUMN_IDS.LAST_NAME]?.trim();
-  if (firstName || lastName) {
-    return {
-      firstName: firstName || "Unknown",
-      lastName: lastName || "Lead",
-    };
-  }
-
-  if (email) {
-    const localPart = email.split("@")[0]?.trim();
-    if (localPart) {
-      const parts = localPart.split(/[._-]/).filter(Boolean);
-      if (parts.length >= 2) {
-        return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
-      }
-      return { firstName: localPart, lastName: "Lead" };
-    }
-  }
-
-  return { firstName: "Unknown", lastName: "Lead" };
-};
-
-const errorResponse = (message: string, status: number) =>
-  NextResponse.json({ message }, { status });
+const errorResponse = (message: string, status: number, extra?: Record<string, unknown>) =>
+  NextResponse.json({ message, ...extra }, { status });
 
 const sanitizePayload = (body: Record<string, unknown>): Record<string, unknown> => {
   const sanitized = { ...body };
@@ -161,7 +101,13 @@ const sanitizePayload = (body: Record<string, unknown>): Record<string, unknown>
 
 export async function POST(req: NextRequest) {
   if (!process.env.GOOGLE_ADS_WEBHOOK_KEY) {
-    return errorResponse("Webhook key not configured.", 503);
+    console.error("google_ads_webhook_key_not_configured", {
+      setup: GOOGLE_ADS_WEBHOOK_KEY_SETUP,
+    });
+    return errorResponse("Webhook key not configured.", 503, {
+      error: "webhook_key_not_configured",
+      setup: GOOGLE_ADS_WEBHOOK_KEY_SETUP,
+    });
   }
 
   let rawBody: string;
@@ -181,48 +127,34 @@ export async function POST(req: NextRequest) {
     return errorResponse("Invalid JSON.", 400);
   }
 
-  const result = googleAdsWebhookSchema.safeParse(body);
-  if (!result.success) {
+  const parsed = googleAdsWebhookSchema.safeParse(body);
+  if (!parsed.success) {
     return errorResponse("Invalid payload.", 400);
   }
 
-  const payload = result.data;
+  const payload = parsed.data;
 
   if (!verifyGoogleKey(payload.google_key)) {
     return errorResponse("Invalid key.", 401);
   }
 
-  const columns = parseColumnData(payload.user_column_data);
-  const email = columns[COLUMN_IDS.EMAIL]?.trim() || null;
-  const phone = columns[COLUMN_IDS.PHONE_NUMBER]?.trim() || null;
+  const columns = parseGoogleAdsColumnData(payload.user_column_data);
+  const email = columns.EMAIL?.trim() || null;
+  const phone = columns.PHONE_NUMBER?.trim() || null;
 
   if (!email && !phone) {
     return errorResponse("No contact information provided.", 400);
   }
 
-  const { firstName, lastName } = parseName(columns, email ?? undefined);
-
-  const contactData = {
-    firstName,
-    lastName,
-    email,
-    phone,
-    service: columns[COLUMN_IDS.SERVICE]?.trim() || null,
-    message: columns[COLUMN_IDS.COMMENT]?.trim() || null,
-    requestType: "google_ads_lead" as const,
-    googleAdsLeadId: payload.lead_id,
+  const contactData = mapGoogleAdsColumnsToContact({
+    leadId: payload.lead_id,
     campaignId: payload.campaign_id != null ? String(payload.campaign_id) : null,
-    campaignName: columns["CAMPAIGN_NAME"]?.trim() || null,
-    ingestedVia: "webhook" as const,
     gclid: payload.gcl_id || null,
-    utmSource: "google",
-    utmMedium: "cpc",
-    utmCampaign: columns["CAMPAIGN_NAME"]?.trim() || null,
-    consentToContact: true,
-    leadStatus: "new" as const,
     isTest: payload.is_test ?? false,
+    ingestedVia: "webhook",
+    columns,
     rawPayload: sanitizePayload(body as Record<string, unknown>),
-  };
+  });
 
   try {
     const result = await storage.createContactWithOutbox(contactData);

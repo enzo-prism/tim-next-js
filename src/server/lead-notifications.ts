@@ -1,4 +1,6 @@
-type LeadNotificationPayload = {
+import type { Contact } from "@/server/schema";
+
+export type LeadNotificationPayload = {
   leadId: string;
   submissionId: string;
   requestType: "appointment" | "contact";
@@ -23,6 +25,42 @@ type LeadNotificationPayload = {
   wbraid?: string | null;
   consentToContact: boolean;
   consentVersion?: string | null;
+};
+
+export const toFormspreePayload = (
+  contact: Contact,
+): LeadNotificationPayload | null => {
+  if (contact.requestType !== "appointment" && contact.requestType !== "contact") {
+    return null;
+  }
+  if (!contact.submissionId || !contact.email) return null;
+
+  return {
+    leadId: contact.id,
+    submissionId: contact.submissionId,
+    requestType: contact.requestType,
+    firstName: contact.firstName,
+    lastName: contact.lastName,
+    email: contact.email,
+    phone: contact.phone,
+    service: contact.service,
+    message: contact.message,
+    preferredDate: contact.preferredDate,
+    preferredTime: contact.preferredTime,
+    landingPage: contact.landingPage,
+    referrer: contact.referrer,
+    ctaSource: contact.ctaSource,
+    utmSource: contact.utmSource,
+    utmMedium: contact.utmMedium,
+    utmCampaign: contact.utmCampaign,
+    utmTerm: contact.utmTerm,
+    utmContent: contact.utmContent,
+    gclid: contact.gclid,
+    gbraid: contact.gbraid,
+    wbraid: contact.wbraid,
+    consentToContact: contact.consentToContact,
+    consentVersion: contact.consentVersion,
+  };
 };
 
 const DEFAULT_FORMSPREE_ENDPOINT = "https://formspree.io/f/mojngolr";
