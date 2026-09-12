@@ -156,18 +156,42 @@ export const parseGoogleAdsName = (
   return { firstName: "Unknown", lastName: "Lead" };
 };
 
+type ClockMeridian = {
+  hour: number;
+  isAm: boolean;
+};
+
+const isNoonClock = (clock: ClockMeridian): boolean => !clock.isAm && clock.hour === 12;
+
+const parseClockMeridians = (value: string): ClockMeridian[] =>
+  [...value.matchAll(/(0?[1-9]|1[0-2])(?::[0-5]\d)?\s*(a\.?m\.?|p\.?m\.?)\b/g)].map((match) => ({
+    hour: Number(match[1]),
+    isAm: match[2].startsWith("a"),
+  }));
+
+const preferredTimeFromClocks = (
+  clocks: ClockMeridian[],
+): "morning" | "afternoon" | "flexible" | null => {
+  if (clocks.length === 0) return null;
+  if (clocks.length === 1) {
+    return clocks[0].isAm ? "morning" : "afternoon";
+  }
+
+  const start = clocks[0];
+  const end = clocks[clocks.length - 1];
+  if (start.isAm && (end.isAm || isNoonClock(end))) return "morning";
+  if (!start.isAm && !end.isAm) return "afternoon";
+  return "flexible";
+};
+
 const preferredTimeFromColumns = (columns: Record<string, string>): string | null => {
   const raw = columns[GOOGLE_ADS_COLUMN_IDS.PREFERRED_CONTACT_TIME]?.trim();
   if (!raw) return null;
   const lower = raw.toLowerCase();
   if (PREFERRED_TIMES.has(lower)) return lower;
 
-  const meridians = [
-    ...lower.matchAll(/(?:0?[1-9]|1[0-2])(?::[0-5]\d)?\s*(a\.?m\.?|p\.?m\.?)\b/g),
-  ].map((match) => match[1]);
-  if (meridians.length > 0) {
-    return meridians[meridians.length - 1].startsWith("a") ? "morning" : "afternoon";
-  }
+  const fromClocks = preferredTimeFromClocks(parseClockMeridians(lower));
+  if (fromClocks) return fromClocks;
 
   if (/\bmorning\b|before\s*noon/.test(lower)) return "morning";
   if (/\bafternoon\b|\bevening\b|after\s*(?:12|noon|[3-6])\b/.test(lower)) return "afternoon";

@@ -110,6 +110,10 @@ describe("google ads lead mapping", () => {
     expect(contactFromPreferredTime("5pm").preferredTime).toBe("afternoon");
   });
 
+  it("maps a morning window that ends at noon to morning", () => {
+    expect(contactFromPreferredTime("9am–12pm").preferredTime).toBe("morning");
+  });
+
   it("folds custom questions, location, and contact method into message", () => {
     const namedColumns = [
       { column_id: "FULL_NAME", column_name: "Full name", string_value: "Jane Doe" },
