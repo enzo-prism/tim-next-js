@@ -7,6 +7,7 @@ All APIs are implemented as Next.js route handlers in `src/app/api/**`.
 - Public endpoints:
   - `POST /api/contacts`
   - `POST /api/appointments`
+  - `POST /api/webhooks/google-ads` (shared `google_key`, not a browser session)
 - Cron-authenticated operational endpoints:
   - `GET|POST /api/admin/notifications/process`
   - `GET /api/admin/reconciliation/run`
@@ -53,16 +54,19 @@ Defined by `insertAppointmentSchema` in `src/server/schema.ts`:
 
 ### Stored Contact Record Fields
 
-The `contacts` table now also includes:
+The `contacts` table includes:
 
-- `requestType`: `"contact"` or `"appointment"`
-- `preferredDate`: string or null
-- `preferredTime`: string or null
-- `formspreeStatus`: `"failed" | "sending" | "delivered" | null`
-- `submissionId`: unique browser-generated UUID
+- `requestType`: `"contact"`, `"appointment"`, or `"google_ads_lead"`
+- `ingestedVia`: `"website-form"`, `"webhook"`, `"reconciliation"`, `"backfill"`, or null
+- `googleAdsLeadId`, `campaignId`, `campaignName` for Google lead-form rows
+- `preferredDate` / `preferredTime` (appointment enum `morning|afternoon|flexible` when known)
+- `formspreeStatus`: `"failed" | "sending" | "delivered" | null` (website/appointment only; Google rows stay null)
+- `submissionId`: unique browser-generated UUID on website/appointment rows
 - campaign, landing-page, referrer, and CTA attribution fields
-- contact consent and consent-version fields
+- contact consent and consent-version fields (`google-lead-form` for Ads webhook/reconciliation rows)
 - lifecycle fields: `leadStatus`, `contactedAt`, `bookedAt`, `arrivedAt`, `lostReason`, and private `staffNotes`
+- `rawPayload`: original provider JSON with secrets stripped
+- `isTest`: Google test leads skip the staff outbox
 
 ## Endpoints
 
@@ -168,3 +172,11 @@ It does two separate jobs:
 Cron job that compares stored leads with Formspree and Google Ads when `RECONCILIATION_ENABLED=true`. Requires `Authorization: Bearer $CRON_SECRET`. When a provider returns a full lead that is missing from Postgres, the job inserts it (`ingestedVia="reconciliation"`) and enqueues the outbox. Outcomes are redacted and do not include patient contact details. Unconfigured providers fail closed with `provider_not_configured`.
 
 The former staff-dashboard APIs (`/api/admin/contacts`, `/api/admin/session`, `/api/admin/changelog`, `/api/admin/ga4/overview`, `/api/admin/gsc/overview`) are removed and 404.
+
+## `POST /api/webhooks/google-ads`
+
+Google Ads Lead Form webhook. Requires `GOOGLE_ADS_WEBHOOK_KEY` and a matching `google_key` in the JSON body. Missing configuration returns `503 webhook_key_not_configured` with setup steps.
+
+The handler inserts `contacts` with `requestType="google_ads_lead"` and enqueues `notification_outbox`. Custom questions, city/postal, and preferred contact method are copied onto `message`. Google rows are not relayed to Formspree.
+
+A duplicate `lead_id` still returns `200 {}` and backfills a missing outbox event. Test leads (`is_test: true`) persist but do not enqueue.

@@ -44,8 +44,10 @@ Primary design goals:
 5. `insertAppointmentSchema` additionally requires a known service, valid phone number, and a real preferred calendar date that is not in the past in Los Angeles time and falls on an open Monday-through-Thursday practice day.
 6. Request is persisted first in `contacts` with:
    - `requestType="appointment"`
+   - `ingestedVia="website-form"`
    - `preferredDate` / `preferredTime`
    - initial `formspreeStatus="failed"`
+   - a no-PII `notification_outbox` event
 7. The server uses the same atomic `failed` -> `sending` notification claim as the contact endpoint, then relays the canonical stored row to `FORMSPREE_APPOINTMENT_ENDPOINT`. The notification includes the internal lead ID and submission UUID for reconciliation.
 8. Relay outcomes:
    - success -> `formspreeStatus` updated to `delivered`, API returns `201`.
@@ -55,6 +57,16 @@ Primary design goals:
 ### Staff dashboard
 
 The former on-site password-protected leads dashboard is not part of this public website. `/admin`, `/admin/login`, and the staff-facing contacts/analytics APIs 404. Form persistence, Formspree office notifications, outbox alerts, and cron-authenticated notification/reconciliation jobs remain so public forms keep working. Staff reporting lives in a separate dedicated dashboard that reads the same Postgres `contacts` table.
+
+### Google Ads lead forms
+
+`POST /api/webhooks/google-ads` persists `requestType="google_ads_lead"` with `ingestedVia="webhook"` and enqueues the same no-PII outbox. Google leads are **not** sent to Formspree. Custom answers, city/postal, and preferred contact method are stored on `message` (and the full payload in `rawPayload`) so the staff board can show them without digging in JSON.
+
+Missing `GOOGLE_ADS_WEBHOOK_KEY` returns `503 webhook_key_not_configured` with setup steps. Twice-daily reconciliation can insert missing Ads or Formspree rows when credentials exist.
+
+### Orphan Typeform inbox
+
+This site’s booking path is `/book-appointment` → `POST /api/appointments`. It does not embed Typeform. The legacy form `https://fxuqp40sseh.typeform.com/to/CiLYdxSU` still returns HTTP 200 and is still linked from the retired Replit app `family-first-smile-care`. Do not disable that Typeform from this repo: old links may still reach it. Those submissions do not land in Postgres `contacts`.
 
 ### Attribution and conversion flow
 

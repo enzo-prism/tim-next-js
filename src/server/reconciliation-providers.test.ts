@@ -91,9 +91,58 @@ describe("reconciliation provider mapping", () => {
         ingestedVia: "reconciliation",
         email: "jane@example.com",
         phone: "408-555-0100",
-        service: "Invisalign",
+        service: "invisalign",
         firstName: "Jane",
         lastName: "Doe",
+      }),
+    );
+    expect(mapped?.contact?.message).toBeNull();
+  });
+
+  it("unwraps nested Formspree data and snake_case aliases", () => {
+    const mapped = mapFormspreeSubmission({
+      _date: "2026-08-04T01:00:00.000Z",
+      data: {
+        submission_id: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+        first_name: "Jamie",
+        last_name: "Lee",
+        email: "jamie@example.com",
+        request_type: "appointment",
+        preferred_date: "2026-09-15",
+      },
+    });
+    expect(mapped?.externalId).toBe("0d9f6471-7120-4b5a-a1af-e1f77b0dcacf");
+    expect(mapped?.contact).toEqual(
+      expect.objectContaining({
+        firstName: "Jamie",
+        lastName: "Lee",
+        requestType: "appointment",
+        preferredDate: "2026-09-15",
+        ingestedVia: "reconciliation",
+      }),
+    );
+  });
+
+  it("keeps custom Google answers on the contact message and in rawPayload", () => {
+    const mapped = mapGoogleAdsSearchRow({
+      leadFormSubmissionData: {
+        resourceName: "customers/3539046031/leadFormSubmissionData/lead-101",
+        leadFormSubmissionFields: [
+          { fieldType: "FULL_NAME", fieldValue: "Jane Doe" },
+          { fieldType: "EMAIL", fieldValue: "jane@example.com" },
+        ],
+        customLeadFormSubmissionFields: [
+          { questionText: "Do you have insurance?", fieldValue: "Yes" },
+        ],
+      },
+    });
+    expect(mapped?.contact?.message).toContain("Do you have insurance?: Yes");
+    expect(mapped?.contact?.rawPayload).toEqual(
+      expect.objectContaining({
+        source: "google_ads_api",
+        customLeadFormSubmissionFields: [
+          { questionText: "Do you have insurance?", fieldValue: "Yes" },
+        ],
       }),
     );
   });

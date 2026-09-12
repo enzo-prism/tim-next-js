@@ -12,7 +12,7 @@ const getNotificationConfig = (): DashboardNotificationConfig => {
     .map((r) => r.trim())
     .filter(Boolean);
   const dashboardUrl = process.env.LEAD_DASHBOARD_URL?.trim() || null;
-  const webhookUrl = process.env.LEAD_NOTIFICATION_WEBHOOK_URL || null;
+  const webhookUrl = process.env.LEAD_NOTIFICATION_WEBHOOK_URL?.trim() || null;
 
   return { enabled, recipients, dashboardUrl, webhookUrl };
 };

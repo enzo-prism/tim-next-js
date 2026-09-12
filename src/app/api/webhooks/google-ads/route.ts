@@ -153,12 +153,20 @@ export async function POST(req: NextRequest) {
     isTest: payload.is_test ?? false,
     ingestedVia: "webhook",
     columns,
+    namedColumns: payload.user_column_data,
     rawPayload: sanitizePayload(body as Record<string, unknown>),
   });
 
   try {
     const result = await storage.createContactWithOutbox(contactData);
-    if (result.outboxEnqueued) {
+    let outboxEnqueued = result.outboxEnqueued;
+    if (!result.contact) {
+      const existing = await storage.getContactByGoogleAdsLeadId(payload.lead_id);
+      if (existing) {
+        outboxEnqueued = await storage.enqueueLeadOutbox(existing);
+      }
+    }
+    if (outboxEnqueued) {
       after(async () => {
         await processOutboxBatch().catch(() => undefined);
       });
