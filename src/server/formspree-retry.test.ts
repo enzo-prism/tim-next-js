@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   claimContactNotification: vi.fn(),
+  enqueueLeadOutbox: vi.fn(),
   listFailedFormspreeLeads: vi.fn(),
   relayLeadNotification: vi.fn(),
   updateContactFormspreeStatus: vi.fn(),
@@ -10,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/server/storage", () => ({
   storage: {
     claimContactNotification: mocks.claimContactNotification,
+    enqueueLeadOutbox: mocks.enqueueLeadOutbox,
     listFailedFormspreeLeads: mocks.listFailedFormspreeLeads,
     updateContactFormspreeStatus: mocks.updateContactFormspreeStatus,
   },
@@ -60,6 +62,7 @@ describe("retryFailedFormspreeNotifications", () => {
     });
     mocks.relayLeadNotification.mockResolvedValue(undefined);
     mocks.updateContactFormspreeStatus.mockResolvedValue(undefined);
+    mocks.enqueueLeadOutbox.mockResolvedValue(true);
   });
 
   it("relays failed website leads and marks them delivered", async () => {
@@ -73,6 +76,9 @@ describe("retryFailedFormspreeNotifications", () => {
       }),
     );
     expect(mocks.updateContactFormspreeStatus).toHaveBeenCalledWith("contact-1", "delivered");
+    expect(mocks.enqueueLeadOutbox).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "contact-1", submissionId: failedLead.submissionId }),
+    );
   });
 
   it("does not retry sending or google ads rows that cannot map to Formspree", async () => {

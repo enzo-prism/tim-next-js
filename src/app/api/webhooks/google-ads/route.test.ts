@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   createContactWithOutbox: vi.fn(),
+  enqueueLeadOutbox: vi.fn(),
+  getContactByGoogleAdsLeadId: vi.fn(),
   processOutboxBatch: vi.fn(),
   after: vi.fn((fn: () => Promise<void>) => fn()),
 }));
@@ -10,6 +12,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/server/storage", () => ({
   storage: {
     createContactWithOutbox: mocks.createContactWithOutbox,
+    enqueueLeadOutbox: mocks.enqueueLeadOutbox,
+    getContactByGoogleAdsLeadId: mocks.getContactByGoogleAdsLeadId,
   },
 }));
 
@@ -66,6 +70,9 @@ describe("Google Ads webhook POST", () => {
       contact: { id: "new-contact-id" },
       outboxEnqueued: true,
     });
+    mocks.enqueueLeadOutbox.mockResolvedValue(false);
+    mocks.getContactByGoogleAdsLeadId.mockResolvedValue(undefined);
+    mocks.processOutboxBatch.mockResolvedValue({ processed: 0, sent: 0, failed: 0 });
   });
 
   it("returns 503 with message when webhook key is not configured", async () => {
@@ -152,7 +159,7 @@ describe("Google Ads webhook POST", () => {
         email: "jane.doe@example.com",
         phone: "408-555-0100",
         service: "invisalign",
-        message: "Please call after 3pm",
+        message: expect.stringContaining("Please call after 3pm"),
         requestType: "google_ads_lead",
         googleAdsLeadId: "google-lead-001",
         campaignId: "12345678901",
@@ -190,6 +197,7 @@ describe("Google Ads webhook POST", () => {
         expect.objectContaining({ column_id: "CUSTOM_QUESTION_1", column_name: "Do you have insurance?" }),
       ]),
     );
+    expect(call.message).toContain("Do you have insurance?: Yes, I have insurance");
   });
 
   it("uses stable top-level lead_id for deduplication", async () => {
@@ -202,15 +210,28 @@ describe("Google Ads webhook POST", () => {
     );
   });
 
-  it("returns 200 {} for duplicate delivery (storage returns null)", async () => {
+  it("returns 200 {} for duplicate delivery and backfills a missing outbox", async () => {
     mocks.createContactWithOutbox.mockResolvedValue({
       contact: null,
       outboxEnqueued: false,
     });
+    mocks.getContactByGoogleAdsLeadId.mockResolvedValue({
+      id: "existing-contact",
+      googleAdsLeadId: "google-lead-001",
+      submissionId: null,
+      isTest: false,
+    });
+    mocks.enqueueLeadOutbox.mockResolvedValue(true);
+
     const response = await POST(buildRequest(officialNumericSample));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({});
     expect(mocks.createContactWithOutbox).toHaveBeenCalledTimes(1);
+    expect(mocks.getContactByGoogleAdsLeadId).toHaveBeenCalledWith("google-lead-001");
+    expect(mocks.enqueueLeadOutbox).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "existing-contact", googleAdsLeadId: "google-lead-001" }),
+    );
+    expect(mocks.processOutboxBatch).toHaveBeenCalledTimes(1);
   });
 
   it("supports phone-only leads with email null", async () => {

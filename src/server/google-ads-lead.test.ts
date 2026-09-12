@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   columnsFromLeadFormFields,
+  extraAnswerLines,
   mapGoogleAdsColumnsToContact,
+  mapGoogleAdsService,
   parseGoogleAdsColumnData,
   parseGoogleAdsName,
 } from "@/server/google-ads-lead";
@@ -27,6 +29,7 @@ describe("google ads lead mapping", () => {
     expect(contact.preferredTime).toBe("morning");
     expect(contact.email).toBe("jane@example.com");
     expect(contact.requestType).toBe("google_ads_lead");
+    expect(contact.consentVersion).toBe("google-lead-form");
   });
 
   it("maps Ads API field_type columns", () => {
@@ -61,21 +64,71 @@ describe("google ads lead mapping", () => {
     });
     expect(contact.email).toBe("ada@example.com");
     expect(contact.phone).toBe("408-555-0100");
-    expect(contact.service).toBe("Invisalign");
+    expect(contact.service).toBe("invisalign");
   });
 
-  it("leaves free-text preferred times unmapped", () => {
-    const columns = parseGoogleAdsColumnData([
+  it("maps free-text preferred times into the appointment enum and keeps the original", () => {
+    const namedColumns = [
       { column_id: "FULL_NAME", string_value: "Jane Doe" },
       { column_id: "EMAIL", string_value: "jane@example.com" },
-      { column_id: "PREFERRED_CONTACT_TIME", string_value: "afternoon after 4pm" },
-    ]);
+      {
+        column_id: "PREFERRED_CONTACT_TIME",
+        column_name: "Preferred contact time",
+        string_value: "afternoon after 4pm",
+      },
+    ];
+    const columns = parseGoogleAdsColumnData(namedColumns);
     const contact = mapGoogleAdsColumnsToContact({
       leadId: "lead-3",
       ingestedVia: "webhook",
       columns,
+      namedColumns,
       rawPayload: {},
     });
-    expect(contact.preferredTime).toBeNull();
+    expect(contact.preferredTime).toBe("afternoon");
+    expect(contact.message).toContain("afternoon after 4pm");
+  });
+
+  it("folds custom questions, location, and contact method into message", () => {
+    const namedColumns = [
+      { column_id: "FULL_NAME", column_name: "Full name", string_value: "Jane Doe" },
+      { column_id: "EMAIL", column_name: "Email", string_value: "jane@example.com" },
+      { column_id: "COMMENT", column_name: "Comment", string_value: "Please call after 3pm" },
+      {
+        column_id: "CUSTOM_QUESTION_1",
+        column_name: "Do you have insurance?",
+        string_value: "Yes, I have insurance",
+      },
+      {
+        column_id: "PREFERRED_CONTACT_METHOD",
+        column_name: "Preferred contact method",
+        string_value: "Email",
+      },
+      { column_id: "CITY", column_name: "City", string_value: "Los Gatos" },
+      { column_id: "POSTAL_CODE", column_name: "Postal code", string_value: "95032" },
+    ];
+    const columns = parseGoogleAdsColumnData(namedColumns);
+    const contact = mapGoogleAdsColumnsToContact({
+      leadId: "lead-4",
+      ingestedVia: "webhook",
+      columns,
+      namedColumns,
+      rawPayload: {},
+    });
+    expect(contact.message).toContain("Please call after 3pm");
+    expect(contact.message).toContain("Do you have insurance?: Yes, I have insurance");
+    expect(contact.message).toContain("Preferred contact method: Email");
+    expect(contact.message).toContain("City: Los Gatos");
+    expect(contact.message).toContain("Postal code: 95032");
+    expect(contact.message?.match(/Yes, I have insurance/g)).toHaveLength(1);
+    expect(extraAnswerLines(columns, namedColumns).join("\n")).not.toContain("jane@example.com");
+  });
+
+  it("maps known service labels to website slugs and leaves unknown values intact", () => {
+    expect(mapGoogleAdsService("Invisalign")).toBe("invisalign");
+    expect(mapGoogleAdsService("General & Family Dentistry")).toBe("family-dentistry");
+    expect(mapGoogleAdsService("Children's Dentistry")).toBe("children-dentistry");
+    expect(mapGoogleAdsService("Something custom")).toBe("Something custom");
+    expect(mapGoogleAdsService(null)).toBeNull();
   });
 });

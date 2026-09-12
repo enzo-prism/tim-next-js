@@ -1,3 +1,4 @@
+import { leadServiceIds } from "@/content/form-schemas";
 import type { IngestedVia, InsertContactRecord } from "@/server/schema";
 
 export const GOOGLE_ADS_COLUMN_IDS = {
@@ -20,6 +21,37 @@ export const GOOGLE_ADS_COLUMN_IDS = {
 
 const PREFERRED_TIMES = new Set(["morning", "afternoon", "flexible"]);
 
+const IDENTITY_COLUMN_IDS = new Set<string>([
+  GOOGLE_ADS_COLUMN_IDS.FULL_NAME,
+  GOOGLE_ADS_COLUMN_IDS.FIRST_NAME,
+  GOOGLE_ADS_COLUMN_IDS.LAST_NAME,
+  GOOGLE_ADS_COLUMN_IDS.EMAIL,
+  GOOGLE_ADS_COLUMN_IDS.PHONE_NUMBER,
+  GOOGLE_ADS_COLUMN_IDS.COMMENT,
+  GOOGLE_ADS_COLUMN_IDS.SERVICE,
+  GOOGLE_ADS_COLUMN_IDS.CAMPAIGN_NAME,
+]);
+
+const SERVICE_ALIASES: Record<string, (typeof leadServiceIds)[number]> = {
+  invisalign: "invisalign",
+  "family dentistry": "family-dentistry",
+  "general family dentistry": "family-dentistry",
+  "general and family dentistry": "family-dentistry",
+  "dental exams": "dental-exams",
+  "dental exam": "dental-exams",
+  "dental hygiene": "dental-hygiene",
+  "teeth whitening": "teeth-whitening",
+  "dental crowns": "dental-crowns",
+  "night guards": "night-guards",
+  "restorative dentistry": "restorative-dentistry",
+  tmj: "tmj",
+  "tmj treatment": "tmj",
+  "childrens dentistry": "children-dentistry",
+  "children's dentistry": "children-dentistry",
+  "baby's first visit": "childrens-dentistry/babys-first-visit",
+  "babys first visit": "childrens-dentistry/babys-first-visit",
+};
+
 const leadFormFieldText = (value: unknown): string | null =>
   typeof value === "string" && value.trim() ? value.trim() : null;
 
@@ -30,6 +62,12 @@ export type LeadFormFieldLike = {
   fieldValue?: unknown;
   question_text?: unknown;
   questionText?: unknown;
+};
+
+export type NamedLeadFormColumn = {
+  column_id?: string;
+  column_name?: string;
+  string_value?: string | null;
 };
 
 export const parseGoogleAdsColumnData = (
@@ -58,6 +96,26 @@ export const columnsFromLeadFormFields = (
     if (type && value) {
       result[type] = value;
     }
+  }
+  return result;
+};
+
+export const namedColumnsFromLeadFormFields = (
+  fields: LeadFormFieldLike[],
+): NamedLeadFormColumn[] => {
+  const result: NamedLeadFormColumn[] = [];
+  for (const field of fields) {
+    const columnId =
+      leadFormFieldText(field.field_type) ?? leadFormFieldText(field.fieldType);
+    const question =
+      leadFormFieldText(field.question_text) ?? leadFormFieldText(field.questionText);
+    const value = leadFormFieldText(field.field_value) ?? leadFormFieldText(field.fieldValue);
+    if (!value) continue;
+    result.push({
+      column_id: columnId ?? question ?? undefined,
+      column_name: question ?? undefined,
+      string_value: value,
+    });
   }
   return result;
 };
@@ -99,9 +157,107 @@ export const parseGoogleAdsName = (
 };
 
 const preferredTimeFromColumns = (columns: Record<string, string>): string | null => {
-  const raw = columns[GOOGLE_ADS_COLUMN_IDS.PREFERRED_CONTACT_TIME]?.trim().toLowerCase();
-  if (raw && PREFERRED_TIMES.has(raw)) return raw;
+  const raw = columns[GOOGLE_ADS_COLUMN_IDS.PREFERRED_CONTACT_TIME]?.trim();
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+  if (PREFERRED_TIMES.has(lower)) return lower;
+  if (/\bmorning\b|\bam\b|before\s*noon/.test(lower)) return "morning";
+  if (/\bafternoon\b|\bevening\b|after\s*(12|noon|[3-6])|\bpm\b|p\.m\.|[3-6]\s*p/.test(lower)) {
+    return "afternoon";
+  }
+  if (/\bflexible\b|any\s*time|anytime/.test(lower)) return "flexible";
   return null;
+};
+
+const normalizeServiceKey = (value: string): string =>
+  value
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+export const mapGoogleAdsService = (raw: string | null | undefined): string | null => {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+  const slug = trimmed.toLowerCase();
+  if ((leadServiceIds as readonly string[]).includes(slug)) return slug;
+
+  const hyphenated = slug.replace(/\s+/g, "-");
+  if ((leadServiceIds as readonly string[]).includes(hyphenated)) return hyphenated;
+
+  return SERVICE_ALIASES[normalizeServiceKey(trimmed)] ?? trimmed;
+};
+
+const humanizeColumnId = (id: string): string =>
+  id
+    .replace(/^CUSTOM_QUESTION_\d+$/i, "Custom question")
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const isQuestionLabel = (key: string): boolean =>
+  key.includes(" ") || key.includes("?") || /[a-z]/.test(key);
+
+export const extraAnswerLines = (
+  columns: Record<string, string>,
+  namedColumns?: NamedLeadFormColumn[],
+): string[] => {
+  const lines: string[] = [];
+  const seen = new Set<string>();
+  const seenIds = new Set<string>();
+
+  const pushLine = (label: string, value: string) => {
+    const trimmedLabel = label.trim();
+    const trimmedValue = value.trim();
+    if (!trimmedLabel || !trimmedValue) return;
+    const dedupe = `${trimmedLabel.toLowerCase()}:${trimmedValue.toLowerCase()}`;
+    if (seen.has(dedupe)) return;
+    seen.add(dedupe);
+    lines.push(`${trimmedLabel}: ${trimmedValue}`);
+  };
+
+  const shouldSkipId = (id: string, value: string): boolean => {
+    if (IDENTITY_COLUMN_IDS.has(id)) return true;
+    if (
+      id === GOOGLE_ADS_COLUMN_IDS.PREFERRED_CONTACT_TIME &&
+      PREFERRED_TIMES.has(value.trim().toLowerCase())
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  if (namedColumns) {
+    for (const col of namedColumns) {
+      const id = col.column_id?.trim();
+      const value = col.string_value?.trim();
+      if (!id || !value) continue;
+      seenIds.add(id);
+      if (shouldSkipId(id, value)) continue;
+      pushLine(col.column_name?.trim() || humanizeColumnId(id), value);
+    }
+  }
+
+  for (const [key, value] of Object.entries(columns)) {
+    if (!value?.trim()) continue;
+    if (seenIds.has(key)) continue;
+    if (shouldSkipId(key, value)) continue;
+    const label = isQuestionLabel(key) ? key : humanizeColumnId(key);
+    pushLine(label, value);
+  }
+
+  return lines;
+};
+
+const composeLeadMessage = (
+  columns: Record<string, string>,
+  namedColumns?: NamedLeadFormColumn[],
+): string | null => {
+  const comment = columns[GOOGLE_ADS_COLUMN_IDS.COMMENT]?.trim() || "";
+  const extras = extraAnswerLines(columns, namedColumns);
+  const message = [comment, extras.join("\n")].filter(Boolean).join("\n\n");
+  return message || null;
 };
 
 export const mapGoogleAdsColumnsToContact = (args: {
@@ -111,6 +267,7 @@ export const mapGoogleAdsColumnsToContact = (args: {
   isTest?: boolean;
   ingestedVia: IngestedVia;
   columns: Record<string, string>;
+  namedColumns?: NamedLeadFormColumn[];
   rawPayload: Record<string, unknown>;
 }): InsertContactRecord => {
   const email = args.columns[GOOGLE_ADS_COLUMN_IDS.EMAIL]?.trim() || null;
@@ -123,8 +280,8 @@ export const mapGoogleAdsColumnsToContact = (args: {
     lastName,
     email,
     phone,
-    service: args.columns[GOOGLE_ADS_COLUMN_IDS.SERVICE]?.trim() || null,
-    message: args.columns[GOOGLE_ADS_COLUMN_IDS.COMMENT]?.trim() || null,
+    service: mapGoogleAdsService(args.columns[GOOGLE_ADS_COLUMN_IDS.SERVICE]),
+    message: composeLeadMessage(args.columns, args.namedColumns),
     requestType: "google_ads_lead",
     preferredTime: preferredTimeFromColumns(args.columns),
     googleAdsLeadId: args.leadId,
@@ -136,6 +293,7 @@ export const mapGoogleAdsColumnsToContact = (args: {
     utmMedium: "cpc",
     utmCampaign: campaignName,
     consentToContact: true,
+    consentVersion: "google-lead-form",
     leadStatus: "new",
     isTest: args.isTest ?? false,
     rawPayload: args.rawPayload,
