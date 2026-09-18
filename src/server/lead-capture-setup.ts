@@ -10,5 +10,8 @@ export const GOOGLE_ADS_RECONCILIATION_SETUP =
 export const FORMSPREE_RECONCILIATION_SETUP =
   "Set FORMSPREE_API_KEY on Vercel project tim-next-js (Production and Preview) to a Formspree Forms API key that can read form mojngolr, then set RECONCILIATION_ENABLED=true.";
 
+export const LEADS_IMPORT_SETUP =
+  "Set LEADS_IMPORT_SECRET on Vercel project tim-next-js (Production) to a long random secret (`openssl rand -hex 32`). The lead-email automation calls POST /api/admin/leads/import with Authorization: Bearer $LEADS_IMPORT_SECRET to store parsed Gmail lead emails.";
+
 export const LEAD_DASHBOARD_NOTIFICATION_SETUP =
   "To email staff when a new lead is stored, set LEAD_DASHBOARD_NOTIFICATIONS_ENABLED=true, LEAD_DASHBOARD_NOTIFICATION_RECIPIENTS, LEAD_NOTIFICATION_WEBHOOK_URL, and optionally LEAD_DASHBOARD_URL=https://chuang-leads-dashboard.vercel.app. The webhook body contains no patient fields.";
