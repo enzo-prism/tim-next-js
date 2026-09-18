@@ -29,6 +29,7 @@ export const INGESTED_VIA_VALUES = [
   "reconciliation",
   "website-form",
   "backfill",
+  "email-import",
 ] as const;
 
 export type IngestedVia = (typeof INGESTED_VIA_VALUES)[number];
