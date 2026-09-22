@@ -8,9 +8,11 @@ Provide a fast, repeatable response guide for production incidents and routine o
 
 - Public site: Next.js app on Vercel
 - Contact persistence: Postgres via Drizzle (`contacts` table)
-- Appointment relay: `POST /api/appointments` -> internal DB + Formspree relay
+- Appointment relay: `POST /api/appointments` -> internal DB + Formspree relay + no-PII outbox
+- Google Ads lead forms: `POST /api/webhooks/google-ads` -> Postgres only (not Formspree)
 - Staff leads dashboard: not served from this public site; `/admin` 404s
-- Cron jobs: notification retries and reconciliation under `/api/admin/*`, authenticated with `CRON_SECRET`
+- Cron jobs: Formspree retries, outbox drain, and reconciliation under `/api/admin/*`, authenticated with `CRON_SECRET`
+- Legacy Typeform `https://fxuqp40sseh.typeform.com/to/CiLYdxSU`: still live HTTP 200, not used by this site, not written to Postgres
 - ElevenLabs widget: pinned custom-element embed on public routes only
 
 ## Daily and Weekly Checks
@@ -96,7 +98,7 @@ Actions:
 1. Confirm DB persistence is still healthy (this is source of truth for lead capture).
 2. Check Vercel logs for relay errors from `/api/appointments`.
 3. Validate `FORMSPREE_APPOINTMENT_ENDPOINT` in Vercel env.
-4. Treat `failed` as a known failed attempt. The 15-minute cron retries `failed` website/appointment rows. The same submission can also retry from the browser after Formspree recovers.
+4. Treat `failed` as a known failed attempt. The 15-minute cron retries `failed` website/appointment Formspree rows. That cron is **not** a Formspree retry for Google Ads leads. The same website/appointment submission can also retry from the browser after Formspree recovers.
 5. Treat `sending` as indeterminate. Check Formspree submission history and Vercel logs before changing it:
    - confirmed delivered -> manually mark the row `delivered`
    - confirmed not delivered -> manually mark the row `failed`, then retry
@@ -112,6 +114,10 @@ Stored lifecycle fields remain available for a dedicated dashboard outside this 
 3. Use `arrived` after the first confirmed visit occurs.
 4. Use `no-show` when the confirmed first visit is missed.
 5. Use `lost` only with a short operational reason. Keep clinical details out of staff notes.
+
+## Orphan Typeform (do not disable from this repo)
+
+The live site books through `/book-appointment`. Typeform `https://fxuqp40sseh.typeform.com/to/CiLYdxSU` still returns 200 (title “Family First Smile Care”) and is still referenced by the retired Replit app. Submissions there never reach `contacts`. Leave the form up unless Enzo confirms every old ad/email/QR link is dead.
 
 ## Incident: Legacy redirects broken
 

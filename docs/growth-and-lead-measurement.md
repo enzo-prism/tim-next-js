@@ -30,6 +30,8 @@ Appointment links use `buildAppointmentUrl(...)` to carry a closed service ID an
 
 The Google Ads appointment conversion fires only for a newly created durable appointment lead. Its `transaction_id` is the submission UUID, which prevents conversion duplication on retries.
 
+Google Ads Lead Form submissions are a separate capture path: `POST /api/webhooks/google-ads` writes Postgres and a no-PII outbox alert. They do not go through Formspree. Phone clicks, the ElevenLabs widget, Meta social, and the legacy Typeform inbox are not stored as `contacts` rows.
+
 ## Persisted Attribution
 
 The first touch within the browser session can persist:

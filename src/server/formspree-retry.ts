@@ -27,6 +27,12 @@ export const retryFailedFormspreeNotifications = async (): Promise<FormspreeRetr
   }
 
   for (const lead of leads) {
+    try {
+      await storage.enqueueLeadOutbox(lead);
+    } catch {
+      console.error("formspree_retry_outbox_enqueue_failed");
+    }
+
     const payload = toFormspreePayload(lead);
     if (!payload) {
       result.skipped += 1;

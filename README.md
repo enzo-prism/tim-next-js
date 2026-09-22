@@ -7,6 +7,7 @@ Production-grade Next.js rebuild of the Family First Smile Care website, migrate
 - Full public website route parity
 - Contact and appointment persistence using Postgres via Drizzle ORM
 - First-party forms with duplicate protection, campaign attribution, consent records, and Formspree office notifications
+- Google Ads lead-form webhook plus cron-backed Formspree retry, no-PII staff alerts, and provider reconciliation (fail closed until secrets are set)
 - Vercel Web Analytics + GA4 public measurement
 - No on-site staff leads dashboard; `/admin` is not part of the public site
 - Canonical SEO + schema.org JSON-LD + sitemap/robots/llms assets
@@ -61,10 +62,7 @@ npm run quality:all
 
 ## Current Release
 
-The August 31, 2026 release removes the password-protected on-site leads
-dashboard from the public website. Staff reporting now lives outside this repo.
-Public forms, Formspree office notifications, first-party duplicate protection,
-GA4, and Vercel Web Analytics stay in place.
+Website and appointment inserts persist with `ingestedVia="website-form"` and enqueue a no-PII staff outbox event. Cron retries Formspree for `failed` rows and drains that outbox. Google Ads lead-form ingestion and provider reconciliation are implemented and fail closed until `CRON_SECRET` and `GOOGLE_ADS_WEBHOOK_KEY` are set on Vercel. The public site does not embed Typeform.
 
 See [Release Notes](docs/release-notes.md) for the complete scope and
 verification record, and [Operations Runbook](docs/operations-runbook.md) for

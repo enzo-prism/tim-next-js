@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2026-09-12 — Capture-pipeline leftovers after PR 9
+
+### Operations
+
+- Google lead-form custom answers, city/postal, preferred contact method, and free-text preferred times now land on `message` (and `preferredTime` when it matches morning/afternoon/flexible). Known service labels map to website slugs.
+- Duplicate Google webhook deliveries backfill a missing outbox event. Cron Formspree retries enqueue a missing outbox for older website/appointment rows.
+- Formspree reconciliation unwraps nested `data`/`values` and snake_case aliases. Ads reconciliation keeps field arrays in `rawPayload`.
+- Docs no longer describe stored `requestType` as website-only, and they document the live Typeform `CiLYdxSU` as an orphan inbox this site does not write. Staff alert bodies remain free of patient fields.
+
 ## 2026-09-12 — Persist website leads into the staff pipeline
 
 ### Operations

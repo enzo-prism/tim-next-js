@@ -4,6 +4,7 @@ import {
   columnsFromLeadFormFields,
   googleAdsLeadIdFromResourceName,
   mapGoogleAdsColumnsToContact,
+  namedColumnsFromLeadFormFields,
   type LeadFormFieldLike,
 } from "@/server/google-ads-lead";
 import {
@@ -70,18 +71,31 @@ export const formspreeHashIdsFromEnv = (): string[] => {
   return ids;
 };
 
+export const unwrapFormspreeSubmission = (
+  submission: Record<string, unknown>,
+): Record<string, unknown> => {
+  const nested = asRecord(submission.data) ?? asRecord(submission.values);
+  if (!nested) return submission;
+  return { ...nested, ...submission };
+};
+
 export const mapFormspreeSubmission = (
   submission: Record<string, unknown>,
 ): ExternalLeadRecord | null => {
-  const submissionId = asString(submission.submissionId);
+  const fields = unwrapFormspreeSubmission(submission);
+  const submissionId =
+    asString(fields.submissionId) ?? asString(fields.submission_id);
   if (!submissionId) return null;
 
   const requestType =
-    submission.requestType === "appointment" ? "appointment" : "contact";
-  const firstName = asString(submission.firstName) || "Unknown";
-  const lastName = asString(submission.lastName) || "Lead";
-  const email = asString(submission.email);
-  const phone = asString(submission.phone);
+    fields.requestType === "appointment" || fields.request_type === "appointment"
+      ? "appointment"
+      : "contact";
+  const firstName =
+    asString(fields.firstName) || asString(fields.first_name) || "Unknown";
+  const lastName = asString(fields.lastName) || asString(fields.last_name) || "Lead";
+  const email = asString(fields.email);
+  const phone = asString(fields.phone);
   if (!email && !phone) return null;
 
   const rawPayload = { ...submission };
@@ -95,24 +109,24 @@ export const mapFormspreeSubmission = (
       lastName,
       email,
       phone,
-      service: asString(submission.service),
-      message: asString(submission.message),
+      service: asString(fields.service),
+      message: asString(fields.message),
       requestType,
-      preferredDate: asString(submission.preferredDate),
-      preferredTime: asString(submission.preferredTime),
-      landingPage: asString(submission.landingPage),
-      referrer: asString(submission.referrer),
-      ctaSource: asString(submission.ctaSource),
-      utmSource: asString(submission.utmSource),
-      utmMedium: asString(submission.utmMedium),
-      utmCampaign: asString(submission.utmCampaign),
-      utmTerm: asString(submission.utmTerm),
-      utmContent: asString(submission.utmContent),
-      gclid: asString(submission.gclid),
-      gbraid: asString(submission.gbraid),
-      wbraid: asString(submission.wbraid),
-      consentToContact: submission.consentToContact === true,
-      consentVersion: asString(submission.consentVersion),
+      preferredDate: asString(fields.preferredDate) ?? asString(fields.preferred_date),
+      preferredTime: asString(fields.preferredTime) ?? asString(fields.preferred_time),
+      landingPage: asString(fields.landingPage) ?? asString(fields.landing_page),
+      referrer: asString(fields.referrer),
+      ctaSource: asString(fields.ctaSource) ?? asString(fields.cta_source),
+      utmSource: asString(fields.utmSource) ?? asString(fields.utm_source),
+      utmMedium: asString(fields.utmMedium) ?? asString(fields.utm_medium),
+      utmCampaign: asString(fields.utmCampaign) ?? asString(fields.utm_campaign),
+      utmTerm: asString(fields.utmTerm) ?? asString(fields.utm_term),
+      utmContent: asString(fields.utmContent) ?? asString(fields.utm_content),
+      gclid: asString(fields.gclid),
+      gbraid: asString(fields.gbraid),
+      wbraid: asString(fields.wbraid),
+      consentToContact: fields.consentToContact === true || fields.consent_to_contact === true,
+      consentVersion: asString(fields.consentVersion) ?? asString(fields.consent_version),
       leadStatus: "new",
       ingestedVia: "reconciliation",
       isTest: false,
@@ -180,6 +194,10 @@ export const mapGoogleAdsSearchRow = (row: Record<string, unknown>): ExternalLea
   const standardColumns = columnsFromLeadFormFields(fields);
   const customColumns = columnsFromLeadFormFields(customFields);
   const columns = { ...customColumns, ...standardColumns };
+  const namedColumns = [
+    ...namedColumnsFromLeadFormFields(fields),
+    ...namedColumnsFromLeadFormFields(customFields),
+  ];
   const email = columns.EMAIL?.trim() || null;
   const phone = columns.PHONE_NUMBER?.trim() || null;
   if (!email && !phone) {
@@ -200,11 +218,14 @@ export const mapGoogleAdsSearchRow = (row: Record<string, unknown>): ExternalLea
       gclid,
       ingestedVia: "reconciliation",
       columns,
+      namedColumns,
       rawPayload: {
         source: "google_ads_api",
         resourceName,
         submissionDateTime:
           asString(lead.submissionDateTime) ?? asString(lead.submission_date_time),
+        leadFormSubmissionFields: fields,
+        customLeadFormSubmissionFields: customFields,
       },
     }),
   };

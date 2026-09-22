@@ -180,6 +180,9 @@ describe("appointment API", () => {
       serviceId: "invisalign",
     });
     expect(mocks.createContactWithOutbox).not.toHaveBeenCalled();
+    expect(mocks.enqueueLeadOutbox).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "lead-existing", formspreeStatus: "delivered" }),
+    );
     expect(mocks.relayLeadNotification).not.toHaveBeenCalled();
   });
 

@@ -82,6 +82,7 @@ export async function persistAndNotifyWebsiteLead(args: {
     return conflictResponse();
   }
   if (existing?.formspreeStatus === "delivered") {
+    scheduleOutboxFlush(await storage.enqueueLeadOutbox(existing));
     return NextResponse.json({
       success: true,
       created: false,
