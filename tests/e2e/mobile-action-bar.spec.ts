@@ -48,11 +48,18 @@ test.describe("mobile action bar", () => {
 
   test("lets the footer scroll clear of the bar", async ({ page }) => {
     await page.goto("/");
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    // The site enables smooth scrolling, so jump instantly and let layout settle.
+    await page.evaluate(() =>
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }),
+    );
 
-    const barBox = await bar(page).boundingBox();
-    const legalBox = await page.getByRole("link", { name: "Site Map" }).boundingBox();
-    expect(legalBox!.y + legalBox!.height).toBeLessThanOrEqual(barBox!.y);
+    await expect
+      .poll(async () => {
+        const barBox = await bar(page).boundingBox();
+        const legalBox = await page.getByRole("link", { name: "Site Map" }).boundingBox();
+        return legalBox!.y + legalBox!.height <= barBox!.y;
+      })
+      .toBe(true);
   });
 
   test("stays off form routes, which already lead with a call link", async ({ page }) => {
