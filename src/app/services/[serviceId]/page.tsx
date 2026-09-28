@@ -44,7 +44,7 @@ export default async function Page({ params }: ServiceRouteProps) {
   return (
     <>
       <JsonLd data={buildMedicalProcedureSchema(service)} />
-      <ServiceDetailPage />
+      <ServiceDetailPage serviceId={serviceId} />
     </>
   );
 }

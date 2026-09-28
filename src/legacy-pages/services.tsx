@@ -1,11 +1,11 @@
-"use client";
-
 import { Link } from "wouter";
 import ServiceCard from "@/components/service-card";
 import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
 import { generalReviews } from "@/data/reviews";
-import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink } from "@/components/tracking/tracked-links";
+import { FinalCtaPhoneLink } from "@/components/service-growth/final-cta-phone-link";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -45,10 +45,6 @@ const careStartingPoints = [
 ] as const;
 
 export default function Services() {
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("services_cta");
-  };
-
   return (
     <div className="pt-16 pb-20 bg-background">
       
@@ -156,11 +152,11 @@ export default function Services() {
                 asChild
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-colors duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
               >
-                <Link href={buildAppointmentUrl({ source: "services_hero" })} onClick={handleAppointmentClick}>
+                <AppointmentLink href={buildAppointmentUrl({ source: "services_hero" })} source="services_cta">
                   Request an Appointment
-                </Link>
+                </AppointmentLink>
               </Button>
-              <span className="text-white text-sm">or call (408) 358-8100</span>
+              <FinalCtaPhoneLink location="services_final">or call (408) 358-8100</FinalCtaPhoneLink>
             </div>
           </div>
         </div>

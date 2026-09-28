@@ -18,7 +18,11 @@ Primary design goals:
 
 1. Next.js route in `src/app/**/page.tsx` is requested.
 2. Route-level metadata is generated via `buildRouteMetadata(...)` in `src/lib/metadata.ts`.
-3. Most App Router pages delegate rendering to components in `src/legacy-pages/*`.
+3. Most App Router pages delegate rendering to components in `src/legacy-pages/*`. These are server
+   components except the two form pages (`contact`, `book-appointment`). Interactive pieces are client
+   islands: click tracking lives in `src/components/tracking/tracked-links.tsx` because server
+   components cannot pass `onClick`. Do not wrap page content in scroll-reveal animations that start
+   hidden; `tests/e2e/first-paint.spec.ts` fails if server HTML contains `opacity:0` wrappers.
 4. Global layout (`src/app/layout.tsx`) injects site shell, GA script, and LocalBusiness JSON-LD.
 
 ### Contact form flow
@@ -115,5 +119,5 @@ The former on-site password-protected leads dashboard is not part of this public
 
 ## Recommended Next Refactor Milestones
 
-1. Incrementally migrate `src/legacy-pages/*` into colocated App Router components.
+1. Incrementally migrate `src/legacy-pages/*` into colocated App Router components, and split the contact and booking forms so only the form itself hydrates.
 2. Add a managed, cross-instance rate-limit store if abuse exceeds the current Vercel-instance guard.

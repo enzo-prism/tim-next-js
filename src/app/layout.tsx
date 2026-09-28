@@ -3,7 +3,7 @@ import { Raleway } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
-import AppProviders from "@/components/app-providers";
+import MobileActionBar from "@/components/layout/mobile-action-bar";
 import ElevenLabsWidget from "@/components/elevenlabs-widget";
 import RouteAnalytics from "@/components/route-analytics";
 import GoogleAnalytics from "@/components/google-analytics";
@@ -53,23 +53,22 @@ gtag('consent', 'default', {
         />
         <GoogleAnalytics />
 
-        <AppProviders>
-          <RouteAnalytics />
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
-              {children}
-            </main>
-            <Footer />
-          </div>
+        <RouteAnalytics />
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+            {children}
+          </main>
+          <Footer />
+        </div>
+        <MobileActionBar />
 
-          <script
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusinessSchema()) }}
-          />
-          <ElevenLabsWidget />
-        </AppProviders>
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusinessSchema()) }}
+        />
+        <ElevenLabsWidget />
       </body>
     </html>
   );

@@ -1,26 +1,17 @@
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import { motion } from "framer-motion";
 import type { Review } from "@/data/reviews";
 import { googleBusinessProfileUrl } from "@/data/reviews";
-import { Link } from "wouter";
-import {
-  buildAppointmentUrl,
-  trackAppointmentCtaClick,
-  trackReviewLinkClick,
-} from "@/lib/analytics";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
 
 interface ReviewProps {
   review: Review;
   index?: number;
 }
 
-export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
+export default function ReviewComponent({ review }: ReviewProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
+    <div
       className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
     >
       <div className="flex items-start justify-between mb-3">
@@ -31,31 +22,35 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
           </div>
         </div>
         {!review.isComplete && (
-          <a
+          <TrackedExternalLink
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:text-primary transition-colors"
             aria-label="Read full review on Google"
-            onClick={() => trackReviewLinkClick("google", "review_card_icon")}
+            kind="review"
+            provider="google"
+            location="review_card_icon"
           >
             <MinimalGlyph name="external-link" className="w-4 h-4" />
-          </a>
+          </TrackedExternalLink>
         )}
       </div>
       
       <p className="text-gray-700 leading-relaxed mb-3">
         "{review.text}"
         {!review.isComplete && (
-          <a
+          <TrackedExternalLink
             href={googleBusinessProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:text-primary ml-2 text-sm font-medium transition-colors"
-            onClick={() => trackReviewLinkClick("google", "review_card_excerpt")}
+            kind="review"
+            provider="google"
+            location="review_card_excerpt"
           >
             Read full review →
-          </a>
+          </TrackedExternalLink>
         )}
       </p>
       
@@ -66,7 +61,7 @@ export default function ReviewComponent({ review, index = 0 }: ReviewProps) {
           </p>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -78,18 +73,9 @@ interface ReviewsSectionProps {
 
 export function ReviewsSection({ reviews, title = "What Our Patients Say", showCTA = true }: ReviewsSectionProps) {
   if (!reviews || reviews.length === 0) return null;
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("reviews_section");
-  };
 
   return (
-    <motion.div 
-      className="mt-16"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-    >
+    <div className="mt-16">
       <div className="bg-muted/40 rounded-xl p-8 lg:p-12">
         <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">{title}</h3>
         <p className="text-gray-600 text-center mb-8">Real experiences from our valued patients</p>
@@ -101,36 +87,32 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
         </div>
         
         {showCTA && (
-          <motion.div 
-            className="text-center"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-          >
+          <div className="text-center">
             <div className="inline-flex items-center gap-6">
-              <a
+              <TrackedExternalLink
                 href={googleBusinessProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:text-primary font-medium transition-colors flex items-center gap-2"
-                onClick={() => trackReviewLinkClick("google", "reviews_section")}
+                kind="review"
+                provider="google"
+                location="reviews_section"
               >
                 Read More Reviews
                 <MinimalGlyph name="external-link" className="w-4 h-4" />
-              </a>
+              </TrackedExternalLink>
               <span className="text-gray-500">•</span>
-              <Link
+              <AppointmentLink
                 href={buildAppointmentUrl({ source: "reviews_cta" })}
                 className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 font-semibold transition-colors"
-                onClick={handleAppointmentClick}
+                source="reviews_section"
               >
                 Book Your Appointment
-              </Link>
+              </AppointmentLink>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

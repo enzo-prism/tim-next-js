@@ -29,6 +29,10 @@ Three constraints to preserve when restyling it:
   (`data-testid="assistant-launcher"`) remains hidden until the visitor resolves the analytics
   choice. `tests/e2e/elevenlabs-widget.spec.ts` asserts the consent-first handoff across desktop,
   tablet, and mobile.
+- **It docks above the mobile action bar.** Below the `md` breakpoint the prompt spans the
+  viewport width and offsets by `--mobile-action-bar-space` (set in `globals.css` only while the
+  bar is rendered), so it never sits on top of the bar. `tests/e2e/mobile-action-bar.spec.ts`
+  checks the stacking.
 - **Keep it inside the `DESIGN.md` contract** — semantic tokens, `rounded-lg`, at most
   `shadow-sm`. `npm run minimal:check` enforces the hard rules.
 

@@ -200,6 +200,7 @@ The layout should feel practical and reassuring before it feels decorative.
 - **Proof modules** use text, numbers, dividers, and compact labels instead of stars or decorative icon badges.
 - **Forms** should feel steady and low-friction: clear labels, large fields, helpful validation, and calm blue confirmation states.
 - **Form controls** use the darker blue control border and primary-blue focus ring so fields and keyboard focus remain clearly visible.
+- **Mobile action bar** (phone widths only) holds exactly two equal actions, Call and Request visit, on `bg-card` with a top border and `shadow-sm`. Live office status sits under the call label; whichever action fits the current hours gets the primary style. Other fixed bottom UI stacks above it.
 - **Assistant/widget UI** should stay inside the blue token family.
 - **Functional glyphs** are allowed only for unavoidable controls such as menu, chevrons, close, check, search, arrows, and external-link affordances.
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import * as React from "react"
 import useEmblaCarousel, {

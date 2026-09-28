@@ -1,9 +1,5 @@
-"use client";
-
-import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { Link } from "wouter";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,13 +9,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+import { buildAppointmentUrl } from "@/lib/analytics";
 import {
-  buildAppointmentUrl,
-  trackAppointmentCtaClick,
-  trackMapClick,
-  trackPhoneClick,
-  trackSocialClick,
-} from "@/lib/analytics";
+  AppointmentLink,
+  PhoneLink,
+  TrackedExternalLink,
+} from "@/components/tracking/tracked-links";
+import InstagramEmbedSection from "@/components/instagram-embed-section";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
@@ -27,61 +23,7 @@ import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
 import type { RelatedLink } from "@/lib/internal-links";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.97 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.45, ease: "easeOut" } }
-};
-
 export default function BabysFirstVisit() {
-  const instagramSectionRef = useRef<HTMLElement | null>(null);
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("babys_first_visit");
-  };
-
-  // Load the third-party embed only when its section is near the viewport.
-  useEffect(() => {
-    const loadInstagram = () => {
-      const existing = document.getElementById("instagram-embed-script");
-      if (existing) {
-        // @ts-expect-error instagram global is injected by the script
-        window.instgrm?.Embeds?.process?.();
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.id = "instagram-embed-script";
-      script.src = "https://www.instagram.com/embed.js";
-      script.async = true;
-      script.onload = () => {
-        // @ts-expect-error instagram global is injected by the script
-        window.instgrm?.Embeds?.process?.();
-      };
-      document.body.appendChild(script);
-    };
-
-    const section = instagramSectionRef.current;
-    if (!section || !("IntersectionObserver" in window)) {
-      loadInstagram();
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        loadInstagram();
-        observer.disconnect();
-      },
-      { rootMargin: "400px" },
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
-
   const visitPhotos = [
     {
       src: "https://res.cloudinary.com/dhqpqfw6w/image/upload/v1763743366/Screenshot_2025-11-21_at_8.40.28_AM_bwdpts.webp",
@@ -150,12 +92,7 @@ export default function BabysFirstVisit() {
         }}></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={fadeInUp}
-            >
+            <div>
               <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-primary mb-4">
                 Children&apos;s Dentistry
               </div>
@@ -168,9 +105,12 @@ export default function BabysFirstVisit() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href={buildAppointmentUrl({ serviceId: "childrens-dentistry/babys-first-visit", source: "baby_visit_hero" })} onClick={handleAppointmentClick}>
+                  <AppointmentLink
+                    href={buildAppointmentUrl({ serviceId: "childrens-dentistry/babys-first-visit", source: "baby_visit_hero" })}
+                    source="babys_first_visit"
+                  >
                     Schedule Baby&apos;s First Visit
-                  </Link>
+                  </AppointmentLink>
                 </Button>
                 <Button
                   asChild
@@ -191,14 +131,8 @@ export default function BabysFirstVisit() {
                   Parents welcome chairside
                 </div>
               </div>
-            </motion.div>
-            <motion.div
-              className="relative"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-60px" }}
-              variants={scaleIn}
-            >
+            </div>
+            <div className="relative">
               <div className="bg-white border border-primary/15 rounded-xl shadow-sm p-8">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
@@ -225,7 +159,7 @@ export default function BabysFirstVisit() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -241,12 +175,7 @@ export default function BabysFirstVisit() {
         />
 
         {/* Photo carousel */}
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 lg:p-12">
             <div className="flex justify-between items-center flex-wrap gap-4 mb-6">
               <div>
@@ -287,15 +216,10 @@ export default function BabysFirstVisit() {
               <CarouselNext className="bg-white shadow-sm border border-gray-200 hover:border-primary" />
             </Carousel>
           </div>
-        </motion.section>
+        </section>
 
         {/* Why start early */}
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 lg:p-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Your Baby Should See a Dentist Before Age One</h2>
             <p className="text-lg text-gray-700 mb-6">
@@ -315,15 +239,10 @@ export default function BabysFirstVisit() {
               ))}
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Infographic */}
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section>
           <Dialog>
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 lg:p-12">
               <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
@@ -398,15 +317,10 @@ export default function BabysFirstVisit() {
               </div>
             </DialogContent>
           </Dialog>
-        </motion.section>
+        </section>
 
         {/* What to expect */}
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section>
           <div className="bg-muted/40 rounded-xl p-8 lg:p-12 border border-primary/10 space-y-6">
             <div className="flex items-center gap-3">
               <div>
@@ -460,16 +374,10 @@ export default function BabysFirstVisit() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Message from Dr */}
-        <motion.section
-          ref={instagramSectionRef}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <InstagramEmbedSection>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 sm:p-8 lg:p-12 space-y-8">
             <div className="flex items-center gap-3">
               <h2 className="text-3xl font-bold text-gray-800">A Message From Dr. Tim J. Chuang</h2>
@@ -483,14 +391,16 @@ export default function BabysFirstVisit() {
                     data-instgrm-permalink="https://www.instagram.com/reel/DNrGJb4ZMXi/?utm_source=ig_embed&amp;utm_campaign=loading"
                     data-instgrm-version="14"
                   >
-                    <a
+                    <TrackedExternalLink
                       href="https://www.instagram.com/reel/DNrGJb4ZMXi/?utm_source=ig_embed&amp;utm_campaign=loading"
                       target="_blank"
                       rel="noreferrer"
-                      onClick={() => trackSocialClick("instagram", "babys_first_visit_embed")}
+                      kind="social"
+                      provider="instagram"
+                      location="babys_first_visit_embed"
                     >
                       View this post on Instagram
-                    </a>
+                    </TrackedExternalLink>
                   </blockquote>
                 </div>
               </div>
@@ -502,29 +412,25 @@ export default function BabysFirstVisit() {
                     data-instgrm-permalink="https://www.instagram.com/reel/DE8HuqhStM9/?utm_source=ig_embed&amp;utm_campaign=loading"
                     data-instgrm-version="14"
                   >
-                    <a
+                    <TrackedExternalLink
                       href="https://www.instagram.com/reel/DE8HuqhStM9/?utm_source=ig_embed&amp;utm_campaign=loading"
                       target="_blank"
                       rel="noreferrer"
-                      onClick={() => trackSocialClick("instagram", "babys_first_visit_embed")}
+                      kind="social"
+                      provider="instagram"
+                      location="babys_first_visit_embed"
                     >
                       View this post on Instagram
-                    </a>
+                    </TrackedExternalLink>
                   </blockquote>
                 </div>
               </div>
             </div>
           </div>
-        </motion.section>
+        </InstagramEmbedSection>
 
         {/* How to prepare & comfort */}
-        <motion.section
-          className="grid lg:grid-cols-2 gap-10 items-start"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section className="grid lg:grid-cols-2 gap-10 items-start">
           <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
             <div className="flex items-center mb-4">
               <h2 className="text-2xl font-bold text-gray-800">How to Prepare for Your Baby&apos;s First Visit</h2>
@@ -567,15 +473,10 @@ export default function BabysFirstVisit() {
               Call us at (408) 358-8100 if you would like to discuss feeding challenges or special accommodations ahead of time.
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Common questions */}
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 lg:p-12 space-y-6">
             <div className="flex items-center gap-3">
               <h2 className="text-3xl font-bold text-gray-800">Common Questions Parents Ask</h2>
@@ -599,15 +500,10 @@ export default function BabysFirstVisit() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Preventing cavities */}
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section>
           <div className="bg-muted/40 rounded-xl p-8 lg:p-12 border border-primary/10">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Preventing Cavities From the Start</h2>
             <p className="text-gray-700 mb-6">Even babies can develop early childhood cavities. Here&apos;s how to protect their smile:</p>
@@ -626,15 +522,10 @@ export default function BabysFirstVisit() {
               ))}
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Office */}
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={fadeInUp}
-        >
+        <section>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 lg:p-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Office: Designed for Families</h2>
             <p className="text-gray-700 mb-6">
@@ -655,18 +546,12 @@ export default function BabysFirstVisit() {
               ))}
             </div>
           </div>
-        </motion.section>
+        </section>
 
         <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
 
         {/* CTA */}
-        <motion.section
-          className="bg-primary rounded-xl p-8 lg:p-12 text-white"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-120px" }}
-          variants={fadeInUp}
-        >
+        <section className="bg-primary rounded-xl p-8 lg:p-12 text-white">
           <div className="grid lg:grid-cols-[2fr,1fr] gap-8 items-center">
             <div>
               <h2 className="text-3xl font-bold mb-4">Schedule Your Baby&apos;s First Visit</h2>
@@ -675,32 +560,34 @@ export default function BabysFirstVisit() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild className="w-full sm:w-auto bg-white text-primary hover:bg-gray-100 shadow-sm">
-                  <Link href={buildAppointmentUrl({ serviceId: "childrens-dentistry/babys-first-visit", source: "baby_visit_final" })} onClick={handleAppointmentClick}>
+                  <AppointmentLink
+                    href={buildAppointmentUrl({ serviceId: "childrens-dentistry/babys-first-visit", source: "baby_visit_final" })}
+                    source="babys_first_visit"
+                  >
                     Schedule Now
-                  </Link>
+                  </AppointmentLink>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
                   className="w-full sm:w-auto bg-white/5 border-white/25 text-white hover:bg-white hover:text-primary"
                 >
-                  <a href="tel:+14083588100" onClick={() => trackPhoneClick("babys_first_visit_cta")}>
-                    Call Us
-                  </a>
+                  <PhoneLink location="babys_first_visit_cta">Call Us</PhoneLink>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
                   className="w-full sm:w-auto bg-white/5 border-white/25 text-white hover:bg-white hover:text-primary"
                 >
-                  <a
+                  <TrackedExternalLink
                     href={practiceInfo.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() => trackMapClick("babys_first_visit_cta")}
+                    kind="map"
+                    location="babys_first_visit_cta"
                   >
                     Open in Google Maps
-                  </a>
+                  </TrackedExternalLink>
                 </Button>
               </div>
             </div>
@@ -729,7 +616,7 @@ export default function BabysFirstVisit() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
       </div>
     </div>
   );

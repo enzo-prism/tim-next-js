@@ -87,7 +87,7 @@ export default function ElevenLabsWidget() {
 
   if (status !== "ready") {
     return (
-      <div className="fixed bottom-4 right-4 z-[90] sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-[calc(var(--mobile-action-bar-space)+1rem)] right-4 z-[90] sm:bottom-[calc(var(--mobile-action-bar-space)+1.5rem)] sm:right-6">
         <button
           type="button"
           data-testid="assistant-launcher"

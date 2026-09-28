@@ -80,7 +80,7 @@ export default function GoogleAnalytics() {
       {consent === "prompt" ? (
         <section
           aria-label="Analytics privacy choices"
-          className="fixed bottom-3 left-3 z-[100] w-[min(20rem,calc(100vw-5.5rem))] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 sm:bottom-5 sm:left-5 sm:w-80 md:w-auto"
+          className="fixed inset-x-3 bottom-[calc(var(--mobile-action-bar-space)+0.75rem)] z-[100] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 md:inset-x-auto md:bottom-5 md:left-5 md:w-auto"
         >
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
             <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground md:whitespace-nowrap">

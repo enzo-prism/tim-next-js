@@ -1,5 +1,34 @@
 # Release Notes
 
+## 2026-09-27 — Visible-on-first-paint pages and a mobile action bar
+
+### Public experience
+
+- Service, Invisalign, iTero, Baby's First Visit, Testimonials, and Services pages no longer ship
+  their headings and calls to action at `opacity:0` waiting for scroll-reveal animations. Content
+  is visible in the server HTML, with or without JavaScript.
+- Phone-width screens get a bottom bar with Call and Request visit. The call button shows live
+  office status ("Open now · until 5 PM" / "Closed · opens Mon 9 AM") in Los Angeles time; outside
+  office hours the request button takes the primary style. The bar stays off `/book-appointment`
+  and `/contact`, which already lead with a call link.
+- The mobile menu now includes the phone number and hours. Closing CTAs on service pages turn the
+  plain-text "or call (408) 358-8100" into a tap-to-call link.
+- On phones, the analytics prompt spans the width above the bar (two lines instead of four) and
+  the assistant launcher sits above the bar.
+
+### Performance
+
+- Legacy pages other than the two form pages render as server components. Click tracking moved
+  into small client links (`src/components/tracking/tracked-links.tsx`), and framer-motion is no
+  longer loaded. First-load JS: service pages 172 kB → 110 kB, Testimonials 175 kB → 110 kB,
+  Invisalign 179 kB → 126 kB, About 168 kB → 123 kB, home 144 kB → 129 kB.
+
+### Analytics
+
+- `phone_click` from the Invisalign closing CTA now uses the shared `trackPhoneClick` payload
+  (`destination: "phone"`, plus `service_id`). New CTA sources: `mobile_action_bar`, `mobile_menu`,
+  and `*_final` phone links on service pages.
+
 ## 2026-09-12 — Persist website leads into the staff pipeline
 
 ### Operations

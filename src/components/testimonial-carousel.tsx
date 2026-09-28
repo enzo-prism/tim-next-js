@@ -1,15 +1,34 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import { useReducedMotion } from "framer-motion";
 import { homepageTestimonials } from "@/content/testimonials";
 import type { Testimonial } from "@/lib/types";
 
 const testimonials: Testimonial[] = homepageTestimonials;
 
+const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const media = window.matchMedia(reducedMotionQuery);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+// The server render matches the default (motion allowed); autoplay is an
+// effect, so it never starts before the browser reports the real preference.
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    () => window.matchMedia(reducedMotionQuery).matches,
+    () => false,
+  );
+}
+
 export default function TestimonialCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [isUserPaused, setIsUserPaused] = useState(false);
   const [isInteractionPaused, setIsInteractionPaused] = useState(false);
   const isMotionPreferencePaused = Boolean(prefersReducedMotion);

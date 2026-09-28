@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
+import { practiceWeeklyHours } from "@/content/practice-hours";
+
+const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 describe("local business structured data", () => {
   it("publishes open days without an ambiguous midnight-to-midnight closed day", () => {
@@ -13,5 +16,20 @@ describe("local business structured data", () => {
         closes: "17:00",
       },
     ]);
+  });
+
+  it("matches the hours the mobile action bar uses for open-now status", () => {
+    const schema = buildLocalBusinessSchema();
+    const published = schema.openingHoursSpecification.flatMap((spec) =>
+      spec.dayOfWeek.map((day) => ({ day, opens: spec.opens, closes: spec.closes })),
+    );
+
+    expect(published).toEqual(
+      practiceWeeklyHours.map((entry) => ({
+        day: dayNames[entry.weekday],
+        opens: entry.opens,
+        closes: entry.closes,
+      })),
+    );
   });
 });
