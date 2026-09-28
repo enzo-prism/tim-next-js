@@ -5,13 +5,12 @@ import JsonLd from "@/components/seo/json-ld";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { services } from "@/content/services";
 import { buildMedicalProcedureSchema } from "@/content/structured-data";
+import { getServiceDetailStaticParams } from "@/content/service-routes";
 
 const allServices = services.flatMap((service) => [service, ...(service.subServices ?? [])]);
 
 export function generateStaticParams() {
-  return allServices
-    .filter((service) => !service.id.includes("/"))
-    .map((service) => ({ serviceId: service.id }));
+  return getServiceDetailStaticParams();
 }
 
 // Only the service IDs above are valid routes; anything else must be a real
