@@ -7,7 +7,7 @@ function read(relativePath: string) {
 
 describe("accessibility component contracts", () => {
   it("exposes FAQ state and panel relationships", () => {
-    const source = read("../legacy-pages/patient-info.tsx");
+    const source = read("./patient-info/patient-info-faq-list.tsx");
 
     expect(source).toContain('aria-expanded={expandedFAQ === faq.id}');
     expect(source).toContain('aria-controls={`faq-panel-${faq.id}`}');

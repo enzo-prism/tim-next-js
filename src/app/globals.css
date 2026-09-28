@@ -162,6 +162,26 @@
   :is(h1, h2, h3, h4, h5, h6) {
     scroll-margin-top: 5rem;
   }
+
+  /*
+   * Height of the phone-width action bar (components/layout/mobile-action-bar.tsx):
+   * top padding + 3rem buttons + border + safe-area bottom padding. Other fixed
+   * bottom UI (privacy prompt, assistant) offsets by it, and the page reserves it
+   * so the footer can scroll clear of the bar. Zero when the bar is not rendered.
+   */
+  :root {
+    --mobile-action-bar-space: 0px;
+  }
+
+  @media (width < 48rem) {
+    :root:has([data-mobile-action-bar]) {
+      --mobile-action-bar-space: calc(3.5rem + 1px + max(0.5rem, env(safe-area-inset-bottom)));
+    }
+  }
+
+  body {
+    padding-bottom: var(--mobile-action-bar-space);
+  }
 }
 
 @layer components {
@@ -181,7 +201,7 @@
     --el-sheet-radius: 28px;
     --el-overlay-padding: max(16px, env(safe-area-inset-bottom));
     display: block;
-    inset: 0;
+    inset: 0 0 var(--mobile-action-bar-space) 0;
     max-width: none;
     pointer-events: none;
     position: fixed;

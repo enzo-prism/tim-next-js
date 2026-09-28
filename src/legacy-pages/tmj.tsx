@@ -1,22 +1,14 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink } from "@/components/tracking/tracked-links";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import type { RelatedLink } from "@/lib/internal-links";
 
 export default function TMJ() {
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("tmj", {
-      ctaType: "consultation",
-      serviceId: "tmj",
-    });
-  };
-
   const relatedLinks: RelatedLink[] = [
     {
       href: "/services/night-guards",
@@ -256,9 +248,14 @@ export default function TMJ() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-3">
-              <Link href={buildAppointmentUrl({ serviceId: "tmj", source: "tmj_page" })} onClick={handleAppointmentClick}>
+              <AppointmentLink
+                href={buildAppointmentUrl({ serviceId: "tmj", source: "tmj_page" })}
+                source="tmj"
+                ctaType="consultation"
+                serviceId="tmj"
+              >
                 Schedule Consultation
-              </Link>
+              </AppointmentLink>
             </Button>
             <Button
               asChild

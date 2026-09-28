@@ -30,6 +30,8 @@ import {
   trackServiceLearnMoreClick,
 } from "@/lib/analytics";
 import { getServiceHref } from "@/lib/routes";
+import { PhoneLink } from "@/components/tracking/tracked-links";
+import { practiceHoursSummary, practicePhone } from "@/content/practice-hours";
 
 const navigation: Array<{ name: string; href: string; dropdown?: boolean }> = [
   { name: "Home", href: "/" },
@@ -265,6 +267,14 @@ export default function Header() {
                       Request Appointment
                     </Link>
                   </Button>
+                  <div className="space-y-1.5">
+                    <Button asChild variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                      <PhoneLink location="mobile_menu" onClick={() => setIsOpen(false)}>
+                        Call {practicePhone.display}
+                      </PhoneLink>
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground">{practiceHoursSummary}</p>
+                  </div>
                   {navigation.filter((item) => !item.dropdown).map((item) => (
                     <Link
                       key={item.name}

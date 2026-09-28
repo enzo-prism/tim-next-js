@@ -1,49 +1,16 @@
-"use client";
-
 import { Link } from "wouter";
-import { motion } from "framer-motion";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import IteroScannerImage from "@/components/itero-scanner-image";
-import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink } from "@/components/tracking/tracked-links";
+import { FinalCtaPhoneLink } from "@/components/service-growth/final-cta-phone-link";
 import { iteroContent } from "@shared/marketing-pages";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import type { RelatedLink } from "@/lib/internal-links";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-};
-
 export default function IteroDigitalScanner() {
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("itero", {
-      ctaType: "appointment",
-      serviceId: "itero-digital-scanner",
-    });
-  };
-
   const relatedLinks: RelatedLink[] = [
     {
       href: "/services/invisalign",
@@ -69,42 +36,34 @@ export default function IteroDigitalScanner() {
 
   return (
     <div className="pt-16 pb-20 bg-white">
-      <motion.section
-        className="relative overflow-hidden py-20 lg:py-32"
-        initial="hidden"
-        animate="visible"
-        variants={fadeInUp}
-      >
+      <section className="relative overflow-hidden py-20 lg:py-32">
         <HeroBackdrop variant="default" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <motion.h1
-                className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
-                variants={fadeInUp}
-              >
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
                 <span className="inline-flex items-center gap-3 flex-wrap">
                   
                   <span>{iteroContent.hero.title}</span>
                 </span>
-              </motion.h1>
-              <motion.p className="text-xl text-gray-600" variants={fadeInUp}>
+              </h1>
+              <p className="text-xl text-gray-600">
                 {iteroContent.hero.subtitle}
-              </motion.p>
-              <motion.p className="text-gray-600 mt-6" variants={fadeInUp}>
+              </p>
+              <p className="text-gray-600 mt-6">
                 Explore our{" "}
                 <Link href="/services/invisalign" className="text-primary font-semibold">
                   Invisalign clear aligners
                 </Link>
                 {" "}to see how digital scans support your treatment plan.
-              </motion.p>
+              </p>
             </div>
-            <motion.div variants={scaleIn}>
+            <div>
               <IteroScannerImage className="min-h-[260px]" />
-            </motion.div>
+            </div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <PageBreadcrumbs
@@ -115,13 +74,7 @@ export default function IteroDigitalScanner() {
           ]}
         />
 
-        <motion.section
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        <section className="mb-16">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div>
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
@@ -143,46 +96,27 @@ export default function IteroDigitalScanner() {
               </ul>
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        <section className="mb-16">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">
               {iteroContent.whatToExpect.heading}
             </h2>
           </div>
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-            variants={staggerContainer}
-          >
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {iteroContent.whatToExpect.steps.map((step, index) => (
-              <motion.div
-                key={step}
-                className="bg-muted/50 rounded-xl p-6 text-center"
-                variants={scaleIn}
-              >
+              <div key={step} className="bg-muted/50 rounded-xl p-6 text-center">
                 <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <span className="font-bold">{index + 1}</span>
                 </div>
                 <p className="text-gray-700 font-medium">{step}</p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        </motion.section>
+          </div>
+        </section>
 
-        <motion.section
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        <section className="mb-16">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">iTero Scanner FAQs</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -197,45 +131,34 @@ export default function IteroDigitalScanner() {
               </div>
             ))}
           </div>
-        </motion.section>
+        </section>
 
         <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
 
-        <motion.section
-          className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={scaleIn}
-        >
-          <motion.h2
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4"
-            variants={fadeInUp}
-          >
+        <section className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             Book Your Appointment
-          </motion.h2>
-          <motion.p
-            className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto"
-            variants={fadeInUp}
-          >
+          </h2>
+          <p className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto">
             Schedule your visit to experience comfortable, precise digital impressions.
-          </motion.p>
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            variants={fadeInUp}
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div>
+              <AppointmentLink
                 href={buildAppointmentUrl({ serviceId: "invisalign", source: "itero_page" })}
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
-                onClick={handleAppointmentClick}
+                source="itero"
+                ctaType="appointment"
+                serviceId="itero-digital-scanner"
               >
                 Book Your Appointment
-              </Link>
-            </motion.div>
-            <span className="text-white text-sm">or call (408) 358-8100</span>
-          </motion.div>
-        </motion.section>
+              </AppointmentLink>
+            </div>
+            <FinalCtaPhoneLink location="itero_page_final" serviceId="itero-digital-scanner">
+              or call (408) 358-8100
+            </FinalCtaPhoneLink>
+          </div>
+        </section>
 
         <p className="text-xs text-gray-500 text-center mt-8">
           {iteroContent.trademarkNote}

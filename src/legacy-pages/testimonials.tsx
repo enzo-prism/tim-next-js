@@ -1,7 +1,4 @@
-"use client";
-
 import { Link } from "wouter";
-import { motion } from "framer-motion";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { Button } from "@/components/ui/button";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
@@ -21,40 +18,8 @@ import {
   testimonialsPageSummary,
   testimonialThemes,
 } from "@/content/testimonials";
-import {
-  buildAppointmentUrl,
-  trackAppointmentCtaClick,
-  trackReviewLinkClick,
-} from "@/lib/analytics";
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.08,
-    },
-  },
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.96 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-  },
-};
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
 
 export default function TestimonialsPage() {
   const pageUrl = `${practiceInfo.url}/testimonials`;
@@ -71,10 +36,6 @@ export default function TestimonialsPage() {
     description: pageDescription,
     url: pageUrl,
   });
-
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("testimonials_page");
-  };
 
   return (
     <div className="bg-white pt-16 pb-20">
@@ -93,7 +54,7 @@ export default function TestimonialsPage() {
           <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Testimonials" }]} />
 
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
-            <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+            <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Verified patient feedback
               </div>
@@ -114,16 +75,8 @@ export default function TestimonialsPage() {
                 alongside direct links to the services those reviews mention most.
               </p>
 
-              <motion.div
-                className="mt-8 grid gap-4 sm:grid-cols-3"
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-              >
-                <motion.div
-                  className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm"
-                  variants={scaleIn}
-                >
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm">
                   <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Average rating
                   </div>
@@ -133,12 +86,9 @@ export default function TestimonialsPage() {
                     </span>
                     <span className="text-sm font-semibold text-slate-500">out of 5</span>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm"
-                  variants={scaleIn}
-                >
+                <div className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm">
                   <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Review volume
                   </div>
@@ -148,12 +98,9 @@ export default function TestimonialsPage() {
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     {testimonialsReviewLibrarySummary.verifiedAtLabel}
                   </p>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm"
-                  variants={scaleIn}
-                >
+                <div className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm">
                   <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Source
                   </div>
@@ -163,16 +110,11 @@ export default function TestimonialsPage() {
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     {testimonialsReviewLibrarySummary.editorialNote}
                   </p>
-                </motion.div>
-              </motion.div>
-            </motion.div>
+                </div>
+              </div>
+            </div>
 
-            <motion.aside
-              className="rounded-xl border border-slate-200/90 bg-white/95 p-6 shadow-sm"
-              initial="hidden"
-              animate="visible"
-              variants={scaleIn}
-            >
+            <aside className="rounded-xl border border-slate-200/90 bg-white/95 p-6 shadow-sm">
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                 Featured Google review
               </div>
@@ -188,68 +130,57 @@ export default function TestimonialsPage() {
                 variant="outline"
                 className="mt-6 w-full border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
               >
-                <a
+                <TrackedExternalLink
                   href={testimonialsPageSummary.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackReviewLinkClick("google", "testimonials_featured")}
+                  kind="review"
+                  provider="google"
+                  location="testimonials_featured"
                 >
                   View Google profile
                   <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
-                </a>
+                </TrackedExternalLink>
               </Button>
               <Button
                 asChild
                 variant="ghost"
                 className="mt-3 w-full text-primary hover:bg-primary/5 hover:text-primary"
               >
-                <a
+                <TrackedExternalLink
                   href={publicReviewFeedSections[1].sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackReviewLinkClick("yelp", "testimonials_featured")}
+                  kind="review"
+                  provider="yelp"
+                  location="testimonials_featured"
                 >
                   View Yelp profile
                   <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
-                </a>
+                </TrackedExternalLink>
               </Button>
-            </motion.aside>
+            </aside>
           </div>
         </div>
       </section>
 
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {testimonialThemes.map((theme) => (
-              <motion.article
-                key={theme.title}
-                className="rounded-xl border border-slate-200 bg-slate-50/80 p-5"
-                variants={scaleIn}
-              >
+              <article key={theme.title} className="rounded-xl border border-slate-200 bg-slate-50/80 p-5">
                 <h2 className="text-lg font-semibold text-slate-900">{theme.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{theme.description}</p>
-              </motion.article>
+              </article>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {testimonialSections.map((section) => (
         <section key={section.id} className="py-10 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeInUp}
-            >
+            <div>
               <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
                 {section.eyebrow}
               </div>
@@ -270,20 +201,13 @@ export default function TestimonialsPage() {
                   </Link>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              className="mt-8 grid gap-5 lg:grid-cols-3"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-            >
+            <div className="mt-8 grid gap-5 lg:grid-cols-3">
               {section.reviews.map((review) => (
-                <motion.article
+                <article
                   key={`${section.id}-${review.name}`}
                   className="h-full rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm"
-                  variants={scaleIn}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="inline-flex rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
@@ -302,9 +226,9 @@ export default function TestimonialsPage() {
                     <p className="font-semibold text-slate-900">{review.name}</p>
                     <p className="mt-1 text-sm text-slate-500">{review.patientLabel}</p>
                   </div>
-                </motion.article>
+                </article>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
       ))}
@@ -312,12 +236,7 @@ export default function TestimonialsPage() {
       {publicReviewFeedSections.map((section) => (
         <section key={section.id} className="py-10 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeInUp}
-            >
+            <div>
               <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
                 {section.eyebrow}
               </div>
@@ -335,36 +254,26 @@ export default function TestimonialsPage() {
                   variant="outline"
                   className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
                 >
-                  <a
+                  <TrackedExternalLink
                     href={section.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() =>
-                      trackReviewLinkClick(
-                        section.id === "yelp-reviews" ? "yelp" : "google",
-                        "testimonials_review_section",
-                      )
-                    }
+                    kind="review"
+                    provider={section.id === "yelp-reviews" ? "yelp" : "google"}
+                    location="testimonials_review_section"
                   >
                     {section.sourceLabel}
                     <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
-                  </a>
+                  </TrackedExternalLink>
                 </Button>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              className="mt-8 grid gap-5 lg:grid-cols-2"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-            >
+            <div className="mt-8 grid gap-5 lg:grid-cols-2">
               {section.reviews.map((review) => (
-                <motion.article
+                <article
                   key={`${section.id}-${review.name}-${review.dateLabel}`}
                   className="h-full rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm"
-                  variants={scaleIn}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="inline-flex rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
@@ -388,22 +297,16 @@ export default function TestimonialsPage() {
                       {section.id === "yelp-reviews" ? "Yelp reviewer" : "Google reviewer"}
                     </p>
                   </div>
-                </motion.article>
+                </article>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
       ))}
 
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="rounded-xl border border-primary/10 bg-muted/40 p-8 sm:p-10"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
+          <div className="rounded-xl border border-primary/10 bg-muted/40 p-8 sm:p-10">
             <div className="max-w-4xl">
               <h2 className="text-3xl font-bold text-gray-800">Ready to see what your visit could feel like?</h2>
               <p className="mt-4 text-lg leading-8 text-gray-600">
@@ -418,28 +321,33 @@ export default function TestimonialsPage() {
                 asChild
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                <Link href={buildAppointmentUrl({ source: "testimonials_final_cta" })} onClick={handleAppointmentClick}>
+                <AppointmentLink
+                  href={buildAppointmentUrl({ source: "testimonials_final_cta" })}
+                  source="testimonials_page"
+                >
                   Book an appointment
                   <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
-                </Link>
+                </AppointmentLink>
               </Button>
               <Button
                 asChild
                 variant="outline"
                 className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
               >
-                <a
+                <TrackedExternalLink
                   href={testimonialsPageSummary.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => trackReviewLinkClick("google", "testimonials_bottom_cta")}
+                  kind="review"
+                  provider="google"
+                  location="testimonials_bottom_cta"
                 >
                   Read more reviews on Google
                   <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
-                </a>
+                </TrackedExternalLink>
               </Button>
             </div>
-          </motion.div>
+          </div>
 
           <RelatedLinksSection
             title="Explore More Patient Resources"

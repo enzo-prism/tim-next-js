@@ -1,17 +1,10 @@
-"use client";
-
 import Image from "next/image";
 import { Link } from "wouter";
 import familyFirstLogo from "@assets/Logo_1753972987510.png";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
 import { yelpBusinessProfileUrl } from "@/data/reviews";
-import {
-  trackPayBillClick,
-  trackPhoneClick,
-  trackReviewLinkClick,
-  trackSocialClick,
-} from "@/lib/analytics";
+import { PhoneLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
 
 export default function Footer() {
   return (
@@ -41,13 +34,9 @@ export default function Footer() {
                 </PracticeAddressLink>
               </div>
               <div className="flex items-center">
-                <a
-                  href="tel:4083588100"
-                  className="hover:text-primary transition-colors"
-                  onClick={() => trackPhoneClick("footer")}
-                >
+                <PhoneLink location="footer" className="hover:text-primary transition-colors">
                   (408) 358-8100
-                </a>
+                </PhoneLink>
               </div>
               <div className="flex items-center">
                 <a href="mailto:hello@famfirstsmile.com" className="hover:text-primary transition-colors">
@@ -75,40 +64,45 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a 
-                  href="https://g.page/r/Cej0Xl18KcCyEAE/review" 
-                  target="_blank" 
+                <TrackedExternalLink
+                  href="https://g.page/r/Cej0Xl18KcCyEAE/review"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-primary transition-colors"
-                  onClick={() => trackReviewLinkClick("google", "footer")}
+                  kind="review"
+                  provider="google"
+                  location="footer"
                 >
                   Leave a Google Review
                   <span className="sr-only"> (opens in a new tab)</span>
-                </a>
+                </TrackedExternalLink>
               </li>
               <li>
-                <a
+                <TrackedExternalLink
                   href={yelpBusinessProfileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-primary transition-colors"
-                  onClick={() => trackReviewLinkClick("yelp", "footer")}
+                  kind="review"
+                  provider="yelp"
+                  location="footer"
                 >
                   Read Yelp Reviews
                   <span className="sr-only"> (opens in a new tab)</span>
-                </a>
+                </TrackedExternalLink>
               </li>
               <li>
-                <a 
-                  href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce" 
-                  target="_blank" 
+                <TrackedExternalLink
+                  href="https://swipesimple.com/links/lnk_67505de480da165de07d5bd3f42fbcce"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-primary transition-colors"
-                  onClick={() => trackPayBillClick("footer")}
+                  kind="pay_bill"
+                  location="footer"
                 >
                   Pay Bill Online
                   <span className="sr-only"> (opens in a new tab)</span>
-                </a>
+                </TrackedExternalLink>
               </li>
             </ul>
 
@@ -152,28 +146,32 @@ export default function Footer() {
               <p>Friday: Closed</p>
             </div>
             <div className="flex gap-4">
-              <a 
-                href="https://www.facebook.com/famfirstsmile/" 
-                target="_blank" 
+              <TrackedExternalLink
+                href="https://www.facebook.com/famfirstsmile/"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors" 
+                className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Facebook"
-                onClick={() => trackSocialClick("facebook", "footer")}
+                kind="social"
+                provider="facebook"
+                location="footer"
               >
                 Facebook
                 <span className="sr-only"> (opens in a new tab)</span>
-              </a>
-              <a 
-                href="https://www.instagram.com/famfirstsmile/" 
-                target="_blank" 
+              </TrackedExternalLink>
+              <TrackedExternalLink
+                href="https://www.instagram.com/famfirstsmile/"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors" 
+                className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Instagram"
-                onClick={() => trackSocialClick("instagram", "footer")}
+                kind="social"
+                provider="instagram"
+                location="footer"
               >
                 Instagram
                 <span className="sr-only"> (opens in a new tab)</span>
-              </a>
+              </TrackedExternalLink>
             </div>
           </div>
         </div>

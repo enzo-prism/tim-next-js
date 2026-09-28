@@ -1,48 +1,22 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import { Link, useParams } from "wouter";
+import { Link } from "wouter";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import { motion } from "framer-motion";
 import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
 import { serviceReviews } from "@/data/reviews";
-import { buildAppointmentUrl, trackAppointmentCtaClick } from "@/lib/analytics";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink } from "@/components/tracking/tracked-links";
+import { FinalCtaPhoneLink } from "@/components/service-growth/final-cta-phone-link";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import { getRelatedLinksForService } from "@/lib/internal-links";
 
-// Animation variants
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+type ServiceDetailProps = {
+  serviceId: string;
 };
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1
-    }
-  }
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    transition: { duration: 0.5, ease: "easeOut" } 
-  }
-};
-
-export default function ServiceDetail() {
-  const params = useParams();
-  const serviceId = params.serviceId;
-  
+export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
   // Find the service by ID (check both main services and sub-services)
   const service = services.find(s => s.id === serviceId) || 
     services.flatMap(s => s.subServices || []).find(s => s.id === serviceId);
@@ -63,13 +37,6 @@ export default function ServiceDetail() {
       </div>
     );
   }
-
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("service_detail", {
-      ctaType: "consultation",
-      serviceId: service.id,
-    });
-  };
 
   const findReviewData = () => {
     let reviewData = serviceReviews.find((sr) => sr.serviceId === service.id);
@@ -96,30 +63,19 @@ export default function ServiceDetail() {
   return (
     <div className="pt-16 pb-20 bg-white">
       {/* Hero Section */}
-      <motion.section 
-        className="relative overflow-hidden py-20 lg:py-32"
-        initial="hidden"
-        animate="visible"
-        variants={fadeInUp}
-      >
+      <section className="relative overflow-hidden py-20 lg:py-32">
         <HeroBackdrop variant="default" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <motion.h1 
-              className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
-              variants={fadeInUp}
-            >
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
               {service.title} in Los Gatos
-            </motion.h1>
-            <motion.p 
-              className="text-xl text-gray-600 max-w-3xl mx-auto"
-              variants={fadeInUp}
-            >
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               {service.heroDescription || service.description}
-            </motion.p>
+            </p>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <PageBreadcrumbs
@@ -131,56 +87,35 @@ export default function ServiceDetail() {
         />
 
         {reviewData && reviewData.reviews.length > 0 && (
-          <motion.div
-            className="mb-12"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
+          <div className="mb-12">
             <ReviewsSection
               reviews={reviewData.reviews}
               title={`${service.title} Patient Reviews`}
               showCTA={true}
             />
-          </motion.div>
+          </div>
         )}
         
         {/* Back Button */}
-        <motion.div 
-          className="mb-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-        >
+        <div className="mb-12">
           <Button asChild variant="ghost" className="text-primary hover:bg-primary/5">
             <Link href="/services">
               <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
               Back to All Services
             </Link>
           </Button>
-        </motion.div>
+        </div>
 
         {/* Service Overview */}
-        <motion.div 
-          className="mb-20"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        <div className="mb-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div variants={fadeInUp}>
+            <div>
               <h2 className="text-3xl font-bold text-gray-800 mb-6">About {service.title}</h2>
               <p className="text-gray-600 mb-6 leading-relaxed">
                 {service.longDescription || `Learn how our Los Gatos team approaches ${service.title.toLowerCase()} with clear explanations, thoughtful planning, and your comfort in mind.`}
               </p>
-            </motion.div>
-            <motion.div 
-              className="bg-muted/40 rounded-xl p-8"
-              variants={scaleIn}
-            >
+            </div>
+            <div className="bg-muted/40 rounded-xl p-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">What's Included</h3>
               <ul className="space-y-3 text-gray-600">
                 {service.details.map((detail: string, index: number) => (
@@ -190,118 +125,83 @@ export default function ServiceDetail() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Benefits Section */}
         {service.benefits && (
-          <motion.div 
-            className="mb-20"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
-            <motion.div className="text-center mb-12" variants={fadeInUp}>
+          <div className="mb-20">
+            <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Benefits of {service.title}</h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto">
                 Discover how {service.title.toLowerCase()} can improve your oral health and overall well-being.
               </p>
-            </motion.div>
+            </div>
             
-            <motion.div 
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-              variants={staggerContainer}
-            >
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {service.benefits.map((benefit: string, index: number) => (
-                <motion.div
+                <div
                   key={index}
                   className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300"
-                  variants={scaleIn}
-                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 >
                   <p className="text-gray-700 font-medium">{benefit}</p>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
 
         {/* Process Section */}
         {service.process && (
-          <motion.div 
-            className="mb-20"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
-            <motion.div className="text-center mb-12" variants={fadeInUp}>
+          <div className="mb-20">
+            <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Process</h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto">
                 Here's what you can expect during your {service.title.toLowerCase()} treatment.
               </p>
-            </motion.div>
+            </div>
             
-            <motion.div 
-              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-              variants={staggerContainer}
-            >
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {service.process.map((step: string, index: number) => (
-                <motion.div
-                  key={index}
-                  className="bg-muted/50 rounded-xl p-6 text-center"
-                  variants={scaleIn}
-                >
+                <div key={index} className="bg-muted/50 rounded-xl p-6 text-center">
                   <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                     <span className="font-bold">{index + 1}</span>
                   </div>
                   <p className="text-gray-700 font-medium">{step}</p>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
 
         <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
 
         {/* Call to Action */}
-        <motion.div 
-          className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white mt-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={scaleIn}
-        >
-          <motion.h2 
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4"
-            variants={fadeInUp}
-          >
+        <div className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white mt-16">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             Ready to Get Started?
-          </motion.h2>
-          <motion.p 
-            className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto"
-            variants={fadeInUp}
-          >
+          </h2>
+          <p className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto">
             Schedule your consultation today and take the first step towards better oral health with our {service.title.toLowerCase()} services.
-          </motion.p>
-          <motion.div 
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            variants={fadeInUp}
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div>
+              <AppointmentLink
                 href={buildAppointmentUrl({ serviceId: service.id, source: "service_detail" })}
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
-                onClick={handleAppointmentClick}
+                source="service_detail"
+                ctaType="consultation"
+                serviceId={service.id}
               >
                 Book Your Appointment
-              </Link>
-            </motion.div>
-            <span className="text-white text-sm">or call (408) 358-8100</span>
-          </motion.div>
-        </motion.div>
+              </AppointmentLink>
+            </div>
+            <FinalCtaPhoneLink location="service_detail_final" serviceId={service.id}>
+              or call (408) 358-8100
+            </FinalCtaPhoneLink>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,19 +1,14 @@
-"use client";
-
 import Image from "next/image";
 import { Link } from "wouter";
-import { motion } from "framer-motion";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { Button } from "@/components/ui/button";
 import { ReviewsSection } from "@/components/review";
 import { ServiceHeroConversion } from "@/components/service-growth/service-hero-conversion";
 import { services } from "@/data/services";
 import { serviceReviews } from "@/data/reviews";
-import {
-  buildAppointmentUrl,
-  trackAppointmentCtaClick,
-  trackSiteEvent,
-} from "@/lib/analytics";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink } from "@/components/tracking/tracked-links";
+import { FinalCtaPhoneLink } from "@/components/service-growth/final-cta-phone-link";
 import { invisalignContent } from "@shared/marketing-pages";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import illustrationAligners from "@assets/brand/illustration-aligners.webp";
@@ -21,50 +16,10 @@ import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import type { RelatedLink } from "@/lib/internal-links";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-};
-
 export default function Invisalign() {
   const service = services
     .flatMap((item) => [item, ...(item.subServices || [])])
     .find((item) => item.id === "invisalign");
-
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("invisalign", {
-      ctaType: "consultation",
-      serviceId: "invisalign",
-    });
-  };
-
-  const handlePhoneClick = () => {
-    trackSiteEvent("phone_click", {
-      destination: "tel:+14083588100",
-      location: "invisalign_page_final",
-      service_id: "invisalign",
-    });
-  };
 
   const reviewData = serviceReviews.find((review) => review.serviceId === "invisalign");
 
@@ -122,32 +77,21 @@ export default function Invisalign() {
 
   return (
     <div className="pt-16 pb-20 bg-white">
-      <motion.section
-        className="relative overflow-hidden py-16 lg:py-24"
-        initial="hidden"
-        animate="visible"
-        variants={fadeInUp}
-      >
+      <section className="relative overflow-hidden py-16 lg:py-24">
         <HeroBackdrop variant="warm" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
-              <motion.h1
-                className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6"
-                variants={fadeInUp}
-              >
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
                 <span className="inline-flex items-center gap-3 flex-wrap justify-center lg:justify-start">
                   
                   <span>{invisalignContent.hero.title}</span>
                 </span>
-              </motion.h1>
-              <motion.p
-                className="text-xl text-gray-600 max-w-3xl mx-auto lg:mx-0"
-                variants={fadeInUp}
-              >
+              </h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto lg:mx-0">
                 {invisalignContent.hero.subtitle}
-              </motion.p>
-              <motion.div variants={fadeInUp}>
+              </p>
+              <div>
                 <ServiceHeroConversion
                   className="mt-8"
                   serviceId="invisalign"
@@ -155,13 +99,10 @@ export default function Invisalign() {
                   source="invisalign_hero"
                   review={reviewData?.reviews[0]}
                 />
-              </motion.div>
+              </div>
             </div>
 
-            <motion.div
-              className="flex justify-center lg:justify-end"
-              variants={scaleIn}
-            >
+            <div className="flex justify-center lg:justify-end">
               <Image
                 src={illustrationAligners}
                 alt="Clear aligner trays illustration"
@@ -169,10 +110,10 @@ export default function Invisalign() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="w-full max-w-xl rounded-xl bg-white/60 p-6 shadow-sm h-auto"
               />
-            </motion.div>
+            </div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         <PageBreadcrumbs
@@ -184,13 +125,7 @@ export default function Invisalign() {
         />
       </div>
 
-      <motion.section
-        className="py-16"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={fadeInUp}
-      >
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div>
@@ -225,58 +160,37 @@ export default function Invisalign() {
             </div>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {reviewData && reviewData.reviews.length > 0 && (
-          <motion.div
-            className="mb-12"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-          >
+          <div className="mb-12">
             <ReviewsSection
               reviews={reviewData.reviews}
               title="Invisalign Patient Reviews"
               showCTA={true}
             />
-          </motion.div>
+          </div>
         )}
 
-        <motion.div
-          className="mb-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-        >
+        <div className="mb-12">
           <Button asChild variant="ghost" className="text-primary hover:bg-primary/5">
             <Link href="/services">
               <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
               Back to All Services
             </Link>
           </Button>
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        <div className="mb-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div variants={fadeInUp}>
+            <div>
               <h2 className="text-3xl font-bold text-gray-800 mb-6">About Invisalign</h2>
               <p className="text-gray-600 mb-6 leading-relaxed">
                 {service.longDescription}
               </p>
-            </motion.div>
-            <motion.div
-              className="bg-muted/40 rounded-xl p-8"
-              variants={scaleIn}
-            >
+            </div>
+            <div className="bg-muted/40 rounded-xl p-8">
               <div className="bg-primary text-white w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <MinimalGlyph name="check-circle" className="h-8 w-8" />
               </div>
@@ -291,17 +205,11 @@ export default function Invisalign() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.section
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        <section className="mb-16">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">
               {invisalignContent.whatCanHelp.heading}
@@ -317,84 +225,54 @@ export default function Invisalign() {
               </div>
             ))}
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
-          <motion.div className="text-center mb-12" variants={fadeInUp}>
+        <section className="mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">
               Benefits of Invisalign
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Discover how Invisalign clear aligners can improve your smile and confidence.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer}
-          >
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((benefit) => (
-              <motion.div
+              <div
                 key={benefit}
                 className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300"
-                variants={scaleIn}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
                 <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                   <MinimalGlyph name="check-circle" className="h-6 w-6" />
                 </div>
                 <p className="text-gray-700 font-medium">{benefit}</p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        </motion.section>
+          </div>
+        </section>
 
-        <motion.section
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
-          <motion.div className="text-center mb-12" variants={fadeInUp}>
+        <section className="mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Process</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Here's what you can expect during Invisalign treatment.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer}
-          >
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {processSteps.map((step, index) => (
-              <motion.div
-                key={step}
-                className="bg-muted/50 rounded-xl p-6 text-center"
-                variants={scaleIn}
-              >
+              <div key={step} className="bg-muted/50 rounded-xl p-6 text-center">
                 <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <span className="font-bold">{index + 1}</span>
                 </div>
                 <p className="text-gray-700 font-medium">{step}</p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        </motion.section>
+          </div>
+        </section>
 
-        <motion.section
-          className="mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        <section className="mb-16">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Invisalign &amp; iTero FAQs</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -409,51 +287,34 @@ export default function Invisalign() {
               </div>
             ))}
           </div>
-        </motion.section>
+        </section>
 
         <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
 
-        <motion.div
-          className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={scaleIn}
-        >
-          <motion.h2
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4"
-            variants={fadeInUp}
-          >
+        <div className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
             Ready to Get Started?
-          </motion.h2>
-          <motion.p
-            className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto"
-            variants={fadeInUp}
-          >
+          </h2>
+          <p className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto">
             Schedule your Invisalign consultation and take the first step toward a healthier, confident smile.
-          </motion.p>
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            variants={fadeInUp}
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div>
+              <AppointmentLink
                 href={buildAppointmentUrl({ serviceId: "invisalign", source: "invisalign_page" })}
                 className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
-                onClick={handleAppointmentClick}
+                source="invisalign"
+                ctaType="consultation"
+                serviceId="invisalign"
               >
                 Book Your Appointment
-              </Link>
-            </motion.div>
-            <a
-              href="tel:+14083588100"
-              className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-white underline decoration-white/60 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
-              onClick={handlePhoneClick}
-            >
+              </AppointmentLink>
+            </div>
+            <FinalCtaPhoneLink location="invisalign_page_final" serviceId="invisalign">
               Call (408) 358-8100
-            </a>
-          </motion.div>
-        </motion.div>
+            </FinalCtaPhoneLink>
+          </div>
+        </div>
 
         <p className="text-xs text-gray-500 text-center mt-8">
           {invisalignContent.trademarkNote}

@@ -480,10 +480,11 @@ export const trackContactSubmitSuccess = (serviceId?: string) => {
   });
 };
 
-export const trackPhoneClick = (location: string) => {
+export const trackPhoneClick = (location: string, serviceId?: string) => {
   trackSiteEvent("phone_click", {
     destination: "phone",
     location,
+    service_id: serviceId,
   });
 };
 

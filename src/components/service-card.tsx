@@ -1,12 +1,8 @@
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
 import type { Service } from "@/lib/types";
-import {
-  buildAppointmentUrl,
-  trackAppointmentCtaClick,
-  trackServiceLearnMoreClick,
-} from "@/lib/analytics";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink, ServiceLink } from "@/components/tracking/tracked-links";
 import { getServiceHref } from "@/lib/routes";
 
 interface ServiceCardProps {
@@ -15,13 +11,6 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ service, featured = false }: ServiceCardProps) {
-  const handleAppointmentClick = () => {
-    trackAppointmentCtaClick("service_card", {
-      ctaType: "consultation",
-      serviceId: service.id,
-    });
-  };
-
   return (
     <div className={`overflow-hidden rounded-xl border bg-card transition-colors duration-200 ${
       featured 
@@ -65,13 +54,14 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
                     <div key={subService.id} className="rounded-xl border border-border bg-muted/40 p-3">
                       <div className="flex items-center">
                         <div className="flex-1">
-                          <Link
+                          <ServiceLink
                             href={getServiceHref(subService.id)}
-                            onClick={() => trackServiceLearnMoreClick(subService.id, "service_card_subservice")}
+                            serviceId={subService.id}
+                            location="service_card_subservice"
                           >
                             <h4 className="font-semibold text-gray-800 text-sm hover:text-primary transition-colors cursor-pointer">{subService.title}</h4>
                             <p className="text-xs text-gray-600">{subService.description}</p>
-                          </Link>
+                          </ServiceLink>
                         </div>
                       </div>
                     </div>
@@ -86,12 +76,13 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
               asChild
               className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow-sm transition-colors duration-200 hover:bg-primary/90 motion-reduce:transition-none"
             >
-              <Link
+              <ServiceLink
                 href={getServiceHref(service.id)}
-                onClick={() => trackServiceLearnMoreClick(service.id, "service_card")}
+                serviceId={service.id}
+                location="service_card"
               >
                 Learn More About {service.title}
-              </Link>
+              </ServiceLink>
             </Button>
             
             {featured && (
@@ -100,9 +91,14 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
                 variant="outline"
                 className="w-full rounded-xl border-2 border-primary py-3 font-semibold text-primary transition-colors duration-200 hover:bg-primary hover:text-primary-foreground"
               >
-                <Link href={buildAppointmentUrl({ serviceId: service.id, source: "service_card" })} onClick={handleAppointmentClick}>
+                <AppointmentLink
+                  href={buildAppointmentUrl({ serviceId: service.id, source: "service_card" })}
+                  source="service_card"
+                  ctaType="consultation"
+                  serviceId={service.id}
+                >
                   Request a Consultation
-                </Link>
+                </AppointmentLink>
               </Button>
             )}
           </div>

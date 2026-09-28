@@ -1,10 +1,8 @@
-"use client";
-
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
-import { trackPhoneClick } from "@/lib/analytics";
+import { PhoneLink } from "@/components/tracking/tracked-links";
 
 export default function NotFound() {
   return (
@@ -33,9 +31,7 @@ export default function NotFound() {
             </Button>
 
             <Button asChild variant="outline" className="text-lg font-semibold px-6 py-3 flex items-center gap-2">
-              <a href="tel:4083588100" onClick={() => trackPhoneClick("not_found_page")}>
-                Call Us: (408) 358-8100
-              </a>
+              <PhoneLink location="not_found_page">Call Us: (408) 358-8100</PhoneLink>
             </Button>
           </div>
           
