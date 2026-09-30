@@ -12,7 +12,7 @@ interface ServiceCardProps {
 
 export default function ServiceCard({ service, featured = false }: ServiceCardProps) {
   return (
-    <div className={`overflow-hidden rounded-xl border bg-card transition-colors duration-200 ${
+    <div className={`min-w-0 overflow-hidden rounded-xl border bg-card transition-colors duration-200 ${
       featured 
         ? "border-primary" 
         : "border-gray-100 hover:border-primary/30"
@@ -74,7 +74,7 @@ export default function ServiceCard({ service, featured = false }: ServiceCardPr
           <div className="flex flex-col gap-3 mt-6">
             <Button
               asChild
-              className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow-sm transition-colors duration-200 hover:bg-primary/90 motion-reduce:transition-none"
+              className="h-auto min-h-11 w-full whitespace-normal rounded-xl bg-primary py-3 text-center font-semibold text-primary-foreground shadow-sm transition-colors duration-200 hover:bg-primary/90 motion-reduce:transition-none"
             >
               <ServiceLink
                 href={getServiceHref(service.id)}

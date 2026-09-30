@@ -150,7 +150,7 @@ export default function Services() {
             >
               <Button
                 asChild
-                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-colors duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
+                className="h-auto min-h-11 w-full sm:w-auto inline-flex items-center justify-center whitespace-normal rounded-lg bg-white px-8 py-4 text-center text-lg font-semibold text-primary shadow-sm ring-offset-background transition-colors duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
               >
                 <AppointmentLink href={buildAppointmentUrl({ source: "services_hero" })} source="services_cta">
                   Request an Appointment

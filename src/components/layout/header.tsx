@@ -52,6 +52,8 @@ const serviceMenuItems = services.flatMap((service) => [
   })) ?? []),
 ]);
 
+const mobileMenuLinkClass = "flex min-h-11 items-center rounded-md px-3 py-2 text-base font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText]";
+
 export default function Header() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -109,27 +111,27 @@ export default function Header() {
                       <button
                         type="button"
                         aria-current={isServicesActive ? "page" : undefined}
-                        className={`inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
+                        className={`group inline-flex h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText] ${
                           isServicesActive
                             ? "bg-primary/10 text-primary"
                             : "text-gray-700 hover:bg-primary/5 hover:text-primary"
                         } data-[state=open]:bg-primary/10 data-[state=open]:text-primary`}
                       >
                         Services
-                        <MinimalGlyph name="chevron-down" className="h-3.5 w-3.5 opacity-70" />
+                        <MinimalGlyph name="chevron-down" className="h-3.5 w-3.5 opacity-70 transition-transform motion-reduce:transition-none group-data-[state=open]:rotate-180" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="start"
-                      sideOffset={6}
-                      className="w-80 border-sky-200 bg-white p-3 text-slate-950 shadow-sm"
+                      sideOffset={16}
+                      className="w-80 max-w-[calc(100vw-2rem)] border-border bg-popover p-2 text-popover-foreground shadow-sm"
                     >
                       <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Services
                       </DropdownMenuLabel>
                       <DropdownMenuItem
                         asChild
-                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-slate-950 focus:bg-primary/10 focus:text-primary"
+                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-foreground focus:bg-muted focus:text-primary"
                       >
                         <Link
                           href="/services"
@@ -143,7 +145,7 @@ export default function Header() {
                           <DropdownMenuItem
                             key={service.href}
                             asChild
-                            className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-slate-950 focus:bg-primary/10 focus:text-primary"
+                            className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-foreground focus:bg-muted focus:text-primary"
                           >
                             <Link
                               href={service.href}
@@ -160,7 +162,7 @@ export default function Header() {
                       </DropdownMenuLabel>
                       <DropdownMenuItem
                         asChild
-                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-slate-950 focus:bg-primary/10 focus:text-primary"
+                        className="cursor-pointer rounded-md px-3 py-2 text-sm font-semibold text-foreground focus:bg-muted focus:text-primary"
                       >
                         <Link
                           href="/technology/itero-digital-scanner"
@@ -176,7 +178,7 @@ export default function Header() {
                     key={item.name}
                     href={item.href}
                     aria-current={isItemActive(item.href) ? "page" : undefined}
-                    className={`inline-flex h-9 items-center rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors ${
+                    className={`inline-flex h-11 items-center rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText] ${
                       isItemActive(item.href)
                         ? "bg-primary/10 text-primary"
                         : "text-gray-700 hover:bg-primary/5 hover:text-primary"
@@ -280,7 +282,7 @@ export default function Header() {
                       key={item.name}
                       href={item.href}
                       aria-current={isItemActive(item.href) ? "page" : undefined}
-                      className={`nav-link text-lg forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText] ${
+                      className={`${mobileMenuLinkClass} ${
                         isItemActive(item.href)
                           ? "text-primary font-semibold"
                           : "text-gray-700 hover:text-primary"
@@ -292,10 +294,10 @@ export default function Header() {
                   ))}
                   <div className="border-t border-gray-200 pt-4">
                     <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Services</p>
-                    <div className="mt-3 flex flex-col space-y-4">
+                    <div className="mt-3 flex flex-col space-y-1">
                       <Link
                         href="/services"
-                        className="text-gray-800 font-semibold hover:text-primary"
+                        className={mobileMenuLinkClass}
                         onClick={() => {
                           trackServiceLearnMoreClick("all-services", "mobile_menu");
                           setIsOpen(false);
@@ -307,7 +309,7 @@ export default function Header() {
                         <Link
                           key={service.href}
                           href={service.href}
-                          className="text-gray-800 font-semibold hover:text-primary"
+                          className={mobileMenuLinkClass}
                           onClick={() => {
                             trackServiceLearnMoreClick(service.id, "mobile_menu");
                             setIsOpen(false);
@@ -319,10 +321,10 @@ export default function Header() {
                     </div>
                     <div className="mt-6 border-t border-gray-200 pt-4">
                       <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Technology</p>
-                      <div className="mt-3 flex flex-col space-y-4">
+                      <div className="mt-3 flex flex-col space-y-1">
                         <Link
                           href="/technology/itero-digital-scanner"
-                          className="text-gray-800 font-semibold hover:text-primary"
+                          className={mobileMenuLinkClass}
                           onClick={() => {
                             trackServiceLearnMoreClick("itero-digital-scanner", "mobile_menu");
                             setIsOpen(false);

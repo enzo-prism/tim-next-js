@@ -347,8 +347,12 @@ export default function Contact() {
           
           {/* Contact Form */}
           <div>
-            <div className="bg-gray-50 rounded-xl p-8">
+            <div className="rounded-xl border border-border bg-muted/40 p-5 sm:p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Send Us a Message</h2>
+              <p id="contact-form-help" className="mb-5 text-sm text-muted-foreground">
+                Fields marked * are required. For appointment requests, use our{" "}
+                <Link href="/book-appointment?source=contact_form" className="font-semibold text-primary underline underline-offset-4">appointment form</Link>.
+              </p>
               {submission ? (
                 <div
                   ref={submissionStatusRef}
@@ -373,6 +377,9 @@ export default function Contact() {
               ) : null}
               <Form {...form}>
                 <form
+                  noValidate
+                  aria-describedby="contact-form-help"
+                  aria-busy={contactMutation.isPending}
                   onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
                   onFocusCapture={handleFormStart}
                   className="space-y-4"
@@ -433,7 +440,7 @@ export default function Contact() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
+                        <FormLabel>Phone Number (optional)</FormLabel>
                         <FormControl>
                           <Input type="tel" inputMode="tel" autoComplete="tel" {...field} value={field.value ?? ""} />
                         </FormControl>
@@ -447,17 +454,19 @@ export default function Contact() {
                     name="service"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Service Interested In</FormLabel>
+                        <FormLabel>Service Interested In (optional)</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
-                          value={(field.value || undefined) as string | undefined}
+                          name={field.name}
+                          onValueChange={(value) => field.onChange(value === "no-preference" ? "" : value)}
+                          value={field.value ?? ""}
                         >
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a service" />
+                            <SelectTrigger ref={field.ref} onBlur={field.onBlur}>
+                              <SelectValue placeholder="No service preference" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
+                            <SelectItem value="no-preference">No service preference</SelectItem>
                             {serviceOptions.map((service) => (
                               <SelectItem key={service.id} value={service.id}>
                                 {service.title}
@@ -478,7 +487,7 @@ export default function Contact() {
                     name="message"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Message</FormLabel>
+                        <FormLabel>Message (optional)</FormLabel>
                         <FormControl>
                           <Textarea 
                             rows={4} 
@@ -500,6 +509,9 @@ export default function Contact() {
                         <div className="flex items-start gap-3">
                           <FormControl>
                             <Checkbox
+                              ref={field.ref}
+                              name={field.name}
+                              onBlur={field.onBlur}
                               checked={field.value}
                               onCheckedChange={(checked) => field.onChange(checked === true)}
                               aria-required="true"
@@ -521,6 +533,7 @@ export default function Contact() {
                   
                   <Button 
                     type="submit" 
+                    size="lg"
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold py-3"
                     disabled={contactMutation.isPending}
                   >

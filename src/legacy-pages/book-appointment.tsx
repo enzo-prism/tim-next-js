@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { appointmentServiceLabels, visitForLabels } from "@/content/appointment-options";
 import { practiceHoursSummary } from "@/content/practice-hours";
@@ -491,11 +492,10 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                           <FormItem>
                             <FormLabel>What can we help with?</FormLabel>
                             <FormControl>
-                              <select
+                              <NativeSelect
                                 {...field}
                                 required
                                 aria-required="true"
-                                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <option value="" disabled>
                                   Choose what you need
@@ -505,7 +505,7 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                                     {service.label}
                                   </option>
                                 ))}
-                              </select>
+                              </NativeSelect>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -523,9 +523,9 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                           <FormItem>
                             <FormLabel>Who is the visit for?</FormLabel>
                             <FormControl>
-                              <select {...field} className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                              <NativeSelect {...field}>
                                 <option value="self">Myself</option><option value="child">My child</option><option value="family">My family</option>
-                              </select>
+                              </NativeSelect>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -534,9 +534,9 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                           <FormItem>
                             <FormLabel>How should we contact you?</FormLabel>
                             <FormControl>
-                              <select {...field} onChange={(event) => { field.onChange(event); form.clearErrors(["phone", "email"]); }} className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                              <NativeSelect {...field} onChange={(event) => { field.onChange(event); form.clearErrors(["phone", "email"]); }}>
                                 <option value="phone">Phone call</option><option value="email">Email</option>
-                              </select>
+                              </NativeSelect>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -675,15 +675,14 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                             <FormItem>
                               <FormLabel>Preferred time (optional)</FormLabel>
                               <FormControl>
-                                <select
+                                <NativeSelect
                                   {...field}
-                                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 >
                                   <option value="">No preference</option>
                                   <option value="morning">Morning (9 AM–12 PM)</option>
                                   <option value="afternoon">Afternoon (12–5 PM)</option>
                                   <option value="flexible">Flexible</option>
-                                </select>
+                                </NativeSelect>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -721,6 +720,9 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                             <div className="flex items-start gap-3">
                               <FormControl>
                                 <Checkbox
+                                  ref={field.ref}
+                                  name={field.name}
+                                  onBlur={field.onBlur}
                                   checked={field.value}
                                   onCheckedChange={(checked) => field.onChange(checked === true)}
                                   aria-required="true"
@@ -756,7 +758,7 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                         <Button
                           type="submit"
                           size="lg"
-                          className="text-base font-semibold"
+                          className="h-auto min-h-11 min-w-0 whitespace-normal px-4 py-3 text-center text-base font-semibold sm:px-8"
                           disabled={!isFormReady || appointmentMutation.isPending}
                         >
                           {appointmentMutation.isPending

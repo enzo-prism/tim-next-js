@@ -88,12 +88,12 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
         
         {showCTA && (
           <div className="text-center">
-            <div className="inline-flex items-center gap-6">
+            <div className="flex flex-col items-center gap-3 sm:inline-flex sm:flex-row sm:gap-6">
               <TrackedExternalLink
                 href={googleBusinessProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:text-primary font-medium transition-colors flex items-center gap-2"
+                className="flex min-h-11 items-center gap-2 font-medium text-primary transition-colors hover:text-primary"
                 kind="review"
                 provider="google"
                 location="reviews_section"
@@ -101,10 +101,10 @@ export function ReviewsSection({ reviews, title = "What Our Patients Say", showC
                 Read More Reviews
                 <MinimalGlyph name="external-link" className="w-4 h-4" />
               </TrackedExternalLink>
-              <span className="text-gray-500">•</span>
+              <span aria-hidden="true" className="hidden text-gray-500 sm:inline">•</span>
               <AppointmentLink
                 href={buildAppointmentUrl({ source: "reviews_cta" })}
-                className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 font-semibold transition-colors"
+                className="w-full rounded-lg bg-primary px-6 py-3 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
                 source="reviews_section"
               >
                 Book Your Appointment

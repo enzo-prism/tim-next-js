@@ -19,14 +19,14 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 forced-colors:focus:outline-2 forced-colors:focus:outline-offset-2 forced-colors:focus:outline-[CanvasText] disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-base text-foreground ring-offset-background md:text-sm data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 forced-colors:focus:outline-2 forced-colors:focus:outline-offset-2 forced-colors:focus:outline-[CanvasText] aria-invalid:border-2 aria-invalid:border-primary disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50 [&>span]:min-w-0 [&>span]:line-clamp-1 [&>span]:text-left",
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <MinimalGlyph name="chevron-down" className="h-4 w-4 opacity-50" />
+      <MinimalGlyph name="chevron-down" className="h-4 w-4 shrink-0 opacity-70" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
@@ -70,25 +70,30 @@ SelectScrollDownButton.displayName =
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
+>(({ className, children, position = "popper", sideOffset = 4, collisionPadding = 16, ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
+        "relative z-50 max-h-[var(--radix-select-content-available-height)] max-w-[calc(100vw-2rem)] min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[var(--radix-select-content-transform-origin)] motion-reduce:animate-none",
         position === "popper" &&
-          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          "w-[var(--radix-select-trigger-width)]",
         className
       )}
       position={position}
+      sideOffset={sideOffset}
+      collisionPadding={collisionPadding}
       {...props}
     >
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
+        role="group"
+        aria-label="Options"
+        tabIndex={0}
         className={cn(
-          "p-1",
+          "p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-[-2px] forced-colors:focus-visible:outline-[CanvasText]",
           position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+            "w-full"
         )}
       >
         {children}
@@ -118,7 +123,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground forced-colors:focus:outline-2 forced-colors:focus:outline-offset-[-2px] forced-colors:focus:outline-[CanvasText] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex min-h-11 w-full cursor-pointer select-none items-center rounded-sm py-2 pl-8 pr-3 text-sm break-words outline-none focus:bg-muted focus:text-primary forced-colors:focus:outline-2 forced-colors:focus:outline-offset-[-2px] forced-colors:focus:outline-[CanvasText] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
