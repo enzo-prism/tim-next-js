@@ -46,6 +46,18 @@ const staticMeta: Record<string, PageMeta> = {
     title: "Patient Info | Los Gatos, CA Dentist",
     description: "Patient information for Family First Smile Care in Los Gatos, CA including insurance, FAQs, and visit preparation.",
   },
+  "/new-patients": {
+    title: "New Patients | Family First Smile Care in Los Gatos",
+    description: "Prepare for your first visit to Family First Smile Care in Los Gatos. Review visit preparation, insurance questions, office hours, and how to request care.",
+  },
+  "/insurance-and-payment": {
+    title: "Insurance & Payment | Family First Smile Care",
+    description: "Prepare insurance and payment questions before your visit to Family First Smile Care in Los Gatos. Learn what to ask about benefits and treatment estimates.",
+  },
+  "/urgent-dental-care": {
+    title: "Urgent Dental Care | Family First Smile Care Los Gatos",
+    description: "Call Family First Smile Care in Los Gatos about a dental concern needing prompt attention. Review office hours and how appointment requests are confirmed.",
+  },
   "/blog": {
     title: "Dental Blog | Family First Smile Care Los Gatos",
     description:

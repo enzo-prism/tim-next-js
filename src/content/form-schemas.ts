@@ -24,6 +24,8 @@ const phoneSchema = z
 const consentSchema = z.boolean().refine(Boolean, "Please confirm that we may contact you");
 
 export const leadServiceIds = [
+  "not-sure",
+  "tooth-pain",
   "children-dentistry",
   "childrens-dentistry/babys-first-visit",
   "dental-exams",
@@ -40,13 +42,13 @@ export const leadServiceIds = [
 const serviceIdSchema = z.enum(leadServiceIds);
 const contactServiceIdSchema = z.union([serviceIdSchema, z.literal("other")]);
 
-const getPracticeToday = () => {
+export const getPracticeToday = (now = new Date()) => {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Los_Angeles",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(now);
   const part = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((entry) => entry.type === type)?.value || "";
   return `${part("year")}-${part("month")}-${part("day")}`;
@@ -100,8 +102,11 @@ export const contactFormSchema = z.object({
   consentToContact: consentSchema,
 });
 
-export const appointmentFormSchema = contactFormSchema.extend({
-  phone: phoneSchema.refine((value) => value.length > 0, "Phone number is required"),
+const appointmentFieldsSchema = contactFormSchema.extend({
+  email: z.union([z.literal(""), z.string().trim().email("Enter a valid email address").max(254)]).optional(),
+  phone: phoneSchema.optional(),
+  preferredContactMethod: z.enum(["phone", "email"]).optional(),
+  visitFor: z.enum(["self", "child", "family"]).optional(),
   service: z
     .union([z.literal(""), serviceIdSchema])
     .refine((value): boolean => value !== "", "Select a service"),
@@ -118,19 +123,33 @@ export const appointmentFormSchema = contactFormSchema.extend({
   preferredTime: z.enum(["", "morning", "afternoon", "flexible"]).optional(),
 });
 
+const requirePreferredContact = (
+  values: { email?: string; phone?: string; preferredContactMethod?: "phone" | "email" },
+  context: z.RefinementCtx,
+) => {
+  const method = values.preferredContactMethod ?? (values.phone ? "phone" : "email");
+  if (!values[method]) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: [method], message: method === "phone" ? "Phone number is required" : "Email is required" });
+  }
+};
+
+export const appointmentFormSchema = appointmentFieldsSchema.superRefine(requirePreferredContact);
+
 /**
  * Step-level schemas keep the client flow aligned with the final API contract.
  * The API still validates the complete `appointmentFormSchema` in one pass.
  */
-export const appointmentDetailsStepSchema = appointmentFormSchema.pick({
+export const appointmentDetailsStepSchema = appointmentFieldsSchema.pick({
   firstName: true,
   lastName: true,
   email: true,
   phone: true,
   service: true,
-});
+  preferredContactMethod: true,
+  visitFor: true,
+}).superRefine(requirePreferredContact);
 
-export const appointmentPreferencesStepSchema = appointmentFormSchema.pick({
+export const appointmentPreferencesStepSchema = appointmentFieldsSchema.pick({
   preferredDate: true,
   preferredTime: true,
   message: true,
@@ -139,10 +158,10 @@ export const appointmentPreferencesStepSchema = appointmentFormSchema.pick({
 
 export const insertContactSchema = contactFormSchema.merge(leadAttributionSchema);
 
-export const insertAppointmentSchema = appointmentFormSchema.merge(leadAttributionSchema).extend({
+export const insertAppointmentSchema = appointmentFieldsSchema.merge(leadAttributionSchema).extend({
   requestType: z.literal("appointment").default("appointment"),
   formspreeStatus: z.enum(["delivered", "failed"]).optional(),
-});
+}).superRefine(requirePreferredContact);
 
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;

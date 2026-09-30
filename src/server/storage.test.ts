@@ -101,6 +101,12 @@ describe("lead source attribution", () => {
 });
 
 describe("lead lifecycle concurrency", () => {
+  it("persists a phone-only parent's request with structured preferences", async () => {
+    const storage = new InMemoryStorage();
+    const { contact } = await storage.createContactWithOutbox({ firstName: "Parent", lastName: "Lee", email: null, phone: "4085551212", requestType: "appointment", preferredContactMethod: "phone", visitFor: "child", service: "not-sure" });
+    expect(contact).toEqual(expect.objectContaining({ email: null, phone: "4085551212", preferredContactMethod: "phone", visitFor: "child" }));
+    expect((await storage.getContact(contact!.id))?.visitFor).toBe("child");
+  });
   it("rejects stale writes and keeps the first update", async () => {
     const storage = new InMemoryStorage();
     const contact = await storage.createContact({

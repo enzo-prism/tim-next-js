@@ -1,5 +1,6 @@
 import type { FaqItem } from "./marketing-pages";
 import { services } from "./services";
+import type { PublishedClinicalReview } from "./clinical-review";
 
 export const practiceInfo = {
   name: "Family First Smile Care",
@@ -322,6 +323,7 @@ export const buildBlogPostingSchema = ({
   keywords,
   articleSection,
   image = practiceInfo.image[0],
+  clinicalReview,
 }: {
   title: string;
   description: string;
@@ -331,12 +333,22 @@ export const buildBlogPostingSchema = ({
   keywords?: string[];
   articleSection?: string;
   image?: string;
+  clinicalReview?: PublishedClinicalReview;
 }) => ({
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   mainEntityOfPage: {
     "@type": "WebPage",
     "@id": url,
+    ...(clinicalReview ? {
+      lastReviewed: clinicalReview.reviewedAt,
+      reviewedBy: {
+        "@type": "Person",
+        name: clinicalReview.reviewer.name,
+        honorificSuffix: clinicalReview.reviewer.credentials,
+        url: `${practiceInfo.url}${clinicalReview.reviewer.profileHref}`,
+      },
+    } : {}),
   },
   headline: title,
   description,

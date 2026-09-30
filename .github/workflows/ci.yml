@@ -10,6 +10,22 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ffsc
+          POSTGRES_PASSWORD: local-test-only
+          POSTGRES_DB: family_first_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DATABASE_URL: postgresql://ffsc:local-test-only@127.0.0.1:5432/family_first_test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +47,12 @@ jobs:
 
       - name: Test
         run: npm run test
+
+      - name: Independent monitor tests
+        run: npm run test:monitor
+
+      - name: Database integration tests
+        run: npm run test:integration
 
       - name: Design contract
         run: npm run design:check

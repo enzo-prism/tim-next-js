@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { services } from "@/content/services";
+import { appointmentServiceLabels, visitForLabels } from "@/content/appointment-options";
+import { practiceHoursSummary } from "@/content/practice-hours";
 import {
   appointmentFormSchema,
+  getPracticeToday,
   leadServiceIds,
   LEAD_CONSENT_VERSION,
   type AppointmentFormValues,
@@ -40,12 +42,13 @@ import { toast } from "sonner";
 
 const officePhone = "(408) 358-8100";
 const officePhoneHref = "tel:+14083588100";
-const requiredDetailsFields = ["service", "firstName", "lastName", "phone", "email"] as const;
+const requiredDetailsFields = ["service", "firstName", "lastName", "phone", "email", "preferredContactMethod", "visitFor"] as const;
 
 type AppointmentResponse = {
   success: boolean;
   created: boolean;
   delivered: boolean;
+  queued?: boolean;
   leadId: string;
   serviceId: string | null;
   fallbackMessage?: string;
@@ -69,6 +72,8 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
   const [step, setStep] = useState<AppointmentBookingStep>(1);
   const [submission, setSubmission] = useState<{
     delivered: boolean;
+    queued?: boolean;
+    values: AppointmentFormValues;
     fallbackMessage?: string;
   } | null>(null);
 
@@ -76,26 +81,8 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
     setIsFormReady(true);
   }, []);
 
-  const minDate = useMemo(() => {
-    const now = new Date();
-    const month = `${now.getMonth() + 1}`.padStart(2, "0");
-    const day = `${now.getDate()}`.padStart(2, "0");
-    return `${now.getFullYear()}-${month}-${day}`;
-  }, []);
-
-  const appointmentServiceOptions = useMemo(
-    () =>
-      services
-        .flatMap((service) => [service, ...(service.subServices ?? [])])
-        .filter((service) =>
-          leadServiceIds.includes(service.id as (typeof leadServiceIds)[number]),
-        )
-        .map((service) => ({
-          value: service.id as (typeof leadServiceIds)[number],
-          label: service.title,
-        })),
-    [],
-  );
+  const minDate = useMemo(() => getPracticeToday(), []);
+  const appointmentServiceOptions = leadServiceIds.map((value) => ({ value, label: appointmentServiceLabels[value] }));
 
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentFormSchema),
@@ -105,13 +92,19 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
       lastName: "",
       email: "",
       phone: "",
-      service: initialServiceId ?? "",
+      service: initialServiceId ?? "not-sure",
+      preferredContactMethod: "phone",
+      visitFor: "self",
       preferredDate: "",
       preferredTime: "",
       message: "",
       consentToContact: false,
     },
   });
+
+  const preferredContactMethod = form.watch("preferredContactMethod");
+  const visitFor = form.watch("visitFor");
+  const selectedService = form.watch("service");
 
   useEffect(() => {
     captureLeadAttribution();
@@ -196,12 +189,14 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
 
       return payload;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, values) => {
       // The lead is complete once the API has durably saved it, even if the
       // office notification still needs a retry.
       completedRef.current = true;
       setSubmission({
         delivered: data.delivered,
+        queued: data.queued,
+        values: { ...values },
         fallbackMessage: data.fallbackMessage,
       });
 
@@ -212,7 +207,7 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
         );
       }
 
-      if (data.delivered) {
+      if (data.delivered || data.queued) {
         toast.success("Appointment request received", {
           description:
             "Thanks. Our team will contact you to confirm an appointment time.",
@@ -226,7 +221,7 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
         });
       }
 
-      if (data.delivered) {
+      if (data.delivered || data.queued) {
         form.reset();
         submissionIdRef.current = null;
       }
@@ -405,17 +400,24 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                 className="rounded-xl border border-border bg-accent p-5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <h2 id="appointment-form-heading" className="text-xl font-bold text-accent-foreground">
-                  {submission.delivered
-                    ? "Your appointment request was received"
-                    : "Your request was saved"}
+                  Your appointment request was saved
                 </h2>
                 <p className="mt-2 text-sm text-accent-foreground">
-                  {submission.delivered
-                    ? "Our team will contact you to confirm a date and time."
+                  {submission.delivered || submission.queued
+                    ? "Our team will contact you to confirm a date and time. Your visit is not booked yet."
                     : submission.fallbackMessage ||
                       "Online delivery is delayed. Please call us so we can prioritize your request."}
                 </p>
-                {!submission.delivered ? (
+                <dl className="mt-4 grid gap-3 border-t border-border pt-4 text-sm text-accent-foreground sm:grid-cols-2">
+                  <div><dt className="font-semibold">Request</dt><dd>{appointmentServiceLabels[submission.values.service as keyof typeof appointmentServiceLabels]}</dd></div>
+                  <div><dt className="font-semibold">Visit for</dt><dd>{visitForLabels[submission.values.visitFor ?? "self"]}</dd></div>
+                  <div><dt className="font-semibold">Contact person</dt><dd>{submission.values.firstName} {submission.values.lastName}</dd></div>
+                  <div><dt className="font-semibold">Preferred contact</dt><dd className="break-all">{submission.values.preferredContactMethod === "email" ? submission.values.email : submission.values.phone}</dd></div>
+                  <div><dt className="font-semibold">Date preference</dt><dd>{submission.values.preferredDate || "No preference"}</dd></div>
+                  <div><dt className="font-semibold">Time preference</dt><dd className="capitalize">{submission.values.preferredTime || "No preference"}</dd></div>
+                </dl>
+                <p className="mt-4 text-sm text-accent-foreground">Office hours: {practiceHoursSummary} (Pacific time). If you have not heard from us by the end of the next open office day, please call {officePhone}.</p>
+                {!submission.delivered && !submission.queued ? (
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <Button
                       type="button"
@@ -477,8 +479,8 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                           Start with the essentials
                         </h2>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          All fields in this step are required. We use them only to respond to your
-                          request.
+                          Choose how we can reach you. Only that contact method is required.
+                          Use your own name when requesting a visit for your child or family.
                         </p>
                       </div>
 
@@ -496,7 +498,7 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                                 className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <option value="" disabled>
-                                  Select a service
+                                  Choose what you need
                                 </option>
                                 {appointmentServiceOptions.map((service) => (
                                   <option key={service.value} value={service.value}>
@@ -510,13 +512,45 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                         )}
                       />
 
+                      {selectedService === "tooth-pain" ? (
+                        <p className="rounded-lg border border-border bg-accent p-4 text-sm text-accent-foreground">
+                          Need urgent help? <a href={officePhoneHref} className="font-semibold underline" onClick={() => trackPhoneClick("appointment_urgent_concern")}>Call {officePhone}</a> for guidance. Please do not wait for an online request if your concern is time-sensitive.
+                        </p>
+                      ) : null}
+
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <FormField control={form.control} name="visitFor" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Who is the visit for?</FormLabel>
+                            <FormControl>
+                              <select {...field} className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                <option value="self">Myself</option><option value="child">My child</option><option value="family">My family</option>
+                              </select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="preferredContactMethod" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>How should we contact you?</FormLabel>
+                            <FormControl>
+                              <select {...field} onChange={(event) => { field.onChange(event); form.clearErrors(["phone", "email"]); }} className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                <option value="phone">Phone call</option><option value="email">Email</option>
+                              </select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      {visitFor !== "self" ? <p className="text-sm text-muted-foreground">You are the contact person for {visitFor === "child" ? "your child" : "your family"}. We will arrange each patient's visit with you. No patient names or medical details are needed here.</p> : null}
+
                       <div className="grid gap-5 sm:grid-cols-2">
                         <FormField
                           control={form.control}
                           name="firstName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>First name</FormLabel>
+                              <FormLabel>Your first name</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -534,7 +568,7 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                           name="lastName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Last name</FormLabel>
+                              <FormLabel>Your last name</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
@@ -555,15 +589,16 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                           name="phone"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Phone</FormLabel>
+                              <FormLabel>Phone{preferredContactMethod === "phone" ? " (required)" : " (optional)"}</FormLabel>
                               <FormControl>
                                 <Input
                                   type="tel"
                                   inputMode="tel"
                                   autoComplete="tel"
-                                  required
-                                  aria-required="true"
+                                  required={preferredContactMethod === "phone"}
+                                  aria-required={preferredContactMethod === "phone"}
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -575,14 +610,15 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
                           name="email"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Email</FormLabel>
+                              <FormLabel>Email{preferredContactMethod === "email" ? " (required)" : " (optional)"}</FormLabel>
                               <FormControl>
                                 <Input
                                   type="email"
                                   autoComplete="email"
-                                  required
-                                  aria-required="true"
+                                  required={preferredContactMethod === "email"}
+                                  aria-required={preferredContactMethod === "email"}
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -748,7 +784,8 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
             <section className="rounded-xl border border-border bg-card p-5">
               <h2 className="text-lg font-bold text-foreground">Need help sooner?</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Call the office for time-sensitive scheduling questions.
+                For tooth pain or urgent concerns, call for guidance. Please do not wait for an online reply.
+                Office hours: Mon–Thu, 9 AM–5 PM (Pacific time).
               </p>
               <a
                 href={officePhoneHref}

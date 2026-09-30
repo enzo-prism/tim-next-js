@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { resolvePageMeta } from "@/content/seo";
 
 describe("priority search snippets", () => {
+  it.each(["/new-patients", "/insurance-and-payment", "/urgent-dental-care"])("publishes specific metadata for %s", (path) => {
+    const meta = resolvePageMeta(path);
+    expect(meta.title).not.toContain("Page Not Found");
+    expect(meta.title.length).toBeLessThanOrEqual(60);
+    expect(meta.description).toContain("Los Gatos");
+  });
   it.each(["/", "/areas-we-serve/santa-cruz", "/tmj"])(
     "keeps the %s title within 60 characters",
     (path) => {

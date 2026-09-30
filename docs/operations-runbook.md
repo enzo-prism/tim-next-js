@@ -87,7 +87,7 @@ Actions:
 
 Symptoms:
 
-- `POST /api/appointments` returns `202 delivered:false`
+- the protected `/api/admin/lead-health` endpoint reports `formspree_backlog` or `formspree_indeterminate`; a normal `202 queued:true` patient receipt is not an incident
 - appointments still persist in `contacts` with `requestType=appointment`
 - `formspreeStatus` remains `failed` or `sending`
 
@@ -191,3 +191,5 @@ When escalating, include:
 3. First failing endpoint and status code
 4. Recent deployment SHA
 5. Logs excerpt and attempted mitigations
+
+See [Saved requests and delivery monitoring](./lead-delivery-reliability.md) for scheduled health signals, actionable alert configuration, and quiet unchanged-state behavior.

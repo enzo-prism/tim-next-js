@@ -27,19 +27,21 @@ export async function POST(request: Request) {
     }
 
     const data = insertAppointmentSchema.parse({ ...body, requestType: "appointment" });
-    return persistAndNotifyWebsiteLead({
+    return await persistAndNotifyWebsiteLead({
       fallbackMessage,
       canonical: {
         submissionId: data.submissionId,
         firstName: data.firstName,
         lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
+        email: data.email || null,
+        phone: data.phone || null,
         service: data.service,
         message: data.message || null,
         requestType: "appointment",
         preferredDate: data.preferredDate || null,
         preferredTime: data.preferredTime || null,
+        preferredContactMethod: data.preferredContactMethod || (data.phone ? "phone" : "email"),
+        visitFor: data.visitFor || "self",
         landingPage: data.landingPage || null,
         referrer: data.referrer || null,
         ctaSource: data.ctaSource || null,
@@ -77,7 +79,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Appointment form error:", error);
+    console.error("appointment_submit_failed");
     return NextResponse.json(
       { success: false, message: "Failed to submit appointment request" },
       { status: 500 },

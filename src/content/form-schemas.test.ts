@@ -34,6 +34,36 @@ describe("public lead schemas", () => {
     expect(result.success).toBe(false);
   });
 
+  it("allows exactly the selected contact channel to be required", () => {
+    const base = { firstName: "Jamie", lastName: "Lee", service: "not-sure", consentToContact: true };
+    expect(appointmentFormSchema.safeParse({ ...base, preferredContactMethod: "phone", phone: "4085551212", email: "" }).success).toBe(true);
+    expect(appointmentFormSchema.safeParse({ ...base, preferredContactMethod: "email", email: "jamie@example.com", phone: "" }).success).toBe(true);
+    const missingPhone = appointmentFormSchema.safeParse({ ...base, preferredContactMethod: "phone", email: "jamie@example.com", phone: "" });
+    expect(missingPhone.success).toBe(false);
+    if (!missingPhone.success) expect(missingPhone.error.issues.some((issue) => issue.path[0] === "phone")).toBe(true);
+    expect(appointmentFormSchema.safeParse({ ...base, preferredContactMethod: "email", phone: "4085551212", email: "" }).success).toBe(false);
+    expect(appointmentFormSchema.safeParse({ ...base, preferredContactMethod: "phone", phone: "4085551212", email: "invalid" }).success).toBe(false);
+    expect(appointmentFormSchema.safeParse({ ...base }).success).toBe(false);
+  });
+
+  it("accepts child and family requests without collecting patient identities", () => {
+    const base = { firstName: "Parent", lastName: "Lee", service: "tooth-pain", phone: "4085551212", consentToContact: true };
+    for (const visitFor of ["self", "child", "family"]) {
+      const parsed = appointmentFormSchema.parse({ ...base, visitFor, patientName: "Private child name", patientBirthday: "2020-01-01" });
+      expect(parsed.visitFor).toBe(visitFor);
+      expect(parsed).not.toHaveProperty("patientName");
+      expect(parsed).not.toHaveProperty("patientBirthday");
+    }
+    expect(appointmentFormSchema.safeParse({ ...base, visitFor: "unknown" }).success).toBe(false);
+    expect(appointmentFormSchema.safeParse({ ...base, preferredContactMethod: "sms" }).success).toBe(false);
+    expect(contactFormSchema.safeParse({ ...base, email: "" }).success).toBe(false);
+  });
+
+  it("uses Pacific dates even when the browser is already on the following calendar day", () => {
+    vi.setSystemTime(new Date("2026-08-11T01:30:00Z"));
+    expect(appointmentFormSchema.safeParse({ firstName: "Jamie", lastName: "Lee", phone: "4085551212", service: "not-sure", preferredDate: "2026-08-10", consentToContact: true }).success).toBe(true);
+  });
+
   it("accepts Other as a contact-only service choice", () => {
     const contact = contactFormSchema.safeParse({
       company: "",

@@ -23,7 +23,8 @@ export const isMobileActionBarSuppressed = (pathname: string | null) =>
 /**
  * Phone-width bottom bar with the two ways to reach the office. The call
  * button shows whether the office is open right now; outside office hours the
- * request button takes the primary style instead.
+ * request button takes the primary style instead. Urgent-care pages keep the
+ * call primary, with the same honest open/closed status.
  */
 export default function MobileActionBar() {
   const pathname = usePathname();
@@ -41,6 +42,8 @@ export default function MobileActionBar() {
   if (isMobileActionBarSuppressed(pathname)) return null;
 
   const isOpen = status?.isOpen ?? false;
+  const isUrgentCare = pathname === "/urgent-dental-care" || pathname?.startsWith("/urgent-dental-care/");
+  const isCallPrimary = isUrgentCare || isOpen;
   const statusText = status ? describePracticeStatus(status) : practiceHoursSummary;
 
   return (
@@ -52,8 +55,8 @@ export default function MobileActionBar() {
       <div className="mx-auto grid max-w-md grid-cols-2 gap-2">
         <Button
           asChild
-          variant={isOpen ? "default" : "outline"}
-          className={`h-12 flex-col gap-0 px-2 ${isOpen ? "" : "border-primary/60 text-primary"}`}
+          variant={isCallPrimary ? "default" : "outline"}
+          className={`h-12 flex-col gap-0 px-2 ${isCallPrimary ? "" : "border-primary/60 text-primary"}`}
         >
           <PhoneLink location="mobile_action_bar">
             <span className="text-sm font-semibold leading-5">
@@ -62,7 +65,7 @@ export default function MobileActionBar() {
             <span className="sr-only">, </span>
             <span
               data-testid="practice-status"
-              className={`text-xs font-medium leading-4 ${isOpen ? "text-primary-foreground/90" : "text-muted-foreground"}`}
+              className={`text-xs font-medium leading-4 ${isCallPrimary ? "text-primary-foreground/90" : "text-muted-foreground"}`}
             >
               {statusText}
             </span>
@@ -70,8 +73,8 @@ export default function MobileActionBar() {
         </Button>
         <Button
           asChild
-          variant={isOpen ? "outline" : "default"}
-          className={`h-12 text-sm font-semibold ${isOpen ? "border-primary/60 text-primary" : ""}`}
+          variant={isCallPrimary ? "outline" : "default"}
+          className={`h-12 text-sm font-semibold ${isCallPrimary ? "border-primary/60 text-primary" : ""}`}
         >
           <AppointmentLink
             href={buildAppointmentUrl({ source: "mobile_action_bar" })}

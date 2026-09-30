@@ -57,6 +57,9 @@ const staticLinksByHref: Record<string, RelatedLink> = {
     title: "All Dental Services",
     description: "Explore our full list of preventive, restorative, and family care options.",
   },
+  "/new-patients": { href: "/new-patients", title: "Your First Visit", description: "Prepare for your visit and ask about scheduling for your family." },
+  "/insurance-and-payment": { href: "/insurance-and-payment", title: "Insurance & Payment", description: "Questions to ask about coverage and treatment costs." },
+  "/urgent-dental-care": { href: "/urgent-dental-care", title: "Urgent Dental Concerns", description: "Call the office about pain, swelling, or a broken tooth." },
   "/patient-info": {
     href: "/patient-info",
     title: "Patient Information",
@@ -148,11 +151,11 @@ const curatedBoosts: Record<string, string[]> = {
     "/patient-info/brushing",
     "/contact",
   ],
-  "night-guards": ["tmj", "dental-exams", "/contact"],
+  "night-guards": ["tmj", "dental-exams", "/insurance-and-payment", "/contact"],
   "restorative-dentistry": ["invisalign", "teeth-whitening", "dental-crowns", "dental-exams"],
   invisalign: ["/technology/itero-digital-scanner", "restorative-dentistry", "teeth-whitening", "/contact"],
   "teeth-whitening": ["dental-hygiene", "restorative-dentistry", "/contact"],
-  "dental-crowns": ["restorative-dentistry", "dental-exams", "/contact"],
+  "dental-crowns": ["restorative-dentistry", "/urgent-dental-care", "/insurance-and-payment", "dental-exams", "/contact"],
   "childrens-dentistry/babys-first-visit": [
     "children-dentistry",
     "/blog/when-should-kids-first-see-a-dentist-los-gatos",
@@ -198,6 +201,7 @@ export const getRelatedLinksForService = (serviceId: string): RelatedLink[] => {
 
   // Ensure we always have a few high-value hubs available as fallbacks.
   candidates.push(staticLinksByHref["/services"]);
+  candidates.push(staticLinksByHref["/new-patients"]);
   candidates.push(staticLinksByHref["/patient-info"]);
   candidates.push(staticLinksByHref["/contact"]);
 

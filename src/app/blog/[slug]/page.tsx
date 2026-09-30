@@ -16,6 +16,8 @@ import {
   practiceInfo,
 } from "@/content/structured-data";
 import { metadataBase } from "@/lib/metadata";
+import { getClinicalReview } from "@/content/clinical-review";
+import ClinicalReviewByline from "@/components/blog/clinical-review-byline";
 
 type BlogPostRouteProps = {
   params: Promise<{ slug: string }>;
@@ -101,6 +103,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
   }
 
   const articleUrl = `${practiceInfo.url}${getBlogPostHref(post.slug)}`;
+  const clinicalReview = getClinicalReview(post);
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "Home", item: practiceInfo.url },
     { name: "Blog", item: `${practiceInfo.url}/blog` },
@@ -114,6 +117,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
     dateModified: post.updatedAt,
     keywords: [post.primaryKeyword, ...post.secondaryKeywords],
     articleSection: post.category,
+    clinicalReview,
   });
   const faqSchema = post.faq.length ? buildFaqSchema(post.faq) : null;
   const tableOfContents = post.sections.map((section) => ({
@@ -179,6 +183,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
                     Updated {format(parseISO(post.updatedAt), "MMMM d, yyyy")}
                   </span>
                 ) : null}
+                <ClinicalReviewByline review={clinicalReview} />
                 <span className="inline-flex items-center gap-2">
                   {post.readingTimeMinutes} min read
                 </span>
@@ -254,7 +259,7 @@ export default async function BlogPostPage({ params }: BlogPostRouteProps) {
               <section className="mt-14 rounded-xl bg-primary px-8 py-8 text-white shadow-sm">
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                   <div>
-                    <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
+                    <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white">
                       Next step
                     </div>
                     <h2 className="mt-3 text-3xl font-bold leading-tight">{post.ctaTitle}</h2>

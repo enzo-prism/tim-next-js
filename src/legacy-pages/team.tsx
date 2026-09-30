@@ -42,7 +42,7 @@ export default function Team() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">Meet Our Team</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Dedicated professionals committed to providing exceptional dental care with compassion and expertise</p>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Get to know the dentist and support team who help you feel prepared, heard, and comfortable.</p>
           </div>
         </div>
       </section>
@@ -71,33 +71,28 @@ export default function Team() {
               <p className="text-xl text-primary font-semibold mb-6">Lead Dentist & Practice Owner</p>
               
               <div className="space-y-4 text-gray-600 mb-8">
-                <p>Dr. Chuang was born and raised in Cupertino, where his passion for healthcare and helping others began at an early age. He has deep roots in the local community and understands the unique needs of Bay Area families, bringing a wealth of knowledge and gentle touch to every patient interaction.</p>
-                
-                <p>He pursued his undergraduate studies at the University of California, San Diego (UCSD), earning a bachelor's degree in Human Biology. His strong interest in dentistry and commitment to patient care led him back to the Bay Area, where he continued his education in one of the nation's top dental programs.</p>
-                
-                <p>In 2020, Dr. Chuang graduated from the prestigious University of the Pacific (UOP) School of Dentistry in San Francisco, where he honed his skills in comprehensive dental care. Seeking to further expand his expertise, he moved to the Big Island of Hawaii to complete a residency in general dentistry.</p>
-                
-                <p>During his residency, he gained hands-on experience in advanced procedures, treating a diverse patient population, and refining his approach to providing high-quality, patient-centered care. This comprehensive training has shaped his signature gentle approach that patients know and trust.</p>
+                <p>Dr. Chuang grew up in Cupertino and earned his undergraduate degree in Human Biology at the University of California, San Diego. He returned to the Bay Area to study dentistry, graduating from the University of the Pacific School of Dentistry in 2020.</p>
+                <p>He completed a general dentistry residency on the Big Island of Hawaii. His approach to family care centers on listening to your concerns, explaining your options, and helping you feel comfortable with the next step.</p>
               </div>
-              
+
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center">
                   <h3 className="font-semibold text-gray-800 mb-1">Education</h3>
                   <p className="text-sm text-gray-600">University of the Pacific School of Dentistry</p>
                 </div>
                 <div className="text-center">
-                  <h3 className="font-semibold text-gray-800 mb-1">Experience</h3>
-                  <p className="text-sm text-gray-600">5+ Years in Practice</p>
+                  <h3 className="font-semibold text-gray-800 mb-1">Training</h3>
+                  <p className="text-sm text-gray-600">General dentistry residency</p>
                 </div>
                 <div className="text-center">
-                  <h3 className="font-semibold text-gray-800 mb-1">Specialty</h3>
+                  <h3 className="font-semibold text-gray-800 mb-1">Care Approach</h3>
                   <p className="text-sm text-gray-600">Gentle, Family-Centered Care</p>
                 </div>
               </div>
               
               <div className="bg-white rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Dr. Chuang's Approach</h3>
-                <p className="text-gray-600 italic">"I believe that dental care should be a positive experience for every patient. My goal is to provide thorough explanations, gentle treatment, and personalized care that helps each patient feel comfortable and confident about their oral health."</p>
+                <p className="text-gray-600">Expect clear explanations and a personalized discussion of your oral health goals. Bring your questions about treatment or any concerns about visiting the dentist.</p>
               </div>
             </div>
           </div>
@@ -106,7 +101,7 @@ export default function Team() {
         {/* Team Section */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Caring Team</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">Behind every great dentist is an exceptional team. Our staff are dedicated to making your visit comfortable and stress-free.</p>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">Support before, during, and after your appointment.</p>
         </div>
         
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -122,7 +117,7 @@ export default function Team() {
               />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Office Manager</h3>
-            <p className="text-gray-600">Our welcoming office manager handles scheduling, insurance, and ensures your visit runs smoothly from start to finish.</p>
+            <p className="text-gray-600">Have a question before you arrive? Our front-office team helps with scheduling and insurance questions so you can prepare for your visit.</p>
           </div>
           
           <div className="bg-white rounded-xl shadow-sm p-6 text-center transition-shadow duration-300">
@@ -137,7 +132,7 @@ export default function Team() {
               />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Dental Assistant</h3>
-            <p className="text-gray-600">Our skilled dental assistant ensures your comfort throughout every procedure, providing gentle care and support during your treatment.</p>
+            <p className="text-gray-600">Our dental assistant supports Dr. Chuang during your treatment and helps you settle in. Let the team know if you need a moment or have a question.</p>
           </div>
         </div>
         

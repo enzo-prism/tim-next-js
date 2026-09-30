@@ -3,8 +3,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "@/server/schema";
 import { DatabaseStorage } from "@/server/storage";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { applyTestMigrations } from "@/server/test-migrations";
 
 const TEST_DB_URL = process.env.TEST_DATABASE_URL || "";
 
@@ -36,18 +35,7 @@ beforeAll(async () => {
   await client.query(`CREATE SCHEMA IF NOT EXISTS ${TEST_SCHEMA}`);
   await client.query(`SET search_path TO ${TEST_SCHEMA}`);
 
-  const migrationDir = join(process.cwd(), "drizzle");
-  const migrations = [
-    "0000_base_schema.sql",
-    "0001_growth_lead_attribution.sql",
-    "0002_closed_loop_lead_pipeline.sql",
-    "0003_public_form_contract.sql",
-    "0004_google_ads_lead_ingestion.sql",
-  ];
-  for (const file of migrations) {
-    const sql = readFileSync(join(migrationDir, file), "utf-8");
-    await client.query(sql);
-  }
+  await applyTestMigrations(client);
 
   const db = drizzle(client, { schema });
   storage = new DatabaseStorage(db);

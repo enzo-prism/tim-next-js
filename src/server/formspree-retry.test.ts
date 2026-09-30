@@ -20,6 +20,7 @@ vi.mock("@/server/lead-notifications", async (importOriginal) => ({
   relayLeadNotification: mocks.relayLeadNotification,
 }));
 
+import { LeadNotificationRejectedError } from "@/server/lead-notifications";
 import { retryFailedFormspreeNotifications } from "@/server/formspree-retry";
 
 const failedLead = {
@@ -64,7 +65,7 @@ describe("retryFailedFormspreeNotifications", () => {
 
   it("relays failed website leads and marks them delivered", async () => {
     const result = await retryFailedFormspreeNotifications();
-    expect(result).toEqual({ processed: 1, delivered: 1, failed: 0, skipped: 0 });
+    expect(result).toEqual({ processed: 1, delivered: 1, failed: 0, skipped: 0, indeterminate: 0 });
     expect(mocks.relayLeadNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         leadId: "contact-1",
@@ -86,9 +87,31 @@ describe("retryFailedFormspreeNotifications", () => {
   });
 
   it("returns failed to failed after a known relay error", async () => {
-    mocks.relayLeadNotification.mockRejectedValue(new Error("status 503"));
+    mocks.relayLeadNotification.mockRejectedValue(new LeadNotificationRejectedError(422));
     const result = await retryFailedFormspreeNotifications();
-    expect(result).toEqual({ processed: 1, delivered: 0, failed: 1, skipped: 0 });
+    expect(result).toEqual({ processed: 1, delivered: 0, failed: 1, skipped: 0, indeterminate: 0 });
     expect(mocks.updateContactFormspreeStatus).toHaveBeenCalledWith("contact-1", "failed");
   });
+  it("preserves sending after an uncertain network failure", async () => {
+    mocks.relayLeadNotification.mockRejectedValue(new Error("network timeout"));
+    const result = await retryFailedFormspreeNotifications();
+    expect(result.indeterminate).toBe(1);
+    expect(mocks.updateContactFormspreeStatus).not.toHaveBeenCalled();
+  });
+  it("reports inaccessible storage instead of a healthy empty batch", async () => {
+    mocks.listFailedFormspreeLeads.mockRejectedValue(new Error("storage down"));
+    expect(await retryFailedFormspreeNotifications()).toEqual(expect.objectContaining({ errorCode: "storage_unavailable" }));
+  });
+  it("never retries an indeterminate sending row even if listing returns it", async () => {
+    mocks.listFailedFormspreeLeads.mockResolvedValue([{ ...failedLead, formspreeStatus: "sending" }]);
+    const result = await retryFailedFormspreeNotifications();
+    expect(result.skipped).toBe(1); expect(mocks.claimContactNotification).not.toHaveBeenCalled();
+  });
+
+  it.each([408, 500, 503])("never releases an ambiguous HTTP %i send for automatic retry", async (status) => {
+    mocks.relayLeadNotification.mockRejectedValue(new LeadNotificationRejectedError(status));
+    expect((await retryFailedFormspreeNotifications()).indeterminate).toBe(1);
+    expect(mocks.updateContactFormspreeStatus).not.toHaveBeenCalled();
+  });
+
 });

@@ -231,7 +231,7 @@ export default function TMJ() {
                 </li>
                 <li className="flex items-center">
                   <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Financing options available
+                  Ask about treatment costs and payment options
                 </li>
               </ul>
             </div>

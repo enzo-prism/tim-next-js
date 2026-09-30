@@ -33,6 +33,17 @@ test.describe("mobile action bar", () => {
     await expect(bar(page).getByRole("link", { name: "Request visit" })).toHaveClass(/bg-primary/);
   });
 
+  test("keeps urgent care call-first while showing that the office is closed", async ({ page }) => {
+    await page.clock.setFixedTime(FRIDAY_NOON);
+    await page.goto("/urgent-dental-care");
+
+    const call = bar(page).getByRole("link", { name: /Call \(408\) 358-8100/ });
+    await expect(call).toHaveAttribute("href", "tel:+14083588100");
+    await expect(call).toHaveClass(/bg-primary/);
+    await expect(page.getByTestId("practice-status")).toHaveText("Closed · opens Mon 9 AM");
+    await expect(bar(page).getByRole("link", { name: "Request visit" })).not.toHaveClass(/bg-primary/);
+  });
+
   test("keeps the privacy prompt and the assistant above the bar", async ({ page }) => {
     await page.goto("/");
 

@@ -32,7 +32,7 @@ Primary design goals:
 3. The shared Zod contract validates contact details, a known service or the contact-only `"other"` choice, consent, submission UUID, and bounded attribution fields.
 4. The submission UUID is checked before insert and is protected by a unique database index, preventing duplicate leads. It is also bound to the form type and normalized stored payload. Reusing it with changed data returns `409` instead of changing or relaying a different lead.
 5. The lead starts with `formspreeStatus="failed"` and `ingestedVia="website-form"`. Insert also enqueues a no-PII `notification_outbox` event so a staff dashboard can be alerted. Before Formspree relay, the server atomically claims the lead by changing the state to `sending`, so concurrent requests cannot both notify the office.
-6. A known relay failure returns the state to `failed` for a later retry from the browser or the 15-minute cron. Success changes it to `delivered`.
+6. The API returns a durable `202 queued:true` receipt before provider delivery. Next.js `after()` handles the relay; the 15-minute cron recovers callbacks that did not start. Explicit 4xx rejections except 408 return the row to `failed`; delivery success changes it to `delivered`. HTTP 408/5xx and network failures remain indeterminate `sending`.
 7. An indeterminate `sending` state is not retried automatically. It requires manual reconciliation because Formspree does not provide a verified idempotency key and an automatic retry could create a duplicate notification.
 8. Storage backend is selected by environment:
    - Production: Postgres-backed `DatabaseStorage` (requires `DATABASE_URL`)
@@ -45,15 +45,16 @@ Primary design goals:
 2. Privacy-safe step-view, step-complete, and abandonment events identify funnel loss without sending form contents.
 3. The completed request posts once to `POST /api/appointments`.
 4. The same public-form guard, consent, attribution, and idempotency protections used by the contact form run first.
-5. `insertAppointmentSchema` additionally requires a known service, valid phone number, and a real preferred calendar date that is not in the past in Los Angeles time and falls on an open Monday-through-Thursday practice day.
+5. `insertAppointmentSchema` additionally requires a known service (including help choosing), the selected valid phone or email contact method, and, when supplied, a real preferred date that is not in the past in Los Angeles time and falls on an open Monday-through-Thursday practice day.
 6. Request is persisted first in `contacts` with:
    - `requestType="appointment"`
    - `preferredDate` / `preferredTime`
    - initial `formspreeStatus="failed"`
-7. The server uses the same atomic `failed` -> `sending` notification claim as the contact endpoint, then relays the canonical stored row to `FORMSPREE_APPOINTMENT_ENDPOINT`. The notification includes the internal lead ID and submission UUID for reconciliation.
+7. After returning the durable receipt, the server uses the same atomic `failed` -> `sending` notification claim as the contact endpoint, then relays the canonical stored row to `FORMSPREE_APPOINTMENT_ENDPOINT`. The notification includes the internal lead ID and submission UUID for reconciliation.
 8. Relay outcomes:
-   - success -> `formspreeStatus` updated to `delivered`, API returns `201`.
-   - known failure -> state returns to `failed`, the DB record is retained, and the API returns `202 delivered:false`.
+   - receipt -> API returns `202 delivered:false, queued:true` immediately after persistence.
+   - background success -> `formspreeStatus` updated to `delivered`.
+   - explicit rejection -> state returns to `failed`; the saved receipt remains valid.
    - indeterminate `sending` -> no automatic resend; staff must reconcile provider and application records before changing the state.
 
 ### Staff dashboard

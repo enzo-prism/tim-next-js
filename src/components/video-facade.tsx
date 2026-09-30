@@ -60,6 +60,7 @@ export default function VideoFacade({
           src={videoSrc}
           className={cn("absolute inset-0 h-full w-full border-0", className)}
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+          allowFullScreen
           title={title}
         />
         <button

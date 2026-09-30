@@ -21,6 +21,7 @@ import {
   type ContactFormValues,
 } from "@/content/form-schemas";
 import { services } from "@/content/services";
+import { practiceHoursSummary } from "@/content/practice-hours";
 import {
   trackContactSubmitSuccess,
   trackAppointmentCtaClick,
@@ -39,6 +40,7 @@ type ContactResponse = {
   success: boolean;
   created: boolean;
   delivered: boolean;
+  queued?: boolean;
   leadId: string;
   serviceId: string | null;
   fallbackMessage?: string;
@@ -48,7 +50,7 @@ type ContactResponse = {
 
 export default function Contact() {
   const [hasStartedForm, setHasStartedForm] = useState(false);
-  const [submission, setSubmission] = useState<{ delivered: boolean; fallbackMessage?: string } | null>(null);
+  const [submission, setSubmission] = useState<{ delivered: boolean; queued?: boolean; fallbackMessage?: string } | null>(null);
   const submissionIdRef = useRef<string | null>(null);
   const submissionStatusRef = useRef<HTMLDivElement>(null);
   const serviceOptions = useMemo(
@@ -97,11 +99,11 @@ export default function Contact() {
       return payload;
     },
     onSuccess: (data, variables) => {
-      setSubmission({ delivered: data.delivered, fallbackMessage: data.fallbackMessage });
+      setSubmission({ delivered: data.delivered, queued: data.queued, fallbackMessage: data.fallbackMessage });
       if (data.created) {
         trackContactSubmitSuccess(variables.service || undefined);
       }
-      if (data.delivered) {
+      if (data.delivered || data.queued) {
         toast.success("Message received", {
           description: "Thank you. Our team will get back to you soon.",
         });
@@ -110,7 +112,7 @@ export default function Contact() {
           description: data.fallbackMessage,
         });
       }
-      if (data.delivered) {
+      if (data.delivered || data.queued) {
         form.reset({
           company: "",
           firstName: "",
@@ -357,11 +359,12 @@ export default function Contact() {
                 >
                   <p className="font-semibold">Your message was saved.</p>
                   <p className="mt-1">
-                    {submission.delivered
-                      ? "Thank you. Our team will get back to you soon."
+                    {submission.delivered || submission.queued
+                      ? "Thank you. Our team will contact you during office hours."
                       : submission.fallbackMessage}
                   </p>
-                  {!submission.delivered ? (
+                  <p className="mt-2">Office hours: {practiceHoursSummary} (Pacific time). If you have not heard from us by the end of the next open office day, please call (408) 358-8100.</p>
+                  {!submission.delivered && !submission.queued ? (
                     <p className="mt-2 font-medium">
                       Your details are still here. Press Send Message again to retry delivery.
                     </p>
@@ -460,6 +463,8 @@ export default function Contact() {
                                 {service.title}
                               </SelectItem>
                             ))}
+                            <SelectItem value="not-sure">Help me choose</SelectItem>
+                            <SelectItem value="tooth-pain">Tooth pain or a dental concern</SelectItem>
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>

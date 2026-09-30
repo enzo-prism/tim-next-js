@@ -9,6 +9,9 @@ const mocks = vi.hoisted(() => ({
   markSent: vi.fn(),
   markFailed: vi.fn(),
   refreshLease: vi.fn(),
+  retryFailedFormspreeNotifications: vi.fn(),
+  startNotificationHeartbeat: vi.fn(),
+  finishNotificationHeartbeat: vi.fn(),
 }));
 
 vi.mock("@/server/db", () => ({ db: mocks.db }));
@@ -26,7 +29,13 @@ vi.mock("@/server/notification-outbox", () => ({
   },
 }));
 
-import { processOutboxBatch } from "@/server/notification-processor";
+vi.mock("@/server/formspree-retry", () => ({ retryFailedFormspreeNotifications: mocks.retryFailedFormspreeNotifications }));
+vi.mock("@/server/lead-delivery-health", () => ({
+  startNotificationHeartbeat: mocks.startNotificationHeartbeat,
+  finishNotificationHeartbeat: mocks.finishNotificationHeartbeat,
+}));
+
+import { processOutboxBatch, processScheduledNotifications } from "@/server/notification-processor";
 
 describe("processOutboxBatch ordering", () => {
   beforeEach(() => {
@@ -137,5 +146,41 @@ describe("processOutboxBatch ordering", () => {
       "send:event-2",
       "markSent:event-2",
     ]);
+  });
+});
+
+
+describe("scheduled worker isolates delivery channels and records health", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.isNotificationEnabled.mockReturnValue(true);
+    mocks.recoverStaleClaims.mockResolvedValue(0);
+    mocks.claimPendingEvents.mockResolvedValue([]);
+    mocks.retryFailedFormspreeNotifications.mockResolvedValue({ processed: 0, delivered: 0, failed: 0, skipped: 0, indeterminate: 0 });
+    mocks.startNotificationHeartbeat.mockResolvedValue("run-token");
+    mocks.finishNotificationHeartbeat.mockResolvedValue(undefined);
+  });
+  it("records a healthy heartbeat for an idle successful run", async () => {
+    expect((await processScheduledNotifications()).healthy).toBe(true);
+    expect(mocks.finishNotificationHeartbeat).toHaveBeenCalledWith("run-token", false);
+  });
+  it("continues Formspree recovery if the staff outbox worker throws", async () => {
+    mocks.claimPendingEvents.mockRejectedValue(new Error("outbox down"));
+    const result = await processScheduledNotifications();
+    expect(result.healthy).toBe(false);
+    expect(result.errorCode).toBe("notification_processing_failed");
+    expect(mocks.retryFailedFormspreeNotifications).toHaveBeenCalledTimes(1);
+    expect(mocks.finishNotificationHeartbeat).toHaveBeenCalledWith("run-token", true);
+  });
+  it("continues staff alerts if the Formspree storage worker fails", async () => {
+    mocks.retryFailedFormspreeNotifications.mockRejectedValue(new Error("storage down"));
+    const result = await processScheduledNotifications();
+    expect(result.healthy).toBe(false);
+    expect(result.formspree.errorCode).toBe("storage_unavailable");
+    expect(mocks.claimPendingEvents).toHaveBeenCalledTimes(1);
+  });
+  it("marks indeterminate sending outcomes degraded for operator investigation", async () => {
+    mocks.retryFailedFormspreeNotifications.mockResolvedValue({ processed: 1, delivered: 0, failed: 0, skipped: 0, indeterminate: 1 });
+    expect((await processScheduledNotifications()).healthy).toBe(false);
   });
 });

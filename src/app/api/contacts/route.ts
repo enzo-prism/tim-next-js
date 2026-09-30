@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     const data = insertContactSchema.parse(body);
-    return persistAndNotifyWebsiteLead({
+    return await persistAndNotifyWebsiteLead({
       fallbackMessage,
       canonical: {
         submissionId: data.submissionId,
@@ -40,6 +40,8 @@ export async function POST(request: Request) {
         requestType: "contact",
         preferredDate: null,
         preferredTime: null,
+        preferredContactMethod: null,
+        visitFor: null,
         landingPage: data.landingPage || null,
         referrer: data.referrer || null,
         ctaSource: data.ctaSource || null,
@@ -77,7 +79,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Contact form error:", error);
+    console.error("contact_submit_failed");
     return NextResponse.json(
       { success: false, message: "Failed to submit contact form" },
       { status: 500 },

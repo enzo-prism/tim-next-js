@@ -54,6 +54,8 @@ export const contacts = pgTable(
     requestType: text("request_type").notNull().default("contact"),
     preferredDate: text("preferred_date"),
     preferredTime: text("preferred_time"),
+    preferredContactMethod: text("preferred_contact_method").$type<"phone" | "email">(),
+    visitFor: text("visit_for").$type<"self" | "child" | "family">(),
     formspreeStatus: text("formspree_status"),
     landingPage: text("landing_page"),
     referrer: text("referrer"),
@@ -90,6 +92,14 @@ export const contacts = pgTable(
     uniqueIndex("contacts_google_ads_lead_id_idx")
       .on(table.googleAdsLeadId)
       .where(sql`${table.googleAdsLeadId} IS NOT NULL`),
+    check(
+      "contacts_preferred_contact_method_check",
+      sql`${table.preferredContactMethod} is null or ${table.preferredContactMethod} in ('phone', 'email')`,
+    ),
+    check(
+      "contacts_visit_for_check",
+      sql`${table.visitFor} is null or ${table.visitFor} in ('self', 'child', 'family')`,
+    ),
     check(
       "contacts_lead_status_check",
       sql`${table.leadStatus} in ('new', 'contacted', 'booked', 'arrived', 'no-show', 'lost')`,

@@ -68,15 +68,15 @@ The `contacts` table now also includes:
 
 ### Notification delivery state
 
-Before either public endpoint calls Formspree, it atomically claims the stored lead by changing `formspreeStatus` from `failed` to `sending`. A known relay failure changes it back to `failed`, which allows a later retry. A successful relay changes it to `delivered`.
+After returning a durable `202 queued:true` receipt, the background worker calls Formspree. Before that call, it atomically claims the stored lead by changing `formspreeStatus` from `failed` to `sending`. An explicit 4xx rejection (except 408) changes it back to `failed`, which allows a later retry. A successful relay changes it to `delivered`.
 
-`sending` is never reclaimed automatically because Formspree does not provide a verified idempotency key. If the process stops after the provider call, or delivery succeeds but the final database update fails, the row stays `sending` and requires manual reconciliation. This prevents an automatic retry from sending the office a duplicate notification.
+`sending` is never reclaimed automatically because Formspree does not provide a verified idempotency key. If the process stops after the provider call, the network fails, the provider returns HTTP 408/5xx, or delivery succeeds but the final database update fails, the row stays `sending` and requires manual reconciliation. This prevents an automatic retry from sending the office a duplicate notification.
 
 The submission UUID is bound to the form type and normalized stored payload. An exact retry reuses the stored row and relays only its canonical data. Reusing a UUID for changed data or the other public form returns `409`.
 
 ## `POST /api/contacts`
 
-Persist a contact submission and notify the office through Formspree.
+Persist a contact submission, return its queued receipt, and notify the office in the background.
 
 Request body:
 
@@ -98,12 +98,11 @@ Request body:
 
 Responses:
 
-- `201` (new lead persisted and notification delivered)
-  - `{ "success": true, "created": true, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
+- `202` (new or retried request saved; office notification queued)
+  - `{ "success": true, "created": true, "delivered": false, "queued": true, "leadId": "...", "serviceId": "invisalign" }`
+  - An exact retry has `created:false`. Normal queued delivery does not include a call fallback.
 - `200` (duplicate already delivered)
-  - `{ "success": true, "created": false, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
-- `202` (lead persisted, notification not confirmed)
-  - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
+  - `{ "success": true, "created": false, "delivered": true, "queued": false, "leadId": "...", "serviceId": "invisalign" }`
 - `400`
   - `{ "success": false, "message": "Invalid form data", "errors": [...] }`
 - `403`: untrusted browser origin
@@ -116,7 +115,7 @@ Responses:
 
 ## `POST /api/appointments`
 
-Create an appointment request, persist it internally, then relay to Formspree.
+Create an appointment request, persist it internally, return its queued receipt, and relay to Formspree in the background.
 
 Request body:
 
@@ -138,12 +137,11 @@ Request body:
 
 Responses:
 
-- `201` (DB + Formspree delivered)
-  - `{ "success": true, "created": true, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
+- `202` (new or retried request saved; office notification queued)
+  - `{ "success": true, "created": true, "delivered": false, "queued": true, "leadId": "...", "serviceId": "invisalign" }`
+  - An exact retry has `created:false`. Receipt does not confirm an appointment slot.
 - `200` (duplicate already delivered)
-  - `{ "success": true, "created": false, "delivered": true, "leadId": "...", "serviceId": "invisalign" }`
-- `202` (DB persisted, Formspree notification not confirmed)
-  - `{ "success": true, "created": true, "delivered": false, "leadId": "...", "serviceId": "invisalign", "fallbackMessage": "..." }`
+  - `{ "success": true, "created": false, "delivered": true, "queued": false, "leadId": "...", "serviceId": "invisalign" }`
 - `400`
   - `{ "success": false, "message": "Invalid appointment data", "errors": [...] }`
 - `403`: untrusted browser origin
@@ -158,7 +156,8 @@ Responses:
 
 Cron job authenticated with `Authorization: Bearer $CRON_SECRET`. Missing `CRON_SECRET` returns `503 cron_not_configured` with setup steps.
 
-It does two separate jobs:
+It runs two independent jobs and records a persistent heartbeat. Healthy work returns `200`; failed or indeterminate delivery returns `503` with safe counters:
+
 
 1. Drain `notification_outbox` for no-PII staff alerts (`LEAD_NOTIFICATION_WEBHOOK_URL`). This is not a Formspree retry.
 2. Retry Formspree office notifications for website/appointment rows still in `formspreeStatus="failed"`. Rows in `sending` are never auto-retried.
@@ -168,3 +167,7 @@ It does two separate jobs:
 Cron job that compares stored leads with Formspree and Google Ads when `RECONCILIATION_ENABLED=true`. Requires `Authorization: Bearer $CRON_SECRET`. When a provider returns a full lead that is missing from Postgres, the job inserts it (`ingestedVia="reconciliation"`) and enqueues the outbox. Outcomes are redacted and do not include patient contact details. Unconfigured providers fail closed with `provider_not_configured`.
 
 The former staff-dashboard APIs (`/api/admin/contacts`, `/api/admin/session`, `/api/admin/changelog`, `/api/admin/ga4/overview`, `/api/admin/gsc/overview`) are removed and 404.
+
+## `GET /api/admin/lead-health`
+
+Cron-secret-protected delivery health monitor. Returns no-store, patient-free age/count metrics and next actions; `200` means healthy, `503` means degraded or health-alert delivery failed. An optional server-side webhook sends changes and recovery through persistent deduplication. See [Saved requests and delivery monitoring](./lead-delivery-reliability.md) for requirements, thresholds, schema migration, and alert configuration.

@@ -38,7 +38,7 @@ const navigation: Array<{ name: string; href: string; dropdown?: boolean }> = [
   { name: "About Us", href: "/about" },
   { name: "Services", href: "/services", dropdown: true },
   { name: "Our Team", href: "/team" },
-  { name: "Patient Info", href: "/patient-info" },
+  { name: "New Patients", href: "/new-patients" },
   { name: "Blog", href: "/blog" },
   { name: "Contact", href: "/contact" },
 ];

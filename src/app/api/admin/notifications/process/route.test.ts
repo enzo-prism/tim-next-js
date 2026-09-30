@@ -29,7 +29,8 @@ describe("notification worker POST", () => {
       processed: 0,
       sent: 0,
       failed: 0,
-      formspree: { processed: 0, delivered: 0, failed: 0, skipped: 0 },
+      healthy: true,
+      formspree: { processed: 0, delivered: 0, failed: 0, skipped: 0, indeterminate: 0 },
     });
   });
 
@@ -69,17 +70,18 @@ describe("notification worker POST", () => {
     expect(mocks.processScheduledNotifications).not.toHaveBeenCalled();
   });
 
-  it("processes outbox batch and Formspree retries when authenticated", async () => {
+  it("reports a degraded worker when a delivery failed", async () => {
     mocks.processScheduledNotifications.mockResolvedValue({
       processed: 2,
       sent: 1,
       failed: 1,
-      formspree: { processed: 1, delivered: 1, failed: 0, skipped: 0 },
+      healthy: false,
+      formspree: { processed: 1, delivered: 1, failed: 0, skipped: 0, indeterminate: 0 },
     });
     const response = await POST(buildRequest("POST", true));
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(503);
     const body = await response.json();
-    expect(body.ok).toBe(true);
+    expect(body.ok).toBe(false);
     expect(body.processed).toBe(2);
     expect(body.sent).toBe(1);
     expect(body.failed).toBe(1);
@@ -88,6 +90,7 @@ describe("notification worker POST", () => {
       delivered: 1,
       failed: 0,
       skipped: 0,
+      indeterminate: 0,
     });
     expect(mocks.processScheduledNotifications).toHaveBeenCalledTimes(1);
   });
@@ -97,7 +100,8 @@ describe("notification worker POST", () => {
       processed: 1,
       sent: 1,
       failed: 0,
-      formspree: { processed: 1, delivered: 1, failed: 0, skipped: 0 },
+      healthy: true,
+      formspree: { processed: 1, delivered: 1, failed: 0, skipped: 0, indeterminate: 0 },
     });
     const response = await POST(buildRequest("POST", true));
     const body = await response.json();
@@ -115,7 +119,8 @@ describe("notification worker GET (scheduler-compatible)", () => {
       processed: 0,
       sent: 0,
       failed: 0,
-      formspree: { processed: 0, delivered: 0, failed: 0, skipped: 0 },
+      healthy: true,
+      formspree: { processed: 0, delivered: 0, failed: 0, skipped: 0, indeterminate: 0 },
     });
   });
 
@@ -137,7 +142,8 @@ describe("notification worker GET (scheduler-compatible)", () => {
       processed: 3,
       sent: 3,
       failed: 0,
-      formspree: { processed: 0, delivered: 0, failed: 0, skipped: 0 },
+      healthy: true,
+      formspree: { processed: 0, delivered: 0, failed: 0, skipped: 0, indeterminate: 0 },
     });
     const response = await GET(buildRequest("GET", true));
     expect(response.status).toBe(200);

@@ -326,3 +326,10 @@ describe("analytics custom events", () => {
     }
   });
 });
+
+// Keep the new symptom-based intake choice out of both analytics destinations.
+it("omits the tooth-pain intake label from analytics while keeping aggregate funnel fields", () => {
+  const sanitized = sanitizeSiteEventPayload({ service_id: "tooth-pain", form_type: "appointment", form_step: "details" });
+  expect(sanitized).not.toHaveProperty("service_id");
+  expect(sanitized).toMatchObject({ form_type: "appointment", form_step: "details" });
+});

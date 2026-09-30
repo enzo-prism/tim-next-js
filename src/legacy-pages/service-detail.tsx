@@ -5,12 +5,14 @@ import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
 import { serviceReviews } from "@/data/reviews";
 import { buildAppointmentUrl } from "@/lib/analytics";
-import { AppointmentLink } from "@/components/tracking/tracked-links";
+import { AppointmentLink, PhoneLink } from "@/components/tracking/tracked-links";
 import { FinalCtaPhoneLink } from "@/components/service-growth/final-cta-phone-link";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import { getRelatedLinksForService } from "@/lib/internal-links";
+import JsonLd from "@/components/seo/json-ld";
+import { buildFaqSchema } from "@/content/structured-data";
 
 type ServiceDetailProps = {
   serviceId: string;
@@ -18,7 +20,7 @@ type ServiceDetailProps = {
 
 export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
   // Find the service by ID (check both main services and sub-services)
-  const service = services.find(s => s.id === serviceId) || 
+  const service = services.find(s => s.id === serviceId) ||
     services.flatMap(s => s.subServices || []).find(s => s.id === serviceId);
 
   if (!service) {
@@ -73,6 +75,12 @@ export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               {service.heroDescription || service.description}
             </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+              <Button asChild>
+                <AppointmentLink href={buildAppointmentUrl({ serviceId: service.id, source: "service_detail_hero" })} source="service_detail_hero" serviceId={service.id}>Request a visit</AppointmentLink>
+              </Button>
+              <PhoneLink location="service_detail_hero" serviceId={service.id} className="inline-flex min-h-11 items-center rounded-md px-3 font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Call (408) 358-8100</PhoneLink>
+            </div>
           </div>
         </div>
       </section>
@@ -86,16 +94,6 @@ export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
           ]}
         />
 
-        {reviewData && reviewData.reviews.length > 0 && (
-          <div className="mb-12">
-            <ReviewsSection
-              reviews={reviewData.reviews}
-              title={`${service.title} Patient Reviews`}
-              showCTA={true}
-            />
-          </div>
-        )}
-        
         {/* Back Button */}
         <div className="mb-12">
           <Button asChild variant="ghost" className="text-primary hover:bg-primary/5">
@@ -129,8 +127,61 @@ export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
           </div>
         </div>
 
-        {/* Benefits Section */}
-        {service.benefits && (
+        {service.decisionGuide ? (
+          <section className="mb-16 space-y-10" aria-labelledby="planning-heading">
+            <JsonLd data={buildFaqSchema(service.decisionGuide.faqs)} />
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary">Plan your visit</p>
+              <h2 id="planning-heading" className="mt-3 text-3xl font-bold text-foreground">Is {service.title.toLowerCase()} right for you?</h2>
+              <div className="mt-6 grid gap-8 md:grid-cols-2">
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground">When it may help</h3>
+                  <p className="mt-3 leading-7 text-muted-foreground">{service.decisionGuide.candidacy}</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground">Options to discuss</h3>
+                  <p className="mt-3 leading-7 text-muted-foreground">{service.decisionGuide.alternatives}</p>
+                </div>
+              </div>
+            </div>
+            <div className="border-y border-border py-8">
+              <h3 className="text-xl font-semibold text-foreground">What to expect</h3>
+              <p className="mt-3 max-w-4xl leading-7 text-muted-foreground">{service.decisionGuide.visitExpectations}</p>
+              <Link className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4" href="/new-patients">Preparing for your first visit</Link>
+            </div>
+            <div className="grid gap-8 md:grid-cols-2">
+              <div>
+                <h3 className="text-xl font-semibold text-foreground">What affects the cost?</h3>
+                <ul className="mt-4 list-disc space-y-3 pl-5 leading-7 text-muted-foreground">
+                  {service.decisionGuide.costFactors.map((factor) => <li key={factor}>{factor}</li>)}
+                </ul>
+                <Link className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4" href="/insurance-and-payment">Questions about an estimate or your plan</Link>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-foreground">Care and follow-up</h3>
+                <p className="mt-4 leading-7 text-muted-foreground">{service.decisionGuide.maintenance}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-foreground">Common questions</h3>
+              <div className="mt-5 space-y-3">
+                {service.decisionGuide.faqs.map((faq) => (
+                  <details key={faq.question} className="rounded-lg border border-border bg-card px-5 py-4">
+                    <summary className="cursor-pointer font-semibold text-foreground">{faq.question}</summary>
+                    <p className="mt-3 leading-7 text-muted-foreground">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+              <p className="mt-6 text-sm leading-6 text-muted-foreground">General information helps you prepare questions. Your examination and treatment plan determine the right approach for you.</p>
+              <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                {service.decisionGuide.sources.map((source) => <li key={source.href}><a className="font-semibold text-primary underline underline-offset-4" href={source.href} target="_blank" rel="noopener noreferrer">{source.label} (opens in a new tab)</a></li>)}
+              </ul>
+            </div>
+          </section>
+        ) : null}
+
+        {/* Services with a decision guide cover benefits and expectations above. */}
+        {!service.decisionGuide && service.benefits && (
           <div className="mb-20">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Benefits of {service.title}</h2>
@@ -138,7 +189,7 @@ export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
                 Discover how {service.title.toLowerCase()} can improve your oral health and overall well-being.
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {service.benefits.map((benefit: string, index: number) => (
                 <div
@@ -153,7 +204,7 @@ export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
         )}
 
         {/* Process Section */}
-        {service.process && (
+        {!service.decisionGuide && service.process && (
           <div className="mb-20">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Process</h2>
@@ -161,7 +212,7 @@ export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
                 Here's what you can expect during your {service.title.toLowerCase()} treatment.
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {service.process.map((step: string, index: number) => (
                 <div key={index} className="bg-muted/50 rounded-xl p-6 text-center">
@@ -172,6 +223,16 @@ export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {reviewData && reviewData.reviews.length > 0 && (
+          <div className="mb-12">
+            <ReviewsSection
+              reviews={reviewData.reviews}
+              title={`${service.title} Patient Reviews`}
+              showCTA={true}
+            />
           </div>
         )}
 

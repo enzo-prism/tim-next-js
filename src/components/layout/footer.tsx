@@ -55,7 +55,10 @@ export default function Footer() {
               <li><Link href="/services" className="hover:text-primary transition-colors">Services</Link></li>
               <li><Link href="/team" className="hover:text-primary transition-colors">Our Team</Link></li>
               <li><Link href="/testimonials" className="hover:text-primary transition-colors">Testimonials</Link></li>
-              <li><Link href="/patient-info" className="hover:text-primary transition-colors">Patient Info</Link></li>
+              <li><Link href="/new-patients" className="hover:text-primary transition-colors">New Patients</Link></li>
+              <li><Link href="/insurance-and-payment" className="hover:text-primary transition-colors">Insurance &amp; Payment</Link></li>
+              <li><Link href="/urgent-dental-care" className="hover:text-primary transition-colors">Urgent Dental Concerns</Link></li>
+              <li><Link href="/patient-info" className="hover:text-primary transition-colors">Patient Resources</Link></li>
               <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
               <li>

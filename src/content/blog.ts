@@ -714,3 +714,35 @@ export function getBlogPostBySlug(slug: string) {
 export function getAllBlogRoutes() {
   return getAllBlogPosts().map((post) => getBlogPostHref(post.slug));
 }
+
+export interface BlogTopic {
+  id: string;
+  title: string;
+  description: string;
+  categories: readonly string[];
+  slugs?: readonly string[];
+  careHref: string;
+  careLabel: string;
+}
+
+export const blogTopics: readonly BlogTopic[] = [
+  { id: "children", title: "Children's dental care", description: "First visits, growing teeth, and everyday questions from parents.", categories: ["Children's Dentistry"], careHref: "/services/children-dentistry", careLabel: "Explore children's dentistry" },
+  { id: "prevention", title: "Cleanings and prevention", description: "Cleaning schedules, gum health, sealants, and home care.", categories: ["Preventive Care", "Preventive Dentistry"], careHref: "/services/dental-hygiene", careLabel: "Explore dental hygiene visits" },
+  { id: "alignment", title: "Invisalign and alignment", description: "Consultations and questions about developing smiles.", categories: ["Invisalign & Orthodontics"], careHref: "/services/invisalign", careLabel: "Explore Invisalign consultations" },
+  { id: "jaw-pain", title: "Jaw pain and grinding", description: "Questions about morning jaw symptoms and clenching.", categories: ["TMJ & Bruxism"], careHref: "/tmj", careLabel: "Explore TMJ evaluation" },
+  { id: "sports", title: "Sports and mouthguards", description: "Help parents prepare for active kids and sports seasons.", categories: ["Sports Dentistry"], careHref: "/services/children-dentistry", careLabel: "Ask about care for your child" },
+  { id: "urgent", title: "Tooth pain and injuries", description: "Read what to consider when a dental concern needs prompt attention.", categories: [], slugs: ["child-knocked-out-tooth-los-gatos", "what-should-you-do-if-your-child-has-a-toothache-los-gatos"], careHref: "/urgent-dental-care", careLabel: "Get help with an urgent concern" },
+];
+
+export function resolveBlogTopic(value: string | string[] | undefined): BlogTopic | undefined {
+  const id = Array.isArray(value) ? value[0] : value;
+  return blogTopics.find((topic) => topic.id === id);
+}
+
+export const getBlogTopicHref = (topic: BlogTopic) => `/blog?topic=${topic.id}#articles`;
+
+export function getPostsForTopic(topic?: BlogTopic): BlogPost[] {
+  const posts = getAllBlogPosts();
+  if (!topic) return posts;
+  return posts.filter((post) => topic.categories.includes(post.category) || topic.slugs?.includes(post.slug));
+}

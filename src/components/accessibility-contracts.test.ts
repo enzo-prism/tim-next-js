@@ -1,18 +1,23 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import PatientInfoFaqList from "./patient-info/patient-info-faq-list";
 
 function read(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }
 
 describe("accessibility component contracts", () => {
-  it("exposes FAQ state and panel relationships", () => {
-    const source = read("./patient-info/patient-info-faq-list.tsx");
+  it("renders readable FAQ answers and native disclosure controls before JavaScript runs", () => {
+    const html = renderToStaticMarkup(createElement(PatientInfoFaqList, {
+      faqs: [{ id: "preparation", question: "How can I prepare?", answer: "Call the office to plan your arrival." }],
+    }));
 
-    expect(source).toContain('aria-expanded={expandedFAQ === faq.id}');
-    expect(source).toContain('aria-controls={`faq-panel-${faq.id}`}');
-    expect(source).toContain('role="region"');
-    expect(source).toContain('aria-labelledby={`faq-trigger-${faq.id}`}');
+    expect(html).toContain("<details");
+    expect(html).toContain("<summary");
+    expect(html).toContain("How can I prepare?");
+    expect(html).toContain("Call the office to plan your arrival.");
   });
 
   it("moves focus into videos and restores it when they close", () => {

@@ -49,6 +49,9 @@ export default function SiteMap() {
           <section>
             <h2 className="text-2xl font-bold mb-4">Patient Resources</h2>
             <ul className="space-y-2 text-gray-700">
+              <li><Link href="/new-patients" className="hover:text-primary transition-colors">New Patient Guide</Link></li>
+              <li><Link href="/insurance-and-payment" className="hover:text-primary transition-colors">Insurance &amp; Payment</Link></li>
+              <li><Link href="/urgent-dental-care" className="hover:text-primary transition-colors">Urgent Dental Concerns</Link></li>
               <li><Link href="/patient-info" className="hover:text-primary transition-colors">Patient Info Hub</Link></li>
               <li>
                 <Link href="/patient-info/brushing" className="hover:text-primary transition-colors">

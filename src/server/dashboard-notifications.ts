@@ -11,7 +11,7 @@ const getNotificationConfig = (): DashboardNotificationConfig => {
     .split(",")
     .map((r) => r.trim())
     .filter(Boolean);
-  const dashboardUrl = process.env.LEAD_DASHBOARD_URL?.trim() || null;
+  const dashboardUrl = process.env.LEAD_DASHBOARD_URL?.trim() || "https://chuang-leads-dashboard.vercel.app";
   const webhookUrl = process.env.LEAD_NOTIFICATION_WEBHOOK_URL || null;
 
   return { enabled, recipients, dashboardUrl, webhookUrl };
