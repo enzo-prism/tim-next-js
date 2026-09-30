@@ -172,6 +172,8 @@ export const sanitizeSiteEventPayload = (
 
   for (const [key, value] of Object.entries(payload)) {
     if (!ALLOWED_EVENT_KEYS.has(key)) continue;
+    // Intake symptom choices belong in the private request, not analytics.
+    if (key === "service_id" && typeof value === "string" && value.trim() === "tooth-pain") continue;
 
     const shouldSanitizePath =
       (key === "page_path" || key === "destination") &&
