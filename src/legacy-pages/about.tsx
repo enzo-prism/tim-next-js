@@ -4,6 +4,9 @@ import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import VideoFacade from "@/components/video-facade";
+import patientExperiencePoster from "@assets/video-posters/patient-experience-1106163189.jpg";
+import officeTourPoster from "@assets/video-posters/office-tour-1112347739.jpg";
+import facilityTourPoster from "@assets/video-posters/facility-tour-1106179818.jpg";
 import type { RelatedLink } from "@/lib/internal-links";
 
 // Import office photos
@@ -116,8 +119,8 @@ export default function About() {
                 <VideoFacade
                   videoSrc="https://player.vimeo.com/video/1106163189?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&background=1"
                   title="Family First Smile Care Patient Experience"
-                  poster={officePhoto5}
-                  posterAlt="Patients welcomed at the Family First Smile Care front desk"
+                  poster={patientExperiencePoster}
+                  posterAlt="Colorful family tooth characters from the Family First Smile Care animation"
                   posterSizes="(max-width: 1024px) 100vw, 50vw"
                   playLabel="Play patient experience"
                 />
@@ -169,8 +172,8 @@ export default function About() {
                     <VideoFacade
                       videoSrc="https://player.vimeo.com/video/1112347739?title=0&byline=0&portrait=0&badge=0&autoplay=1"
                       title="Family First Smile Care Office Tour"
-                      poster={officePhoto1}
-                      posterAlt="Family First Smile Care office tour preview"
+                      poster={officeTourPoster}
+                      posterAlt="Waiting room with comfortable seating from the Family First Smile Care office tour"
                       posterSizes="(max-width: 768px) 100vw, 50vw"
                       playLabel="Play office tour"
                     />
@@ -183,8 +186,8 @@ export default function About() {
                     <VideoFacade
                       videoSrc="https://player.vimeo.com/video/1106179818?title=0&byline=0&portrait=0&badge=0&autoplay=1"
                       title="Family First Smile Care Facility Tour"
-                      poster={officePhoto2}
-                      posterAlt="Family First Smile Care facility tour preview"
+                      poster={facilityTourPoster}
+                      posterAlt="Window-side treatment room from the Family First Smile Care facility tour"
                       posterSizes="(max-width: 768px) 100vw, 50vw"
                       playLabel="Play facility tour"
                     />
