@@ -184,7 +184,7 @@ export class DatabaseStorage implements IStorage {
       WITH inserted_contact AS (
         INSERT INTO contacts (
           first_name, last_name, email, phone, service, message,
-          request_type, preferred_date, preferred_time,
+          request_type, preferred_date, preferred_time, preferred_contact_method, visit_for,
           formspree_status, landing_page, referrer, cta_source,
           utm_source, utm_medium, utm_campaign, utm_term, utm_content,
           gclid, gbraid, wbraid, consent_to_contact, consent_version,
@@ -195,6 +195,7 @@ export class DatabaseStorage implements IStorage {
           ${insertContact.firstName}, ${insertContact.lastName}, ${insertContact.email ?? null},
           ${insertContact.phone ?? null}, ${insertContact.service ?? null}, ${insertContact.message ?? null},
           ${insertContact.requestType ?? "contact"}, ${insertContact.preferredDate ?? null}, ${insertContact.preferredTime ?? null},
+          ${insertContact.preferredContactMethod ?? null}, ${insertContact.visitFor ?? null},
           ${insertContact.formspreeStatus ?? null}, ${insertContact.landingPage ?? null}, ${insertContact.referrer ?? null},
           ${insertContact.ctaSource ?? null}, ${insertContact.utmSource ?? null}, ${insertContact.utmMedium ?? null},
           ${insertContact.utmCampaign ?? null}, ${insertContact.utmTerm ?? null}, ${insertContact.utmContent ?? null},
@@ -287,6 +288,8 @@ export class DatabaseStorage implements IStorage {
       requestType: row.request_type as string,
       preferredDate: (row.preferred_date as string) ?? null,
       preferredTime: (row.preferred_time as string) ?? null,
+      preferredContactMethod: (row.preferred_contact_method as Contact["preferredContactMethod"]) ?? null,
+      visitFor: (row.visit_for as Contact["visitFor"]) ?? null,
       formspreeStatus: (row.formspree_status as string) ?? null,
       landingPage: (row.landing_page as string) ?? null,
       referrer: (row.referrer as string) ?? null,
@@ -490,7 +493,9 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(contacts.id, id),
-          eq(contacts.updatedAt, update.expectedUpdatedAt),
+          // PostgreSQL defaults may carry microseconds; the public token is a JS Date.
+          // Lifecycle writes advance by at least one millisecond, preserving conflict checks.
+          dsql`date_trunc('milliseconds', ${contacts.updatedAt}) = ${update.expectedUpdatedAt.toISOString()}::timestamp`,
         ),
       )
       .returning();
@@ -535,6 +540,8 @@ export class InMemoryStorage implements IStorage {
       requestType: insertContact.requestType ?? "contact",
       preferredDate: insertContact.preferredDate ?? null,
       preferredTime: insertContact.preferredTime ?? null,
+      preferredContactMethod: insertContact.preferredContactMethod ?? null,
+      visitFor: insertContact.visitFor ?? null,
       formspreeStatus: insertContact.formspreeStatus ?? null,
       landingPage: insertContact.landingPage ?? null,
       referrer: insertContact.referrer ?? null,

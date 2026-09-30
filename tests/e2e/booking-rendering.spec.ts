@@ -79,7 +79,7 @@ test.describe("appointment request rendering and retry", () => {
       .check();
     await page.getByRole("button", { name: "Send Appointment Request" }).click();
 
-    await expect(page.getByRole("heading", { name: "Your request was saved" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your appointment request was saved" })).toBeVisible();
     await expect(page.getByRole("status")).toBeFocused();
     await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
     await expect.poll(() => countAppointmentAdsConversions(page)).toBe(0);
@@ -102,7 +102,7 @@ test.describe("appointment request rendering and retry", () => {
     await page.getByRole("button", { name: "Send Appointment Request" }).click();
 
     await expect(
-      page.getByRole("heading", { name: "Your appointment request was received" }),
+      page.getByRole("heading", { name: "Your appointment request was saved" }),
     ).toBeVisible();
     await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
     await expect.poll(() => countAppointmentAdsConversions(page)).toBe(0);
@@ -180,7 +180,7 @@ test.describe("appointment request rendering and retry", () => {
     await page.getByLabel(/I agree that Family First Smile Care may contact me/i).check();
     await page.getByRole("button", { name: "Send Appointment Request" }).click();
 
-    await expect(page.getByRole("heading", { name: "Your request was saved" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your appointment request was saved" })).toBeVisible();
 
     // Correct a detail, which is exactly what makes the retry conflict.
     await page.getByRole("button", { name: "Try delivery again" }).click();
@@ -194,7 +194,7 @@ test.describe("appointment request rendering and retry", () => {
 
     await page.getByRole("button", { name: "Send Appointment Request" }).click();
     await expect(
-      page.getByRole("heading", { name: "Your appointment request was received" }),
+      page.getByRole("heading", { name: "Your appointment request was saved" }),
     ).toBeVisible();
 
     expect(requestBodies).toHaveLength(3);
@@ -250,11 +250,65 @@ test.describe("contact request conversion tracking", () => {
     await expect(
       page
         .getByRole("status")
-        .getByText("Thank you. Our team will get back to you soon."),
+        .getByText("Thank you. Our team will contact you during office hours."),
     ).toBeVisible();
     await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
 
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[1]?.submissionId).toBe(requestBodies[0]?.submissionId);
+  });
+});
+
+
+test.describe("simple appointment request", () => {
+  for (const method of ["phone", "email"] as const) {
+    test(`saves a child request with only ${method} and a queued receipt`, async ({ page }) => {
+      let posted: Record<string, unknown> | null = null;
+      await page.route("https://www.googletagmanager.com/gtag/js**", (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
+      await page.route("**/api/appointments", async (route) => {
+        posted = route.request().postDataJSON();
+        await route.fulfill({ status: 202, contentType: "application/json", body: JSON.stringify({ success: true, created: true, delivered: false, queued: true, leadId: "lead-queued", serviceId: "not-sure" }) });
+      });
+      await page.goto("/book-appointment");
+      await page.getByRole("button", { name: "Allow analytics" }).click();
+      await page.getByLabel("Who is the visit for?").selectOption("child");
+      await expect(page.getByText("No patient names or medical details are needed here.", { exact: false })).toBeVisible();
+      await page.getByLabel("How should we contact you?").selectOption(method);
+      await page.getByLabel("Your first name").fill("Taylor");
+      await page.getByLabel("Your last name").fill("Parent");
+      await page.getByLabel(method === "phone" ? "Phone (required)" : "Email (required)").fill(method === "phone" ? "4085551212" : "parent@example.com");
+      await page.getByRole("button", { name: "Continue" }).click();
+      await expect(page.getByRole("heading", { name: "Add any preferences" })).toBeFocused();
+      await page.getByLabel(/I agree that Family First Smile Care may contact me/i).check();
+      await page.getByRole("button", { name: "Send Appointment Request" }).click();
+      await expect(page.getByRole("heading", { name: "Your appointment request was saved" })).toBeVisible();
+      await expect(page.getByRole("status")).toBeFocused();
+      await expect(page.getByRole("status").getByText("Help me choose", { exact: true })).toBeVisible();
+      await expect(page.getByRole("status").getByText("My child", { exact: true })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Try delivery again" })).toHaveCount(0);
+      expect(posted).toMatchObject({ preferredContactMethod: method, visitFor: "child", service: "not-sure" });
+      expect(posted?.[method === "phone" ? "email" : "phone"]).toBe("");
+      await expect.poll(() => countDataLayerEvents(page, "generate_lead")).toBe(1);
+      expect(await countDataLayerEvents(page, "form_submit_fallback")).toBe(0);
+      const tracking = await page.evaluate(() => JSON.stringify(window.dataLayer));
+      expect(tracking).not.toContain("parent@example.com");
+      expect(tracking).not.toContain("4085551212");
+      expect(tracking).not.toContain("Taylor");
+      expect(tracking).not.toContain("child");
+    });
+  }
+  test("requires the chosen method and surfaces urgent call guidance", async ({ page }) => {
+    await page.goto("/book-appointment");
+    await page.getByLabel("What can we help with?").selectOption("tooth-pain");
+    await expect(page.getByText("Need urgent help?", { exact: false })).toBeVisible();
+    await page.getByLabel("Your first name").fill("Taylor");
+    await page.getByLabel("Your last name").fill("Patient");
+    await page.getByLabel("Email (optional)").fill("parent@example.com");
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByText("Phone number is required", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Phone (required)")).toBeFocused();
+    await page.getByLabel("How should we contact you?").selectOption("email");
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "Add any preferences" })).toBeVisible();
   });
 });

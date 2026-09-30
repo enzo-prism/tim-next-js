@@ -1,0 +1,14 @@
+# Publishing a clinical review
+
+Clinical review status for the website's articles is currently unknown. No confirmed attestations are included in `src/content/clinical-review.ts`, and no article displays a clinician review badge. An editorial update date, primary-source link, test pass, or deployment does not establish clinician review.
+
+1. Give the clinician the complete rendered article and the exact content revision. Confirm clinical statements, urgency advice, references, and descriptions of the practice's actual services. Make any requested corrections first.
+2. Obtain explicit attestation that the clinician reviewed the final text for accuracy and completeness. Confirm their public name, credentials, profile link, and actual review date. Keep the approval evidence in the practice's approved private records; do not commit confidential correspondence or patient information.
+3. Calculate `getBlogContentDigest(post)` from the final `getBlogPostBySlug(slug)` object. It hashes the entire article record, so even an edit without a date change withdraws the review claim. The content must match the version the clinician reviewed.
+4. Add a record keyed by article slug in `clinicalReviewAttestations`: `status: "confirmed"`, reviewer name/credentials/local profile link, the actual `reviewedAt` date in `YYYY-MM-DD`, `contentDigest`, and a non-sensitive internal `evidenceReference`. A pending review must not be marked confirmed. Never invent a date or infer approval from silence.
+5. Run `npm run test -- src/content/clinical-review.test.ts` and inspect the rendered article. The byline should identify the reviewer and date; the `mainEntityOfPage` WebPage schema should contain matching `reviewedBy` and `lastReviewed` properties. Editorial author and publication dates remain distinct.
+6. Recheck after every article edit. A changed digest, missing evidence, invalid/future review date, or review date before the content update hides the badge and schema automatically. Ask for review of the changed text before recording a replacement attestation.
+
+The registry's evidence reference is used for publication validation only and is never emitted in public HTML or structured data. Do not add a clinician badge to general service pages until an equivalent attestation for their exact content has been obtained.
+
+General service guides cite the ADA's [crowns](https://www.mouthhealthy.org/all-topics-a-z/crowns), [whitening](https://www.mouthhealthy.org/all-topics-a-z/teeth-whitening), and [daily brushing](https://www.mouthhealthy.org/all-topics-a-z/brushing-your-teeth) guidance and the NIDCR's [bruxism overview](https://www.nidcr.nih.gov/health-info/bruxism). These sources support general education, not verification of local capabilities, prices, insurance participation, or clinician approval.

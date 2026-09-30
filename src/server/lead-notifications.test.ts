@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { relayLeadNotification, toFormspreePayload } from "@/server/lead-notifications";
+import { LeadNotificationRejectedError, relayLeadNotification, toFormspreePayload } from "@/server/lead-notifications";
 
 describe("lead notification relay", () => {
   afterEach(() => {
@@ -41,7 +41,7 @@ describe("lead notification relay", () => {
   });
 
   it("fails closed when the notification provider rejects the request", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 503 })));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 422 })));
 
     await expect(
       relayLeadNotification({
@@ -53,7 +53,7 @@ describe("lead notification relay", () => {
         email: "jamie@example.com",
         consentToContact: true,
       }),
-    ).rejects.toThrow("status 503");
+    ).rejects.toBeInstanceOf(LeadNotificationRejectedError);
   });
 
   it("maps stored website leads to Formspree payloads and skips Google Ads rows", () => {
@@ -97,5 +97,17 @@ describe("lead notification relay", () => {
         submissionId: null,
       } as never),
     ).toBeNull();
+    const phoneOnly = toFormspreePayload({ ...contact, requestType: "appointment", email: null, preferredContactMethod: "phone", visitFor: "child" } as never);
+    expect(phoneOnly).toEqual(expect.objectContaining({ phone: "408-555-1212", preferredContactMethod: "phone", visitFor: "child" }));
+    expect(phoneOnly).not.toHaveProperty("email");
+    expect(toFormspreePayload({ ...contact, email: null, phone: null } as never)).toBeNull();
   });
+  it.each([408, 500, 502, 503])("treats HTTP %i as indeterminate rather than a retryable rejection", async (status) => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status })));
+    await expect(relayLeadNotification({
+      leadId: "lead-1", submissionId: "0d9f6471-7120-4b5a-a1af-e1f77b0dcacf",
+      requestType: "appointment", firstName: "Jamie", lastName: "Lee", email: "jamie@example.com", consentToContact: true,
+    })).rejects.not.toBeInstanceOf(LeadNotificationRejectedError);
+  });
+
 });

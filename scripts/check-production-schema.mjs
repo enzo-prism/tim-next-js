@@ -19,6 +19,8 @@ const expectedColumns = [
   { name: "request_type", type: "text", nullable: false, defaultIncludes: "contact" },
   { name: "preferred_date", type: "text", nullable: true },
   { name: "preferred_time", type: "text", nullable: true },
+  { name: "preferred_contact_method", type: "text", nullable: true },
+  { name: "visit_for", type: "text", nullable: true },
   { name: "formspree_status", type: "text", nullable: true },
   { name: "landing_page", type: "text", nullable: true },
   { name: "referrer", type: "text", nullable: true },
@@ -136,16 +138,21 @@ const constraints = await sql`
       'contacts_lead_status_check',
       'contacts_request_type_check',
       'contacts_formspree_status_check',
-      'contacts_ingested_via_check'
+      'contacts_ingested_via_check',
+      'contacts_preferred_contact_method_check',
+      'contacts_visit_for_check'
     )
 `;
 
-// 0004-0009: ingestion, outbox, and reconciliation objects. Without these the
+// 0004-0012: ingestion, outbox, reconciliation, health, and outcome objects. Without these the
 // public form notification and reconciliation jobs cannot persist or retry.
 const expectedTables = [
   "notification_outbox",
   "reconciliation_runs",
   "reconciliation_discrepancies",
+  "lead_delivery_worker_state",
+  "lead_delivery_alert_state",
+  "call_outcomes",
 ];
 const tableRows = await sql`
   SELECT table_name
@@ -156,6 +163,26 @@ const presentTables = new Set(tableRows.map((row) => row.table_name));
 const tableProblems = expectedTables
   .filter((name) => !presentTables.has(name))
   .map((name) => `${name}: missing`);
+
+// Check new runtime fields too: an existing table alone does not prove parity.
+const operationalFields = {
+  lead_delivery_worker_state: ["worker", "status", "run_token", "last_started_at", "last_completed_at", "last_success_at", "error_code"],
+  lead_delivery_alert_state: ["monitor", "sent_fingerprint", "last_sent_at", "pending_fingerprint", "event_key", "lease_token", "lease_expires_at"],
+  call_outcomes: ["provider", "call_id", "occurred_at", "source_observed_at", "status", "source", "campaign", "linked_lead_id", "booked_at", "arrived_at", "updated_at"],
+};
+const operationalColumns = await sql`
+  SELECT table_name, column_name FROM information_schema.columns
+  WHERE table_schema = 'public' AND table_name = ANY(${Object.keys(operationalFields)})
+`;
+const operationalAvailable = new Set(operationalColumns.map((row) => `${row.table_name}.${row.column_name}`));
+for (const [table, fields] of Object.entries(operationalFields)) {
+  for (const field of fields) if (!operationalAvailable.has(`${table}.${field}`)) tableProblems.push(`${table}.${field}: missing`);
+}
+const callIdentity = await sql`
+  SELECT conname FROM pg_constraint
+  WHERE conrelid = to_regclass('public.call_outcomes') AND conname = 'call_outcomes_identity' AND contype = 'u'
+`;
+if (callIdentity.length === 0) tableProblems.push("call_outcomes_identity: missing unique provider/call identity");
 
 const leadIdIndexes = await sql`
   SELECT indexname
@@ -172,6 +199,8 @@ const constraintsByName = new Map(constraints.map((row) => [row.conname, row]));
 const constraintProblems = [];
 
 const expectedConstraintValues = new Map([
+  ["contacts_preferred_contact_method_check", ["phone", "email"]],
+  ["contacts_visit_for_check", ["self", "child", "family"]],
   [
     "contacts_lead_status_check",
     ["new", "contacted", "booked", "arrived", "no-show", "lost"],

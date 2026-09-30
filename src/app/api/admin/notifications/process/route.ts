@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 const handleProcess = async () => {
   const result = await processScheduledNotifications();
-  return cronJsonResponse({ ok: true, ...result });
+  return cronJsonResponse({ ok: result.healthy, ...result }, { status: result.healthy ? 200 : 503 });
 };
 
 export async function POST(req: NextRequest) {

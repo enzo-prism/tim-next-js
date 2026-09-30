@@ -30,3 +30,11 @@
 3. Deployment on Vercel
 4. API Reference
 5. Operations Runbook
+
+## Patient experience and delivery
+
+- [Practice facts to confirm](./practice-content-confirmation.md)
+- [Clinical review publication](./clinical-review-publishing.md)
+- [Patient outcome reporting](./patient-outcome-reporting.md)
+- [Lead delivery reliability](./lead-delivery-reliability.md)
+- [Independent outage monitoring](./independent-health-monitor.md)

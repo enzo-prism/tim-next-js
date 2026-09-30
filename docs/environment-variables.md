@@ -102,3 +102,23 @@ vercel env ls
 vercel env add <NAME> production
 vercel env pull .env --environment=development
 ```
+
+## Delivery health and outcomes
+
+- `CRON_SECRET` also protects `/api/admin/lead-health`, scheduled every 15 minutes.
+- `LEAD_HEALTH_ALERT_WEBHOOK_URL`: optional HTTPS receiver for actionable issue changes and recovery; no patient fields. Without a receiver, health remains available to a protected external monitor.
+- `LEAD_HEALTH_ALERT_RECIPIENTS`: optional comma-separated staff addresses for this receiver.
+- `LEAD_HEALTH_STAFF_ALERTS_REQUIRED` / `LEAD_HEALTH_RECONCILIATION_REQUIRED`: set to `true` only when the practice requires those integrations; health then flags missing configuration.
+- `LEAD_OUTCOMES_SECRET`: separate server-only bearer secret, at least 32 characters, for outcome reads/writes and aggregate reports. Keep out of browser code and dashboards with public clients. Missing/short secret disables these APIs with 503.
+
+Apply SQL migrations through `0012` before deploying the new server code. Existing staff dashboard database permissions remain read-only. Configure an authorized server integration or use the outcome CLI; adding API code does not establish call-provider ingestion or Ads conversion imports.
+
+## Delivery-health monitoring (server-only)
+
+- `LEAD_HEALTH_ALERT_WEBHOOK_URL`: optional, enables action-only incident/change/recovery webhook alerts. Use an independent route from generic lead alerts and support `Idempotency-Key`.
+- `LEAD_HEALTH_ALERT_RECIPIENTS`: optional comma-separated recipients; otherwise the webhook owns routing.
+- `LEAD_HEALTH_STAFF_ALERTS_REQUIRED`: defaults false; true makes missing/disabled staff-alert configuration an incident.
+- `LEAD_HEALTH_RECONCILIATION_REQUIRED`: defaults false; true makes disabled reconciliation an incident.
+- Existing `CRON_SECRET` also protects `/api/admin/lead-health`. Apply migration 0011 before deployment.
+
+See [Saved requests and delivery monitoring](./lead-delivery-reliability.md) for heartbeat thresholds and external-monitor escalation when the database or health cron is unavailable.

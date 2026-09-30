@@ -1,18 +1,17 @@
 import Image from "next/image";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import TestimonialCarousel from "@/components/testimonial-carousel";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { buildAppointmentUrl } from "@/lib/analytics";
-import { AppointmentLink, PhoneLink } from "@/components/tracking/tracked-links";
+import { AppointmentLink, PhoneLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
 import HeroBackdrop from "@/components/brand/HeroBackdrop";
 import VideoFacade from "@/components/video-facade";
 import officeTourPoster from "@assets/Office Photo 1_1753972057110.jpeg";
 import drChuangPhoto from "@assets/Dr. Chuang_1753977515693.jpg";
-import { testimonialsPageSummary } from "@/content/testimonials";
+import { featuredReview, testimonialSections, testimonialsPageSummary } from "@/content/testimonials";
 
 const OFFICE_TOUR_VIDEO_SRC =
-  "https://player.vimeo.com/video/1106179834?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&background=1&controls=0";
+  "https://player.vimeo.com/video/1106179834?title=0&byline=0&portrait=0&badge=0&autoplay=1&loop=0&muted=0&background=0&controls=1";
 
 const featuredServices = [
   {
@@ -44,171 +43,122 @@ const featuredServices = [
 export default function Home() {
   return (
     <div className="pt-16">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24">
+      <section aria-labelledby="home-heading" className="relative overflow-hidden py-8 sm:py-12 lg:py-16">
         <HeroBackdrop variant="default" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:gap-14">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-7 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-16">
             <div className="max-w-2xl">
-              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-800 mb-5 sm:mb-6 leading-tight text-balance">
-                <span style={{ display: 'block' }}>
-                  A Gentle Family Dentist in Los Gatos
-                </span>
+              <h1 id="home-heading" className="mb-4 text-3xl font-bold leading-tight text-foreground text-balance sm:text-4xl lg:text-5xl">
+                A Gentle Family Dentist in Los Gatos
               </h1>
-              <p className="text-xl text-gray-600 mb-4">
+              <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
                 Calm, clear dental care for children and adults, with one Los Gatos team your family can grow with.
               </p>
-              <p className="mb-8 text-sm font-semibold text-primary">
-                Led by{" "}
-                <Link href="/team" className="underline decoration-primary/35 underline-offset-4 hover:decoration-primary">
-                  Dr. Tim J. Chuang, DDS
-                </Link>
-                , a Bay Area native focused on gentle, family-centered care.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <Button
-                  asChild
-                  className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 text-base sm:text-lg font-semibold px-6 sm:px-8 py-3 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
-                >
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button asChild className="h-auto min-h-12 px-6 py-3 text-base font-semibold">
                   <AppointmentLink href={buildAppointmentUrl({ source: "home_hero" })} source="home_hero">
                     Request an Appointment
                   </AppointmentLink>
                 </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-base sm:text-lg font-semibold px-6 sm:px-8 py-3 transition duration-200 motion-reduce:hover:scale-100 motion-reduce:transition-none"
-                >
+                <Button asChild variant="outline" className="h-auto min-h-12 border-primary/60 px-6 py-3 text-base font-semibold text-primary">
                   <PhoneLink location="home_hero">Call (408) 358-8100</PhoneLink>
                 </Button>
               </div>
-            </div>
-            <div className="relative mx-auto w-full max-w-[320px] sm:max-w-[360px] lg:max-w-[390px]">
-              <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                Virtual Office Tour
-              </p>
-              <div className="relative">
-                <div className="relative rounded-xl border border-border bg-card p-2 shadow-sm">
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-900 sm:aspect-[9/16]">
-                    <VideoFacade
-                      videoSrc={OFFICE_TOUR_VIDEO_SRC}
-                      title="Family First Smile Care Office Tour"
-                      poster={officeTourPoster}
-                      posterAlt="Inside the Family First Smile Care office in Los Gatos"
-                      posterSizes="(max-width: 639px) calc(100vw - 5.5rem), (max-width: 1023px) 360px, 390px"
-                      posterQuality={65}
-                      posterPriority
-                      posterFetchPriority="high"
-                      playLabel="Play office tour"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div
-                className="mt-4 inline-flex items-center gap-3 rounded-xl bg-white/95 px-4 py-3 shadow-sm ring-1 ring-slate-200 sm:absolute sm:-bottom-6 sm:-left-10 sm:mt-0"
-              >
-                <div>
-                  <p className="font-semibold leading-tight">{testimonialsPageSummary.averageRating} on Google</p>
-                  <p className="text-sm text-gray-600 leading-tight">{testimonialsPageSummary.reviewCountLabel}</p>
-                </div>
+              <div data-home-review-proof="" className="mt-5 border-t border-border pt-4">
+                <TrackedExternalLink
+                  href={testimonialsPageSummary.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  kind="review"
+                  provider="google"
+                  location="home_hero_proof"
+                  className="inline-flex flex-wrap gap-x-2 text-sm font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary"
+                >
+                  <span>{testimonialsPageSummary.averageRating} on Google</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{testimonialsPageSummary.reviewCountLabel}</span>
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </TrackedExternalLink>
+                <p className="mt-1 text-xs text-muted-foreground">{testimonialsPageSummary.verifiedAtLabel}</p>
               </div>
             </div>
+            <figure data-home-dentist="" className="order-first flex items-center gap-4 lg:order-last lg:block">
+              <Image
+                src={drChuangPhoto}
+                alt="Dr. Tim J. Chuang, DDS"
+                priority
+                sizes="(max-width: 1023px) 96px, 340px"
+                className="aspect-[4/5] w-24 shrink-0 rounded-xl object-cover lg:w-full"
+              />
+              <figcaption className="min-w-0 lg:mt-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-primary">Meet your dentist</p>
+                <Link href="/team" className="mt-1 inline-block text-lg font-bold text-foreground underline decoration-border underline-offset-4 hover:decoration-primary">
+                  Dr. Tim J. Chuang, DDS
+                </Link>
+                <p className="mt-1 text-sm text-muted-foreground">Practice owner · Bay Area native</p>
+                <p className="mt-2 hidden text-sm leading-relaxed text-muted-foreground lg:block">
+                  University of the Pacific School of Dentistry graduate with a general dentistry residency.
+                </p>
+              </figcaption>
+            </figure>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="relative overflow-hidden bg-background py-16 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-14">
-            <div
-              className="mb-3 inline-flex items-center rounded-lg border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary"
-            >
-              Patient Reviews
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
-              <span className="inline-flex items-center justify-center gap-3">
-
-                <span>What Our Patients Say</span>
-              </span>
-            </h2>
-            <p className="mx-auto max-w-3xl text-lg text-gray-600 sm:text-xl">
-              Public reviews from patients who chose our Los Gatos dental team
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <div className="rounded-lg border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
-                {testimonialsPageSummary.averageRating} average rating
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white/90 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm">
-                {testimonialsPageSummary.reviewCountLabel}
-              </div>
-            </div>
-            <p className="mt-3 text-xs text-slate-500">
-              {testimonialsPageSummary.verifiedAtLabel}
-            </p>
+      <section aria-labelledby="visit-next-steps-heading" className="border-y border-border bg-card py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="visit-next-steps-heading" className="mb-5 text-xl font-semibold text-foreground">Make your next step a little easier</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Link href="/new-patients" className="rounded-lg border border-border p-5 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <h3 className="font-semibold text-primary">Your first visit</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Know what to expect and how to prepare.</p>
+            </Link>
+            <Link href="/insurance-and-payment" className="rounded-lg border border-border p-5 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <h3 className="font-semibold text-primary">Insurance &amp; payment</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Find the next step for coverage and payment questions.</p>
+            </Link>
+            <Link href="/urgent-dental-care" className="rounded-lg border border-border p-5 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <h3 className="font-semibold text-primary">Something hurts?</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">See how to contact the office about urgent dental concerns.</p>
+            </Link>
           </div>
+        </div>
+      </section>
 
-          <div>
-            <TestimonialCarousel />
+      <section aria-labelledby="patient-reviews-heading" className="bg-background py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="patient-reviews-heading" className="text-3xl font-bold text-foreground">What Our Patients Say</h2>
+          <p className="mt-3 text-base text-muted-foreground">Selected excerpts from public Google reviews.</p>
+          <div data-home-static-reviews="" className="mt-7 grid gap-5 lg:grid-cols-3">
+            {[featuredReview, ...testimonialSections.flatMap((section) => section.reviews).filter((review) => review.name === "Janey Lee" || review.name === "Jerry Jobe")].map((review) => (
+              <figure key={review.name} className="flex flex-col rounded-xl border border-border bg-card p-6">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.08em] text-primary">{review.patientLabel}</p>
+                <blockquote className="flex-1 text-base leading-relaxed text-foreground">“{review.quote}”</blockquote>
+                <figcaption className="mt-5 border-t border-border pt-4 text-sm font-semibold text-foreground">{review.name}</figcaption>
+              </figure>
+            ))}
           </div>
-
-          <div className="mt-8 flex justify-center">
-            <Button
-              asChild
-              variant="outline"
-              className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
-            >
-              <Link href="/testimonials">
-                Read more patient reviews
-                <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
-              </Link>
+          <div className="mt-7 flex flex-wrap items-center gap-5">
+            <Button asChild variant="outline" className="border-primary/60 text-primary">
+              <Link href="/testimonials">Read more patient reviews</Link>
             </Button>
+            <TrackedExternalLink href={testimonialsPageSummary.sourceUrl} target="_blank" rel="noopener noreferrer" kind="review" provider="google" location="home_reviews" className="text-sm font-semibold text-primary underline underline-offset-4">
+              Read reviews on Google<span className="sr-only"> (opens in a new tab)</span>
+            </TrackedExternalLink>
           </div>
         </div>
       </section>
 
-      {/* Doctor trust section */}
-      <section className="py-16 sm:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className="grid items-center gap-8 rounded-xl border border-border bg-card p-6 sm:p-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10"
-          >
-            <Image
-              src={drChuangPhoto}
-              alt="Dr. Tim J. Chuang, DDS"
-              sizes="(max-width: 1024px) 240px, 240px"
-              className="mx-auto aspect-[4/5] w-full max-w-60 rounded-xl object-cover"
-            />
-            <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-                Meet your dentist
-              </p>
-              <h2 className="text-3xl font-bold text-gray-800 lg:text-4xl">
-                Dr. Tim J. Chuang
-              </h2>
-              <p className="mt-2 text-lg font-semibold text-primary">
-                Lead dentist and practice owner
-              </p>
-              <p className="mt-4 max-w-3xl text-base leading-relaxed text-gray-600 sm:text-lg">
-                Dr. Chuang is a Bay Area native and University of the Pacific School of Dentistry
-                graduate. His approach centers on clear explanations, gentle treatment, and care
-                that works for children, adults, and anxious patients.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2 text-sm text-gray-700">
-                <span className="rounded-lg border border-border bg-muted/40 px-3 py-2">
-                  5+ years in practice
-                </span>
-                <span className="rounded-lg border border-border bg-muted/40 px-3 py-2">
-                  General dentistry residency
-                </span>
-                <span className="rounded-lg border border-border bg-muted/40 px-3 py-2">
-                  Family-centered care
-                </span>
-              </div>
-              <Button asChild variant="outline" className="mt-6 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground">
-                <Link href="/team">Meet Dr. Chuang and the team</Link>
-              </Button>
-            </div>
+      <section aria-labelledby="office-tour-heading" className="bg-card py-12 sm:py-16">
+        <div className="mx-auto grid max-w-7xl items-center gap-7 px-4 sm:px-6 md:grid-cols-2 lg:gap-12 lg:px-8">
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-primary">Take a look around</p>
+            <h2 id="office-tour-heading" className="text-3xl font-bold text-foreground">A familiar place before your first visit</h2>
+            <p className="mt-4 text-base leading-relaxed text-muted-foreground">Preview our Los Gatos office at your own pace. Play the tour when you’re ready, or explore the office photos.</p>
+            <Link href="/about" className="mt-5 inline-block text-sm font-semibold text-primary underline underline-offset-4">See our office and learn about our approach</Link>
+          </div>
+          <div className="relative aspect-video overflow-hidden rounded-xl border border-border bg-muted">
+            <VideoFacade videoSrc={OFFICE_TOUR_VIDEO_SRC} title="Family First Smile Care Office Tour" poster={officeTourPoster} posterAlt="Inside the Family First Smile Care office in Los Gatos" posterSizes="(max-width: 767px) calc(100vw - 2rem), (max-width: 1280px) 50vw, 584px" posterQuality={65} playLabel="Play office tour" />
           </div>
         </div>
       </section>

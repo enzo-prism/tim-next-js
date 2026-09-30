@@ -1,3 +1,13 @@
+export interface ServiceDecisionGuide {
+  candidacy: string;
+  alternatives: string;
+  visitExpectations: string;
+  costFactors: string[];
+  maintenance: string;
+  faqs: { question: string; answer: string }[];
+  sources: { label: string; href: string }[];
+}
+
 export interface Service {
   id: string;
   title: string;
@@ -12,6 +22,7 @@ export interface Service {
   process?: string[];
   seoTitle?: string;
   seoDescription?: string;
+  decisionGuide?: ServiceDecisionGuide;
 }
 
 export const services: Service[] = [
@@ -168,17 +179,17 @@ export const services: Service[] = [
       "Custom-fitted night guards",
       "Protection against bruxism",
       "Comfortable, durable materials",
-      "Reduced jaw tension and pain",
-      "Prevents tooth wear and damage",
+      "Evaluation of grinding, clenching, and jaw symptoms",
+      "Protection to help reduce tooth wear",
     ],
     heroDescription: "Custom-fitted night guards to protect your teeth from grinding and clenching while you sleep.",
-    longDescription: "Teeth grinding (bruxism) can cause significant damage to your teeth and jaw over time. Our custom night guards provide comfortable protection while you sleep, preventing wear and reducing associated pain.",
+    longDescription: "Grinding and clenching can wear or damage teeth. A custom night guard separates the teeth to help protect them. An exam helps determine whether a guard is appropriate and whether your symptoms need other evaluation.",
     benefits: [
-      "Prevents tooth wear and damage",
-      "Reduces jaw pain and tension",
-      "Improves sleep quality",
-      "Custom fit for maximum comfort",
-      "Durable, long-lasting protection",
+      "Helps protect teeth from grinding-related wear",
+      "Fit tailored to your teeth",
+      "Guidance on use and care",
+      "Follow-up adjustments when needed",
+      "A plan based on your symptoms and examination",
     ],
     process: [
       "Bruxism evaluation and assessment",
@@ -187,6 +198,23 @@ export const services: Service[] = [
       "Fitting and adjustment appointment",
       "Follow-up care and maintenance",
     ],
+    decisionGuide: {
+      candidacy: "A guard may be considered when grinding or clenching is damaging teeth. Jaw soreness or morning headaches can have several causes, so an examination comes before choosing an appliance.",
+      alternatives: "Ask whether monitoring, changes to daytime clenching habits, or evaluation of other contributing factors would be appropriate. A guard is one option in a broader plan, rather than a guaranteed cure for grinding or jaw pain.",
+      visitExpectations: "Bring any existing guard and describe when symptoms occur. The visit includes a discussion of your symptoms and an examination. If a custom guard is recommended, ask about impressions, fitting, adjustments, and the expected timeline before proceeding.",
+      costFactors: [
+        "The type of appliance recommended after the exam",
+        "Fabrication, fitting, and any planned follow-up care",
+        "Your plan's benefits, exclusions, and replacement rules",
+      ],
+      maintenance: "Ask for cleaning and storage instructions specific to your appliance. Bring it to follow-up visits and contact the office if it no longer fits comfortably or shows damage.",
+      faqs: [
+        { question: "Will a night guard stop me from grinding?", answer: "Its main purpose is to separate and protect the teeth. Grinding may continue, and your dentist may discuss other ways to manage contributing factors." },
+        { question: "Is a store-bought guard the same as a custom guard?", answer: "Fit and design differ. Bring any appliance you use so the dentist can assess it and explain whether a custom option would be appropriate." },
+        { question: "Can you give me a price before I decide?", answer: "Ask for an estimate after the recommended appliance and follow-up plan are clear. Insurance benefits depend on your specific plan; the office can help identify what to confirm with your insurer." },
+      ],
+      sources: [{ label: "NIDCR: Bruxism", href: "https://www.nidcr.nih.gov/health-info/bruxism" }],
+    },
   },
   {
     id: "restorative-dentistry",
@@ -256,27 +284,44 @@ export const services: Service[] = [
         icon: "whitening-sparkle",
         details: [
           "Professional-grade whitening treatments",
-          "Safe and effective bleaching agents",
-          "Dramatic results in just one visit",
-          "Custom take-home whitening kits",
-          "Long-lasting, natural-looking brightness",
+          "Assessment of stains and sensitivity",
+          "Discussion of realistic shade changes",
+          "Guidance on the available whitening options",
+          "Instructions for treatment and maintenance",
         ],
-        heroDescription: "Professional teeth whitening treatments that deliver safe, dramatic results for a brighter, more confident smile.",
-        longDescription: "Professional teeth whitening is one of the most popular cosmetic dental treatments. Our safe, effective whitening systems can brighten your smile by several shades in just one appointment.",
+        heroDescription: "Explore professional teeth whitening with a plan based on your teeth, sensitivity, and smile goals. Results and timing vary.",
+        longDescription: "Whitening can lighten natural teeth, but not every type of discoloration responds in the same way. An examination and a discussion of your dental history help determine whether whitening is a suitable next step.",
         benefits: [
-          "Professional-strength whitening agents",
-          "Safe, supervised treatment",
-          "Dramatic, immediate results",
-          "Customized to your needs",
-          "Long-lasting brightness",
+          "A treatment discussion guided by your dental health",
+          "Shade goals tailored to your smile",
+          "Advice about sensitivity and existing dental work",
+          "Clear treatment instructions",
+          "Guidance on maintaining your results",
         ],
         process: [
           "Consultation and shade assessment",
           "Professional cleaning if needed",
-          "Whitening treatment application",
-          "Progress monitoring during treatment",
-          "Take-home maintenance kit",
+          "Discussion of appropriate whitening options and timing",
+          "Treatment instructions and sensitivity guidance",
+          "Follow-up and maintenance recommendations",
         ],
+        decisionGuide: {
+          candidacy: "Whitening acts on natural teeth. Crowns, veneers, and fillings do not whiten with bleaching, so existing dental work matters when planning an even-looking shade.",
+          alternatives: "Ask whether a cleaning, a change in home care, or a different approach to the discoloration would better fit your goals. Whitening is optional; you can discuss the options before deciding.",
+          visitExpectations: "Bring your questions and tell us about previous whitening and sensitivity. Discuss the available approach, likely timeline, and limitations before treatment. A particular shade change or a one-visit result cannot be guaranteed.",
+          costFactors: [
+            "The whitening approach selected and what it includes",
+            "Any dental care recommended before whitening",
+            "Follow-up products or maintenance, if recommended",
+          ],
+          maintenance: "Follow the directions for the selected product. If sensitivity develops, contact your dentist about adjusting or pausing treatment. Ask about everyday care and whether future touch-ups are appropriate.",
+          faqs: [
+            { question: "Will whitening change the color of my crowns or fillings?", answer: "No. Bleaching changes natural teeth, rather than existing crowns or fillings. Discuss these restorations before choosing a shade goal." },
+            { question: "Can whitening make teeth sensitive?", answer: "Some people experience sensitivity. Tell the dentist about any existing sensitivity and ask what to do if it occurs during treatment." },
+            { question: "How much will whitening cost?", answer: "Ask for the current options and an estimate before proceeding. Confirm what is included and whether any maintenance would have an additional cost. Do not assume your insurance plan covers cosmetic whitening." },
+          ],
+          sources: [{ label: "ADA MouthHealthy: Teeth Whitening", href: "https://www.mouthhealthy.org/all-topics-a-z/teeth-whitening" }],
+        },
       },
       {
         id: "dental-crowns",
@@ -287,25 +332,45 @@ export const services: Service[] = [
           "Custom-fitted porcelain crowns",
           "Natural-looking tooth restoration",
           "Strong, durable materials",
-          "Same-day crown options available",
-          "Complete protection for damaged teeth",
+          "A treatment timeline explained before care",
+          "Care planning for damaged teeth",
         ],
         heroDescription: "Custom dental crowns that restore damaged teeth to full function while maintaining a natural, beautiful appearance.",
         longDescription: "Dental crowns are tooth-shaped caps that completely cover a damaged tooth above the gum line. They restore the tooth's shape, size, strength, and improve its appearance while providing long-lasting protection.",
         benefits: [
-          "Complete tooth protection",
+          "Support for a damaged tooth when a crown is appropriate",
           "Natural appearance and feel",
           "Durable, long-lasting materials",
           "Restores full chewing function",
-          "Same-day options available",
+          "A treatment plan tailored to the tooth",
         ],
         process: [
-          "Tooth preparation and impression",
-          "Temporary crown placement",
-          "Custom crown fabrication",
-          "Final crown fitting and adjustment",
-          "Care instructions and follow-up",
+          "Examination and discussion of treatment options",
+          "Review of material, estimate, and expected appointments",
+          "Tooth preparation and impression if proceeding",
+          "Temporary protection and fabrication as appropriate to the plan",
+          "Crown fitting, adjustments, and care instructions",
         ],
+        decisionGuide: {
+          candidacy: "A crown may be recommended for a broken or weakened tooth, or a tooth with a large filling and limited remaining structure. The dentist examines the tooth before recommending how to restore it.",
+          alternatives: "Ask why a crown is recommended for this tooth and whether a filling or another restoration could be appropriate. The options depend on the remaining tooth and your examination.",
+          visitExpectations: "Discuss the proposed material, number of appointments, and any temporary crown before treatment. Appointment timing depends on the treatment plan and fabrication process. Call the office to confirm available options rather than assuming same-day treatment.",
+          costFactors: [
+            "The recommended crown material and fabrication process",
+            "Any additional treatment needed for the tooth",
+            "Your plan's crown benefits, deductible, and limitations",
+          ],
+          maintenance: "Continue daily brushing, cleaning between teeth, and regular dental visits. Ask for instructions specific to any temporary or final crown, and contact the office if it feels loose or uncomfortable.",
+          faqs: [
+            { question: "Can I get a crown in one visit?", answer: "Call to confirm the options available for your case. The dentist will explain the expected appointments and whether temporary protection is needed before you proceed." },
+            { question: "Why a crown instead of another filling?", answer: "A crown can support a tooth that has too little sound structure for a filling alone. Your dentist can explain the findings for your tooth and any reasonable alternatives." },
+            { question: "Will insurance pay for my crown?", answer: "Coverage depends on your plan and proposed treatment. Ask for an estimate and confirm benefits and limitations with your insurer before proceeding." },
+          ],
+          sources: [
+            { label: "ADA MouthHealthy: Crowns", href: "https://www.mouthhealthy.org/all-topics-a-z/crowns" },
+            { label: "ADA MouthHealthy: Brushing Your Teeth", href: "https://www.mouthhealthy.org/all-topics-a-z/brushing-your-teeth" },
+          ],
+        },
       },
     ],
   },

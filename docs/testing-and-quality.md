@@ -83,7 +83,7 @@ Validate these redirect as expected:
 
 ### Contact API
 
-- valid new payload returns a PII-safe `201` response after persistence
+- valid new payload returns a PII-safe `202 queued:true` receipt after persistence, before notification
 - repeated submission UUID returns the existing lead without duplicate notification
 - contact accepts the contact-only `"other"` service choice; appointment rejects it
 - concurrent requests can claim a notification only once
@@ -97,13 +97,13 @@ Validate these redirect as expected:
 ### Appointment API
 
 - valid payload returns:
-  - `201` with `delivered: true` when Formspree relay succeeds
-  - `202` with `delivered: false` when relay fails but DB write succeeds
+  - `202` with `delivered:false, queued:true` after durable persistence before background delivery
+  - `200` with `delivered:true, queued:false` for an already-delivered duplicate
 - malformed payload returns `400` with `errors`
 - honeypot-filled payload returns `400`
 - unknown service and past preferred date return `400`
 - a concurrent duplicate insert resolves to the existing lead without a second relay
-- a notification claim failure keeps the saved lead and returns the fallback response
+- a background notification claim failure keeps the saved lead available to the retry worker
 
 ### Retired admin dashboard
 
@@ -135,7 +135,7 @@ Manual checks on desktop and mobile:
 2. Keyboard navigation reaches all critical controls.
 3. Color contrast and heading hierarchy are sane.
 4. Contact form has clear validation messaging.
-5. Booking form has accessible two-step progress, keyboard focus management, validation, and clear delivered/fallback success states.
+5. Booking form has accessible two-step progress, keyboard focus management, validation, and clear queued receipts and failure states.
 6. Admin interface remains protected and non-indexable.
 7. ElevenLabs launcher stays inside the viewport on `/`, `/contact`, `/book-appointment`, and `/blog`.
 8. ElevenLabs launcher does not introduce horizontal overflow on any supported viewport.

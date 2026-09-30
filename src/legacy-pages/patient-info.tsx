@@ -2,6 +2,8 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import PatientInfoFaqList from "@/components/patient-info/patient-info-faq-list";
+import { PhoneLink } from "@/components/tracking/tracked-links";
+import { patientGuidanceFacts } from "@/content/patient-guidance";
 
 const popularServices = [
   {
@@ -52,6 +54,23 @@ export default function PatientInfo() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Patient Info" }]} />
+
+        <section aria-labelledby="visit-guides-heading" className="mb-10">
+          <h2 id="visit-guides-heading" className="text-3xl font-bold text-foreground">Start with your next step</h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              { href: "/new-patients", title: "I'm new to the practice", description: "Prepare for your first visit, know what to ask, and plan your arrival." },
+              { href: "/insurance-and-payment", title: "I have cost or insurance questions", description: "Bring the right questions to the office and your insurer before your visit." },
+              { href: "/urgent-dental-care", title: "I need prompt dental attention", description: "Call about a time-sensitive concern and review regular office hours." },
+            ].map((guide) => (
+              <Link key={guide.href} href={guide.href} className="block rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                <h3 className="text-lg font-bold text-foreground">{guide.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{guide.description}</p>
+                <span className="mt-4 block font-semibold text-primary">View guide</span>
+              </Link>
+            ))}
+          </div>
+        </section>
         
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Insurance Information */}
@@ -71,6 +90,10 @@ export default function PatientInfo() {
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2">Payment Questions</h3>
                 <p className="text-gray-600">Call the office to ask about current payment methods and options for your proposed care.</p>
+              </div>
+              <div className="flex flex-col items-start gap-3 border-t border-border pt-4">
+                <Button asChild><PhoneLink location="patient_info_insurance">Call {patientGuidanceFacts.phone.display}</PhoneLink></Button>
+                <Link href="/insurance-and-payment" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">Questions to ask about insurance & payment</Link>
               </div>
               <div className="rounded-xl border border-secondary/20 bg-secondary/5 p-4">
                 <h3 className="font-semibold text-gray-800 mb-2">Coming from Santa Cruz?</h3>
@@ -125,6 +148,8 @@ export default function PatientInfo() {
           </div>
         </div>
         
+        <div className="mt-6"><Button asChild variant="outline"><Link href="/new-patients">Plan your first visit</Link></Button></div>
+
         {/* Oral Health Education */}
         <div className="mt-16">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Oral Health Education</h2>

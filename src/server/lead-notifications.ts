@@ -6,12 +6,14 @@ export type LeadNotificationPayload = {
   requestType: "appointment" | "contact";
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string | null;
   phone?: string | null;
   service?: string | null;
   message?: string | null;
   preferredDate?: string | null;
   preferredTime?: string | null;
+  preferredContactMethod?: "phone" | "email" | null;
+  visitFor?: "self" | "child" | "family" | null;
   landingPage?: string | null;
   referrer?: string | null;
   ctaSource?: string | null;
@@ -33,7 +35,7 @@ export const toFormspreePayload = (
   if (contact.requestType !== "appointment" && contact.requestType !== "contact") {
     return null;
   }
-  if (!contact.submissionId || !contact.email) return null;
+  if (!contact.submissionId || (!contact.email && !contact.phone)) return null;
 
   return {
     leadId: contact.id,
@@ -41,12 +43,14 @@ export const toFormspreePayload = (
     requestType: contact.requestType,
     firstName: contact.firstName,
     lastName: contact.lastName,
-    email: contact.email,
+    ...(contact.email ? { email: contact.email } : {}),
     phone: contact.phone,
     service: contact.service,
     message: contact.message,
     preferredDate: contact.preferredDate,
     preferredTime: contact.preferredTime,
+    preferredContactMethod: contact.preferredContactMethod,
+    visitFor: contact.visitFor,
     landingPage: contact.landingPage,
     referrer: contact.referrer,
     ctaSource: contact.ctaSource,
@@ -65,6 +69,14 @@ export const toFormspreePayload = (
 
 const DEFAULT_FORMSPREE_ENDPOINT = "https://formspree.io/f/mojngolr";
 const RELAY_TIMEOUT_MS = 8_000;
+
+/** An explicit rejection can be retried; an ambiguous network result cannot. */
+export class LeadNotificationRejectedError extends Error {
+  constructor(readonly status: number) {
+    super(`Lead notification failed with status ${status}`);
+    this.name = "LeadNotificationRejectedError";
+  }
+}
 
 const getEndpoint = (requestType: LeadNotificationPayload["requestType"]) => {
   if (requestType === "contact") {
@@ -96,6 +108,11 @@ export async function relayLeadNotification(payload: LeadNotificationPayload) {
   });
 
   if (!response.ok) {
-    throw new Error(`Lead notification failed with status ${response.status}`);
+    // A server failure or request timeout can follow an accepted submission.
+    // Only explicit client rejections safely permit an automatic retry.
+    if (response.status >= 400 && response.status < 500 && response.status !== 408) {
+      throw new LeadNotificationRejectedError(response.status);
+    }
+    throw new Error(`Lead notification outcome is uncertain (status ${response.status})`);
   }
 }

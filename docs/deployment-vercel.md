@@ -135,7 +135,10 @@ PGOPTIONS="--search_path=public" psql "$DATABASE_URL_UNPOOLED" \
   -f drizzle/0006_outbox_lease_fields.sql \
   -f drizzle/0007_reconciliation.sql \
   -f drizzle/0008_reconciliation_lease.sql \
-  -f drizzle/0009_finalize_function.sql
+  -f drizzle/0009_finalize_function.sql \
+  -f drizzle/0010_patient_request_preferences.sql \
+  -f drizzle/0011_delivery_health.sql \
+  -f drizzle/0012_patient_outcomes.sql
 ```
 
 `0000_base_schema.sql` makes a fresh database bootstrapable and is safe to run against an existing database because it uses `IF NOT EXISTS`. Migration `0009` creates the `finalize_reconciliation_run()` PL/pgSQL function required by the reconciliation service.
@@ -255,7 +258,7 @@ curl -I https://www.famfirstsmile.com/llms.txt
 
 ### Non-mutating API checks
 
-These deliberately invalid payloads verify the live guards without creating a lead or triggering an office notification. Submit realistic synthetic leads only in preview/non-production.
+These deliberately invalid payloads verify the live guards without creating a lead or triggering an office notification. Submit synthetic leads only against an isolated test database and stubbed notification providers. A preview may inherit production credentials.
 
 ```bash
 curl -i -X POST https://www.famfirstsmile.com/api/contacts \
@@ -300,3 +303,11 @@ gh pr create
 gh pr view --web
 gh run list
 ```
+
+## Patient-experience release prerequisites
+
+Apply additive migrations `0010_patient_request_preferences.sql`, `0011_delivery_health.sql`, and `0012_patient_outcomes.sql` to the intended database in order, then run `npm run db:verify`. Do not use `drizzle-kit push` as a substitute for reviewed SQL history. The new fields are nullable for legacy requests; the old deployment remains compatible with these additive migrations.
+
+Set `CRON_SECRET` and verify the notification worker and health schedules. Configure a health alert receiver or authenticated external polling so a failure produces an operator notification. Configure `LEAD_OUTCOMES_SECRET` and connect an authorized staff/call integration before expecting booked/attended reporting to become populated. Do not merge or promote code with new database dependencies until the intended schema is verified.
+
+Patient guidance publishes only confirmed facts. See `practice-content-confirmation.md` and `clinical-review-publishing.md` before adding insurance/network claims or clinician-review attestations. No review badges appear by default.

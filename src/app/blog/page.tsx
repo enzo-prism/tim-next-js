@@ -6,7 +6,7 @@ import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import BlogPostCard from "@/components/blog/blog-post-card";
 import { Button } from "@/components/ui/button";
 import { buildRouteMetadata } from "@/lib/metadata";
-import { getAllBlogPosts, getBlogPostHref } from "@/content/blog";
+import { blogTopics, getBlogPostHref, getBlogTopicHref, getPostsForTopic, resolveBlogTopic } from "@/content/blog";
 import {
   buildBlogCollectionSchema,
   buildBreadcrumbSchema,
@@ -15,26 +15,14 @@ import {
 
 export const metadata: Metadata = buildRouteMetadata("/blog");
 
-const pillars = [
-  {
-    title: "Children's Dentistry",
-    description: "Guides for first visits, healthy habits, and helping kids feel safe at the dentist.",
-    icon: "hygiene-sparkle",
-  },
-  {
-    title: "Preventive Care",
-    description: "Articles that answer practical questions before small concerns turn into bigger problems.",
-    icon: "stethoscope",
-  },
-  {
-    title: "Local Guidance",
-    description: "Helpful resources written for Los Gatos families who want clear, calm answers.",
-    icon: "book-open",
-  },
-];
+type BlogIndexProps = {
+  searchParams?: Promise<{ topic?: string | string[] }>;
+};
 
-export default function BlogIndexPage() {
-  const posts = getAllBlogPosts();
+export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
+  const query = await searchParams;
+  const selectedTopic = resolveBlogTopic(query?.topic);
+  const posts = getPostsForTopic(selectedTopic);
   const pageUrl = `${practiceInfo.url}/blog`;
   const pageTitle = "Family First Smile Care Blog";
   const pageDescription =
@@ -107,35 +95,41 @@ export default function BlogIndexPage() {
 
       <section className="py-8 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-4 md:grid-cols-3">
-            {pillars.map((pillar) => (
-                <article
-                  key={pillar.title}
-                  className="rounded-xl border border-slate-200 bg-slate-50/80 p-6"
-                >
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <MinimalGlyph name={pillar.icon} className="h-6 w-6" />
-                  </div>
-                  <h2 className="mt-5 text-xl font-bold text-slate-900">{pillar.title}</h2>
-                  <p className="mt-3 text-base leading-7 text-slate-600">{pillar.description}</p>
-                </article>
-            ))}
-          </div>
+          <nav aria-label="Browse dental articles by topic">
+            <h2 className="text-2xl font-bold text-foreground">Find guidance for your question</h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {blogTopics.map((topic) => (
+                <Link key={topic.id} href={getBlogTopicHref(topic)} aria-current={selectedTopic?.id === topic.id ? "page" : undefined} className={`block rounded-xl border p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedTopic?.id === topic.id ? "border-primary bg-accent" : "border-border bg-card hover:bg-muted"}`}>
+                  <h3 className="text-xl font-bold text-foreground">{topic.title}</h3>
+                  <p className="mt-3 leading-7 text-muted-foreground">{topic.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 font-semibold text-primary">Browse articles <MinimalGlyph name="arrow-right" className="h-4 w-4" /></span>
+                </Link>
+              ))}
+            </div>
+          </nav>
         </div>
       </section>
 
-      <section className="py-8 sm:py-10">
+      <section id="articles" className="scroll-mt-24 py-8 sm:py-10" aria-labelledby="articles-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-                Latest posts
+                {posts.length} {posts.length === 1 ? "article" : "articles"}
               </div>
-              <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
-                Start with the questions parents ask most.
+              <h2 id="articles-heading" className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
+                {selectedTopic?.title ?? "Start with the questions families ask most."}
               </h2>
             </div>
+            {selectedTopic ? <Link href="/blog#articles" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">View all articles</Link> : null}
           </div>
+
+          {selectedTopic ? (
+            <div className="mt-6 border-y border-border py-5">
+              <p className="leading-7 text-muted-foreground">{selectedTopic.description}</p>
+              <Link href={selectedTopic.careHref} className="mt-2 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">{selectedTopic.careLabel}</Link>
+            </div>
+          ) : null}
 
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             {posts.map((post) => (

@@ -1,52 +1,19 @@
-"use client";
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { patientInfoFaqs } from "@/content/patient-info-faqs";
+import type { FAQItem } from "@/lib/types";
 
-export default function PatientInfoFaqList() {
-  const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
-
-  const toggleFAQ = (id: string) => {
-    setExpandedFAQ(expandedFAQ === id ? null : id);
-  };
-
+export default function PatientInfoFaqList({ faqs = patientInfoFaqs }: { faqs?: readonly FAQItem[] }) {
   return (
-    <div className="space-y-4">
-      {patientInfoFaqs.map((faq) => (
-        <div key={faq.id} className="border-b border-gray-200 pb-4 last:border-b-0">
-          <h3>
-            <Button
-              id={`faq-trigger-${faq.id}`}
-              type="button"
-              variant="ghost"
-              className="flex h-auto min-h-11 w-full items-center justify-between whitespace-normal p-0 py-3 text-left font-semibold text-gray-800 hover:text-primary"
-              aria-expanded={expandedFAQ === faq.id}
-              aria-controls={`faq-panel-${faq.id}`}
-              onClick={() => toggleFAQ(faq.id)}
-            >
-              <span>{faq.question}</span>
-              <MinimalGlyph
-                name="chevron-down"
-                aria-hidden="true"
-                className={`h-4 w-4 shrink-0 transform transition-transform ${
-                  expandedFAQ === faq.id ? "rotate-180" : ""
-                }`}
-              />
-            </Button>
-          </h3>
-          {expandedFAQ === faq.id && (
-            <div
-              id={`faq-panel-${faq.id}`}
-              role="region"
-              aria-labelledby={`faq-trigger-${faq.id}`}
-              className="mt-3 text-gray-600"
-            >
-              <p>{faq.answer}</p>
-            </div>
-          )}
-        </div>
+    <div className="space-y-2">
+      {faqs.map((faq) => (
+        <details key={faq.id} className="group border-b border-border pb-2 last:border-b-0">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-md py-3 font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
+            <span>{faq.question}</span>
+            <MinimalGlyph name="chevron-down" aria-hidden="true" className="h-4 w-4 shrink-0 group-open:rotate-180" />
+          </summary>
+          <p className="pb-3 pt-1 leading-relaxed text-muted-foreground">{faq.answer}</p>
+        </details>
       ))}
     </div>
   );
