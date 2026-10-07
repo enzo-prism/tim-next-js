@@ -213,7 +213,16 @@ The layout should feel practical and reassuring before it feels decorative.
 - Use `rounded-lg` and `rounded-xl` for most surfaces. Larger radii are reserved for real media.
 - Prefer no shadow. `shadow-sm` is allowed for sticky nav, menus, popovers, dialogs, and form overlays.
 
-## Implementation Rules
+## Seasonal Layer (October)
+
+A small, self-expiring Halloween layer sits on top of this system each October. It adds delight; it never re-themes the site.
+
+- **Timing:** on October 1–31 on the practice's Pacific calendar, set before first paint by the head script in `src/lib/seasonal.ts`. It switches off on November 1 with no redeploy. `?season=halloween` previews, `?season=off` opts a browser out, `?season=auto` resets.
+- **Palette:** the blue family still carries the layer: a pale blue moon, ink-blue bats, a white ghost-tooth with primary-blue outline, and stars on the primary band. Pumpkin orange (`--ffsc-pumpkin*`, `--ffsc-lantern-glow`) is the one warm exception, used only for the jack-o'-lanterns and their glow. Those tokens live in `src/components/seasonal/seasonal.css`, and `npm run minimal:check` fails if they appear anywhere outside `src/components/seasonal/`.
+- **Placement:** homepage hero greeting, moon, bats, and ghost-tooth; stars on the homepage call-to-action band; the footer pumpkin patch; the 404 page; and the favicon. CTAs, forms, the header, the mobile action bar, and phone links stay undecorated. The pumpkin patch stays off `/book-appointment`, `/contact`, `/urgent-dental-care`, and `/privacy-policy`.
+- **Motion:** decorative, `aria-hidden`, transform and opacity only, no layout shift, every one-off animation finishes within 5 seconds, and nothing moves for reduced-motion or Save-Data visitors. The only interactive piece is the footer button that lights the jack-o'-lanterns.
+
+
 
 - Keep `src/app/globals.css` theme variables aligned with the tokens above.
 - Prefer shadcn semantic tokens such as `background`, `card`, `foreground`, `muted`, `primary`, `secondary`, `accent`, `border`, `input`, and `ring`.

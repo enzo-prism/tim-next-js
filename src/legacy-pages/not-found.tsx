@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button";
 import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
 import { PhoneLink } from "@/components/tracking/tracked-links";
+import { SeasonalNotFoundArt, SeasonalNotFoundLine } from "@/components/seasonal/seasonal-art";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen w-full bg-background pt-16">
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4">
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-12">
         <div className="text-center max-w-2xl mx-auto">
+          <SeasonalNotFoundArt />
+          <SeasonalNotFoundLine />
           {/* Error Code */}
           <h1 className="text-9xl font-bold text-primary/70 mb-4">404</h1>
           

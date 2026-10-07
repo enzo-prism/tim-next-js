@@ -61,14 +61,15 @@ npm run quality:all
 
 ## Current Release
 
-The August 31, 2026 release removes the password-protected on-site leads
-dashboard from the public website. Staff reporting now lives outside this repo.
-Public forms, Formspree office notifications, first-party duplicate protection,
-GA4, and Vercel Web Analytics stay in place.
+The October 7, 2026 release adds a self-expiring Halloween layer: a greeting, moon, bats, and
+ghost-tooth in the homepage hero, stars on the homepage closing band, a footer jack-o'-lantern
+patch, a seasonal 404, and a pumpkin favicon. It runs October 1–31 (Pacific) and turns itself off
+on November 1. CTAs, forms, and the mobile action bar are untouched. Preview with
+`?season=halloween`; opt out with `?season=off`.
 
-See [Release Notes](docs/release-notes.md) for the complete scope and
-verification record, and [Operations Runbook](docs/operations-runbook.md) for
-the manual review-refresh procedure.
+See [Release Notes](docs/release-notes.md) for the complete scope and verification record, and
+[Operations Runbook](docs/operations-runbook.md) for the post-October step and the manual
+review-refresh procedure.
 
 ## Tech Stack
 

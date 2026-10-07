@@ -9,6 +9,8 @@ import VideoFacade from "@/components/video-facade";
 import officeTourPoster from "@assets/Office Photo 1_1753972057110.jpeg";
 import drChuangPhoto from "@assets/Dr. Chuang_1753977515693.jpg";
 import { featuredReview, testimonialSections, testimonialsPageSummary } from "@/content/testimonials";
+import { HeroGhost, HeroMoon, NightSky, SeasonalGreeting, heroMoonBox } from "@/components/seasonal/seasonal-art";
+import { HeroBats } from "@/components/seasonal/seasonal-client";
 
 const OFFICE_TOUR_VIDEO_SRC =
   "https://player.vimeo.com/video/1106179834?title=0&byline=0&portrait=0&badge=0&autoplay=1&loop=0&muted=0&background=0&controls=1";
@@ -48,6 +50,7 @@ export default function Home() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-7 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-16">
             <div className="max-w-2xl">
+              <SeasonalGreeting />
               <h1 id="home-heading" className="mb-4 text-3xl font-bold leading-tight text-foreground text-balance sm:text-4xl lg:text-5xl">
                 A Gentle Family Dentist in Los Gatos
               </h1>
@@ -83,13 +86,18 @@ export default function Home() {
               </div>
             </div>
             <figure data-home-dentist="" className="order-first flex items-center gap-4 lg:order-last lg:block">
-              <Image
-                src={drChuangPhoto}
-                alt="Dr. Tim J. Chuang, DDS"
-                priority
-                sizes="(max-width: 1023px) 96px, 340px"
-                className="aspect-[4/5] w-24 shrink-0 rounded-xl object-cover lg:w-full"
-              />
+              <div className="relative w-24 shrink-0 lg:w-full">
+                <HeroMoon />
+                <Image
+                  src={drChuangPhoto}
+                  alt="Dr. Tim J. Chuang, DDS"
+                  priority
+                  sizes="(max-width: 1023px) 96px, 340px"
+                  className="relative z-[1] aspect-[4/5] w-full rounded-xl object-cover"
+                />
+                <HeroGhost />
+                <HeroBats className={heroMoonBox} />
+              </div>
               <figcaption className="min-w-0 lg:mt-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-primary">Meet your dentist</p>
                 <Link href="/team" className="mt-1 inline-block text-lg font-bold text-foreground underline decoration-border underline-offset-4 hover:decoration-primary">
@@ -210,8 +218,9 @@ export default function Home() {
       </section>
 
       {/* Call to Action Section */}
-      <section className="py-20 gradient-primary text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden py-20 gradient-primary text-white">
+        <NightSky />
+        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
             Ready to Meet Your Los Gatos Dental Team?
           </h2>

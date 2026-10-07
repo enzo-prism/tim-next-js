@@ -1,5 +1,42 @@
 # Release Notes
 
+## 2026-10-07 — October Halloween seasonal layer
+
+### Public experience
+
+- From October 1 to October 31 (Pacific calendar), the site shows a small Halloween layer that
+  switches itself off on November 1 with no redeploy. An inline head script in
+  `src/lib/seasonal.ts` sets `<html data-ffsc-season="halloween">` before first paint, and every
+  seasonal piece is hidden unless that attribute is set.
+- Homepage hero: a "Happy Halloween from Los Gatos" greeting, a pale blue moon behind
+  Dr. Chuang's photo, bats that lift off the moon once per session, and a ghost-tooth that peeks
+  out from behind the photo on desktop.
+- Homepage closing band: a crescent moon and twinkling stars.
+- Footer: tooth-grin jack-o'-lanterns with a greeting. A button lights and blows out the candles.
+  The patch stays off `/book-appointment`, `/contact`, `/urgent-dental-care`, and
+  `/privacy-policy`.
+- The 404 page gets a ghost-tooth in front of the moon, and the favicon becomes a
+  tooth-grin jack-o'-lantern.
+- CTAs, forms, the header, the mobile action bar, and phone links are unchanged. Art is
+  `aria-hidden`; motion is transform/opacity only, ends within 5 seconds, and is skipped for
+  reduced-motion and Save-Data visitors. No layout shift (measured CLS 0).
+- `?season=halloween` previews the layer anywhere, `?season=off` opts a browser out, and
+  `?season=auto` resets.
+
+### Design contract
+
+- `DESIGN.md` adds "Seasonal Layer (October)". Pumpkin orange is the one warm exception; its
+  tokens live in `src/components/seasonal/seasonal.css`, and `npm run minimal:check` now fails if
+  they are used outside `src/components/seasonal/`.
+
+### Verification
+
+- `src/lib/seasonal.test.ts` runs the real head script against a fake browser at the Pacific
+  date boundaries, with blocked storage, and with the query overrides, and guards that CTAs,
+  forms, and the mobile action bar stay undecorated.
+- `tests/e2e/seasonal.spec.ts` covers the preview, the lantern button, the quiet routes, the
+  opt-out, and the no-JavaScript render.
+
 ## 2026-09-27 — Visible-on-first-paint pages and a mobile action bar
 
 ### Public experience

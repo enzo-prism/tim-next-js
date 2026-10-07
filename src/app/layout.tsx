@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
 import "./globals.css";
+import "@/components/seasonal/seasonal.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import MobileActionBar from "@/components/layout/mobile-action-bar";
@@ -9,6 +10,8 @@ import RouteAnalytics from "@/components/route-analytics";
 import GoogleAnalytics from "@/components/google-analytics";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
 import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
+import { SeasonScript } from "@/components/seasonal/seasonal-art";
+import { SeasonRuntime } from "@/components/seasonal/seasonal-client";
 
 const raleway = Raleway({
   subsets: ["latin"],
@@ -28,7 +31,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={raleway.variable}>
+    <html
+      lang="en"
+      className={raleway.variable}
+      // The season script may set data-ffsc-season before hydration.
+      suppressHydrationWarning
+    >
+      <head>
+        <SeasonScript />
+      </head>
       <body>
         <a
           href="#main-content"
@@ -62,6 +73,7 @@ gtag('consent', 'default', {
           <Footer />
         </div>
         <MobileActionBar />
+        <SeasonRuntime />
 
         <script
           type="application/ld+json"

@@ -1,0 +1,263 @@
+/* ==========================================================================
+   Seasonal layer (October). See DESIGN.md "Seasonal Layer (October)".
+   Everything is keyed off <html data-ffsc-season>, which the inline head
+   script in src/lib/seasonal.ts sets before first paint, so none of it
+   renders out of season. Decorative art only: no layout shift, transform /
+   opacity animation only, and every one-off animation finishes within 5s
+   (WCAG 2.2.2). Motion is skipped for prefers-reduced-motion.
+
+   The pumpkin tokens are the one warm exception to Minimal Clinical Blue.
+   scripts/check-minimal-design.mjs keeps them inside src/components/seasonal.
+   ========================================================================== */
+:root {
+  --ffsc-pumpkin: #f28a2e;
+  --ffsc-pumpkin-deep: #cf6a1f;
+  --ffsc-pumpkin-carve: #3a1d0b;
+  --ffsc-pumpkin-stem: #334155;
+  --ffsc-lantern-glow: #ffd27a;
+  --ffsc-moon: #e0f2fe;
+  --ffsc-moon-shade: #bae6fd;
+  --ffsc-night-ink: #082f49;
+  --ffsc-night-sky: #0c4a6e;
+  --ffsc-ghost-line: #0369a1;
+  --ffsc-ghost-cheek: #bae6fd;
+}
+
+.ffsc-season-only {
+  display: none;
+}
+html[data-ffsc-season] .ffsc-season-only {
+  display: block;
+}
+
+/* Hero: a pale blue moon behind the dentist photo's top-right corner. */
+.ffsc-moon svg {
+  filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.45));
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-ffsc-season] .ffsc-moon {
+    animation: ffsc-moon-rise 1.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+@keyframes ffsc-moon-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A ghost-tooth slides out from behind the photo, bobs, then blinks. */
+.ffsc-ghost-peek {
+  transform: rotate(-6deg);
+  filter: drop-shadow(0 10px 14px rgba(8, 47, 73, 0.16));
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-ffsc-season] .ffsc-ghost-peek {
+    animation: ffsc-ghost-peek 4s 0.6s cubic-bezier(0.37, 0, 0.3, 1) both;
+  }
+  html[data-ffsc-season] .ffsc-ghost-peek .ffsc-ghost-eyes {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ffsc-blink 0.28s 4.4s ease-in-out 2 alternate;
+  }
+}
+@keyframes ffsc-ghost-peek {
+  0% {
+    opacity: 0;
+    transform: translateX(2.5rem) rotate(10deg);
+  }
+  25% {
+    opacity: 1;
+    transform: translateX(0) rotate(-7deg);
+  }
+  45% {
+    transform: translate(0, -6px) rotate(-2deg);
+  }
+  65% {
+    transform: translate(0, 2px) rotate(-8deg);
+  }
+  85% {
+    transform: translate(0, -4px) rotate(-4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-6deg);
+  }
+}
+@keyframes ffsc-blink {
+  to {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Bats lifting off the moon, once per session, under 5s. */
+.ffsc-bat {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  width: var(--size);
+  color: var(--ffsc-night-ink);
+  opacity: 0;
+  animation: var(--flight) var(--duration) var(--delay) cubic-bezier(0.37, 0, 0.3, 1) both;
+}
+.ffsc-bat svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 40%;
+  animation: ffsc-bat-flap 0.24s ease-in-out infinite alternate;
+}
+@keyframes ffsc-bat-flap {
+  to {
+    transform: scaleY(0.62);
+  }
+}
+@keyframes ffsc-bat-flight-a {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.45);
+  }
+  12% {
+    opacity: 0.92;
+  }
+  55% {
+    transform: translate(-6rem, -1.5rem) scale(0.8);
+  }
+  85% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-15rem, -2.5rem) scale(1);
+  }
+}
+@keyframes ffsc-bat-flight-b {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.45);
+  }
+  12% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-3rem, 2rem) scale(0.75);
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-10rem, 3rem) scale(0.95);
+  }
+}
+@keyframes ffsc-bat-flight-c {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.45);
+  }
+  12% {
+    opacity: 0.85;
+  }
+  55% {
+    transform: translate(1rem, 2.5rem) scale(0.7);
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-4rem, 6rem) scale(0.85);
+  }
+}
+
+/* Blue call-to-action band: crescent moon and stars that twinkle when seen
+   (4 x 0.9s + up to 1.1s delay, ending fully lit). */
+.ffsc-crescent {
+  filter: drop-shadow(0 0 14px rgba(224, 242, 254, 0.5));
+}
+.ffsc-star {
+  position: absolute;
+  height: auto;
+  color: #ffffff;
+  opacity: 0.8;
+}
+.ffsc-sky[data-play] .ffsc-star {
+  animation: ffsc-twinkle 0.9s ease-in-out 4 alternate;
+}
+@keyframes ffsc-twinkle {
+  to {
+    opacity: 0.2;
+    transform: scale(0.65);
+  }
+}
+
+/* Footer: tooth-grin pumpkins hop once when seen and wobble on hover.
+   Tapping the patch lights the candles. */
+.ffsc-pumpkin {
+  transform-origin: 50% 100%;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ffsc-pumpkin-face {
+  fill: var(--ffsc-pumpkin-carve);
+  transition: fill 0.4s ease;
+}
+.ffsc-lanterns {
+  cursor: pointer;
+}
+.ffsc-lanterns[data-lit] .ffsc-pumpkin-face {
+  fill: var(--ffsc-lantern-glow);
+}
+.ffsc-lanterns[data-lit] .ffsc-pumpkin {
+  filter: drop-shadow(0 0 10px rgba(255, 210, 122, 0.75));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ffsc-patch[data-play] .ffsc-pumpkin {
+    animation: ffsc-hop 0.6s cubic-bezier(0.16, 1, 0.3, 1) 2 alternate;
+  }
+  .ffsc-lanterns[data-lit] .ffsc-pumpkin-face {
+    animation: ffsc-flicker 0.5s steps(2, jump-none) 4;
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .ffsc-lanterns:hover .ffsc-pumpkin {
+    transform: rotate(-6deg) scale(1.05);
+  }
+  .ffsc-lanterns:hover .ffsc-pumpkin:nth-of-type(even) {
+    transform: rotate(6deg) scale(1.05);
+  }
+}
+@keyframes ffsc-hop {
+  to {
+    transform: translateY(-7px) rotate(-4deg);
+  }
+}
+@keyframes ffsc-flicker {
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 404: a ghost-tooth floating in front of a blue moon (4.8s total). */
+.ffsc-porthole {
+  background:
+    radial-gradient(circle at 70% 28%, var(--ffsc-moon) 0 17%, rgba(224, 242, 254, 0.25) 18% 26%, transparent 27%),
+    linear-gradient(180deg, var(--ffsc-night-sky), var(--ffsc-night-ink));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ffsc-ghost-float {
+    animation: ffsc-ghost-float 2.4s ease-in-out 0.3s 2 alternate both;
+  }
+}
+@keyframes ffsc-ghost-float {
+  from {
+    transform: translateY(4px) rotate(-3deg);
+  }
+  to {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}

@@ -171,6 +171,18 @@ The website uses a manually verified review snapshot; it does not fetch Google r
 
 This workflow is read-only on Google. Publishing or deleting a business reply, reporting a review, or editing the Business Profile is a separate external action and is not part of a website refresh.
 
+## Seasonal layer (October Halloween)
+
+- The layer turns on October 1 and off November 1 (Pacific) by itself; no deploy is needed on
+  either date. Visual rules: `DESIGN.md` "Seasonal Layer (October)".
+- Preview it out of season with `?season=halloween`. Opt a browser out with `?season=off`;
+  reset with `?season=auto`.
+- If a decoration needs to come down mid-month, set `activeSeason` to `null` in
+  `src/lib/seasonal.ts` and deploy. The head script, favicon swap, and art then stop shipping.
+- After October 31: set `activeSeason` to `null`, or, before the next October, add a new
+  `SeasonalTheme` with new dates and a new versioned `public/seasonal/<id>/` folder for its icon.
+  Update the boundary dates in `src/lib/seasonal.test.ts` to match.
+
 ## Add a new public route to sitemap
 
 1. Add route in `src/content/routes.ts`.

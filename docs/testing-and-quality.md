@@ -36,6 +36,18 @@ navigation, widget behavior, retired-admin 404s, and durable-lead conversion beh
 - Automated browser tests stub the external widget script so layout, launcher behavior, and coexistence checks stay deterministic in CI
 - Manual QA still needs one live pass with the real ElevenLabs script before release
 
+## Seasonal Layer Coverage
+
+- `src/lib/seasonal.test.ts` (Vitest) runs the inline season script against a fake browser at the
+  Pacific boundaries (Sep 30 23:59, Oct 1 00:00, Oct 31 23:59, Nov 1 00:00), with blocked storage,
+  and with `?season=halloween|off|auto`. It also checks the quiet routes and that the header,
+  mobile action bar, form pages, and tracked links never import seasonal code.
+- `tests/e2e/seasonal.spec.ts` forces the layer with `?season=halloween`, so it does not depend on
+  the date CI runs. It covers the hero greeting, the footer lantern button, the quiet booking
+  route, the `?season=off` opt-out, and that decorations stay hidden without JavaScript.
+- `npm run minimal:check` fails if the pumpkin tokens (`--ffsc-pumpkin*`, `--ffsc-lantern*`) are
+  used outside `src/components/seasonal/`.
+
 ## Mobile Menu Coverage
 
 - Browser coverage lives in `tests/e2e/mobile-menu.spec.ts`

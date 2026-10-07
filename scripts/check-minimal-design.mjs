@@ -60,6 +60,12 @@ const allowedMediaOverlayPattern = /bg-gradient-to-t\s+from-(?:black|slate-950)\
 const largeArbitraryRadiusPattern = /rounded-\[(?:1|2|3)(?:\.\d+)?rem\]/;
 const heavyDecorationPattern = /(?:blur-3xl|shadow-\[[^\]]+\])/;
 
+// October seasonal layer: the pumpkin tokens are the one warm exception to
+// Minimal Clinical Blue, and they may only be used by the seasonal art.
+// See DESIGN.md "Seasonal Layer (October)".
+const seasonalDir = path.join("src", "components", "seasonal") + path.sep;
+const seasonalWarmTokenPattern = /--ffsc-(?:pumpkin|lantern)[\w-]*/;
+
 const failures = [];
 
 function walk(dir) {
@@ -98,6 +104,11 @@ function checkSourceFile(filePath) {
 
   if (emojiIconPattern.test(source)) {
     failures.push(`Emoji-style icon glyph remains: ${relativePath}`);
+  }
+
+  const seasonalTokenMatch = source.match(seasonalWarmTokenPattern);
+  if (seasonalTokenMatch && !relativePath.startsWith(seasonalDir)) {
+    failures.push(`Seasonal pumpkin token used outside src/components/seasonal: ${relativePath} -> ${seasonalTokenMatch[0]}`);
   }
 
   const warmClassMatch = source.match(warmClassPattern);

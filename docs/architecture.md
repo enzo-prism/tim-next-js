@@ -24,6 +24,10 @@ Primary design goals:
    components cannot pass `onClick`. Do not wrap page content in scroll-reveal animations that start
    hidden; `tests/e2e/first-paint.spec.ts` fails if server HTML contains `opacity:0` wrappers.
 4. Global layout (`src/app/layout.tsx`) injects site shell, GA script, and LocalBusiness JSON-LD.
+5. While a seasonal theme is active, the layout's `<head>` carries a tiny inline script from
+   `src/lib/seasonal.ts` that sets `<html data-ffsc-season>` before first paint, and
+   `SeasonRuntime` swaps the favicon. Seasonal art in `src/components/seasonal/` is hidden by CSS
+   unless that attribute is set, so prerendered pages switch on and off by date without a redeploy.
 
 ### Contact form flow
 
@@ -75,7 +79,7 @@ The former on-site password-protected leads dashboard is not part of this public
 
 - `src/app`: Route handlers, pages, metadata routes (`robots.ts`, `sitemap.ts`)
 - `src/legacy-pages`: Main page implementations reused by App Router wrappers
-- `src/components`: Shared UI and layout components
+- `src/components`: Shared UI and layout components (`src/components/seasonal` holds the October layer)
 - `src/content`: Structured content and SEO/schema definitions
 - `src/server`: DB schema/storage and form-processing server helpers
 - `src/lib`: Metadata/tracking/internal linking utilities

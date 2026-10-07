@@ -5,6 +5,7 @@ import PracticeAddressLink from "@/components/location/PracticeAddressLink";
 import { practiceInfo } from "@/content/structured-data";
 import { yelpBusinessProfileUrl } from "@/data/reviews";
 import { PhoneLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
+import { FooterPumpkinPatch } from "@/components/seasonal/seasonal-client";
 
 export default function Footer() {
   return (
@@ -44,6 +45,7 @@ export default function Footer() {
                 </a>
               </div>
             </div>
+            <FooterPumpkinPatch />
           </div>
           
           {/* Quick Links */}
