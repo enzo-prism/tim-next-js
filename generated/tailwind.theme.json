@@ -1,11 +1,118 @@
 {
   "theme": {
     "extend": {
-      "colors": {},
-      "fontFamily": {},
-      "fontSize": {},
-      "borderRadius": {},
-      "spacing": {}
+      "colors": {
+        "primary": "#2856c3",
+        "primary-hover": "#1d409a",
+        "ink": "#13203b",
+        "ink-soft": "#46516a",
+        "paper": "#fbf8f3",
+        "cream": "#f4eee4",
+        "surface": "#ffffff",
+        "night": "#0f1a31",
+        "periwinkle": "#91b1df",
+        "periwinkle-wash": "#edf2fb",
+        "blush": "#ebcbbf",
+        "blush-wash": "#fbf0eb",
+        "lime": "#d3e27a",
+        "lime-wash": "#f5f8df",
+        "cloud": "#e1e5ec",
+        "cloud-wash": "#f3f5f8",
+        "line": "#e7e0d4",
+        "control-border": "#7f8ba5",
+        "error": "#b4372b"
+      },
+      "fontFamily": {
+        "display": [
+          "Fraunces"
+        ],
+        "headline-lg": [
+          "Fraunces"
+        ],
+        "headline-md": [
+          "Fraunces"
+        ],
+        "body-lg": [
+          "Figtree"
+        ],
+        "body-md": [
+          "Figtree"
+        ],
+        "body-sm": [
+          "Figtree"
+        ],
+        "label-sm": [
+          "Figtree"
+        ]
+      },
+      "fontSize": {
+        "display": [
+          "84px",
+          {
+            "letterSpacing": "-0.03em",
+            "fontWeight": "600"
+          }
+        ],
+        "headline-lg": [
+          "52px",
+          {
+            "letterSpacing": "-0.025em",
+            "fontWeight": "600"
+          }
+        ],
+        "headline-md": [
+          "28px",
+          {
+            "letterSpacing": "-0.015em",
+            "fontWeight": "600"
+          }
+        ],
+        "body-lg": [
+          "20px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "400"
+          }
+        ],
+        "body-md": [
+          "17px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "400"
+          }
+        ],
+        "body-sm": [
+          "14px",
+          {
+            "letterSpacing": "0em",
+            "fontWeight": "500"
+          }
+        ],
+        "label-sm": [
+          "12px",
+          {
+            "letterSpacing": "0.14em",
+            "fontWeight": "700"
+          }
+        ]
+      },
+      "borderRadius": {
+        "sm": "8px",
+        "md": "10px",
+        "lg": "14px",
+        "xl": "20px",
+        "xxl": "34px",
+        "pill": "999px"
+      },
+      "spacing": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "16px",
+        "lg": "24px",
+        "xl": "40px",
+        "xxl": "64px",
+        "section": "112px"
+      }
     }
   }
 }
