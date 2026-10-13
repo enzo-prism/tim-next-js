@@ -48,7 +48,7 @@ const hours = [
 
 export default function Footer() {
   return (
-    <footer className="dark relative overflow-hidden bg-night text-white">
+    <footer className="dark relative overflow-clip bg-night text-white">
       <div className="relative mx-auto max-w-7xl px-4 pt-16 sm:px-6 sm:pt-20 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-12">
           {/* Practice Info */}
@@ -215,7 +215,7 @@ export default function Footer() {
       </div>
 
       {/* Giant closing wordmark that rises as the footer scrolls in. */}
-      <div aria-hidden="true" className="relative mt-6 select-none overflow-hidden">
+      <div aria-hidden="true" className="relative mt-6 select-none overflow-clip">
         <div className="ff-reveal mx-auto flex max-w-[96rem] items-end justify-center gap-[2vw] px-4" style={{ "--ff-rise": "40%" } as React.CSSProperties}>
           <p className="font-display text-[clamp(3.5rem,13.5vw,13rem)] font-semibold leading-[0.8] tracking-[-0.045em] text-white/[0.09]">
             family first

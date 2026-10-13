@@ -196,7 +196,7 @@ export default function Home() {
       </section>
 
       {/* ------------------------------------------------------------ Ribbon */}
-      <div aria-hidden="true" className="relative z-[1] -mt-1 overflow-hidden py-10 sm:py-14">
+      <div aria-hidden="true" className="relative z-[1] -mt-1 overflow-clip py-10 sm:py-14">
         <div className="-rotate-2 bg-lime py-4 shadow-float sm:py-5">
           <div className="ff-drift flex w-max items-center gap-8 whitespace-nowrap px-8" style={{ "--ff-drift-from": "0%", "--ff-drift-to": "-28%" } as CSSProperties}>
             {[...ribbon, ...ribbon, ...ribbon].map((item, index) => (
@@ -431,7 +431,7 @@ export default function Home() {
       </Section>
 
       {/* ------------------------------------------------------- Office tour */}
-      <Section labelledBy="office-tour-heading" width="full" className="overflow-hidden">
+      <Section labelledBy="office-tour-heading" width="full" className="overflow-clip">
         <div className="mx-auto grid max-w-7xl items-end gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <SectionHeader
             id="office-tour-heading"

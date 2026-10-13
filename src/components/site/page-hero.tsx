@@ -57,7 +57,7 @@ export function PageHero({
   const hasAside = Boolean(media) || art === "pinwheel";
   return (
     <section aria-labelledby={id} className={cn("relative px-2 pt-2 sm:px-3", className)}>
-      <div className={cn("relative overflow-hidden rounded-3xl", toneClass[tone])}>
+      <div className={cn("relative overflow-clip rounded-3xl", toneClass[tone])}>
         {!media && art === "pinwheel" ? (
           <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 hidden size-[30rem] md:block lg:-right-16 lg:-top-20 lg:size-[34rem]">
             <Pinwheel gather="load" spin="page" delay={150} className="size-full opacity-80" />

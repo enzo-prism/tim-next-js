@@ -30,7 +30,7 @@ export function CtaBand({
 }) {
   return (
     <section aria-labelledby={id} className={cn("px-2 pb-2 sm:px-3 sm:pb-3", className)}>
-      <div className="relative overflow-hidden rounded-3xl bg-night text-white">
+      <div className="relative overflow-clip rounded-3xl bg-night text-white">
         {decoration}
         <div className="relative mx-auto grid max-w-7xl items-end gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:px-12 lg:py-24">
           <div className="ff-reveal max-w-2xl">

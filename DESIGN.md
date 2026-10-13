@@ -252,7 +252,8 @@ Motion should feel like the logo: four friends coming together. Things **gather*
 3. Load-in choreography is short (finished by ~1.2s) and never loops. Anything that moves by itself for more than 5s needs a pause control (WCAG 2.2.2); prefer scroll-linked motion instead.
 4. `prefers-reduced-motion: reduce` gets the finished state everywhere (the CSS handles this; keep custom motion inside `motion-safe:` or the existing media queries).
 5. Animate `translate`, `scale`, `rotate`, `opacity`, `clip-path`, and SVG strokes only. Never animate layout.
-6. One hero moment per page. Section reveals are gentle (≈2rem rise). Do not reveal-animate body paragraphs one by one.
+6. Wrap scroll-revealed content in `overflow-clip`, not `overflow-hidden`: a hidden-overflow ancestor becomes the view timeline's scroller, so reveals inside it never play.
+7. One hero moment per page. Section reveals are gentle (≈2rem rise). Do not reveal-animate body paragraphs one by one.
 
 **Toolkit** (all in `src/app/globals.css` and `src/components/motion`, `src/components/brand`, `src/components/site`)
 
