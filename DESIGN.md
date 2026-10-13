@@ -236,7 +236,7 @@ Every page still leads with a clear patient decision: book, call, learn, or meet
 
 ## Shapes
 
-- Radii: controls `rounded-xl` (14px), cards `rounded-2xl`/`rounded-3xl`, big media and wash panels `rounded-[34px]`-equivalent via `rounded-3xl`, buttons and chips `rounded-full`.
+- Radii (theme scale: `rounded-lg` 14px, `rounded-xl` 20px, `rounded-2xl` 26px, `rounded-3xl` 34px): form controls `rounded-xl`, cards `rounded-2xl`/`rounded-3xl`, big media and wash panels `rounded-3xl`, buttons and chips `rounded-full`.
 - **Arch frame** (`ff-arch`): rounded top, softly rounded bottom. Use it for portraits and real office photos.
 - **Tooth-people** (`ToothPerson`, `Pinwheel`, `BrandDots`): the only decorative shapes. Use them with intent (an eyebrow mark, a hero composition, a step marker, a sticker), never as random confetti.
 - Real photography gets a gentle, consistent treatment: arch or `rounded-3xl` frames, `object-cover`, and crops that hide clutter (keyboards, carts, seasonal décor).
@@ -278,7 +278,7 @@ Motion should feel like the logo: four friends coming together. Things **gather*
 - **Cards** (`ff-card`): white, hairline border, `rounded-2xl`/`3xl`, generous padding. Interactive cards add `ff-lift` and a clear affordance (arrow or underline).
 - **Stickers / chips** (`ff-chip`): small rounded-full labels with `shadow-float`, used for proof and friendly facts around hero media.
 - **Proof**: text first (rating, review count, verification date), real quotes with names. A short row of five filled stars may accompany the rating; never fake avatars or invented stats.
-- **Forms**: calm and roomy. Labels above fields, 48px fields, `border-input` (control-border) with a cobalt focus ring, error text in `text-destructive`. Success states use a lime-wash panel with ink text.
+- **Forms**: calm and roomy. Labels above fields, 48px `rounded-xl` fields with 16px text, `border-input` (control-border) with a cobalt focus ring, error text in `text-destructive`. Success states use a lime-wash panel with ink text.
 - **FAQ**: `<details>`/`<summary>` or Radix Accordion with the smooth height animation; a plus that turns into a minus.
 - **Functional glyphs** (`MinimalGlyph`): only for controls (menu, chevrons, arrows, close, check, play, external link). No icon libraries, no emoji, no generated 3D icons. Brand illustration is the tooth-people, drawn as vectors.
 

@@ -96,7 +96,7 @@ const FormLabel = React.forwardRef<
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-primary", className)}
+      className={cn(error && "text-destructive", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -155,11 +155,17 @@ const FormMessage = React.forwardRef<
       ref={ref}
       id={formMessageId}
       role="alert"
-      className={cn("flex items-start gap-1.5 text-sm font-medium text-primary", className)}
+      className={cn(
+        "flex items-start gap-1.5",
+        // Validation errors use the brick-red error token; a neutral message
+        // passed as children keeps the cobalt treatment.
+        error ? "text-sm font-medium text-destructive" : "text-sm font-medium text-primary",
+        className,
+      )}
       {...props}
     >
-      {/* Non-color affordance: the brand palette renders destructive states in
-          blue, so errors need a shape cue to be identifiable without color. */}
+      {/* Non-color affordance: the "!" shape marks an error for people who
+          cannot tell the error color apart from the text color. */}
       <span
         aria-hidden="true"
         className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[10px] font-bold leading-none"

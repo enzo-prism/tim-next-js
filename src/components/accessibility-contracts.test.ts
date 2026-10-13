@@ -54,6 +54,7 @@ describe("accessibility component contracts", () => {
     expect(read("./ui/sheet.tsx")).toMatch(/Close className="[^"]*h-10 w-10/);
     expect(read("./ui/dialog.tsx")).toMatch(/Close className="[^"]*h-10 w-10/);
     expect(read("./ui/form.tsx")).toContain("text-sm font-medium text-primary");
+    expect(read("./ui/form.tsx")).toContain("text-sm font-medium text-destructive");
   });
 
   it("does not point form controls at missing description nodes", () => {

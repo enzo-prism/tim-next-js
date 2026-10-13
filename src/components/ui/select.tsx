@@ -19,14 +19,14 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-base text-foreground ring-offset-background md:text-sm data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 forced-colors:focus:outline-2 forced-colors:focus:outline-offset-2 forced-colors:focus:outline-[CanvasText] aria-invalid:border-2 aria-invalid:border-primary disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50 [&>span]:min-w-0 [&>span]:line-clamp-1 [&>span]:text-left",
+      "flex h-12 w-full min-w-0 items-center justify-between gap-2 rounded-xl border border-input bg-white px-4 py-2 text-base text-ink ring-offset-white transition-[border-color,box-shadow] duration-200 hover:border-ink/60 data-[placeholder]:text-ink-soft focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 forced-colors:focus:outline-2 forced-colors:focus:outline-offset-2 forced-colors:focus:outline-[CanvasText] aria-invalid:border-2 aria-invalid:border-destructive disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50 motion-reduce:transition-none [&>span]:min-w-0 [&>span]:line-clamp-1 [&>span]:text-left",
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <MinimalGlyph name="chevron-down" className="h-4 w-4 shrink-0 opacity-70" />
+      <MinimalGlyph name="chevron-down" className="h-5 w-5 shrink-0 text-ink-soft" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
@@ -75,7 +75,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-[var(--radix-select-content-available-height)] max-w-[calc(100vw-2rem)] min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[var(--radix-select-content-transform-origin)] motion-reduce:animate-none",
+        "relative z-50 max-h-[var(--radix-select-content-available-height)] max-w-[calc(100vw-2rem)] min-w-[8rem] overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-lift data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[var(--radix-select-content-transform-origin)] motion-reduce:animate-none",
         position === "popper" &&
           "w-[var(--radix-select-trigger-width)]",
         className
@@ -91,7 +91,7 @@ const SelectContent = React.forwardRef<
         aria-label="Options"
         tabIndex={0}
         className={cn(
-          "p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-[-2px] forced-colors:focus-visible:outline-[CanvasText]",
+          "p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-[-2px] forced-colors:focus-visible:outline-[CanvasText]",
           position === "popper" &&
             "w-full"
         )}
@@ -123,12 +123,12 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex min-h-11 w-full cursor-pointer select-none items-center rounded-sm py-2 pl-8 pr-3 text-sm break-words outline-none focus:bg-muted focus:text-primary forced-colors:focus:outline-2 forced-colors:focus:outline-offset-[-2px] forced-colors:focus:outline-[CanvasText] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex min-h-11 w-full cursor-pointer select-none items-center rounded-xl py-2 pl-9 pr-3 text-[0.9375rem] break-words text-ink outline-none focus:bg-periwinkle-wash focus:text-cobalt-deep data-[state=checked]:font-semibold forced-colors:focus:outline-2 forced-colors:focus:outline-offset-[-2px] forced-colors:focus:outline-[CanvasText] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-3 flex h-4 w-4 items-center justify-center text-primary">
       <SelectPrimitive.ItemIndicator>
         <MinimalGlyph name="check" className="h-4 w-4" />
       </SelectPrimitive.ItemIndicator>
