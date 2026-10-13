@@ -1,12 +1,28 @@
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
 import BlogPostCard from "@/components/blog/blog-post-card";
 import { Button } from "@/components/ui/button";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+import { ToothPerson } from "@/components/brand/pinwheel";
+import { PageHero } from "@/components/site/page-hero";
+import { Eyebrow } from "@/components/site/section";
+import { CtaBand } from "@/components/site/cta-band";
+import { FeaturedPostCard } from "@/components/editorial/featured-post-card";
+import { getBalancedSpan, topicDotClass } from "@/components/editorial/editorial-theme";
+import { AppointmentLink, PhoneLink } from "@/components/tracking/tracked-links";
+import { buildAppointmentUrl } from "@/lib/analytics";
 import { buildRouteMetadata } from "@/lib/metadata";
-import { blogTopics, getBlogPostHref, getBlogTopicHref, getPostsForTopic, resolveBlogTopic } from "@/content/blog";
+import { cn } from "@/lib/utils";
+import { practiceHoursSummary } from "@/content/practice-hours";
+import {
+  blogTopics,
+  getAllBlogPosts,
+  getBlogPostHref,
+  getBlogTopicHref,
+  getPostsForTopic,
+  resolveBlogTopic,
+} from "@/content/blog";
 import {
   buildBlogCollectionSchema,
   buildBreadcrumbSchema,
@@ -19,14 +35,37 @@ type BlogIndexProps = {
   searchParams?: Promise<{ topic?: string | string[] }>;
 };
 
+const topicWash: Record<string, string> = {
+  children: "bg-lime-wash",
+  prevention: "bg-cloud-wash",
+  alignment: "bg-blush-wash",
+  "jaw-pain": "bg-periwinkle-wash",
+  sports: "bg-periwinkle-wash",
+  urgent: "bg-blush-wash",
+};
+
+const topicFigure: Record<string, string> = {
+  children: "var(--ff-lime)",
+  prevention: "var(--ff-periwinkle)",
+  alignment: "var(--ff-blush)",
+  "jaw-pain": "var(--ff-periwinkle)",
+  sports: "var(--ff-lime)",
+  urgent: "var(--ff-blush)",
+};
+
 export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
   const query = await searchParams;
   const selectedTopic = resolveBlogTopic(query?.topic);
   const posts = getPostsForTopic(selectedTopic);
+  const allPosts = getAllBlogPosts();
   const pageUrl = `${practiceInfo.url}/blog`;
   const pageTitle = "Family First Smile Care Blog";
   const pageDescription =
     "Helpful dental articles for Los Gatos families covering children's dentistry, prevention, oral health habits, and what to expect at Family First Smile Care.";
+
+  // The hero features the most recently updated article; the full list skips it.
+  const featuredPost = [...allPosts].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))[0];
+  const gridPosts = selectedTopic ? posts : posts.filter((post) => post.slug !== featuredPost.slug);
 
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "Home", item: practiceInfo.url },
@@ -46,7 +85,7 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
   });
 
   return (
-    <div className="bg-white pt-16 pb-20">
+    <div className="overflow-x-clip">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
@@ -56,120 +95,155 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
       />
 
-      <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
-        <HeroBackdrop variant="default" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Blog" }]} />
-
-          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Helpful dental guidance
-              </div>
-              <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
-                <span className="inline-flex flex-wrap items-center gap-3">
-                  
-                  <span>Dental articles built to answer real questions from families.</span>
+      <PageHero
+        id="blog-heading"
+        tone="cloud"
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Blog" }]}
+        eyebrow="The family dental library"
+        titleText="Dental answers for the questions families really ask"
+        lead={
+          <p>
+            Clear, prevention-first guidance from our Los Gatos team: first visits, growing teeth, cleanings, aligners,
+            jaw pain, and what to do when something hurts. Read at your own pace, then ask us anything.
+          </p>
+        }
+        actions={
+          <>
+            <Button asChild size="lg" className="group h-14 pl-7 pr-5 text-base">
+              <AppointmentLink href={buildAppointmentUrl({ source: "blog_index_hero" })} source="blog_index_hero">
+                Request an appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-white/15">
+                  <MinimalGlyph name="arrow-right" />
                 </span>
-              </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600 sm:text-xl">
-                Find clear, prevention-focused guidance for Los Gatos families, including the
-                questions parents ask most often and the practical details that help patients feel
-                informed before a visit.
-              </p>
-            </div>
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 px-7 text-base">
+              <Link href="#articles">Browse by topic</Link>
+            </Button>
+          </>
+        }
+        media={<FeaturedPostCard post={featuredPost} articleCount={allPosts.length} topicCount={blogTopics.length} />}
+      />
 
-            <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">What you will find here</div>
-              <p className="mt-4 text-base leading-7 text-slate-600">
-                Helpful, practical articles about first visits, preventive care, and the small
-                habits that make a big difference between appointments.
-              </p>
-              <Button asChild className="mt-6 w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/book-appointment?source=blog_index_hero">Request an appointment</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-8 sm:py-10">
+      <section id="articles" aria-labelledby="articles-heading" className="scroll-mt-20 py-16 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <nav aria-label="Browse dental articles by topic">
-            <h2 className="text-2xl font-bold text-foreground">Find guidance for your question</h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {blogTopics.map((topic) => (
-                <Link key={topic.id} href={getBlogTopicHref(topic)} aria-current={selectedTopic?.id === topic.id ? "page" : undefined} className={`block rounded-xl border p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedTopic?.id === topic.id ? "border-primary bg-accent" : "border-border bg-card hover:bg-muted"}`}>
-                  <h3 className="text-xl font-bold text-foreground">{topic.title}</h3>
-                  <p className="mt-3 leading-7 text-muted-foreground">{topic.description}</p>
-                  <span className="mt-4 inline-flex items-center gap-2 font-semibold text-primary">Browse articles <MinimalGlyph name="arrow-right" className="h-4 w-4" /></span>
+          <div className="ff-reveal max-w-3xl">
+            <Eyebrow className="mb-4">
+              {posts.length} {posts.length === 1 ? "article" : "articles"}
+              {selectedTopic ? " in this topic" : ""}
+            </Eyebrow>
+            <h2 id="articles-heading" className="ff-h2">
+              {selectedTopic ? (
+                selectedTopic.title
+              ) : (
+                <>
+                  Start with the questions families <em className="ff-italic font-normal">ask most.</em>
+                </>
+              )}
+            </h2>
+          </div>
+
+          <nav aria-label="Browse dental articles by topic" className="ff-reveal mt-8" style={{ "--i": 1 } as CSSProperties}>
+            <ul className="flex flex-wrap gap-2.5">
+              <li>
+                <Link
+                  href="/blog#articles"
+                  aria-current={selectedTopic ? undefined : "page"}
+                  className={cn(
+                    "ff-press inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    selectedTopic ? "bg-white text-ink ring-border hover:ring-ink/30" : "bg-ink text-white ring-ink",
+                  )}
+                >
+                  All articles
+                  <span className={cn("text-xs tabular-nums", selectedTopic ? "text-ink-soft" : "text-white/70")}>{allPosts.length}</span>
                 </Link>
-              ))}
-            </div>
+              </li>
+              {blogTopics.map((topic) => {
+                const isActive = selectedTopic?.id === topic.id;
+                return (
+                  <li key={topic.id}>
+                    <Link
+                      href={getBlogTopicHref(topic)}
+                      aria-current={isActive ? "page" : undefined}
+                      className={cn(
+                        "ff-press inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        isActive ? "bg-ink text-white ring-ink" : "bg-white text-ink ring-border hover:ring-ink/30",
+                      )}
+                    >
+                      <span aria-hidden="true" className={cn("size-2.5 rounded-full", topicDotClass[topic.id])} />
+                      {topic.title}
+                      <span className={cn("text-xs tabular-nums", isActive ? "text-white/70" : "text-ink-soft")}>
+                        {getPostsForTopic(topic).length}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
-        </div>
-      </section>
-
-      <section id="articles" className="scroll-mt-24 py-8 sm:py-10" aria-labelledby="articles-heading">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-                {posts.length} {posts.length === 1 ? "article" : "articles"}
-              </div>
-              <h2 id="articles-heading" className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
-                {selectedTopic?.title ?? "Start with the questions families ask most."}
-              </h2>
-            </div>
-            {selectedTopic ? <Link href="/blog#articles" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">View all articles</Link> : null}
-          </div>
 
           {selectedTopic ? (
-            <div className="mt-6 border-y border-border py-5">
-              <p className="leading-7 text-muted-foreground">{selectedTopic.description}</p>
-              <Link href={selectedTopic.careHref} className="mt-2 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">{selectedTopic.careLabel}</Link>
+            <div
+              className={cn(
+                "relative mt-8 flex flex-col gap-4 overflow-clip rounded-3xl p-6 pr-24 sm:flex-row sm:items-center sm:justify-between sm:p-7 sm:pr-32",
+                topicWash[selectedTopic.id] ?? "bg-cloud-wash",
+              )}
+            >
+              <ToothPerson
+                color={topicFigure[selectedTopic.id] ?? "var(--ff-periwinkle)"}
+                className="pointer-events-none absolute -bottom-7 right-4 h-28 w-auto rotate-[-8deg] sm:right-8"
+              />
+              <p className="relative max-w-xl text-lg leading-relaxed text-ink">{selectedTopic.description}</p>
+              <div className="relative flex flex-wrap items-center gap-x-6 gap-y-2">
+                <Link href={selectedTopic.careHref} className="ff-link inline-flex min-h-11 items-center">
+                  {selectedTopic.careLabel}
+                </Link>
+                <Link href="/blog#articles" className="inline-flex min-h-11 items-center text-sm font-semibold text-ink-soft underline decoration-ink/20 underline-offset-4 hover:text-ink">
+                  View all articles
+                </Link>
+              </div>
             </div>
           ) : null}
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            {posts.map((post) => (
-              <BlogPostCard key={post.slug} post={post} />
-            ))}
-          </div>
+          <ul className="mt-10 grid gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-6 lg:gap-6">
+            {gridPosts.map((post, index) => {
+              const span = getBalancedSpan(gridPosts.length, index);
+              return (
+                <li key={post.slug} className={cn("ff-reveal", span.className)} style={{ "--i": index % 3 } as CSSProperties}>
+                  <BlogPostCard post={post} large={span.large} wideAtMd={span.wideAtMd} wideAtLg={span.wideAtLg} />
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </section>
 
-      <section className="py-10 sm:py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-xl bg-primary px-8 py-10 text-white shadow-sm sm:px-10">
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-              <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/95">
-                  Need care now?
-                </div>
-                <h2 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">
-                  Get answers online, then get care from a local team that keeps things gentle.
-                </h2>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-white/95">
-                  If you have questions about your child's first visit, brushing habits, or what to
-                  expect at the office, we are happy to help you plan the next step.
-                </p>
-              </div>
-
-              <Button
-                asChild
-                size="lg"
-                className="bg-white text-primary hover:bg-white/90"
-              >
-                <Link href="/contact">
-                  Contact our office
-                  <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CtaBand
+        id="blog-cta-heading"
+        eyebrow="Still wondering?"
+        title={
+          <>
+            Have a question we <em className="ff-italic font-normal text-lime">didn’t answer?</em>
+          </>
+        }
+        body="Articles are a good start, but every smile is different. Our Los Gatos team is happy to talk through your family’s questions and help you plan the next step."
+        actions={
+          <>
+            <Button asChild size="lg" variant="night" className="group h-14 pl-7 pr-5 text-base">
+              <Link href="/contact">
+                Contact our office
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-ink/10">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="night-outline" className="h-14 px-7 text-base">
+              <PhoneLink location="blog_index_final">Call (408) 358-8100</PhoneLink>
+            </Button>
+          </>
+        }
+        note={<>{practiceHoursSummary} · 15251 National Ave, Suite 102, Los Gatos</>}
+      />
     </div>
   );
 }
