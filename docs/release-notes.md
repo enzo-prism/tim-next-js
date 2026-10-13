@@ -1,5 +1,57 @@
 # Release Notes
 
+## 2026-10-12 — "One family, every smile" redesign
+
+### Public experience
+
+- Every public page is redesigned around the logo's four tooth-people: cobalt for actions, ink
+  text on warm paper, periwinkle/blush/lime/cloud washes, and a navy closing band and footer.
+  Fraunces (display) and Figtree (reading/UI) replace Raleway.
+- Motion is CSS-first. Scroll reveals use scroll-driven animations (`animation-timeline: view()`),
+  so they cost no JavaScript, never hide server-rendered content, and simply don't run in
+  browsers without support or for reduced-motion visitors. Load-in choreography is short and
+  never loops; the hero's rotating phrase plays once and rests (WCAG 2.2.2).
+- The logo is now a vector pinwheel that gathers on load, turns with scroll, and spins on hover.
+  The tooth-people family closes most pages (tap them to make them hop).
+- Homepage: masked headline rise with a hand-drawn underline, a once-through audience phrase,
+  a scroll-drifting proof ribbon, a "Who's coming in today?" family line-up picker, a first-visit
+  timeline, Dr. Chuang's path, straightening review cards, an unclipping office-tour video, and a
+  drifting office photo strip.
+- Page signatures: a tooth-people intent picker and bento catalog on Services; a shared service
+  template with sticky plan-your-visit card, timeline, and sticky decision guide; a TMJ symptom
+  checklist; an aligner journey on Invisalign; a one-time scanning beam on iTero; a hopping
+  parent-and-baby hero on Baby's First Visit; a filterable review explorer on Testimonials; a
+  winding road on Team; phone-framed office tours on About; a brush-along two-minute timer on the
+  brushing guide; a self-drawing Highway 17 map on Santa Cruz; generated covers, a reading
+  progress bar, and a sticky table of contents on the blog; a pinwheel missing its lime tooth on
+  the 404 page.
+- Booking and contact keep every label, field, validation rule, tracking call, and focus behavior;
+  they gain a calmer two-column layout, a step indicator, 48px controls with 16px text, brick-red
+  errors, and lime success panels.
+- Content fixes: internal editorial notes and filler reviews no longer show on Testimonials;
+  unverified claims (board-certified, visit length, nitrous, CBCT) and an AI infographic with a
+  placeholder phone number are gone; duplicate and Christmas-decor office photos are out of
+  rotation; footer, contact, and 404 hours now list Saturday and Sunday; the contact page's map
+  bar uses `tel:+14083588100`. Guide booking buttons now go to the appointment form.
+- The October seasonal layer is re-seated in the new hero, closing band, and footer.
+
+### Performance
+
+- Preloaded fonts: Fraunces (soft axis, no optical-size axis) and Figtree, about 82 KB; the
+  Fraunces italic loads on demand.
+- Gzipped JavaScript on a typical page grows a few KB (e.g. `/tmj` 217 KB → 225 KB) for the new
+  client islands (audience picker, review filter, brush timer, tooth family).
+
+### Design contract and guards
+
+- `DESIGN.md` is rewritten ("One Family, Every Smile") with tokens, a Motion section, and the
+  shared toolkit; `generated/` tokens are regenerated.
+- `scripts/check-minimal-design.mjs` allows the brand's `lime` token classes; raw warm Tailwind
+  palette classes, arbitrary shadows, large arbitrary radii, broad gradients, emoji, and icon
+  libraries are still blocked.
+- Shared primitives live in `src/components/site`, `src/components/brand`, and
+  `src/components/motion`.
+
 ## 2026-10-07 — October Halloween seasonal layer
 
 ### Public experience
