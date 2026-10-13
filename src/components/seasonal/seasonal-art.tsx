@@ -47,11 +47,11 @@ function MoonDisc({ id }: { id: string }) {
 }
 
 /**
- * Where the moon sits relative to the dentist photo: peeking over its
- * top-right corner on desktop, tucked behind the thumbnail on phones.
+ * Where the moon sits relative to the dentist photo: rising over its
+ * top-left shoulder, clear of the brand pinwheel on the right.
  * Shared with the client bats so they lift off the moon's face.
  */
-export const heroMoonBox = "-right-6 -top-6 size-12 lg:-right-16 lg:-top-16 lg:size-28";
+export const heroMoonBox = "-left-5 -top-5 size-12 lg:-left-14 lg:-top-10 lg:size-24";
 
 /** Blue moon rising behind the dentist photo. Render before the photo. */
 export function HeroMoon() {

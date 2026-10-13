@@ -43,6 +43,7 @@ const hours = [
   { day: "Wednesday", time: "9AM - 5PM" },
   { day: "Thursday", time: "9AM - 5PM" },
   { day: "Friday", time: "Closed" },
+  { day: "Saturday – Sunday", time: "Closed" },
 ];
 
 export default function Footer() {

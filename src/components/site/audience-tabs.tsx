@@ -26,7 +26,7 @@ const audiences: Audience[] = [
     label: "Kids",
     color: "var(--ff-lime)",
     wash: "bg-lime-wash",
-    size: "h-[62%]",
+    size: "58%",
     title: "First visits that feel like play.",
     body: "Gentle, unhurried exams, habit-building that’s actually fun, and a rewards program with toys and stickers. Little ones can even start on a grown-up’s lap.",
     facts: ["Toys & stickers", "Sealants & fluoride", "Baby’s first visit"],
@@ -41,7 +41,7 @@ const audiences: Audience[] = [
     label: "Teens",
     color: "var(--ff-blush)",
     wash: "bg-blush-wash",
-    size: "h-[78%]",
+    size: "76%",
     title: "Confident smiles that fit busy schedules.",
     body: "Clear Invisalign aligners planned from a quick iTero digital scan instead of messy impression trays, plus checkups that keep growing smiles on track.",
     facts: ["Clear aligners", "3D digital scans", "No putty trays"],
@@ -56,7 +56,7 @@ const audiences: Audience[] = [
     label: "Adults",
     color: "var(--ff-periwinkle)",
     wash: "bg-periwinkle-wash",
-    size: "h-[92%]",
+    size: "100%",
     title: "Care that explains every step.",
     body: "Thorough exams, cleanings, crowns, whitening, and jaw-pain care from a dentist who listens first, walks you through your options, and never rushes.",
     facts: ["Clear options", "No pressure", "Comfort first"],
@@ -72,7 +72,7 @@ const audiences: Audience[] = [
     label: "Grandparents",
     color: "var(--ff-cloud)",
     wash: "bg-cloud-wash",
-    size: "h-[86%]",
+    size: "88%",
     title: "Comfortable care for lasting smiles.",
     body: "Restorative care that protects the teeth you have, from crowns to night guards to gentle cleanings, with time for every question along the way.",
     facts: ["Gentle pace", "Lasting repairs", "Time for questions"],
@@ -84,6 +84,12 @@ const audiences: Audience[] = [
   },
 ];
 
+// Left to right: grandparent, parent, teen, kid.
+const lineup = ["grandparents", "adults", "teens", "kids"].map((id) => {
+  const audience = audiences.find((item) => item.id === id)!;
+  return { id, color: audience.color, size: audience.size };
+});
+
 /**
  * "Who's coming in?" — pick a family member and see the care that fits.
  * The server renders the first panel, so the section is complete without JS.
@@ -92,6 +98,7 @@ export function AudienceTabs({ trackingLocation = "home_audience" }: { trackingL
   const [value, setValue] = useState(audiences[0].id);
   const listRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState<{ left: number; width: number } | null>(null);
+  const active = audiences.find((audience) => audience.id === value) ?? audiences[0];
 
   useLayoutEffect(() => {
     const list = listRef.current;
@@ -133,23 +140,40 @@ export function AudienceTabs({ trackingLocation = "home_audience" }: { trackingL
         </TabsPrimitive.List>
       </div>
 
-      {audiences.map((audience) => (
-        <TabsPrimitive.Content key={audience.id} value={audience.id} className="ff-panel mt-10 focus-visible:outline-none">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-8">
-            <div className={cn("relative flex min-h-[18rem] items-end justify-center overflow-hidden rounded-3xl px-6 pt-10 sm:min-h-[22rem]", audience.wash)}>
-              <span aria-hidden="true" className="absolute left-1/2 top-1/2 size-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60" />
-              <span aria-hidden="true" className={cn("ff-intro-pop relative flex items-end", audience.size)} style={{ "--d": 80 } as CSSProperties}>
-                <ToothPerson color={audience.color} className="h-full w-auto drop-shadow-sm" />
-              </span>
-              <ul className="absolute inset-x-4 top-4 flex flex-wrap gap-2" aria-label={`${audience.label}: highlights`}>
-                {audience.facts.map((fact, index) => (
-                  <li key={fact} className="ff-chip ff-intro-pop text-xs sm:text-sm" style={{ "--d": 200 + index * 90 } as CSSProperties}>
-                    {fact}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex flex-col justify-center rounded-3xl bg-white p-6 ring-1 ring-border sm:p-9">
+      <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-8">
+        {/* The family line-up: the selected member steps forward. Pointer-only shortcut; the tabs above are the accessible control. */}
+        <div className={cn("relative flex min-h-[17rem] flex-col justify-end overflow-hidden rounded-3xl px-5 pt-16 transition-colors duration-500 sm:min-h-[22rem] sm:px-8", active.wash)}>
+          <span aria-hidden="true" className="absolute left-1/2 top-[58%] size-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/55" />
+          <ul key={active.id} className="absolute inset-x-4 top-4 flex flex-wrap gap-2 sm:inset-x-6 sm:top-6" aria-label={`${active.label}: highlights`}>
+            {active.facts.map((fact, index) => (
+              <li key={fact} className="ff-chip ff-intro-pop text-xs sm:text-sm" style={{ "--d": 80 + index * 90 } as CSSProperties}>
+                {fact}
+              </li>
+            ))}
+          </ul>
+          <div aria-hidden="true" className="relative flex h-44 items-end justify-center gap-[4%] sm:h-60">
+            {lineup.map((member) => {
+              const isActive = member.id === value;
+              return (
+                <span
+                  key={member.id}
+                  onClick={() => setValue(member.id)}
+                  className={cn(
+                    "flex h-full cursor-pointer items-end transition-[translate,scale,opacity] duration-500 ease-[var(--ease-spring)] motion-reduce:transition-none",
+                    isActive ? "-translate-y-3 scale-110 opacity-100" : "opacity-45 hover:-translate-y-1 hover:opacity-80",
+                  )}
+                  style={{ height: member.size }}
+                >
+                  <ToothPerson color={member.color} className="h-full w-auto" />
+                </span>
+              );
+            })}
+          </div>
+          <span aria-hidden="true" className="relative mx-auto mb-0 h-3 w-4/5 rounded-full bg-ink/5" />
+        </div>
+        {audiences.map((audience) => (
+          <TabsPrimitive.Content key={audience.id} value={audience.id} className="ff-panel focus-visible:outline-none">
+            <div className="flex h-full flex-col justify-center rounded-3xl bg-white p-6 ring-1 ring-border sm:p-9">
               <h3 className="ff-h3 text-[clamp(1.6rem,1.3rem+1vw,2.25rem)]">{audience.title}</h3>
               <p className="mt-4 text-lg leading-relaxed text-ink-soft">{audience.body}</p>
               <ul className="mt-7 divide-y divide-border border-y border-border">
@@ -172,9 +196,9 @@ export function AudienceTabs({ trackingLocation = "home_audience" }: { trackingL
                 ))}
               </ul>
             </div>
-          </div>
-        </TabsPrimitive.Content>
-      ))}
+          </TabsPrimitive.Content>
+        ))}
+      </div>
     </TabsPrimitive.Root>
   );
 }

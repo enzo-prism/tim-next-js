@@ -50,13 +50,13 @@ export default function MobileActionBar() {
     <nav
       aria-label="Call or request a visit"
       data-mobile-action-bar=""
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-sm md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/92 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-float backdrop-blur-md md:hidden"
     >
       <div className="mx-auto grid max-w-md grid-cols-2 gap-2">
         <Button
           asChild
           variant={isCallPrimary ? "default" : "outline"}
-          className={`h-12 flex-col gap-0 px-2 ${isCallPrimary ? "" : "border-primary/60 text-primary"}`}
+          className="h-12 flex-col gap-0 px-2"
         >
           <PhoneLink location="mobile_action_bar">
             <span className="text-sm font-semibold leading-5">
@@ -65,7 +65,7 @@ export default function MobileActionBar() {
             <span className="sr-only">, </span>
             <span
               data-testid="practice-status"
-              className={`text-xs font-medium leading-4 ${isCallPrimary ? "text-primary-foreground/90" : "text-muted-foreground"}`}
+              className={`text-xs font-medium leading-4 ${isCallPrimary ? "text-primary-foreground/85" : "text-ink-soft"}`}
             >
               {statusText}
             </span>
@@ -74,7 +74,7 @@ export default function MobileActionBar() {
         <Button
           asChild
           variant={isCallPrimary ? "outline" : "default"}
-          className={`h-12 text-sm font-semibold ${isCallPrimary ? "border-primary/60 text-primary" : ""}`}
+          className="h-12 text-sm font-semibold"
         >
           <AppointmentLink
             href={buildAppointmentUrl({ source: "mobile_action_bar" })}

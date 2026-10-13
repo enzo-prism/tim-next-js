@@ -497,6 +497,18 @@
   }
 }
 
+/* Settles into place without ever being invisible (safe for LCP images). */
+@keyframes ff-settle {
+  from {
+    translate: 0 1.25rem;
+    scale: 0.96;
+  }
+  to {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
 @keyframes ff-slide-left {
   from {
     opacity: 0;
@@ -684,6 +696,10 @@
     animation: ff-rise-scale 1s var(--ease-out-soft) both;
     animation-delay: calc(var(--d, 0) * 1ms);
   }
+  .ff-intro-settle {
+    animation: ff-settle 1.1s var(--ease-out-soft) both;
+    animation-delay: calc(var(--d, 0) * 1ms);
+  }
   .ff-intro-pop {
     animation: ff-pop 0.7s var(--ease-spring) both;
     animation-delay: calc(var(--d, 0) * 1ms);
@@ -703,7 +719,8 @@
     animation-delay: calc(var(--d, 0) * 1ms);
   }
 
-  .ff-rotator > span {
+  .ff-rotator > span,
+  .ff-rotator > span:not(:last-child) {
     visibility: visible;
     animation: var(--ff-rot-name) var(--ff-rot-duration, 4.8s) var(--ease-in-out-soft) both;
     animation-delay: calc(var(--d, 0) * 1ms);
@@ -993,6 +1010,11 @@
       view-timeline-name: --ff-marquee;
     }
   }
+}
+
+/* Floating helpers step aside while a dialog (mobile menu, video) is open. */
+body:has([role="dialog"][data-state="open"]) :is([data-testid="assistant-launcher"], section[aria-label="Analytics privacy choices"]) {
+  visibility: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -98,24 +98,25 @@ export default function Home() {
               </p>
               <h1 id="home-heading" className="ff-display ff-words-intro" style={{ "--d": 80 } as CSSProperties}>
                 <Words text="A" />{" "}
-                <Squiggle draw="load" delay={900}>
+                <Squiggle draw="load" delay={650}>
                   <Word index={1}>
                     <em className="ff-italic font-medium text-cobalt">Gentle</em>
                   </Word>
                 </Squiggle>{" "}
                 <Words text="Family Dentist in Los Gatos" start={2} />
               </h1>
-              <p className="ff-lead ff-intro mt-7 max-w-xl" style={{ "--d": 520 } as CSSProperties}>
+              <p className="ff-lead ff-intro mt-7 max-w-xl" style={{ "--d": 300 } as CSSProperties}>
                 Calm, unhurried dental care for{" "}
                 <Rotator
-                  delay={900}
+                  delay={700}
                   className="font-semibold text-ink"
-                  words={["little ones", "teens", "parents", "grandparents", "your whole family"]}
-                  srText="little ones, teens, parents, grandparents, and your whole family"
+                  words={["little ones.", "teens.", "parents.", "grandparents.", "your whole family."]}
+                  srText="little ones, teens, parents, grandparents, and your whole family."
                 />
-                . One Los Gatos team your family can grow with.
+                <br />
+                One Los Gatos team your family can grow with.
               </p>
-              <div className="ff-intro mt-9 flex flex-col gap-3 sm:flex-row" style={{ "--d": 640 } as CSSProperties}>
+              <div className="ff-intro mt-9 flex flex-col gap-3 sm:flex-row" style={{ "--d": 380 } as CSSProperties}>
                 <Button asChild size="lg" className="group h-14 pl-7 pr-5 text-base">
                   <AppointmentLink href={buildAppointmentUrl({ source: "home_hero" })} source="home_hero">
                     Request an Appointment
@@ -128,7 +129,7 @@ export default function Home() {
                   <PhoneLink location="home_hero">Call (408) 358-8100</PhoneLink>
                 </Button>
               </div>
-              <div data-home-review-proof="" className="ff-intro mt-8 flex flex-wrap items-center gap-x-4 gap-y-2" style={{ "--d": 760 } as CSSProperties}>
+              <div data-home-review-proof="" className="ff-intro mt-8 flex flex-wrap items-center gap-x-4 gap-y-2" style={{ "--d": 460 } as CSSProperties}>
                 <Stars className="text-lg" />
                 <div>
                   <TrackedExternalLink
@@ -155,7 +156,7 @@ export default function Home() {
               <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 size-56 sm:-right-16 sm:size-72 lg:-right-20 lg:-top-16 lg:size-[22rem]">
                 <Pinwheel gather="load" spin="page" delay={200} className="size-full" />
               </div>
-              <div className="ff-intro-scale relative mx-auto w-[78%] lg:w-[80%]" style={{ "--d": 180 } as CSSProperties}>
+              <div className="ff-intro-settle relative mx-auto w-[78%] lg:w-[80%]" style={{ "--d": 0 } as CSSProperties}>
                 <div className="relative">
                   <HeroMoon />
                   <div className="ff-arch relative aspect-[4/5] bg-periwinkle-wash ring-8 ring-white">
@@ -170,16 +171,16 @@ export default function Home() {
                   <HeroGhost />
                   <HeroBats className={heroMoonBox} />
                 </div>
-                <span className="ff-chip ff-intro-pop absolute -left-6 top-[18%] z-[2] sm:-left-10" style={{ "--d": 900 } as CSSProperties}>
+                <span className="ff-chip ff-intro-pop absolute -left-6 top-[18%] z-[2] sm:-left-10" style={{ "--d": 700 } as CSSProperties}>
                   <span aria-hidden="true" className="size-2.5 rounded-full bg-lime ring-2 ring-ink/10" />
                   Bay Area native
                 </span>
-                <span className="ff-chip ff-intro-pop absolute -right-5 top-[52%] z-[2] sm:-right-8" style={{ "--d": 1020 } as CSSProperties}>
+                <span className="ff-chip ff-intro-pop absolute -right-5 top-[52%] z-[2] sm:-right-8" style={{ "--d": 820 } as CSSProperties}>
                   <span aria-hidden="true" className="size-2.5 rounded-full bg-blush ring-2 ring-ink/10" />
                   Toys &amp; stickers for kids
                 </span>
               </div>
-              <figcaption className="ff-intro relative z-[2] mx-auto -mt-10 w-[86%] rounded-2xl bg-white p-4 shadow-float ring-1 ring-border sm:w-[80%] sm:p-5" style={{ "--d": 820 } as CSSProperties}>
+              <figcaption className="ff-intro relative z-[2] mx-auto -mt-10 w-[86%] rounded-2xl bg-white p-4 shadow-float ring-1 ring-border sm:w-[80%] sm:p-5" style={{ "--d": 520 } as CSSProperties}>
                 <p className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-cobalt">Meet your dentist</p>
                 <Link href="/team" className="group mt-1 flex items-center justify-between gap-3 rounded-sm text-lg font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   Dr. Tim J. Chuang, DDS
@@ -311,6 +312,7 @@ export default function Home() {
                   className="ff-parallax object-cover object-top"
                   style={{ "--ff-parallax": "-4%" } as CSSProperties}
                 />
+                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-ink">Office manager</span>
               </div>
               <div className="ff-reveal-left relative mt-16 aspect-[3/4] overflow-hidden rounded-3xl bg-lime-wash" style={{ "--i": 1 } as CSSProperties}>
                 <Image
@@ -321,13 +323,14 @@ export default function Home() {
                   quality={70}
                   className="object-cover object-top"
                 />
+                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-ink">Dental assistant</span>
               </div>
             </div>
             <div className="ff-reveal-pop absolute -bottom-6 left-1/2 w-[min(92%,22rem)] -translate-x-1/2 rounded-2xl bg-white p-5 shadow-float ring-1 ring-border" style={{ "--i": 2 } as CSSProperties}>
               <p className="font-display text-lg font-semibold leading-snug text-ink">
-                “Georgia at the front office is also wonderful—always friendly and helpful with the scheduling process.”
+                “Dr. Chuang is a true perfectionist who listens carefully and explains every step so I always feel at ease.”
               </p>
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-ink-soft">Veronica R. · Google review</p>
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-ink-soft">Js L. · Google review</p>
             </div>
           </div>
           <div className="order-1 lg:order-2">
@@ -452,7 +455,7 @@ export default function Home() {
           photos={[
             { src: storefrontPhoto, alt: "The Family First Smile Care storefront at Suite 102", caption: "Find us at Suite 102" },
             { src: windowRoomPhoto, alt: "A bright treatment room with a window onto the trees", caption: "Treatment rooms with a view", position: "50% 40%" },
-            { src: waitingRoomPhoto, alt: "The waiting room with sofas and the moss tooth wall", caption: "A comfy waiting room", position: "30% 50%" },
+            { src: waitingRoomPhoto, alt: "The waiting room with sofas and the moss tooth wall", caption: "A comfy waiting room", position: "62% 55%", zoom: 1.3 },
             { src: xrayAlcovePhoto, alt: "The imaging alcove beside a wall of Hawaii photos", caption: "Modern imaging" },
             { src: treatmentHallPhoto, alt: "The hallway of treatment rooms", caption: "Room to breathe" },
             { src: lobbyPhoto, alt: "Daylight through the front windows of the lobby", caption: "Sunny front lobby", position: "70% 50%" },

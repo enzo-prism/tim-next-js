@@ -92,24 +92,24 @@ export function PageHero({
                 </h1>
               )}
               {lead ? (
-                <div className="ff-lead ff-intro mt-6 max-w-2xl" style={{ "--d": 320 } as CSSProperties}>
+                <div className="ff-lead ff-intro mt-6 max-w-2xl" style={{ "--d": 240 } as CSSProperties}>
                   {lead}
                 </div>
               ) : null}
               {actions ? (
-                <div className="ff-intro mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={{ "--d": 440 } as CSSProperties}>
+                <div className="ff-intro mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={{ "--d": 320 } as CSSProperties}>
                   {actions}
                 </div>
               ) : null}
               {meta ? (
-                <div className="ff-intro mt-6 text-sm text-ink-soft" style={{ "--d": 540 } as CSSProperties}>
+                <div className="ff-intro mt-6 text-sm text-ink-soft" style={{ "--d": 400 } as CSSProperties}>
                   {meta}
                 </div>
               ) : null}
               {children}
             </div>
             {media ? (
-              <div className="ff-intro-scale relative" style={{ "--d": 260 } as CSSProperties}>
+              <div className="ff-intro-settle relative" style={{ "--d": 0 } as CSSProperties}>
                 {media}
               </div>
             ) : null}

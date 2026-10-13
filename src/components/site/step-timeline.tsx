@@ -12,6 +12,7 @@ export type TimelineStep = { title: ReactNode; body?: ReactNode };
  */
 export function StepTimeline({ steps, className, tone = "light" }: { steps: TimelineStep[]; className?: string; tone?: "light" | "night" }) {
   const night = tone === "night";
+  const columns = steps.length >= 4 ? 4 : steps.length === 3 ? 3 : 2;
   return (
     <ol
       className={cn(
@@ -24,7 +25,11 @@ export function StepTimeline({ steps, className, tone = "light" }: { steps: Time
       <span aria-hidden="true" className={cn("absolute bottom-6 left-[1.375rem] top-6 w-0.5 md:hidden", night ? "bg-white/10" : "bg-ink/10")}>
         <span className="ff-grow-view block size-full origin-top bg-cobalt" />
       </span>
-      <span aria-hidden="true" className={cn("absolute left-6 right-6 top-[1.375rem] hidden h-0.5 md:block", night ? "bg-white/10" : "bg-ink/10")}>
+      <span
+        aria-hidden="true"
+        className={cn("absolute left-[1.375rem] top-[1.375rem] hidden h-0.5 md:block", night ? "bg-white/10" : "bg-ink/10")}
+        style={{ right: `calc((100% - ${(columns - 1) * 1.5}rem) / ${columns} - 1.375rem)` }}
+      >
         <span className="ff-grow-view-x block size-full origin-left bg-cobalt" />
       </span>
       {steps.map((step, index) => (

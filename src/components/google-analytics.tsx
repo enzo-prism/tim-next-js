@@ -82,7 +82,7 @@ export default function GoogleAnalytics() {
           aria-label="Analytics privacy choices"
           className="fixed inset-x-3 bottom-[calc(var(--mobile-action-bar-space)+0.75rem)] z-[100] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 md:inset-x-auto md:bottom-5 md:left-5 md:w-auto"
         >
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3.5 py-2.5 shadow-float">
             <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground md:whitespace-nowrap">
               Analytics and ad measurement? We never record what you type.{" "}
               <Link
@@ -97,14 +97,14 @@ export default function GoogleAnalytics() {
                 type="button"
                 aria-label="Allow analytics"
                 onClick={() => chooseConsent("granted")}
-                className="rounded-md px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                className="rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-white hover:bg-cobalt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               >
                 Allow
               </button>
               <button
                 type="button"
                 onClick={() => chooseConsent("denied")}
-                className="rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                className="rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-cream hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               >
                 No thanks
               </button>
