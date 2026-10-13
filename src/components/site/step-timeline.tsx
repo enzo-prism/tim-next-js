@@ -28,7 +28,7 @@ export function StepTimeline({
   tone?: "light" | "night";
   /** "auto" goes horizontal at lg; "vertical" always stacks (for narrow columns). */
   orientation?: "auto" | "vertical";
-  /** Ring around each marker; match it to the background (default paper / night). */
+  /** Ring around each marker; defaults to the enclosing Section's background. */
   ringClassName?: string;
 }) {
   const night = tone === "night";
@@ -63,7 +63,7 @@ export function StepTimeline({
             className={cn(
               "ff-reveal-pop relative z-[1] grid size-11 shrink-0 place-items-center rounded-full font-display text-lg font-semibold text-ink ring-4",
               dotColors[index % dotColors.length],
-              ringClassName ?? (night ? "ring-night" : "ring-paper"),
+              ringClassName ?? (night ? "ring-night" : "ring-[var(--ff-surface,var(--ff-paper))]"),
             )}
             style={{ "--i": index } as CSSProperties}
           >

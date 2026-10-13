@@ -1,11 +1,16 @@
-import Link from "next/link";
-import type { ReactNode } from "react";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
-import PracticeAddressLink from "@/components/location/PracticeAddressLink";
+import type { CSSProperties, ReactNode } from "react";
+import { Link } from "wouter";
 import { AppointmentLink, PhoneLink } from "@/components/tracking/tracked-links";
 import { Button } from "@/components/ui/button";
+import { PageHero, type HeroTone } from "@/components/site/page-hero";
+import { Section } from "@/components/site/section";
+import { CtaBand } from "@/components/site/cta-band";
 import { buildAppointmentUrl } from "@/lib/analytics";
 import { patientGuidanceFacts, type PatientGuidanceSection } from "@/content/patient-guidance";
+import { arrowChip, arrowChipNight, MoreGuides } from "@/components/guides/guide-shared";
+import { NewPatientGuide, NewPatientHeroMedia } from "@/components/guides/new-patient-guide";
+import { InsuranceGuide, InsuranceHeroMedia } from "@/components/guides/insurance-guide";
+import { EmergencyCard, UrgentCallCard, UrgentCareGuide } from "@/components/guides/urgent-care-guide";
 
 type PatientGuidancePageProps = {
   title: string;
@@ -17,6 +22,34 @@ type PatientGuidancePageProps = {
   children?: ReactNode;
 };
 
+type Variant = "new" | "insurance" | "urgent" | "generic";
+
+const variantBySource: Record<string, Variant> = {
+  new_patients: "new",
+  insurance_and_payment: "insurance",
+  urgent_dental_care: "urgent",
+};
+
+const toneByVariant: Record<Variant, HeroTone> = {
+  new: "lime",
+  insurance: "periwinkle",
+  urgent: "blush",
+  generic: "cloud",
+};
+
+// A warmer opening for the urgent guide; the others use the route's intro.
+const leadByVariant: Partial<Record<Variant, string>> = {
+  urgent:
+    "If a tooth hurts, something chipped, or you’re just worried, call our Los Gatos team. We’ll listen, check appointment availability, and help you take the next step.",
+};
+
+const officeNote = `${patientGuidanceFacts.hours}, Los Gatos time · 15251 National Ave, Suite 102, Los Gatos`;
+
+/**
+ * The three patient guides (/new-patients, /insurance-and-payment,
+ * /urgent-dental-care). Each gets its own hero tone and body; the hero always
+ * carries a visible call link before any other phone link on the page.
+ */
 export default function PatientGuidancePage({
   title,
   label,
@@ -26,64 +59,211 @@ export default function PatientGuidancePage({
   callFirst = false,
   children,
 }: PatientGuidancePageProps) {
+  const variant = variantBySource[source] ?? "generic";
+  const phone = patientGuidanceFacts.phone.display;
+  const appointmentHref = buildAppointmentUrl({ source });
+  const breadcrumbs = [{ label: "Home", href: "/" }, { label: "Patient Info", href: "/patient-info" }, { label }];
+
+  const callButton = (primary: boolean) => (
+    <Button asChild size="lg" variant={primary ? "default" : "outline"} className="h-14 px-7 text-base">
+      <PhoneLink location={`${source}_hero`}>Call {phone}</PhoneLink>
+    </Button>
+  );
+  const requestButton = (primary: boolean) => (
+    <Button asChild size="lg" variant={primary ? "default" : "outline"} className={primary ? "group h-14 pl-7 pr-5 text-base" : "h-14 px-7 text-base"}>
+      <AppointmentLink href={appointmentHref} source={source}>
+        Request a visit
+        {primary ? arrowChip : null}
+      </AppointmentLink>
+    </Button>
+  );
+
+  const heroActions =
+    variant === "urgent" ? (
+      <UrgentCallCard source={source} />
+    ) : callFirst ? (
+      <>
+        {callButton(true)}
+        {requestButton(false)}
+      </>
+    ) : (
+      <>
+        {requestButton(true)}
+        {callButton(false)}
+      </>
+    );
+
+  const heroMedia =
+    variant === "new" ? <NewPatientHeroMedia /> : variant === "insurance" ? <InsuranceHeroMedia /> : variant === "urgent" ? <EmergencyCard /> : undefined;
+
+  const heroMeta =
+    variant === "urgent" ? (
+      <p className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+        <span>
+          <span className="font-semibold text-ink">Office hours:</span> {patientGuidanceFacts.hours}, Los Gatos time. Closed Fri–Sun.
+        </span>
+        <Link href="/contact" className="ff-link inline-flex min-h-11 items-center">
+          Office details &amp; directions
+        </Link>
+      </p>
+    ) : (
+      <p>
+        <span className="font-semibold text-ink">Office hours:</span> {patientGuidanceFacts.hours}, Los Gatos time.
+      </p>
+    );
+
   return (
-    <div className="bg-background pb-20 pt-24 sm:pt-28">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Patient Info", href: "/patient-info" }, { label }]} />
-        <header className="max-w-3xl pb-10 pt-4 sm:pb-12">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary">{label}</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight text-foreground sm:text-5xl">{title}</h1>
-          <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{introduction}</p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" variant={callFirst ? "default" : "outline"}>
-              <PhoneLink location={`${source}_hero`}>Call {patientGuidanceFacts.phone.display}</PhoneLink>
-            </Button>
-            {callFirst ? (
-              <Button asChild size="lg" variant="outline"><Link href="/contact">Office details & directions</Link></Button>
-            ) : (
-              <Button asChild size="lg">
-                <AppointmentLink href={buildAppointmentUrl({ source })} source={source}>Request a visit</AppointmentLink>
-              </Button>
-            )}
-          </div>
-          <p className="mt-3 text-sm text-muted-foreground">Office hours: {patientGuidanceFacts.hours}, Los Gatos time.</p>
-        </header>
+    <div className="overflow-x-clip">
+      <PageHero
+        id="guide-heading"
+        tone={toneByVariant[variant]}
+        breadcrumbs={breadcrumbs}
+        eyebrow={label}
+        titleText={title}
+        lead={<p>{leadByVariant[variant] ?? introduction}</p>}
+        actions={heroActions}
+        meta={heroMeta}
+        media={heroMedia}
+      />
 
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
-          <div className="space-y-10">
-            {sections.map((section) => (
-              <section key={section.id} id={section.id} className="scroll-mt-24 border-t border-border pt-7" aria-labelledby={`${section.id}-heading`}>
-                <h2 id={`${section.id}-heading`} className="text-2xl font-bold text-foreground">{section.title}</h2>
-                <p className="mt-3 leading-relaxed text-muted-foreground">{section.description}</p>
-                <ul className="mt-5 list-disc space-y-3 pl-5 text-foreground marker:text-primary">
-                  {section.items.map((item) => <li key={item} className="pl-1 leading-relaxed">{item}</li>)}
-                </ul>
-              </section>
-            ))}
-            {children}
-          </div>
+      {variant === "new" ? <NewPatientGuide sections={sections} source={source} /> : null}
+      {variant === "insurance" ? (
+        <InsuranceGuide sections={sections} source={source}>
+          {children}
+        </InsuranceGuide>
+      ) : null}
+      {variant === "urgent" ? <UrgentCareGuide sections={sections} source={source} /> : null}
+      {variant === "generic" ? (
+        <>
+          <GenericSections sections={sections} />
+          {children ? (
+            <Section width="narrow" className="pt-0 sm:pt-0 lg:pt-0">
+              {children}
+            </Section>
+          ) : null}
+          <Section labelledBy="guide-more-heading" className="py-14 sm:py-16 lg:py-20">
+            <MoreGuides current="" headingId="guide-more-heading" />
+          </Section>
+        </>
+      ) : null}
 
-          <aside className="space-y-6 lg:sticky lg:top-24" aria-label="Office details and patient guides">
-            <section className="rounded-xl border border-border bg-card p-6">
-              <h2 className="text-lg font-bold text-foreground">Your Los Gatos office</h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground"><PracticeAddressLink trackingLocation={`${source}_address`} /></p>
-              <p className="mt-4 text-sm font-semibold text-foreground">{patientGuidanceFacts.hours}</p>
-              <PhoneLink location={`${source}_sidebar`} className="mt-3 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">{patientGuidanceFacts.phone.display}</PhoneLink>
-              <p className="mt-3 border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">{patientGuidanceFacts.appointmentExpectation}</p>
-            </section>
-            <nav aria-label="Patient guides" className="rounded-xl border border-border bg-muted/40 p-6">
-              <h2 className="text-lg font-bold text-foreground">Useful before your visit</h2>
-              <ul className="mt-3 space-y-1">
-                {[
-                  ["/new-patients", "Your first visit"],
-                  ["/insurance-and-payment", "Insurance & payment"],
-                  ["/urgent-dental-care", "Time-sensitive dental concerns"],
-                ].map(([href, text]) => <li key={href}><Link href={href} className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline">{text}</Link></li>)}
-              </ul>
-            </nav>
-          </aside>
-        </div>
-      </div>
+      <ClosingBand variant={variant} source={source} appointmentHref={appointmentHref} />
     </div>
+  );
+}
+
+function ClosingBand({ variant, source, appointmentHref }: { variant: Variant; source: string; appointmentHref: string }) {
+  const phone = patientGuidanceFacts.phone.display;
+  const call = (primary: boolean) => (
+    <Button asChild size="lg" variant={primary ? "night" : "night-outline"} className="h-14 px-7 text-base">
+      <PhoneLink location={`${source}_final_cta`}>Call {phone}</PhoneLink>
+    </Button>
+  );
+  const request = (primary: boolean) => (
+    <Button asChild size="lg" variant={primary ? "night" : "night-outline"} className={primary ? "group h-14 pl-7 pr-5 text-base" : "h-14 px-7 text-base"}>
+      <AppointmentLink href={appointmentHref} source={source}>
+        Request a visit
+        {primary ? arrowChipNight : null}
+      </AppointmentLink>
+    </Button>
+  );
+
+  if (variant === "urgent") {
+    return (
+      <CtaBand
+        id="guide-cta-heading"
+        eyebrow="We’re here to help"
+        title={
+          <>
+            Something hurts? <em className="ff-italic font-normal text-lime">Call us first.</em>
+          </>
+        }
+        body="We’ll listen, check appointment availability, and help you take the next step."
+        actions={
+          <>
+            {call(true)}
+            {request(false)}
+          </>
+        }
+        note={officeNote}
+      />
+    );
+  }
+
+  if (variant === "insurance") {
+    return (
+      <CtaBand
+        id="guide-cta-heading"
+        title={
+          <>
+            Questions about your plan? <em className="ff-italic font-normal text-lime">Let’s talk.</em>
+          </>
+        }
+        body="Call with your plan name, or send a visit request and our team will reach out during office hours."
+        actions={
+          <>
+            {call(true)}
+            {request(false)}
+          </>
+        }
+        note={
+          <>
+            {patientGuidanceFacts.appointmentExpectation}
+            <br />
+            {officeNote}
+          </>
+        }
+      />
+    );
+  }
+
+  return (
+    <CtaBand
+      id="guide-cta-heading"
+      title={
+        <>
+          Let’s find a time for your <em className="ff-italic font-normal text-lime">first visit.</em>
+        </>
+      }
+      body="Send a request or give us a call. We’ll help you plan the rest."
+      actions={
+        <>
+          {request(true)}
+          {call(false)}
+        </>
+      }
+      note={officeNote}
+    />
+  );
+}
+
+function GenericSections({ sections }: { sections: readonly PatientGuidanceSection[] }) {
+  return (
+    <Section>
+      <div className="grid gap-6 md:grid-cols-2">
+        {sections.map((section, index) => (
+          <section
+            key={section.id}
+            id={section.id}
+            aria-labelledby={`${section.id}-heading`}
+            className="ff-reveal rounded-3xl border border-border bg-white p-7"
+            style={{ "--i": index % 2 } as CSSProperties}
+          >
+            <h2 id={`${section.id}-heading`} className="ff-h3">
+              {section.title}
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-ink-soft">{section.description}</p>
+            <ul className="mt-5 space-y-3">
+              {section.items.map((item) => (
+                <li key={item} className="flex gap-3 text-base leading-relaxed text-ink">
+                  <span aria-hidden="true" className="mt-2 size-2.5 shrink-0 rounded-full bg-periwinkle ring-2 ring-ink/10" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </Section>
   );
 }

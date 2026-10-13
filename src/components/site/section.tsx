@@ -4,15 +4,16 @@ import { BrandDots } from "@/components/brand/pinwheel";
 
 export type SectionTone = "paper" | "cream" | "white" | "night" | "periwinkle" | "blush" | "lime" | "cloud";
 
+// `--ff-surface` lets children (e.g. timeline marker rings) match the band.
 const toneClass: Record<SectionTone, string> = {
-  paper: "bg-paper text-ink",
-  cream: "bg-cream text-ink",
-  white: "bg-white text-ink",
-  night: "bg-night text-white",
-  periwinkle: "bg-periwinkle-wash text-ink",
-  blush: "bg-blush-wash text-ink",
-  lime: "bg-lime-wash text-ink",
-  cloud: "bg-cloud-wash text-ink",
+  paper: "bg-paper text-ink [--ff-surface:var(--ff-paper)]",
+  cream: "bg-cream text-ink [--ff-surface:var(--ff-cream)]",
+  white: "bg-white text-ink [--ff-surface:#ffffff]",
+  night: "bg-night text-white [--ff-surface:var(--ff-night)]",
+  periwinkle: "bg-periwinkle-wash text-ink [--ff-surface:var(--ff-periwinkle-wash)]",
+  blush: "bg-blush-wash text-ink [--ff-surface:var(--ff-blush-wash)]",
+  lime: "bg-lime-wash text-ink [--ff-surface:var(--ff-lime-wash)]",
+  cloud: "bg-cloud-wash text-ink [--ff-surface:var(--ff-cloud-wash)]",
 };
 
 /** Full-width band with a constrained inner container. */
