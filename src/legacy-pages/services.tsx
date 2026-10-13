@@ -1,166 +1,242 @@
-import { Link } from "wouter";
+import type { CSSProperties } from "react";
 import ServiceCard from "@/components/service-card";
 import { services } from "@/data/services";
+import type { Service } from "@/lib/types";
 import { ReviewsSection } from "@/components/review";
 import { generalReviews } from "@/data/reviews";
 import { buildAppointmentUrl } from "@/lib/analytics";
 import { AppointmentLink } from "@/components/tracking/tracked-links";
 import { FinalCtaPhoneLink } from "@/components/service-growth/final-cta-phone-link";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
+import { practiceHoursSummary } from "@/content/practice-hours";
 import { Button } from "@/components/ui/button";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+import { PageHero } from "@/components/site/page-hero";
+import { Section, SectionHeader } from "@/components/site/section";
+import { CtaBand } from "@/components/site/cta-band";
+import { ToothPerson } from "@/components/brand/pinwheel";
+import { Squiggle } from "@/components/brand/squiggle";
+import { HeroPhoto } from "@/components/services/hero-photo";
+import { IntentPicker } from "@/components/services/intent-picker";
+import { brandTones, officePhotos, serviceGroups, type ServiceGroup } from "@/components/services/service-themes";
+import { cn } from "@/lib/utils";
 
-const careStartingPoints = [
-  {
-    title: "I need a checkup",
-    description: "Start with a complete exam and a clear care plan.",
-    href: "/services/dental-exams",
-  },
-  {
-    title: "I want a cleaning",
-    description: "Explore preventive cleanings and gum-health care.",
-    href: "/services/dental-hygiene",
-  },
-  {
-    title: "I'm bringing my child",
-    description: "See gentle dental care designed for growing smiles.",
-    href: "/services/children-dentistry",
-  },
-  {
-    title: "I need to repair a tooth",
-    description: "Review fillings, crowns, and restorative options.",
-    href: "/services/restorative-dentistry",
-  },
-  {
-    title: "I have jaw pain",
-    description: "Learn how the team evaluates TMJ and bite concerns.",
-    href: "/tmj",
-  },
-  {
-    title: "I want to improve my smile",
-    description: "Explore clear aligners and cosmetic treatment options.",
-    href: "/services/invisalign",
-  },
-] as const;
+type CatalogEntry = { service: Service; isSubService: boolean };
+
+const topLevelIds = new Set(services.map((service) => service.id));
+const allServices = services.flatMap((service) => [service, ...(service.subServices ?? [])]);
+const byId = new Map(allServices.map((service) => [service.id, service]));
+
+// Services shown as their own card somewhere in the catalog.
+const cardIds = new Set(serviceGroups.flatMap((group) => group.serviceIds).filter((id) => byId.has(id)));
+
+// Any top-level service not placed in a group still gets a card (last group).
+const ungrouped = services.filter((service) => !cardIds.has(service.id)).map((service) => service.id);
+const catalogGroups: ServiceGroup[] = serviceGroups.map((group, index) =>
+  index === serviceGroups.length - 1 ? { ...group, serviceIds: [...group.serviceIds, ...ungrouped] } : group,
+);
+
+const entriesFor = (group: ServiceGroup): CatalogEntry[] =>
+  group.serviceIds.flatMap((id) => {
+    const service = byId.get(id);
+    return service ? [{ service, isSubService: !topLevelIds.has(id) }] : [];
+  });
+
+// Panel layout of the bento, by group id.
+const panelLayout: Record<string, { panel: string; cards: string; header: "row" | "stack" }> = {
+  "everyday-care": { panel: "lg:col-span-12", cards: "sm:grid-cols-2 lg:grid-cols-3", header: "row" },
+  kids: { panel: "lg:col-span-5", cards: "", header: "stack" },
+  smile: { panel: "lg:col-span-7", cards: "sm:grid-cols-2", header: "stack" },
+  "comfort-repair": { panel: "lg:col-span-12", cards: "sm:grid-cols-2 lg:grid-cols-3", header: "row" },
+};
+
+function GroupPanel({ group, index }: { group: ServiceGroup; index: number }) {
+  const tone = brandTones[group.tone];
+  const layout = panelLayout[group.id] ?? panelLayout["everyday-care"];
+  const entries = entriesFor(group);
+  if (!entries.length) return null;
+  const headingId = `${group.id}-heading`;
+  const oddLast = entries.length % 2 === 1 && entries.length > 1;
+
+  return (
+    <section
+      id={group.id}
+      aria-labelledby={headingId}
+      className={cn("relative scroll-mt-28 overflow-clip rounded-3xl p-3 pt-7 sm:p-5 sm:pt-9 lg:p-6 lg:pt-10", tone.wash, layout.panel)}
+    >
+      <ToothPerson
+        color={tone.color}
+        className={cn(
+          "ff-reveal-pop pointer-events-none absolute -top-3 right-5 h-24 w-auto rotate-[8deg] sm:right-8 sm:h-28",
+          group.tone === "cloud" && "[&_g]:stroke-ink/10 [&_g]:[stroke-width:3]",
+        )}
+        style={{ "--i": 1 } as CSSProperties}
+      />
+      <div
+        className={cn(
+          "ff-reveal relative mb-6 px-3 pr-24 sm:mb-8 sm:px-2 sm:pr-36",
+          layout.header === "row" && "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end lg:gap-10",
+        )}
+      >
+        <div>
+          <p className="ff-eyebrow">
+            <span aria-hidden="true" className="font-display text-sm font-semibold tracking-normal text-ink">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span>{group.label}</span>
+          </p>
+          <h3 id={headingId} className="ff-h3 mt-3 max-w-xl">
+            {group.title}
+          </h3>
+        </div>
+        <p className={cn("mt-3 max-w-md text-base leading-relaxed text-ink-soft", layout.header === "row" && "lg:mt-0")}>{group.blurb}</p>
+      </div>
+      <div className={cn("relative grid gap-3 sm:gap-4", layout.cards)}>
+        {entries.map(({ service, isSubService }, position) => (
+          <ServiceCard
+            key={service.id}
+            service={service}
+            featured={service.featured === true}
+            tone={group.tone}
+            index={position}
+            location={isSubService ? "service_card_subservice" : "service_card"}
+            subServices={(service.subServices ?? []).filter((sub) => !cardIds.has(sub.id))}
+            className={cn(oddLast && position === entries.length - 1 && "sm:col-span-2 lg:col-span-1")}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function Services() {
   return (
-    <div className="pt-16 pb-20 bg-background">
-      
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
-        <HeroBackdrop variant="default" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 mb-6 leading-tight"
-            >
-              Our Comprehensive Services
-            </h1>
-            <p
-              className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
-            >
-              From routine cleanings to advanced treatments, we offer complete dental care for your entire family with state-of-the-art technology and compassionate care.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Services" }]} />
-      </div>
-
-      <section aria-labelledby="care-starting-points" className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
-        <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Find the right starting point</p>
-            <h2 id="care-starting-points" className="mt-3 text-2xl font-bold text-foreground sm:text-3xl">
-              Start with what you need
-            </h2>
-            <p className="mt-3 text-base leading-7 text-muted-foreground">
-              Choose the concern that sounds closest. You can also request a visit and our team will help you plan the right next step.
-            </p>
-          </div>
-
-          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {careStartingPoints.map((item) => (
-              <Link
-                key={item.title}
-                href={item.href}
-                className="group flex min-h-32 items-start justify-between gap-4 rounded-xl border border-border bg-muted/40 p-5 transition-colors hover:border-primary/40 hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
-              >
-                <span>
-                  <span className="block font-semibold text-foreground group-hover:text-primary">{item.title}</span>
-                  <span className="mt-2 block text-sm leading-6 text-muted-foreground">{item.description}</span>
+    <div className="overflow-x-clip">
+      <PageHero
+        id="services-heading"
+        tone="periwinkle"
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Services" }]}
+        eyebrow="Dental services in Los Gatos"
+        titleText="Our Comprehensive Services"
+        lead="From a baby’s first visit to a grandparent’s crown: checkups, cleanings, repairs, clear aligners, and jaw-comfort care, all with one Los Gatos team."
+        actions={
+          <>
+            <Button asChild size="lg" className="group h-14 pl-7 pr-3 text-base">
+              <AppointmentLink href={buildAppointmentUrl({ source: "services_hero" })} source="services_hero">
+                Request an Appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-white/15">
+                  <MinimalGlyph name="arrow-right" />
                 </span>
-                <MinimalGlyph name="arrow-right" className="mt-1 h-4 w-4 shrink-0 text-primary" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 px-7 text-base">
+              <a href="#care-starting-points">Help me choose</a>
+            </Button>
+          </>
+        }
+        meta={
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="font-semibold text-ink">{practiceHoursSummary}</span>
+            <span aria-hidden="true">·</span>
+            <span>15251 National Ave, Suite 102</span>
+          </span>
+        }
+        media={
+          <HeroPhoto
+            photo={officePhotos.windowRoom}
+            chips={["Kids to grandparents", "One Los Gatos team"]}
+            chipColors={["var(--ff-lime)", "var(--ff-blush)"]}
+          />
+        }
+      />
 
-      {/* Services Grid */}
-      <div
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20"
-      >
-        <div className="grid gap-6 sm:gap-8 md:grid-cols-2 xl:grid-cols-2">
-          {services.map((service) => (
-            <div
-              key={service.id}
-            >
-              <ServiceCard 
-                service={service} 
-                featured={service.featured === true}
-              />
-            </div>
+      {/* ------------------------------------------------- Intent picker */}
+      <Section labelledBy="care-starting-points" className="pt-16 sm:pt-20 lg:pt-24">
+        <SectionHeader
+          id="care-starting-points"
+          align="center"
+          eyebrow="Find the right starting point"
+          title={
+            <>
+              Start with what you <Squiggle color="var(--ff-lime)">need</Squiggle>
+            </>
+          }
+          lead="Choose the one that sounds closest. Not sure? Request a visit and our team will help you plan the right next step."
+        />
+        <div className="mt-12">
+          <IntentPicker />
+        </div>
+      </Section>
+
+      {/* ------------------------------------------------------- Catalog */}
+      <Section tone="white" labelledBy="service-catalog-heading">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-end">
+          <SectionHeader
+            id="service-catalog-heading"
+            eyebrow="Every service"
+            title={
+              <>
+                One dental home, <em className="ff-italic font-normal">every</em> smile
+              </>
+            }
+            lead="Grouped by what your family needs, from everyday cleanings to repairs and jaw comfort."
+          />
+          <nav aria-label="Service groups" className="ff-reveal flex flex-wrap gap-2 lg:max-w-[24rem] lg:justify-self-end">
+            {catalogGroups.map((group) => (
+              <a
+                key={group.id}
+                href={`#${group.id}`}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink/10 bg-white px-4 text-sm font-semibold text-ink transition-colors hover:border-ink/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span aria-hidden="true" className={cn("size-2.5 rounded-full", brandTones[group.tone].solid, group.tone === "cloud" && "ring-1 ring-ink/15")} />
+                {group.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+        <div className="mt-12 grid gap-4 sm:gap-5 lg:grid-cols-12">
+          {catalogGroups.map((group, index) => (
+            <GroupPanel key={group.id} group={group} index={index} />
           ))}
         </div>
-      </div>
+      </Section>
 
-      {/* Featured Patient Reviews */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ReviewsSection 
-          reviews={generalReviews.slice(0, 4)} 
+      {/* ------------------------------------------------------- Reviews */}
+      <Section tone="cream" labelledBy="services-reviews-heading">
+        <ReviewsSection
+          id="services-reviews-heading"
+          reviews={generalReviews.slice(0, 4)}
           title="What Our Patients Say About Our Services"
           showCTA={true}
+          showBooking={false}
+          layout="feature"
         />
-      </div>
+      </Section>
 
-      {/* Call to Action Section */}
-      <section
-        className="relative py-16 lg:py-24 mx-4 sm:mx-6 lg:mx-8 mt-16"
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white shadow-sm">
-            <h2
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4"
-            >
-              Ready to Start Your Dental Journey?
-            </h2>
-            <p
-              className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto"
-            >
-              Send a visit request and tell us what you need. Our team will contact you to confirm the next step.
-            </p>
-            <div
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            >
-              <Button
-                asChild
-                className="h-auto min-h-11 w-full sm:w-auto inline-flex items-center justify-center whitespace-normal rounded-lg bg-white px-8 py-4 text-center text-lg font-semibold text-primary shadow-sm ring-offset-background transition-colors duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
-              >
-                <AppointmentLink href={buildAppointmentUrl({ source: "services_hero" })} source="services_cta">
-                  Request an Appointment
-                </AppointmentLink>
-              </Button>
-              <FinalCtaPhoneLink location="services_final">or call (408) 358-8100</FinalCtaPhoneLink>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ------------------------------------------------------- Closing */}
+      <CtaBand
+        id="services-cta-heading"
+        title={
+          <>
+            Ready to start your <em className="ff-italic font-normal text-lime">dental journey?</em>
+          </>
+        }
+        body="Send a visit request and tell us what you need. Our team will contact you to confirm the next step."
+        actions={
+          <>
+            <Button asChild size="lg" variant="night" className="group h-14 pl-7 pr-3 text-base">
+              <AppointmentLink href={buildAppointmentUrl({ source: "services_hero" })} source="services_cta">
+                Request an Appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-ink/10">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
+              </AppointmentLink>
+            </Button>
+            <FinalCtaPhoneLink location="services_final">or call (408) 358-8100</FinalCtaPhoneLink>
+          </>
+        }
+        note={<>{practiceHoursSummary} · 15251 National Ave, Suite 102, Los Gatos</>}
+      />
     </div>
   );
 }
+

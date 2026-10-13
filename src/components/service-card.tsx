@@ -1,109 +1,115 @@
+import type { CSSProperties } from "react";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import { Button } from "@/components/ui/button";
 import type { Service } from "@/lib/types";
 import { buildAppointmentUrl } from "@/lib/analytics";
 import { AppointmentLink, ServiceLink } from "@/components/tracking/tracked-links";
 import { getServiceHref } from "@/lib/routes";
+import { cn } from "@/lib/utils";
+import { brandTones, isPublishableDetail, type BrandTone } from "@/components/services/service-themes";
 
 interface ServiceCardProps {
   service: Service;
+  /** Shows the consultation sticker and a "Request a Consultation" link. */
   featured?: boolean;
+  /** Accent from the family group the card sits in. */
+  tone?: BrandTone;
+  /** Nested services to list inside the card (defaults to the service's own). */
+  subServices?: Service[];
+  /** Tracking location for the main "Learn More About" link. */
+  location?: "service_card" | "service_card_subservice";
+  /** Stagger position for the scroll reveal. */
+  index?: number;
+  className?: string;
 }
 
-export default function ServiceCard({ service, featured = false }: ServiceCardProps) {
+/**
+ * One service in the /services catalog: title, one-line description, a few
+ * details, nested sub-services, and a light "Learn More About …" pill.
+ */
+export default function ServiceCard({
+  service,
+  featured = false,
+  tone = "periwinkle",
+  subServices = service.subServices ?? [],
+  location = "service_card",
+  index = 0,
+  className,
+}: ServiceCardProps) {
+  const accent = brandTones[tone];
+  const details = service.details.filter(isPublishableDetail).slice(0, 3);
+
   return (
-    <div className={`min-w-0 overflow-hidden rounded-xl border bg-card transition-colors duration-200 ${
-      featured 
-        ? "border-primary" 
-        : "border-gray-100 hover:border-primary/30"
-    }`}>
-      {featured && (
-        <div className="border-b border-border bg-primary p-4 text-center text-primary-foreground">
-          <span className="inline-flex items-center justify-center text-sm font-bold tracking-wide">
-            CONSULTATION AVAILABLE
-          </span>
-        </div>
-      )}
-      <div className="p-6 sm:p-8">
-        <div className="mb-6">
-          <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">{service.title}</h2>
-            <p className="text-gray-600 leading-relaxed">{service.description}</p>
-          </div>
-        </div>
-        
-        <div className="service-content">
-          <div className="mb-4">
-            <div className="space-y-3 mb-6">
-              {service.details.slice(0, 3).map((detail, index) => (
-                <div key={index} className="flex items-start text-gray-600 group">
-                  <MinimalGlyph name="check" className="text-primary mr-3 h-5 w-5 mt-0.5 flex-shrink-0 group-hover:text-primary transition-colors duration-200" />
-                  <span className="leading-relaxed">{detail}</span>
-                </div>
-              ))}
-              {service.details.length > 3 && (
-                <p className="text-gray-500 text-sm italic ml-8">+ {service.details.length - 3} more features</p>
-              )}
-            </div>
-            
-            {service.subServices && service.subServices.length > 0 && (
-              <div className="border-t border-gray-200 pt-6 mb-6">
-                <h3 className="font-bold text-gray-800 mb-4 text-lg">Includes:</h3>
-                <div className="grid gap-3">
-                  {service.subServices.map((subService) => (
-                    <div key={subService.id} className="rounded-xl border border-border bg-muted/40 p-3">
-                      <div className="flex items-center">
-                        <div className="flex-1">
-                          <ServiceLink
-                            href={getServiceHref(subService.id)}
-                            serviceId={subService.id}
-                            location="service_card_subservice"
-                          >
-                            <h4 className="font-semibold text-gray-800 text-sm hover:text-primary transition-colors cursor-pointer">{subService.title}</h4>
-                            <p className="text-xs text-gray-600">{subService.description}</p>
-                          </ServiceLink>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex flex-col gap-3 mt-6">
-            <Button
-              asChild
-              className="h-auto min-h-11 w-full whitespace-normal rounded-xl bg-primary py-3 text-center font-semibold text-primary-foreground shadow-sm transition-colors duration-200 hover:bg-primary/90 motion-reduce:transition-none"
+    <article
+      className={cn("ff-reveal flex h-full min-w-0 flex-col rounded-3xl bg-white p-5 ring-1 ring-ink/5 sm:p-7", className)}
+      style={{ "--i": index } as CSSProperties}
+    >
+      {featured ? (
+        <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-lime px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] text-ink">
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-ink" />
+          Consultation available
+        </p>
+      ) : null}
+      <h4 className="font-display text-[1.6rem] font-semibold leading-tight tracking-[-0.015em] text-ink">{service.title}</h4>
+      <p className="mt-2 text-base leading-relaxed text-ink-soft">{service.description}.</p>
+
+      <ul className="mt-5 space-y-2.5">
+        {details.map((detail, position) => (
+          <li key={detail} className={cn("flex items-start gap-3 text-[0.95rem] leading-snug text-ink", position === 2 && "max-sm:hidden")}>
+            <span aria-hidden="true" className={cn("mt-px grid size-5 shrink-0 place-items-center rounded-full text-[0.7rem]", accent.solid)}>
+              <MinimalGlyph name="check" />
+            </span>
+            <span>{detail}</span>
+          </li>
+        ))}
+      </ul>
+
+      {subServices.length > 0 ? (
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <p className="mr-1 text-xs font-bold uppercase tracking-[0.12em] text-ink-soft">Also inside</p>
+          {subServices.map((subService) => (
+            <ServiceLink
+              key={subService.id}
+              href={getServiceHref(subService.id)}
+              serviceId={subService.id}
+              location="service_card_subservice"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-full bg-paper py-1 pl-4 pr-1.5 text-sm font-semibold text-ink ring-1 ring-border transition-colors hover:ring-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <ServiceLink
-                href={getServiceHref(service.id)}
-                serviceId={service.id}
-                location="service_card"
-              >
-                Learn More About {service.title}
-              </ServiceLink>
-            </Button>
-            
-            {featured && (
-              <Button
-                asChild
-                variant="outline"
-                className="w-full rounded-xl border-2 border-primary py-3 font-semibold text-primary transition-colors duration-200 hover:bg-primary hover:text-primary-foreground"
-              >
-                <AppointmentLink
-                  href={buildAppointmentUrl({ serviceId: service.id, source: "service_card" })}
-                  source="service_card"
-                  ctaType="consultation"
-                  serviceId={service.id}
-                >
-                  Request a Consultation
-                </AppointmentLink>
-              </Button>
-            )}
-          </div>
+              {subService.title}
+              <span aria-hidden="true" className="ff-arrow grid size-8 shrink-0 place-items-center rounded-full bg-white text-ink ring-1 ring-ink/10 transition-colors group-hover:bg-ink group-hover:text-white">
+                <MinimalGlyph name="arrow-right" />
+              </span>
+            </ServiceLink>
+          ))}
         </div>
+      ) : null}
+
+      <div className="mt-auto flex flex-col gap-1 pt-7">
+        <ServiceLink
+          href={getServiceHref(service.id)}
+          serviceId={service.id}
+          location={location}
+          className={cn(
+            "group flex min-h-12 w-full items-center justify-between gap-3 rounded-full py-1.5 pl-5 pr-1.5 text-left text-[0.95rem] font-semibold leading-snug text-ink transition-colors hover:bg-ink hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            accent.wash,
+          )}
+        >
+          <span className="py-1">Learn More About {service.title}</span>
+          <span aria-hidden="true" className="ff-arrow grid size-9 shrink-0 place-items-center rounded-full bg-white text-ink">
+            <MinimalGlyph name="arrow-right" />
+          </span>
+        </ServiceLink>
+        {featured ? (
+          <AppointmentLink
+            href={buildAppointmentUrl({ serviceId: service.id, source: "service_card" })}
+            source="service_card"
+            ctaType="consultation"
+            serviceId={service.id}
+            className="ff-link inline-flex min-h-11 items-center justify-center text-sm"
+          >
+            Request a Consultation
+          </AppointmentLink>
+        ) : null}
       </div>
-    </div>
+    </article>
   );
 }

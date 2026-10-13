@@ -12,12 +12,12 @@ export type TimelineStep = { title: ReactNode; body?: ReactNode };
  */
 export function StepTimeline({ steps, className, tone = "light" }: { steps: TimelineStep[]; className?: string; tone?: "light" | "night" }) {
   const night = tone === "night";
-  const columns = steps.length >= 4 ? 4 : steps.length === 3 ? 3 : 2;
+  const columns = Math.min(Math.max(steps.length, 2), 5);
   return (
     <ol
       className={cn(
         "relative grid gap-8 lg:gap-6",
-        steps.length >= 4 ? "lg:grid-cols-4" : steps.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2",
+        ({ 2: "lg:grid-cols-2", 3: "lg:grid-cols-3", 4: "lg:grid-cols-4", 5: "lg:grid-cols-5" } as Record<number, string>)[columns],
         className,
       )}
     >
