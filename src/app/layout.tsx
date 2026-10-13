@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Raleway } from "next/font/google";
+import { Figtree, Fraunces } from "next/font/google";
 import "./globals.css";
 import "@/components/seasonal/seasonal.css";
 import Header from "@/components/layout/header";
@@ -13,11 +13,19 @@ import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
 import { SeasonScript } from "@/components/seasonal/seasonal-art";
 import { SeasonRuntime } from "@/components/seasonal/seasonal-client";
 
-const raleway = Raleway({
+// Fraunces (soft axis) carries display type; Figtree carries reading and UI text.
+const fraunces = Fraunces({
   subsets: ["latin"],
-  style: ["normal"],
+  style: ["normal", "italic"],
+  axes: ["SOFT", "opsz"],
   display: "swap",
-  variable: "--font-raleway",
+  variable: "--font-fraunces",
+});
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-figtree",
 });
 
 export const metadata: Metadata = {
@@ -33,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={raleway.variable}
+      className={`${fraunces.variable} ${figtree.variable}`}
       // The season script may set data-ffsc-season before hydration.
       suppressHydrationWarning
     >
