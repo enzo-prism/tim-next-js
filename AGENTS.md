@@ -11,7 +11,9 @@ Keep this file operational. Put visual rationale, palette decisions, component t
 - Use `.agents/skills/ui-design-system/SKILL.md` for repeatable UI and design-system work in this repo.
 - Prefer existing shadcn/ui primitives, Tailwind tokens, and shared components before creating new styling patterns.
 - Do not add raw brand hex colors, new spacing scales, or new radius rules unless `/DESIGN.md` is updated in the same change.
-- The approved brand palette is blue-led. Keep CTAs, icons, status states, cards, section backgrounds, rating icons, and gradients inside the blue token family.
+- The brand palette comes from the logo's four tooth-people: cobalt is the one action color; periwinkle, blush, lime, and cloud (and their `-wash` tints) are fills for panels, stickers, and illustration; ink carries text; night is the closing band and footer. Use the semantic Tailwind tokens (`bg-paper`, `bg-cream`, `text-ink`, `bg-lime-wash`, …), never raw palette classes.
+- Motion is CSS-first (see `/DESIGN.md` "Motion"): content must be visible in the server HTML (no `style="opacity:0"`, no framer-motion reveal wrappers; `tests/e2e/first-paint.spec.ts` guards this), scroll reveals use `ff-reveal*` scroll-driven classes, and everything settles for `prefers-reduced-motion`.
+- Build pages from the shared primitives in `src/components/site` (`PageHero`, `Section`, `SectionHeader`, `CtaBand`, `StepTimeline`, `ReviewCard`/`ReviewRows`, `PhotoStrip`) and `src/components/brand` (`Pinwheel`, `ToothPerson`, `Squiggle`).
 - When `/DESIGN.md` changes, run `npm run design:check`.
 - For visible UI changes, verify locally in the browser on the relevant routes.
 

@@ -16,24 +16,24 @@ export function StepTimeline({ steps, className, tone = "light" }: { steps: Time
   return (
     <ol
       className={cn(
-        "relative grid gap-8 md:gap-6",
-        steps.length >= 4 ? "md:grid-cols-4" : steps.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2",
+        "relative grid gap-8 lg:gap-6",
+        steps.length >= 4 ? "lg:grid-cols-4" : steps.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2",
         className,
       )}
     >
       {/* Track + growing line */}
-      <span aria-hidden="true" className={cn("absolute bottom-6 left-[1.375rem] top-6 w-0.5 md:hidden", night ? "bg-white/10" : "bg-ink/10")}>
+      <span aria-hidden="true" className={cn("absolute bottom-6 left-[1.375rem] top-6 w-0.5 lg:hidden", night ? "bg-white/10" : "bg-ink/10")}>
         <span className="ff-grow-view block size-full origin-top bg-cobalt" />
       </span>
       <span
         aria-hidden="true"
-        className={cn("absolute left-[1.375rem] top-[1.375rem] hidden h-0.5 md:block", night ? "bg-white/10" : "bg-ink/10")}
+        className={cn("absolute left-[1.375rem] top-[1.375rem] hidden h-0.5 lg:block", night ? "bg-white/10" : "bg-ink/10")}
         style={{ right: `calc((100% - ${(columns - 1) * 1.5}rem) / ${columns} - 1.375rem)` }}
       >
         <span className="ff-grow-view-x block size-full origin-left bg-cobalt" />
       </span>
       {steps.map((step, index) => (
-        <li key={index} className="relative flex gap-5 md:block">
+        <li key={index} className="relative flex gap-5 lg:block">
           <span
             aria-hidden="true"
             className={cn(
@@ -45,7 +45,7 @@ export function StepTimeline({ steps, className, tone = "light" }: { steps: Time
           >
             {index + 1}
           </span>
-          <div className="ff-reveal pb-2 md:mt-6 md:pr-4" style={{ "--i": index } as CSSProperties}>
+          <div className="ff-reveal pb-2 lg:mt-6 lg:pr-4" style={{ "--i": index } as CSSProperties}>
             <h3 className={cn("text-lg font-bold leading-snug", night ? "text-white" : "text-ink")}>
               <span className="sr-only">Step {index + 1}: </span>
               {step.title}

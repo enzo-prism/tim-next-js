@@ -302,31 +302,41 @@ export default function Home() {
         <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center">
           <div className="relative order-2 lg:order-1">
             <div className="grid grid-cols-2 gap-4">
-              <div className="ff-reveal-right ff-arch relative aspect-[3/4] bg-blush-wash">
-                <Image
-                  src={officeManagerPhoto}
-                  alt="Family First Smile Care office manager"
-                  fill
-                  sizes="(max-width: 1023px) 45vw, 300px"
-                  quality={70}
-                  className="ff-parallax object-cover object-top"
-                  style={{ "--ff-parallax": "-4%" } as CSSProperties}
-                />
-                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-ink">Office manager</span>
-              </div>
-              <div className="ff-reveal-left relative mt-16 aspect-[3/4] overflow-hidden rounded-3xl bg-lime-wash" style={{ "--i": 1 } as CSSProperties}>
-                <Image
-                  src={assistantPhoto}
-                  alt="Family First Smile Care dental assistant beside the office moss-tooth wall"
-                  fill
-                  sizes="(max-width: 1023px) 45vw, 300px"
-                  quality={70}
-                  className="object-cover object-top"
-                />
-                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-ink">Dental assistant</span>
-              </div>
+              <figure className="ff-reveal-right relative">
+                <div className="ff-arch relative aspect-[3/4] bg-blush-wash">
+                  <Image
+                    src={officeManagerPhoto}
+                    alt="Family First Smile Care office manager"
+                    fill
+                    sizes="(max-width: 1023px) 45vw, 300px"
+                    quality={70}
+                    className="ff-parallax object-cover object-top"
+                    style={{ "--ff-parallax": "-4%" } as CSSProperties}
+                  />
+                </div>
+                <figcaption className="ff-chip absolute -bottom-3 left-4 text-xs">
+                  <span aria-hidden="true" className="size-2 rounded-full bg-blush" />
+                  Office manager
+                </figcaption>
+              </figure>
+              <figure className="ff-reveal-left relative mt-16" style={{ "--i": 1 } as CSSProperties}>
+                <div className="relative aspect-[3/4] overflow-hidden rounded-3xl bg-lime-wash">
+                  <Image
+                    src={assistantPhoto}
+                    alt="Family First Smile Care dental assistant beside the office moss-tooth wall"
+                    fill
+                    sizes="(max-width: 1023px) 45vw, 300px"
+                    quality={70}
+                    className="object-cover object-top"
+                  />
+                </div>
+                <figcaption className="ff-chip absolute -bottom-3 left-4 text-xs">
+                  <span aria-hidden="true" className="size-2 rounded-full bg-lime" />
+                  Dental assistant
+                </figcaption>
+              </figure>
             </div>
-            <div className="ff-reveal-pop absolute -bottom-6 left-1/2 w-[min(92%,22rem)] -translate-x-1/2 rounded-2xl bg-white p-5 shadow-float ring-1 ring-border" style={{ "--i": 2 } as CSSProperties}>
+            <div className="ff-reveal-pop relative mx-auto mt-12 w-[min(100%,26rem)] -rotate-1 rounded-2xl bg-white p-5 shadow-float ring-1 ring-border" style={{ "--i": 2 } as CSSProperties}>
               <p className="font-display text-lg font-semibold leading-snug text-ink">
                 “Dr. Chuang is a true perfectionist who listens carefully and explains every step so I always feel at ease.”
               </p>
