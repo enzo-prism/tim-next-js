@@ -1,253 +1,402 @@
-import { Button } from "@/components/ui/button";
+import type { CSSProperties } from "react";
+import Image from "next/image";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { buildAppointmentUrl } from "@/lib/analytics";
-import { AppointmentLink } from "@/components/tracking/tracked-links";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
-import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
+import { AppointmentLink, PhoneLink } from "@/components/tracking/tracked-links";
 import type { RelatedLink } from "@/lib/internal-links";
+import { practiceHoursSummary } from "@/content/practice-hours";
+import { testimonialSections } from "@/content/testimonials";
+import { services } from "@/data/services";
+import { PageHero } from "@/components/site/page-hero";
+import { Eyebrow, Section, SectionHeader } from "@/components/site/section";
+import { StepTimeline } from "@/components/site/step-timeline";
+import { ReviewCard } from "@/components/site/review-rows";
+import { Stars } from "@/components/site/stars";
+import { CtaBand } from "@/components/site/cta-band";
+import { BrandDots, ToothPerson } from "@/components/brand/pinwheel";
+import { Squiggle } from "@/components/brand/squiggle";
+import { HeroPhoto } from "@/components/services/hero-photo";
+import { SymptomChecklist } from "@/components/services/symptom-checklist";
+import { ExploreLinks } from "@/components/services/explore-links";
+import { officePhotos } from "@/components/services/service-themes";
+import { cn } from "@/lib/utils";
+
+const relatedLinks: RelatedLink[] = [
+  {
+    href: "/services/night-guards",
+    title: "Night Guards",
+    description: "Custom protection for grinding and jaw tension that can worsen TMJ symptoms.",
+  },
+  {
+    href: "/services/invisalign",
+    title: "Invisalign Clear Aligners",
+    description: "Orthodontic options that may help with bite-related jaw strain (doctor will confirm).",
+  },
+  {
+    href: "/services/dental-exams",
+    title: "Dental Exams",
+    description: "Comprehensive evaluations to understand symptoms and plan next steps.",
+  },
+  {
+    href: "/patient-info",
+    title: "Patient Information",
+    description: "FAQs, what to expect, and helpful resources for your visit.",
+  },
+  {
+    href: "/contact",
+    title: "Contact & Scheduling",
+    description: "Book a TMJ consultation, ask a question, or get directions to our office.",
+  },
+];
+
+// The first few facts from the Night Guards service, shown on its card.
+const nightGuardPoints = (services.find((service) => service.id === "night-guards")?.details ?? []).slice(0, 3);
+
+const symptoms = ["Jaw pain and stiffness", "Frequent headaches", "Difficulty chewing", "Clicking or popping sounds", "Limited jaw movement"];
+
+type CareOption = {
+  title: string;
+  body: string;
+  points?: string[];
+  href?: string;
+  linkLabel?: string;
+  className: string;
+  tone: string;
+  tooth?: string;
+};
+
+// A 3×3 bento on wide screens (night guards tall, advanced procedures wide);
+// 2 columns on tablets; one column on phones.
+const careOptions: CareOption[] = [
+  {
+    title: "Custom Night Guards",
+    body: "We design night guards to prevent teeth grinding and clenching, which can exacerbate TMJ discomfort.",
+    href: "/services/night-guards",
+    linkLabel: "Explore night guards",
+    points: nightGuardPoints,
+    className: "md:row-span-2",
+    tone: "bg-periwinkle-wash",
+    tooth: "var(--ff-periwinkle)",
+  },
+  {
+    title: "Orthodontic Solutions",
+    body: "Conditions related to bite misalignment can be treated through customized orthodontic treatment plans, such as braces or Invisalign.",
+    href: "/services/invisalign",
+    linkLabel: "Explore Invisalign",
+    className: "",
+    tone: "bg-blush-wash",
+  },
+  {
+    title: "Digital Imaging",
+    body: "When appropriate, digital imaging can help the dentist evaluate jaw structures and explain treatment options.",
+    href: "/services/dental-exams",
+    linkLabel: "Explore dental exams",
+    className: "",
+    tone: "bg-lime-wash",
+  },
+  {
+    title: "Physical Therapy",
+    body: "Jaw exercises and muscle relaxation techniques can alleviate tension and improve function.",
+    className: "",
+    tone: "bg-white ring-1 ring-border",
+  },
+  {
+    title: "Lifestyle Modifications",
+    body: "Stress reduction, dietary changes, and exercise can often significantly improve the management of TMJ symptoms.",
+    className: "",
+    tone: "bg-white ring-1 ring-border",
+  },
+  {
+    title: "Advanced Procedures",
+    body: "For more severe cases, we may recommend targeted treatments, such as restorative dental work, to improve the alignment of your bite.",
+    className: "md:col-span-2 lg:col-span-3",
+    tone: "bg-cream",
+  },
+];
+
+const technology = [
+  "Digital records and imaging when clinically appropriate",
+  "Digital X-rays for precise diagnosis",
+  "Intraoral scanner technology",
+  "Panoramic imaging capabilities",
+];
+
+const comfort = [
+  "Soft blankets and pillow support",
+  "TVs in treatment rooms",
+  "Call ahead so we can discuss mobility or accessibility needs",
+  "Ask about treatment costs and payment options",
+];
+
+const advancedCareReviews = testimonialSections.find((section) => section.id === "advanced-care")?.reviews ?? [];
+const paula = advancedCareReviews.find((review) => review.name === "Paula Gregoire");
+const jon = advancedCareReviews.find((review) => review.name === "Jon Takagi");
+// Underline the last word of Paula's quote with the hand-drawn swoosh.
+const paulaQuote =
+  paula && paula.quote.endsWith("TMJ!") ? { lead: paula.quote.slice(0, -4), mark: "TMJ!" } : { lead: paula?.quote ?? "", mark: "" };
+
+function CareCard({ option, index }: { option: CareOption; index: number }) {
+  const content = (
+    <>
+      {option.tooth ? (
+        <ToothPerson
+          color={option.tooth}
+          className="pointer-events-none absolute -bottom-6 -right-3 h-36 w-auto rotate-[-8deg] transition-[rotate,translate] duration-500 ease-[var(--ease-spring)] group-hover:-translate-y-2 group-hover:rotate-[4deg] motion-reduce:transition-none sm:h-44"
+        />
+      ) : null}
+      <h3 className={cn("relative font-display font-semibold leading-tight text-ink", option.tooth ? "text-[1.75rem] sm:text-[2rem]" : "text-2xl")}>{option.title}</h3>
+      <p className={cn("relative mt-3 text-base leading-relaxed text-ink-soft", option.tooth && "max-w-[22rem] pr-10")}>{option.body}</p>
+      {option.points?.length ? (
+        <ul className="relative mt-6 space-y-2.5 pr-16">
+          {option.points.map((point) => (
+            <li key={point} className="flex items-start gap-3 text-[0.95rem] font-semibold leading-snug text-ink">
+              <span aria-hidden="true" className="mt-px grid size-5 shrink-0 place-items-center rounded-full bg-white text-[0.7rem] ring-1 ring-ink/10">
+                <MinimalGlyph name="check" />
+              </span>
+              {point}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {option.href ? (
+        <span className="relative mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-ink">
+          {option.linkLabel}
+          <span aria-hidden="true" className="ff-arrow grid size-9 place-items-center rounded-full bg-white ring-1 ring-ink/5 transition-colors group-hover:bg-ink group-hover:text-white">
+            <MinimalGlyph name="arrow-right" />
+          </span>
+        </span>
+      ) : null}
+    </>
+  );
+  const shared = cn("relative flex h-full flex-col overflow-clip rounded-3xl p-6 sm:p-8", option.tone);
+  return (
+    <li className={cn("ff-reveal", option.className)} style={{ "--i": index % 3 } as CSSProperties}>
+      {option.href ? (
+        <Link
+          href={option.href}
+          className={cn(shared, "ff-lift group min-h-56 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2")}
+        >
+          {content}
+        </Link>
+      ) : (
+        <div className={shared}>{content}</div>
+      )}
+    </li>
+  );
+}
 
 export default function TMJ() {
-  const relatedLinks: RelatedLink[] = [
-    {
-      href: "/services/night-guards",
-      title: "Night Guards",
-      description: "Custom protection for grinding and jaw tension that can worsen TMJ symptoms.",
-    },
-    {
-      href: "/services/invisalign",
-      title: "Invisalign Clear Aligners",
-      description: "Orthodontic options that may help with bite-related jaw strain (doctor will confirm).",
-    },
-    {
-      href: "/services/dental-exams",
-      title: "Dental Exams",
-      description: "Comprehensive evaluations to understand symptoms and plan next steps.",
-    },
-    {
-      href: "/patient-info",
-      title: "Patient Information",
-      description: "FAQs, what to expect, and helpful resources for your visit.",
-    },
-    {
-      href: "/contact",
-      title: "Contact & Scheduling",
-      description: "Book a TMJ consultation, ask a question, or get directions to our office.",
-    },
-  ];
-
   return (
-    <div className="pt-16 pb-20 bg-white">
-      
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
-        <HeroBackdrop variant="default" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">TMJ Treatment in Los Gatos</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Find relief from jaw pain and dysfunction with personalized TMJ treatment from Dr. Tim J. Chuang</p>
-          </div>
-        </div>
-      </section>
+    <div className="overflow-x-clip">
+      <PageHero
+        id="tmj-heading"
+        tone="blush"
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Services", href: "/services" },
+          { label: "TMJ Treatment" },
+        ]}
+        eyebrow="Jaw comfort · Los Gatos"
+        titleText="TMJ Treatment in Los Gatos"
+        lead="Find relief from jaw pain and dysfunction with personalized TMJ treatment from Dr. Tim J. Chuang. We listen first, look closely at your jaw and bite, and build a plan around your symptoms."
+        actions={
+          <>
+            <Button asChild size="lg" className="group h-14 pl-7 pr-3 text-base">
+              <AppointmentLink
+                href={buildAppointmentUrl({ serviceId: "tmj", source: "tmj_page" })}
+                source="tmj_hero"
+                ctaType="consultation"
+                serviceId="tmj"
+              >
+                Request a TMJ consultation
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-white/15">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 px-7 text-base">
+              <PhoneLink location="tmj_hero" serviceId="tmj">
+                Call (408) 358-8100
+              </PhoneLink>
+            </Button>
+          </>
+        }
+        meta={
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="font-semibold text-ink">{practiceHoursSummary}</span>
+            <span aria-hidden="true">·</span>
+            <span>15251 National Ave, Suite 102</span>
+          </span>
+        }
+        media={<HeroPhoto photo={officePhotos.hallway} chips={["Blankets & pillow support", "TVs in treatment rooms"]} chipColors={["var(--ff-periwinkle)", "var(--ff-lime)"]} />}
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <PageBreadcrumbs
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Services", href: "/services" },
-            { label: "TMJ Treatment" },
-          ]}
-        />
-        
-        {/* Understanding TMJ Section */}
-        <div className="mb-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-6">Understanding TMJ</h2>
-              <p className="text-gray-600 mb-6">
-                The temporomandibular joint, commonly referred to as TMJ, is one of the most complex joints in the human body. Located on both sides of your jaw, it connects your jawbone to your skull and allows for essential functions like chewing, speaking, and even smiling.
-              </p>
-              <p className="text-gray-600 mb-6">
-                However, when this joint becomes inflamed or dysfunctional, it can lead to a condition known as temporomandibular joint disorder (TMD). Common symptoms include jaw pain, stiffness, headaches, difficulty chewing, and clicking sounds when opening or closing your mouth.
-              </p>
-            </div>
-            <div className="bg-muted/40 rounded-xl p-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Common TMJ Symptoms</h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Jaw pain and stiffness
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Frequent headaches
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Difficulty chewing
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Clicking or popping sounds
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Limited jaw movement
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Treatment Options Section */}
-        <div className="mb-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">How TMJ Treatment in Los Gatos Can Help</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Living with the discomfort and pain caused by TMJ issues can be overwhelming, but effective treatment options are available. At Family First Smile Care, we take a personalized approach to address your specific symptoms and needs.
+      {/* ------------------------------------------------- Understanding */}
+      <Section labelledBy="understanding-heading">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-16">
+          <div className="ff-reveal">
+            <Eyebrow className="mb-4">The jaw joint, explained</Eyebrow>
+            <h2 id="understanding-heading" className="ff-h2">
+              Understanding TMJ
+            </h2>
+            <p className="mt-7 font-display text-[1.35rem] font-medium leading-snug tracking-[-0.01em] text-ink sm:text-[1.6rem]">
+              The temporomandibular joint, commonly referred to as TMJ, is one of the most complex joints in the human body. Located on both sides of your jaw, it connects your jawbone to your skull and allows for essential functions like chewing, speaking, and even smiling.
+            </p>
+            <p className="ff-lead mt-6">
+              However, when this joint becomes inflamed or dysfunctional, it can lead to a condition known as temporomandibular joint disorder (TMD). Common symptoms include jaw pain, stiffness, headaches, difficulty chewing, and clicking sounds when opening or closing your mouth.
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Link href="/services/night-guards" className="block h-full">
-              <div className="h-full bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300 hover:border-primary/40">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Custom Night Guards</h3>
-                <p className="text-gray-600">We design night guards to prevent teeth grinding and clenching, which can exacerbate TMJ discomfort.</p>
-                <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
-              </div>
-            </Link>
-            
-            <Link href="/services/invisalign" className="block h-full">
-              <div className="h-full bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300 hover:border-primary/40">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Orthodontic Solutions</h3>
-                <p className="text-gray-600">Conditions related to bite misalignment can be treated through customized orthodontic treatment plans, such as braces or Invisalign.</p>
-                <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
-              </div>
-            </Link>
-            
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Physical Therapy</h3>
-              <p className="text-gray-600">Jaw exercises and muscle relaxation techniques can alleviate tension and improve function.</p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300">
-              <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <MinimalGlyph name="check-circle" className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Lifestyle Modifications</h3>
-              <p className="text-gray-600">Stress reduction, dietary changes, and exercise can often significantly improve the management of TMJ symptoms.</p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Advanced Procedures</h3>
-              <p className="text-gray-600">For more severe cases, we may recommend targeted treatments, such as restorative dental work, to improve the alignment of your bite.</p>
-            </div>
-            
-            <Link href="/services/dental-exams" className="block h-full">
-              <div className="h-full bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300 hover:border-primary/40">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Digital Imaging</h3>
-                <p className="text-gray-600">When appropriate, digital imaging can help the dentist evaluate jaw structures and explain treatment options.</p>
-                <span className="mt-4 inline-flex text-sm font-semibold text-primary">Learn more</span>
-              </div>
-            </Link>
+          <div className="ff-reveal pt-6 lg:sticky lg:top-28 lg:pt-0" style={{ "--i": 1 } as CSSProperties}>
+            <SymptomChecklist title="Common TMJ Symptoms" symptoms={symptoms} />
           </div>
         </div>
+      </Section>
 
-        {/* Consultation Process */}
-        <div className="bg-muted/40 rounded-xl p-8 lg:p-12 mb-20">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">What to Expect During Your TMJ Consultation</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Your first step toward finding relief is scheduling a consultation with Dr. Tim Chuang at Family First Smile Care.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-white rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-4 text-primary font-bold text-lg">1</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Thorough Assessment</h3>
-              <p className="text-gray-600">We conduct a comprehensive evaluation of your jaw function and symptoms.</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-white rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-4 text-primary font-bold text-lg">2</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Advanced Imaging</h3>
-              <p className="text-gray-600">The dentist may recommend imaging when it is useful for evaluating jaw structures.</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-white rounded-lg w-12 h-12 flex items-center justify-center mx-auto mb-4 text-primary font-bold text-lg">3</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Personalized Plan</h3>
-              <p className="text-gray-600">We develop a treatment plan tailored specifically to your needs and symptoms.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Why Choose Us */}
-        <div className="mb-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Choose Family First Smile Care for TMJ Treatment?</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              At Family First Smile Care in Los Gatos, we pride ourselves on providing high-quality, patient-centered care in a comfortable and modern setting.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white border border-gray-200 rounded-xl p-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Advanced Technology</h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Digital records and imaging when clinically appropriate
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Digital X-rays for precise diagnosis
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Intraoral scanner technology
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Panoramic imaging capabilities
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-xl p-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Patient Comfort</h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Soft blankets and pillow support
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  TVs in treatment rooms
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Call ahead so we can discuss mobility or accessibility needs
-                </li>
-                <li className="flex items-center">
-                  <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                  Ask about treatment costs and payment options
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
-
-        {/* Call to Action */}
-        <div className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Schedule Your TMJ Consultation Today</h2>
-          <p className="text-xl mb-8 text-white/95">
-            If jaw pain is interfering with daily life, request an evaluation and learn which next steps may help.
+      {/* ---------------------------------------------------- Consultation */}
+      <Section tone="cream" labelledBy="consultation-heading">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-end">
+          <SectionHeader
+            id="consultation-heading"
+            eyebrow="Your first visit"
+            title="What to Expect During Your TMJ Consultation"
+          />
+          <p className="ff-reveal ff-lead max-w-xl lg:justify-self-end">
+            Your first step toward finding relief is scheduling a consultation with Dr. Tim Chuang at Family First Smile Care.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild className="bg-white text-primary hover:bg-gray-100 font-semibold px-8 py-3">
+        </div>
+        <div className="mt-14">
+          <StepTimeline
+            steps={[
+              { title: "A thorough assessment", body: "We conduct a comprehensive evaluation of your jaw function and symptoms." },
+              { title: "Imaging, when useful", body: "The dentist may recommend imaging when it is useful for evaluating jaw structures." },
+              { title: "Your personalized plan", body: "We develop a treatment plan tailored specifically to your needs and symptoms." },
+            ]}
+          />
+        </div>
+      </Section>
+
+      {/* ----------------------------------------------------- Care options */}
+      <Section labelledBy="care-options-heading">
+        <SectionHeader
+          id="care-options-heading"
+          eyebrow="Ways we can help"
+          title="How TMJ Treatment in Los Gatos Can Help"
+          lead="Living with the discomfort and pain caused by TMJ issues can be overwhelming, but effective treatment options are available. At Family First Smile Care, we take a personalized approach to address your specific symptoms and needs."
+        />
+        <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+          {careOptions.map((option, index) => (
+            <CareCard key={option.title} option={option} index={index} />
+          ))}
+        </ul>
+      </Section>
+
+      {/* ---------------------------------------------------- Patient story */}
+      {paula ? (
+        <Section tone="periwinkle" labelledBy="tmj-story-heading" className="overflow-clip">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-center lg:gap-14">
+            <figure className="ff-reveal relative">
+              <h2 id="tmj-story-heading" className="ff-eyebrow mb-6">
+                <BrandDots />
+                <span>A TMJ patient’s story</span>
+              </h2>
+              <div>
+                <Stars className="text-xl" />
+              </div>
+              <blockquote className="mt-6">
+                <p className="font-display text-[1.5rem] font-medium leading-snug tracking-[-0.015em] text-ink sm:text-[1.9rem] lg:text-[2.05rem]">
+                  “{paulaQuote.lead}
+                  {paulaQuote.mark ? <Squiggle color="var(--ff-blush)">{paulaQuote.mark}</Squiggle> : null}”
+                </p>
+              </blockquote>
+              <figcaption className="mt-8 flex items-center gap-4">
+                <span aria-hidden="true" className="grid size-12 place-items-center rounded-full bg-blush font-display text-xl font-semibold text-ink">
+                  P
+                </span>
+                <span>
+                  <span className="block font-bold text-ink">{paula.name}</span>
+                  <span className="block text-sm text-ink-soft">{paula.patientLabel} · Google review</span>
+                </span>
+              </figcaption>
+            </figure>
+            {jon ? (
+              <div className="ff-straighten" style={{ "--i": 1, "--ff-tilt": "3deg" } as CSSProperties}>
+                <ReviewCard review={{ name: jon.name, quote: jon.quote, label: jon.patientLabel, meta: "Google review" }} index={2} />
+              </div>
+            ) : null}
+          </div>
+        </Section>
+      ) : null}
+
+      {/* ------------------------------------------------------ Why choose */}
+      <Section labelledBy="why-heading">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] lg:items-center lg:gap-16">
+          <div className="ff-reveal-right relative mx-auto w-[min(80%,22rem)] lg:w-full lg:max-w-sm">
+            <div className="ff-arch relative aspect-[4/5] bg-cream">
+              <Image
+                src={officePhotos.imaging.src}
+                alt={officePhotos.imaging.alt}
+                fill
+                sizes="(max-width: 1023px) 80vw, 384px"
+                quality={70}
+                className="ff-parallax object-cover"
+                style={{ "--ff-parallax": "-4%" } as CSSProperties}
+              />
+            </div>
+            <span className="ff-chip absolute -left-4 bottom-[14%] sm:-left-8">
+              <span aria-hidden="true" className="size-2.5 rounded-full bg-lime ring-2 ring-ink/10" />
+              Panoramic imaging
+            </span>
+          </div>
+          <div>
+            <SectionHeader
+              id="why-heading"
+              eyebrow="Why families choose us"
+              title="Why Choose Family First Smile Care for TMJ Treatment?"
+              lead="At Family First Smile Care in Los Gatos, we pride ourselves on providing high-quality, patient-centered care in a comfortable and modern setting."
+            />
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              {[
+                { title: "Advanced Technology", items: technology, tone: "bg-periwinkle-wash", dot: "bg-periwinkle" },
+                { title: "Patient Comfort", items: comfort, tone: "bg-blush-wash", dot: "bg-blush" },
+              ].map((group, index) => (
+                <div key={group.title} className={cn("ff-reveal rounded-3xl p-6 sm:p-7", group.tone)} style={{ "--i": index } as CSSProperties}>
+                  <h3 className="text-lg font-bold text-ink">{group.title}</h3>
+                  <ul className="mt-4 space-y-3">
+                    {group.items.map((item) => (
+                      <li key={item} className="flex items-start gap-3 text-[0.95rem] leading-snug text-ink">
+                        <span aria-hidden="true" className={cn("mt-px grid size-5 shrink-0 place-items-center rounded-full text-[0.7rem]", group.dot)}>
+                          <MinimalGlyph name="check" />
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ---------------------------------------------------------- Related */}
+      <Section tone="white" labelledBy="related-heading">
+        <ExploreLinks id="related-heading" links={relatedLinks} />
+      </Section>
+
+      {/* ---------------------------------------------------------- Closing */}
+      <CtaBand
+        id="tmj-cta-heading"
+        title={
+          <>
+            Schedule your TMJ consultation <em className="ff-italic font-normal text-lime">today</em>
+          </>
+        }
+        body="If jaw pain is interfering with daily life, request an evaluation and learn which next steps may help."
+        actions={
+          <>
+            <Button asChild size="lg" variant="night" className="group h-14 pl-7 pr-3 text-base">
               <AppointmentLink
                 href={buildAppointmentUrl({ serviceId: "tmj", source: "tmj_page" })}
                 source="tmj"
@@ -255,17 +404,18 @@ export default function TMJ() {
                 serviceId="tmj"
               >
                 Schedule Consultation
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-ink/10">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
               </AppointmentLink>
             </Button>
-            <Button
-              asChild
-              className="bg-white/5 text-white border border-white/25 hover:bg-white hover:text-primary font-semibold px-8 py-3 "
-            >
+            <Button asChild size="lg" variant="night-outline" className="h-14 px-7 text-base">
               <Link href="/contact">Contact Us</Link>
             </Button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+        note={<>{practiceHoursSummary} · 15251 National Ave, Suite 102, Los Gatos</>}
+      />
     </div>
   );
 }

@@ -52,8 +52,10 @@ const allowedMinimalGlyphNames = new Set([
   "search",
 ]);
 
+// The brand's lime and blush come from tokens (bg-lime, bg-blush-wash, …), so
+// `lime` is allowed; raw warm Tailwind palette colors are not.
 const warmClassPattern =
-  /(?:^|[\s"`'])(?:bg|text|border|ring|from|via|to|decoration|accent)-(?:red|green|orange|amber|yellow|rose|lime|emerald|pink)(?:-|\/|\b)/;
+  /(?:^|[\s"`'])(?:bg|text|border|ring|from|via|to|decoration|accent)-(?:red|green|orange|amber|yellow|rose|emerald|pink)(?:-|\/|\b)/;
 const emojiIconPattern = /[⭐✨✅❌🦷❤💙]/u;
 const broadGradientPattern = /bg-gradient-to-(?:r|br|b|l|tr|tl|bl)/;
 const allowedMediaOverlayPattern = /bg-gradient-to-t\s+from-(?:black|slate-950)\//;
@@ -163,4 +165,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Minimal clinical design guard passed.");
+console.log("Family First design guard passed.");

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Raleway } from "next/font/google";
+import { Figtree, Fraunces } from "next/font/google";
 import "./globals.css";
 import "@/components/seasonal/seasonal.css";
 import Header from "@/components/layout/header";
@@ -13,11 +13,29 @@ import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
 import { SeasonScript } from "@/components/seasonal/seasonal-art";
 import { SeasonRuntime } from "@/components/seasonal/seasonal-client";
 
-const raleway = Raleway({
+// Fraunces (soft axis) carries display type; Figtree carries reading and UI text.
+// The italic is a separate, non-preloaded file: it only sets a few emphasized words.
+const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["normal"],
+  axes: ["SOFT"],
   display: "swap",
-  variable: "--font-raleway",
+  variable: "--font-fraunces",
+});
+
+const frauncesItalic = Fraunces({
+  subsets: ["latin"],
+  style: ["italic"],
+  axes: ["SOFT"],
+  display: "swap",
+  preload: false,
+  variable: "--font-fraunces-italic",
+});
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-figtree",
 });
 
 export const metadata: Metadata = {
@@ -33,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={raleway.variable}
+      className={`${fraunces.variable} ${frauncesItalic.variable} ${figtree.variable}`}
       // The season script may set data-ffsc-season before hydration.
       suppressHydrationWarning
     >

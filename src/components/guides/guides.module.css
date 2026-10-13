@@ -1,0 +1,97 @@
+/* Patient guides: state-driven touches that Tailwind utilities can't express.
+   Everything here is decorative and switches off for reduced motion. */
+
+/* ---- Checklist: the tick box gives a small springy bounce when checked ---- */
+@keyframes check-pop {
+  0% {
+    scale: 1;
+  }
+  40% {
+    scale: 1.22;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .check:checked + .box {
+    animation: check-pop 0.45s var(--ease-spring) both;
+  }
+}
+
+/* ---- Santa Cruz route: the road draws itself as the map scrolls through ---- */
+.route {
+  view-timeline-name: --sc-route;
+}
+
+@keyframes route-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes stop-pop {
+  0% {
+    opacity: 0;
+    scale: 0.4;
+  }
+  70% {
+    opacity: 1;
+    scale: 1.15;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes ride {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* The rider only exists where it can travel the road. */
+.rider {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) and (offset-path: path("M0 0L1 1")) {
+    .road {
+      stroke-dasharray: 1;
+      animation: route-draw linear both;
+      animation-timeline: --sc-route;
+      animation-range: cover 22% cover 62%;
+    }
+    .stop {
+      transform-box: fill-box;
+      transform-origin: 50% 50%;
+      animation: stop-pop linear both;
+      animation-timeline: --sc-route;
+    }
+    .stopStart {
+      animation-range: cover 18% cover 26%;
+    }
+    .stopMid {
+      animation-range: cover 38% cover 46%;
+    }
+    .stopEnd {
+      animation-range: cover 58% cover 66%;
+    }
+    .rider {
+      display: inline;
+      offset-rotate: 0deg;
+      animation: ride linear both;
+      animation-timeline: --sc-route;
+      animation-range: cover 22% cover 62%;
+    }
+  }
+}

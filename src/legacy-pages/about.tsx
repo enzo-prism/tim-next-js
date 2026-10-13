@@ -1,312 +1,382 @@
+import type { CSSProperties } from "react";
 import Image from "next/image";
-import { Link } from "wouter";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+import { buildAppointmentUrl } from "@/lib/analytics";
+import { AppointmentLink, PhoneLink } from "@/components/tracking/tracked-links";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import VideoFacade from "@/components/video-facade";
+import { Pinwheel, ToothPerson } from "@/components/brand/pinwheel";
+import { PageHero } from "@/components/site/page-hero";
+import { Section, SectionHeader, Eyebrow } from "@/components/site/section";
+import { PhotoStrip } from "@/components/site/photo-strip";
+import { CtaBand } from "@/components/site/cta-band";
+import { practiceHoursSummary } from "@/content/practice-hours";
+import type { RelatedLink } from "@/lib/internal-links";
 import patientExperiencePoster from "@assets/video-posters/patient-experience-1106163189.jpg";
 import officeTourPoster from "@assets/video-posters/office-tour-1112347739.jpg";
 import facilityTourPoster from "@assets/video-posters/facility-tour-1106179818.jpg";
-import type { RelatedLink } from "@/lib/internal-links";
+import storefrontPhoto from "@assets/Office Photo 11_1753972057108.jpg";
+import entrancePhoto from "@assets/Office Photo 12_1753972057108.jpg";
+import operatoryCorridorPhoto from "@assets/Office Photo 1_1753972057110.jpeg";
+import hallwayPhoto from "@assets/Office Photo 3_1753972057109.jpeg";
+import imagingAlcovePhoto from "@assets/Office Photo 4_1753972057109.jpeg";
+import treatmentHallPhoto from "@assets/Office Photo 5_1753972057109.jpeg";
+import windowRoomPhoto from "@assets/Office Photo 6_1753972057109.jpeg";
 
-// Import office photos
-import officePhoto1 from "@assets/Office Photo 1_1753972057110.jpeg";
-import officePhoto2 from "@assets/Office photo 2_1753972057109.jpeg";
-import officePhoto3 from "@assets/Office Photo 3_1753972057109.jpeg";
-import officePhoto4 from "@assets/Office Photo 4_1753972057109.jpeg";
-import officePhoto5 from "@assets/Office Photo 5_1753972057109.jpeg";
-import officePhoto6 from "@assets/Office Photo 6_1753972057109.jpeg";
-import officePhoto7 from "@assets/Office Photo 7_1753972057109.jpeg";
-import officePhoto8 from "@assets/Office Photo 8_1753972057109.jpeg";
-import officePhoto9 from "@assets/Office Photo 9_1753972057108.jpeg";
-import officePhoto10 from "@assets/Office Photo 10_1753972057108.jpeg";
-import officePhoto11 from "@assets/Office Photo 11_1753972057108.jpg";
-import officePhoto12 from "@assets/Office Photo 12_1753972057108.jpg";
+const APPOINTMENT_SOURCE = "about_story";
+
+const comforts = [
+  { label: "A warm blanket", dot: "bg-periwinkle" },
+  { label: "A glass of water", dot: "bg-blush" },
+  { label: "Something to watch", dot: "bg-lime" },
+  { label: "Toys & stickers for kids", dot: "bg-cloud" },
+];
+
+const values = [
+  {
+    title: "Compassion",
+    body: "Every patient is treated with empathy, patience, and respect. If dental visits make you nervous, tell us when you arrange your visit. Comfort matters here as much as skill.",
+    color: "var(--ff-periwinkle)",
+  },
+  {
+    title: "Personalization",
+    body: "Your care is planned around your needs, your goals, and your comfort level. Dr. Chuang explains what he finds and walks you through your options in plain language.",
+    color: "var(--ff-blush)",
+  },
+  {
+    title: "Prevention",
+    body: "Careful exams, gentle cleanings, and simple habits at home help keep small problems small. For kids, that starts with a happy first visit.",
+    color: "var(--ff-lime)",
+  },
+];
+
+const tours = [
+  {
+    src: "https://player.vimeo.com/video/1112347739?title=0&byline=0&portrait=0&badge=0&autoplay=1",
+    title: "Family First Smile Care Office Tour",
+    poster: officeTourPoster,
+    posterAlt: "The waiting room with cream sofas and framed tooth prints, from the office tour video",
+    playLabel: "Play tour",
+    caption: "Office tour",
+    note: "Includes our waiting room",
+    tilt: "-3deg",
+  },
+  {
+    src: "https://player.vimeo.com/video/1106179818?title=0&byline=0&portrait=0&badge=0&autoplay=1",
+    title: "Family First Smile Care Facility Tour",
+    poster: facilityTourPoster,
+    posterAlt: "A treatment room with a wall of windows onto the trees, from the facility tour video",
+    playLabel: "Play tour",
+    caption: "Facility tour",
+    note: "Treatment rooms with a view",
+    tilt: "3deg",
+  },
+];
+
+const relatedLinks: RelatedLink[] = [
+  {
+    href: "/team",
+    title: "Meet Our Team",
+    description: "Get to know Dr. Chuang and the caring team behind your visit.",
+  },
+  {
+    href: "/services",
+    title: "All Dental Services",
+    description: "Explore preventive, restorative, and family care options.",
+  },
+  {
+    href: "/patient-info",
+    title: "Patient Information",
+    description: "FAQs, what to expect, and helpful resources for your visit.",
+  },
+];
 
 export default function About() {
-  const relatedLinks: RelatedLink[] = [
-    {
-      href: "/team",
-      title: "Meet Our Team",
-      description: "Get to know Dr. Chuang and the caring team behind your visit.",
-    },
-    {
-      href: "/services",
-      title: "All Dental Services",
-      description: "Explore preventive, restorative, and family care options.",
-    },
-    {
-      href: "/patient-info",
-      title: "Patient Information",
-      description: "FAQs, what to expect, and helpful resources for your visit.",
-    },
-    {
-      href: "/contact",
-      title: "Contact & Scheduling",
-      description: "Ask a question, request an appointment, or get directions to our office.",
-    },
-    {
-      href: "/technology/itero-digital-scanner",
-      title: "iTero Digital Scanner",
-      description: "Comfortable 3D digital scans used in Invisalign planning and smile previews.",
-    },
-    {
-      href: "/tmj",
-      title: "TMJ Treatment",
-      description: "Relief for jaw pain and dysfunction with personalized care.",
-    },
-  ];
-
   return (
-    <div className="pt-16 pb-20 bg-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
-        <HeroBackdrop variant="default" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
-              About Family First Smile Care
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Founded on the principles of compassionate care and family-centered dentistry
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="overflow-x-clip">
+      {/* ------------------------------------------------------------ Hero */}
+      <PageHero
+        id="about-heading"
+        tone="blush"
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "About" }]}
+        eyebrow="Our story"
+        titleText="About Family First Smile Care"
+        lead="A locally owned family dental office in Los Gatos, founded by Dr. Tim J. Chuang so every generation of a family could have one calm, familiar place to go."
+        actions={
+          <>
+            <Button asChild size="lg" className="group h-14 pl-7 pr-5 text-base">
+              <AppointmentLink href={buildAppointmentUrl({ source: APPOINTMENT_SOURCE })} source={APPOINTMENT_SOURCE}>
+                Request an Appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-white/15">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 px-7 text-base">
+              <Link href="/team">Meet Dr. Chuang</Link>
+            </Button>
+          </>
+        }
+        meta={
+          <p className="flex flex-wrap gap-x-3 gap-y-1">
+            <span className="font-semibold text-ink">15251 National Ave, Suite 102</span>
+            <span aria-hidden="true" className="hidden sm:inline">·</span>
+            <span>{practiceHoursSummary}</span>
+          </p>
+        }
+        media={
+          <figure className="relative mx-auto w-full max-w-[24rem] lg:max-w-[26rem]">
+            <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 size-44 sm:-right-14 sm:size-56 lg:-right-20 lg:-top-14 lg:size-64">
+              <Pinwheel gather="load" spin="page" delay={240} className="size-full" />
+            </div>
+            <div className="ff-arch relative aspect-[4/5] bg-white ring-8 ring-white">
+              <Image
+                src={storefrontPhoto}
+                alt="The Family First Smile Care storefront in Los Gatos, with the tooth-family logo and Tim J. Chuang, DDS on the glass"
+                priority
+                sizes="(max-width: 1023px) 384px, 416px"
+                className="size-full object-cover object-[62%_50%]"
+              />
+            </div>
+            <span className="ff-chip ff-intro-pop absolute -left-4 top-[22%] sm:-left-10" style={{ "--d": 820 } as CSSProperties}>
+              <span aria-hidden="true" className="size-2.5 rounded-full bg-lime ring-2 ring-ink/10" />
+              Locally owned
+            </span>
+            <span className="ff-chip ff-intro-pop absolute -right-3 bottom-[18%] sm:-right-8" style={{ "--d": 960 } as CSSProperties}>
+              <span aria-hidden="true" className="size-2.5 rounded-full bg-periwinkle ring-2 ring-ink/10" />
+              Just off Highway 17
+            </span>
+          </figure>
+        }
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "About" }]} />
-        
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+      {/* ----------------------------------------------------------- Story */}
+      <Section labelledBy="story-heading">
+        <div className="grid gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-20">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
-              Our Story
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Family First Smile Care was founded by Dr. Tim J. Chuang with a simple mission: to provide exceptional dental care in a warm, welcoming environment that puts families first. As a locally owned practice in Los Gatos, we understand the unique needs of our community and are committed to building lasting relationships with our patients.
-            </p>
-            <p className="text-gray-600 mb-6">
-              Our practice is built on the foundation of trust, compassion, and excellence. We believe that dental care should be a positive experience for every member of your family, from toddlers taking their first steps into oral health to seniors maintaining their beautiful smiles.
-            </p>
-            <p className="text-gray-600 mb-6">
-              Meet our{" "}
-              <Link
-                href="/team"
-                className="text-primary font-semibold hover:text-primary transition-colors"
-              >
-                team
-              </Link>
-              , explore our{" "}
-              <Link
-                href="/services"
-                className="text-primary font-semibold hover:text-primary transition-colors"
-              >
-                services
-              </Link>
-              , or{" "}
-              <Link
-                href="/book-appointment?source=about_story"
-                className="text-primary font-semibold hover:text-primary transition-colors"
-              >
-                request a visit
-              </Link>
-              {" "}online.
-            </p>
-          </div>
-          <div>
-            <div className="rounded-xl shadow-sm w-full h-96 relative overflow-hidden bg-white">
-              <div className="absolute inset-2 rounded-xl overflow-hidden">
+            <SectionHeader
+              id="story-heading"
+              eyebrow="How it started"
+              title={
+                <>
+                  One family, <em className="ff-italic font-normal">every</em> smile.
+                </>
+              }
+            />
+            <figure className="ff-reveal-scale mt-10 max-w-md">
+              <div className="relative aspect-square overflow-clip rounded-3xl bg-white ring-1 ring-border [&_button>span:first-of-type]:bg-transparent">
                 <VideoFacade
                   videoSrc="https://player.vimeo.com/video/1106163189?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&background=1"
                   title="Family First Smile Care Patient Experience"
                   poster={patientExperiencePoster}
                   posterAlt="Colorful family tooth characters from the Family First Smile Care animation"
-                  posterSizes="(max-width: 1024px) 100vw, 50vw"
-                  playLabel="Play patient experience"
+                  posterSizes="(max-width: 1023px) 92vw, 448px"
+                  playLabel="Play animation"
                 />
               </div>
-            </div>
+              <figcaption className="mt-3 px-1 text-sm font-semibold text-ink-soft">
+                Our logo family, animated: four friends who stick together.
+              </figcaption>
+            </figure>
           </div>
-        </div>
-        
-        <div className="bg-gray-50 rounded-xl p-8 lg:p-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            Our Mission & Values
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center group">
-              <h3 className="text-xl font-semibold mb-3">Compassion</h3>
-              <p className="text-gray-600">We treat every patient with empathy, understanding, and respect, ensuring a comfortable experience for all.</p>
-            </div>
-            <div className="text-center group">
-              <h3 className="text-xl font-semibold mb-3">Personalization</h3>
-              <p className="text-gray-600">Every treatment plan is tailored to your unique needs, goals, and comfort level.</p>
-            </div>
-            <div className="text-center group">
-              <h3 className="text-xl font-semibold mb-3">Prevention</h3>
-              <p className="text-gray-600">We focus on preventive care and education to help you maintain optimal oral health for life.</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            Office Tour
-          </h2>
-          
-          {/* Featured Office Videos */}
-          <div className="mb-12 bg-muted/40 rounded-xl p-8">
-            <div className="max-w-6xl mx-auto">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
-                Visit Our Office
-              </h3>
-              <p className="text-gray-600 text-center mb-8">
-                Take a virtual tour of our welcoming Los Gatos location
+
+          <div className="lg:pt-10">
+            <p className="ff-reveal font-display text-[1.6rem] font-medium leading-snug text-ink sm:text-[2rem] sm:leading-[1.25]">
+              Dr. Tim J. Chuang founded Family First Smile Care with a simple idea: a family should be able to bring{" "}
+              <em className="ff-italic">everyone</em>, from a toddler’s first checkup to a grandparent’s crown, to one calm, familiar office.
+            </p>
+            <div className="ff-reveal mt-8 max-w-[62ch] space-y-5 text-lg leading-relaxed text-ink-soft">
+              <p>
+                He grew up nearby in Cupertino, studied in San Diego and the Bay Area, completed a general dentistry residency on the Big Island of Hawaii,
+                then came home to build a locally owned practice in Los Gatos.
               </p>
-              
-              {/* Video Grid - Optimized for 9:16 aspect ratio */}
-              <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-                {/* First Vimeo Video */}
-                <div className="relative rounded-xl overflow-hidden shadow-sm bg-black">
-                  <div className="relative" style={{ paddingBottom: '177.78%' }}> {/* 9:16 aspect ratio */}
-                    <VideoFacade
-                      videoSrc="https://player.vimeo.com/video/1112347739?title=0&byline=0&portrait=0&badge=0&autoplay=1"
-                      title="Family First Smile Care Office Tour"
-                      poster={officeTourPoster}
-                      posterAlt="Waiting room with comfortable seating from the Family First Smile Care office tour"
-                      posterSizes="(max-width: 768px) 100vw, 50vw"
-                      playLabel="Play office tour"
-                    />
-                  </div>
-                </div>
+              <p>
+                Today our patients include neighbors from around town, and many Santa Cruz families make the easy trip over Highway 17. Whoever is in the
+                chair, the pace is the same: gentle, unhurried, and clear. Dr. Chuang explains what he sees, walks you through your options, and helps you
+                feel comfortable with the next step.
+              </p>
+            </div>
 
-                {/* Second Vimeo Video */}
-                <div className="relative rounded-xl overflow-hidden shadow-sm bg-black">
-                  <div className="relative" style={{ paddingBottom: '177.78%' }}> {/* 9:16 aspect ratio */}
-                    <VideoFacade
-                      videoSrc="https://player.vimeo.com/video/1106179818?title=0&byline=0&portrait=0&badge=0&autoplay=1"
-                      title="Family First Smile Care Facility Tour"
-                      poster={facilityTourPoster}
-                      posterAlt="Window-side treatment room from the Family First Smile Care facility tour"
-                      posterSizes="(max-width: 768px) 100vw, 50vw"
-                      playLabel="Play facility tour"
-                    />
-                  </div>
-                </div>
-              </div>
+            <div className="ff-reveal mt-10 rounded-3xl bg-cream p-6 sm:p-7">
+              <p className="font-display text-xl font-semibold text-ink">Comfort is part of every visit</p>
+              <p className="mt-1.5 text-base text-ink-soft">Just ask. During treatment you’re welcome to:</p>
+              <ul className="mt-5 flex flex-wrap gap-2.5">
+                {comforts.map((item) => (
+                  <li key={item.label} className="ff-chip shadow-none">
+                    <span aria-hidden="true" className={`size-2.5 rounded-full ring-2 ring-ink/10 ${item.dot}`} />
+                    {item.label}
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="relative group">
-              <Image
-                src={officePhoto11}
-                alt="Family First Smile Care welcoming front entrance with practice branding"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto12}
-                alt="Family First Smile Care professional office exterior showing Suite 102"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto1}
-                alt="Modern dental office reception area with comfortable seating"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-xl w-full h-64 object-cover group- transition-transform duration-300"
-              />
-            </div>
-          </div>
-          
-          {/* Additional Office Photos Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-            <div className="relative group">
-              <Image
-                src={officePhoto2}
-                alt="Modern dental treatment room with state-of-the-art equipment"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto3}
-                alt="Advanced dental technology and equipment"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto4}
-                alt="Professional dental consultation space"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto5}
-                alt="Clean and organized dental office environment"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-48 object-cover group- transition-transform duration-300"
-              />
-            </div>
-          </div>
-          
-          {/* Extended Office Gallery */}
-          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-3 mt-6">
-            <div className="relative group">
-              <Image
-                src={officePhoto6}
-                alt="Dental office equipment and workspace"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto7}
-                alt="Professional dental workspace setup"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto8}
-                alt="Modern dental facility interior"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto9}
-                alt="Additional office space and amenities"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-              />
-            </div>
-            <div className="relative group">
-              <Image
-                src={officePhoto10}
-                alt="Complete view of dental practice facilities"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="rounded-lg w-full h-32 object-cover group- transition-transform duration-300"
-              />
+
+            <div className="ff-reveal mt-8 flex flex-wrap gap-x-6 gap-y-3">
+              <Link href="/team" className="ff-link">
+                Meet Dr. Chuang and the team
+              </Link>
+              <Link href="/services" className="ff-link">
+                Explore our services
+              </Link>
             </div>
           </div>
         </div>
+      </Section>
 
-        <RelatedLinksSection title="Keep Exploring" links={relatedLinks} />
-      </div>
+      {/* ---------------------------------------------------------- Values */}
+      <Section tone="cream" labelledBy="values-heading">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-20">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <SectionHeader
+              id="values-heading"
+              eyebrow="Our mission & values"
+              title={
+                <>
+                  What guides <em className="ff-italic font-normal">every</em> visit
+                </>
+              }
+              lead="Three ideas we come back to, whether it’s a baby’s first visit or a crown for grandpa."
+            />
+          </div>
+          <ol className="border-b border-ink/10">
+            {values.map((value, index) => (
+              <li
+                key={value.title}
+                className="ff-reveal grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-5 border-t border-ink/10 py-9 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-x-8 sm:py-11"
+                style={{ "--i": index } as CSSProperties}
+              >
+                <span aria-hidden="true" className="relative block self-start">
+                  <ToothPerson color={value.color} className="absolute -top-4 left-10 h-12 w-auto rotate-[14deg] sm:-top-6 sm:left-[4.75rem] sm:h-16" />
+                  <span className="relative font-display text-6xl font-semibold leading-none tracking-tight text-ink sm:text-8xl">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </span>
+                <div className="pt-1 sm:pt-3">
+                  <h3 className="ff-h3 sm:text-[2rem]">{value.title}</h3>
+                  <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink-soft">{value.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Section>
+
+      {/* ------------------------------------------------------------ Tour */}
+      <Section labelledBy="tour-heading" width="full" className="overflow-clip">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16 lg:px-8">
+          <div>
+            <SectionHeader
+              id="tour-heading"
+              eyebrow="Office tour"
+              title={
+                <>
+                  Walk through the office <em className="ff-italic font-normal">before</em> you visit
+                </>
+              }
+              lead="Two short vertical video tours of our Los Gatos office. Press play whenever you’re ready, and see where you’ll sit before you arrive."
+            />
+            <ul className="ff-reveal mt-8 space-y-3 text-base text-ink-soft">
+              <li className="flex items-center gap-3">
+                <ToothPerson color="var(--ff-blush)" className="h-6 w-auto shrink-0" />
+                Our front door at Suite 102, with the tooth family on the glass
+              </li>
+              <li className="flex items-center gap-3">
+                <ToothPerson color="var(--ff-periwinkle)" className="h-6 w-auto shrink-0" />
+                A comfy waiting room with soft sofas
+              </li>
+              <li className="flex items-center gap-3">
+                <ToothPerson color="var(--ff-lime)" className="h-6 w-auto shrink-0" />
+                Bright treatment rooms with windows onto the trees
+              </li>
+            </ul>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:gap-8">
+            {tours.map((tour, index) => (
+              <figure
+                key={tour.title}
+                className={`ff-straighten ${index === 1 ? "mt-12 sm:mt-20" : ""}`}
+                style={{ "--i": index, "--ff-tilt": tour.tilt } as CSSProperties}
+              >
+                <div className="rounded-3xl bg-ink p-1.5 shadow-float sm:p-2.5">
+                  <div className="relative aspect-[9/16] overflow-clip rounded-2xl bg-ink">
+                    <VideoFacade
+                      videoSrc={tour.src}
+                      title={tour.title}
+                      poster={tour.poster}
+                      posterAlt={tour.posterAlt}
+                      posterSizes="(max-width: 1023px) 46vw, 300px"
+                      posterQuality={65}
+                      playLabel={tour.playLabel}
+                    />
+                  </div>
+                </div>
+                <figcaption className="mt-4 px-1">
+                  <span className="block font-display text-lg font-semibold text-ink sm:text-xl">{tour.caption}</span>
+                  <span className="block text-sm text-ink-soft">{tour.note}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+
+        <div className="mx-auto mt-20 max-w-7xl px-4 sm:mt-24 sm:px-6 lg:px-8">
+          <div className="ff-reveal flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <Eyebrow className="mb-3">A look around</Eyebrow>
+              <h3 className="ff-h3">More of the office</h3>
+            </div>
+            <p className="max-w-sm text-base text-ink-soft">Swipe or scroll to see the rooms you’ll visit.</p>
+          </div>
+        </div>
+        <PhotoStrip
+          className="mt-10"
+          photos={[
+            { src: entrancePhoto, alt: "The glass front door to Suite 102", caption: "Our front door, Suite 102" },
+            { src: windowRoomPhoto, alt: "A bright treatment room with a floor-to-ceiling window onto the trees", caption: "Treatment rooms with a view", position: "50% 40%" },
+            { src: treatmentHallPhoto, alt: "The hallway of treatment rooms, one with a TV showing a nature scene", caption: "Something calm to watch" },
+            { src: operatoryCorridorPhoto, alt: "A corridor of open treatment rooms with windows at the far end", caption: "Open, airy treatment rooms", position: "40% 50%" },
+            { src: imagingAlcovePhoto, alt: "A wall of island landscape photos beside the dental imaging alcove", caption: "Island photos and modern imaging" },
+            { src: hallwayPhoto, alt: "The carpeted hallway toward the treatment rooms, with a mirrored alcove", caption: "The way to your visit" },
+          ]}
+        />
+      </Section>
+
+      {/* --------------------------------------------------------- Related */}
+      <Section tone="cream" className="py-14 sm:py-16 lg:py-20">
+        <div className="md:[&_.grid]:grid-cols-3 [&>section]:mt-0">
+          <RelatedLinksSection title="Keep exploring" links={relatedLinks} />
+        </div>
+      </Section>
+
+      {/* ----------------------------------------------------------- Close */}
+      <CtaBand
+        id="about-cta-heading"
+        eyebrow="Come say hello"
+        title={
+          <>
+            We’d love to meet your <em className="ff-italic font-normal text-lime">whole family.</em>
+          </>
+        }
+        body="Tell us what you need and when you prefer to visit. Our team will contact you during office hours to confirm the details."
+        actions={
+          <>
+            <Button asChild size="lg" variant="night" className="group h-14 pl-7 pr-5 text-base">
+              <AppointmentLink href={buildAppointmentUrl({ source: APPOINTMENT_SOURCE })} source={APPOINTMENT_SOURCE}>
+                Request an Appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-ink/10">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="night-outline" className="h-14 px-7 text-base">
+              <PhoneLink location={APPOINTMENT_SOURCE}>Call (408) 358-8100</PhoneLink>
+            </Button>
+          </>
+        }
+        note={<>{practiceHoursSummary} · 15251 National Ave, Suite 102, Los Gatos</>}
+      />
     </div>
   );
 }

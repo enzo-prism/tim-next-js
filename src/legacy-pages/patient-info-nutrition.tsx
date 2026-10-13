@@ -1,159 +1,169 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
+import type { CSSProperties } from "react";
+import { Section, SectionHeader } from "@/components/site/section";
+import { Squiggle } from "@/components/brand/squiggle";
+import { NutritionArt, SizedTooth } from "@/components/guides/guide-art";
+import { DotList, GuideClosing, HabitTrio, OralHealthHero, RelatedReading } from "@/components/guides/oral-health";
+import { cn } from "@/lib/utils";
+
+const SOURCE = "patient_info_nutrition";
+
+const snackIdeas = ["Cheese cubes with apple slices.", "Greek yogurt with berries.", "Celery with nut butter."];
+
+const foodsToLimit = [
+  "Sugary snacks, sodas, and sports drinks.",
+  "Sticky candies that cling to teeth.",
+  "Frequent grazing that keeps acid levels high.",
+  "Acidic drinks like citrus juice or energy drinks.",
+];
+
+const habits = [
+  "Pair sweets with meals instead of snacking all day.",
+  "Rinse with water after acidic drinks or snacks.",
+  "Choose sugar-free gum to boost saliva between meals.",
+];
+
+function FoodColumn({
+  id,
+  eyebrow,
+  title,
+  items,
+  tone,
+  tooth,
+  tilt,
+  index,
+}: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  items: string[];
+  tone: "lime" | "blush";
+  tooth: string;
+  tilt: string;
+  index: number;
+}) {
+  return (
+    <article
+      aria-labelledby={id}
+      className={cn("ff-reveal relative flex flex-col overflow-clip rounded-3xl p-7 sm:p-9", tone === "lime" ? "bg-lime" : "bg-blush")}
+      style={{ "--i": index } as CSSProperties}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink/70">{eyebrow}</p>
+          <h3 id={id} className="ff-h3 mt-2">
+            {title}
+          </h3>
+        </div>
+        <SizedTooth color={tooth} scale={1} className={cn("h-20 w-auto shrink-0 sm:h-24", tilt)} />
+      </div>
+      <ul className="mt-7 space-y-2.5">
+        {items.map((item) => (
+          <li key={item} className="rounded-2xl bg-white/75 px-4 py-3.5 text-base font-semibold leading-snug text-ink ring-1 ring-ink/5">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </article>
+  );
+}
 
 export default function PatientInfoNutrition() {
   return (
-    <div className="pt-16 pb-20 bg-white">
-      <section className="relative bg-muted/40 py-20 lg:py-28">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-primary mb-4">
-            Oral Health Education
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
-            Nutrition for Healthy Teeth
-          </h1>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            What you eat and drink affects your enamel, gums, and overall oral health. Use these tips to build
-            tooth-friendly habits.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6 py-3">
-              <Link href="/contact">Schedule a Checkup</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary/5 font-semibold px-6 py-3"
-            >
-              <Link href="/patient-info">Back to Patient Info</Link>
-            </Button>
+    <div className="overflow-x-clip">
+      <OralHealthHero
+        title="Nutrition for Healthy Teeth"
+        lead="What you eat and drink affects your enamel, gums, and overall oral health. Use these tips to build tooth-friendly habits."
+        tone="lime"
+        art={<NutritionArt />}
+        chips={["Crunchy produce helps", "Water rinses acids"]}
+        source={SOURCE}
+      />
+
+      <HabitTrio
+        id="nutrition-habits-heading"
+        eyebrow="The basics"
+        title="Three easy wins for every plate"
+        habits={[
+          { big: "Calcium", title: "Choose calcium-rich foods", description: "Dairy, fortified alternatives, and leafy greens strengthen enamel." },
+          { big: "Crunch", title: "Crunchy produce helps", description: "Apples, carrots, and celery increase saliva and gently clean teeth." },
+          { big: "Water", title: "Hydrate often", description: "Water rinses acids and keeps the mouth balanced." },
+        ]}
+      />
+
+      {/* ------------------------------------------------ Snack face-off */}
+      <Section tone="cream" labelledBy="nutrition-snacks-heading">
+        <SectionHeader
+          id="nutrition-snacks-heading"
+          eyebrow="Snack time"
+          align="center"
+          title={
+            <>
+              Tooth-friendly <Squiggle color="var(--ff-blush)">or</Squiggle> sticky?
+            </>
+          }
+          lead="A quick guide for lunchboxes, after-school snacks, and the grown-up desk drawer."
+        />
+        <div className="mx-auto mt-12 grid max-w-5xl gap-4 md:grid-cols-2">
+          <FoodColumn
+            id="nutrition-friendly-heading"
+            eyebrow="Reach for these"
+            title="Smile-Friendly Snack Ideas"
+            items={snackIdeas}
+            tone="lime"
+            tooth="var(--ff-periwinkle)"
+            tilt="rotate-[6deg]"
+            index={0}
+          />
+          <FoodColumn
+            id="nutrition-limit-heading"
+            eyebrow="Save for mealtimes"
+            title="Foods to Limit"
+            items={foodsToLimit}
+            tone="blush"
+            tooth="var(--ff-cloud)"
+            tilt="-rotate-[10deg]"
+            index={1}
+          />
+        </div>
+      </Section>
+
+      {/* ------------------------------------------------ Habits */}
+      <Section labelledBy="nutrition-daily-heading">
+        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+          <SectionHeader
+            id="nutrition-daily-heading"
+            eyebrow="Every day"
+            title="Smart Daily Habits"
+            lead="It’s not only what you eat, it’s how often. Give teeth a break between snacks so saliva can do its work."
+          />
+          <div className="ff-reveal rounded-3xl bg-white p-7 ring-1 ring-border sm:p-9">
+            <DotList items={habits} />
           </div>
         </div>
-      </section>
+      </Section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
-        <PageBreadcrumbs
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Patient Info", href: "/patient-info" },
-            { label: "Nutrition for Healthy Teeth" },
-          ]}
-        />
+      <RelatedReading
+        links={[
+          { href: "/patient-info/brushing", title: "How to Brush Properly", description: "Master the brushing basics for healthier gums." },
+          { href: "/patient-info/flossing", title: "Flossing Fundamentals", description: "Build the daily flossing habit that prevents decay." },
+          {
+            href: "/blog/why-does-my-child-keep-getting-cavities-los-gatos",
+            title: "Why Kids Keep Getting Cavities",
+            description: "Common reasons cavities keep coming back, and what helps.",
+          },
+        ]}
+      />
 
-        <section className="grid lg:grid-cols-3 gap-6">
-          {[
-            {
-              title: "Choose calcium-rich foods",
-              description: "Dairy, fortified alternatives, and leafy greens strengthen enamel.",
-            },
-            {
-              title: "Crunchy produce helps",
-              description: "Apples, carrots, and celery increase saliva and gently clean teeth.",
-            },
-            {
-              title: "Hydrate often",
-              description: "Water rinses acids and keeps the mouth balanced.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-sm">
-              <div className="mb-3">
-                <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
-              </div>
-              <p className="text-gray-600">{item.description}</p>
-            </div>
-          ))}
-        </section>
-
-        <section className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Foods to Limit</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {[
-              "Sugary snacks, sodas, and sports drinks.",
-              "Sticky candies that cling to teeth.",
-              "Frequent grazing that keeps acid levels high.",
-              "Acidic drinks like citrus juice or energy drinks.",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <p className="text-gray-700">{item}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-muted/40 rounded-xl p-8 border border-primary/10">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Smart Daily Habits</h2>
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start gap-3">
-                <span>Pair sweets with meals instead of snacking all day.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span>Rinse with water after acidic drinks or snacks.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span>Choose sugar-free gum to boost saliva between meals.</span>
-              </li>
-            </ul>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-8 border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Smile-Friendly Snack Ideas</h2>
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <span>Cheese cubes with apple slices.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <span>Greek yogurt with berries.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <span>Celery with nut butter.</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="bg-primary rounded-xl p-8 text-white">
-          <h2 className="text-2xl font-bold mb-3">Questions About Diet and Oral Health?</h2>
-          <p className="text-white/95 mb-6">
-            We can help you build a personalized nutrition plan that supports long-term oral health.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="bg-white text-primary hover:bg-gray-100 font-semibold px-6 py-3">
-              <Link href="/contact">Book an Appointment</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="bg-white/5 border-white/25 text-white hover:bg-white hover:text-primary font-semibold px-6 py-3"
-            >
-              <Link href="/services/family-dentistry">Learn About Family Care</Link>
-            </Button>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Related Reading</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Link href="/patient-info/brushing" className="block">
-              <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-                <h3 className="font-semibold text-gray-800 mb-2">How to Brush Properly</h3>
-                <p className="text-sm text-gray-600">Master the brushing basics for healthier gums.</p>
-              </div>
-            </Link>
-            <Link href="/patient-info/flossing" className="block">
-              <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-                <h3 className="font-semibold text-gray-800 mb-2">Flossing Fundamentals</h3>
-                <p className="text-sm text-gray-600">Build the daily flossing habit that prevents decay.</p>
-              </div>
-            </Link>
-          </div>
-        </section>
-      </div>
+      <GuideClosing
+        title={
+          <>
+            Questions about diet and <em className="ff-italic font-normal text-lime">oral health?</em>
+          </>
+        }
+        body="We can help you build a personalized nutrition plan that supports long-term oral health."
+        source={SOURCE}
+        secondary={{ href: "/services/family-dentistry", label: "Learn about family care" }}
+      />
     </div>
   );
 }

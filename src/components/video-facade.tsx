@@ -16,6 +16,8 @@ interface VideoFacadeProps {
   posterFetchPriority?: "high" | "low" | "auto";
   playLabel?: string;
   className?: string;
+  /** Tint over the poster; pass "bg-transparent" for light illustrated posters. */
+  overlayClassName?: string;
 }
 
 /**
@@ -34,6 +36,7 @@ export default function VideoFacade({
   posterFetchPriority,
   playLabel = "Play video",
   className,
+  overlayClassName,
 }: VideoFacadeProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -66,7 +69,7 @@ export default function VideoFacade({
         <button
           type="button"
           aria-label={`Close video: ${title}`}
-          className="absolute right-3 top-3 z-10 inline-flex h-10 min-w-10 items-center justify-center gap-2 rounded-md bg-background/95 px-3 text-sm font-semibold text-primary shadow-sm ring-1 ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText]"
+          className="absolute right-3 top-3 z-10 inline-flex h-10 min-w-10 items-center justify-center gap-2 rounded-full bg-white/95 px-4 text-sm font-semibold text-ink shadow-float ring-1 ring-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 forced-colors:focus-visible:outline-2 forced-colors:focus-visible:outline-offset-2 forced-colors:focus-visible:outline-[CanvasText]"
           onClick={() => {
             shouldRestoreFocusRef.current = true;
             setIsPlaying(false);
@@ -98,14 +101,14 @@ export default function VideoFacade({
         quality={posterQuality}
         priority={posterPriority}
         fetchPriority={posterFetchPriority}
-        className="object-cover"
+        className="object-cover transition-[scale] duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04] motion-reduce:transition-none"
       />
-      <span className="absolute inset-0 bg-accent-foreground/20 transition-colors group-hover:bg-accent-foreground/30" />
+      <span className={cn("absolute inset-0 bg-ink/25 transition-colors duration-500 group-hover:bg-ink/15", overlayClassName)} />
       <span className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-primary shadow-sm ring-1 ring-border transition-transform group-hover:scale-105">
-          <MinimalGlyph name="play" className="h-6 w-6 translate-x-0.5" />
+        <span className="flex size-[4.5rem] items-center justify-center rounded-full bg-white text-cobalt shadow-float transition-[scale] duration-500 ease-[var(--ease-spring)] group-hover:scale-110 motion-reduce:transition-none">
+          <MinimalGlyph name="play" className="h-7 w-7 translate-x-0.5" />
         </span>
-        <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary shadow-sm">
+        <span className="rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-ink shadow-float">
           {playLabel}
         </span>
       </span>

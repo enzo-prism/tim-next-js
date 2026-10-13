@@ -18,7 +18,7 @@ export default function PageBreadcrumbs({ items }: { items: BreadcrumbItemModel[
   if (!items.length) return null;
 
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       <Breadcrumb>
         <BreadcrumbList>
           {items.map((item, index) => {

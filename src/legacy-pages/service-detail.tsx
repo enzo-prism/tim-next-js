@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
+import type { CSSProperties } from "react";
 import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import { services } from "@/data/services";
 import { ReviewsSection } from "@/components/review";
@@ -7,263 +8,276 @@ import { serviceReviews } from "@/data/reviews";
 import { buildAppointmentUrl } from "@/lib/analytics";
 import { AppointmentLink, PhoneLink } from "@/components/tracking/tracked-links";
 import { FinalCtaPhoneLink } from "@/components/service-growth/final-cta-phone-link";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
-import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
 import { getRelatedLinksForService } from "@/lib/internal-links";
-import JsonLd from "@/components/seo/json-ld";
-import { buildFaqSchema } from "@/content/structured-data";
+import { practiceHoursSummary } from "@/content/practice-hours";
+import { PageHero } from "@/components/site/page-hero";
+import { Eyebrow, Section, SectionHeader } from "@/components/site/section";
+import { StepTimeline } from "@/components/site/step-timeline";
+import { CtaBand } from "@/components/site/cta-band";
+import { ToothPerson } from "@/components/brand/pinwheel";
+import { HeroPhoto } from "@/components/services/hero-photo";
+import { VisitCard } from "@/components/services/visit-card";
+import { DecisionGuide } from "@/components/services/decision-guide";
+import { ExploreLinks } from "@/components/services/explore-links";
+import { brandTones, getServiceGroup, getServiceTheme, isPublishableDetail } from "@/components/services/service-themes";
+import { cn } from "@/lib/utils";
 
 type ServiceDetailProps = {
   serviceId: string;
 };
 
+// Services without their own reviews borrow their parent's.
+const parentReviewIds: Record<string, string> = {
+  invisalign: "restorative-dentistry",
+  "teeth-whitening": "restorative-dentistry",
+  "dental-crowns": "restorative-dentistry",
+};
+
+const numberTones = ["bg-periwinkle", "bg-blush", "bg-lime", "bg-cloud"];
+
 export default function ServiceDetail({ serviceId }: ServiceDetailProps) {
   // Find the service by ID (check both main services and sub-services)
-  const service = services.find(s => s.id === serviceId) ||
-    services.flatMap(s => s.subServices || []).find(s => s.id === serviceId);
+  const service =
+    services.find((s) => s.id === serviceId) || services.flatMap((s) => s.subServices || []).find((s) => s.id === serviceId);
 
   if (!service) {
     return (
-      <div className="pt-16 pb-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Service Not Found</h1>
-          <p className="text-gray-600 mb-8">The service you're looking for doesn't exist.</p>
-          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Link href="/services">
-              <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
-              Back to Services
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <Section width="narrow" className="text-center">
+        <h1 className="ff-h1">Service Not Found</h1>
+        <p className="ff-lead mt-5">The service you’re looking for doesn’t exist.</p>
+        <Button asChild size="lg" className="mt-8">
+          <Link href="/services">
+            <MinimalGlyph name="arrow-left" />
+            Back to Services
+          </Link>
+        </Button>
+      </Section>
     );
   }
 
-  const findReviewData = () => {
-    let reviewData = serviceReviews.find((sr) => sr.serviceId === service.id);
-
-    if (!reviewData) {
-      const parentMappings: { [key: string]: string } = {
-        invisalign: "restorative-dentistry",
-        "teeth-whitening": "restorative-dentistry",
-        "dental-crowns": "restorative-dentistry",
-      };
-
-      const parentId = parentMappings[service.id];
-      if (parentId) {
-        reviewData = serviceReviews.find((sr) => sr.serviceId === parentId);
-      }
-    }
-
-    return reviewData;
-  };
-
-  const reviewData = findReviewData();
+  const reviewData =
+    serviceReviews.find((sr) => sr.serviceId === service.id) ??
+    (parentReviewIds[service.id] ? serviceReviews.find((sr) => sr.serviceId === parentReviewIds[service.id]) : undefined);
   const relatedLinks = getRelatedLinksForService(service.id);
+  const theme = getServiceTheme(service.id);
+  const accent = brandTones[theme.tone];
+  const group = getServiceGroup(service.id);
+  const details = service.details.filter(isPublishableDetail);
+  const lowerTitle = service.title.toLowerCase();
 
   return (
-    <div className="pt-16 pb-20 bg-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
-        <HeroBackdrop variant="default" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
-              {service.title} in Los Gatos
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {service.heroDescription || service.description}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-              <Button asChild>
-                <AppointmentLink href={buildAppointmentUrl({ serviceId: service.id, source: "service_detail_hero" })} source="service_detail_hero" serviceId={service.id}>Request a visit</AppointmentLink>
-              </Button>
-              <PhoneLink location="service_detail_hero" serviceId={service.id} className="inline-flex min-h-11 items-center rounded-md px-3 font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Call (408) 358-8100</PhoneLink>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="overflow-x-clip">
+      <PageHero
+        id="service-heading"
+        tone={theme.heroTone}
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Services", href: "/services" },
+          { label: service.title },
+        ]}
+        eyebrow={group ? `${group.label} · Los Gatos` : "Dental care in Los Gatos"}
+        titleText={`${service.title} in Los Gatos`}
+        lead={service.heroDescription || service.description}
+        actions={
+          <>
+            <Button asChild size="lg" className="group h-14 pl-7 pr-3 text-base">
+              <AppointmentLink
+                href={buildAppointmentUrl({ serviceId: service.id, source: "service_detail_hero" })}
+                source="service_detail_hero"
+                serviceId={service.id}
+              >
+                Request a visit
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-white/15">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 px-7 text-base">
+              <PhoneLink location="service_detail_hero" serviceId={service.id}>
+                Call (408) 358-8100
+              </PhoneLink>
+            </Button>
+          </>
+        }
+        meta={
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="font-semibold text-ink">{practiceHoursSummary}</span>
+            <span aria-hidden="true">·</span>
+            <span>15251 National Ave, Suite 102</span>
+          </span>
+        }
+        media={<HeroPhoto photo={theme.photo} chips={theme.chips} chipColors={[accent.color, theme.tone === "lime" ? "var(--ff-periwinkle)" : "var(--ff-lime)"]} />}
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <PageBreadcrumbs
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Services", href: "/services" },
-            { label: service.title },
-          ]}
-        />
-
-        {/* Back Button */}
-        <div className="mb-12">
-          <Button asChild variant="ghost" className="text-primary hover:bg-primary/5">
-            <Link href="/services">
-              <MinimalGlyph name="arrow-left" className="h-4 w-4 mr-2" />
-              Back to All Services
-            </Link>
-          </Button>
-        </div>
-
-        {/* Service Overview */}
-        <div className="mb-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-6">About {service.title}</h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                {service.longDescription || `Learn how our Los Gatos team approaches ${service.title.toLowerCase()} with clear explanations, thoughtful planning, and your comfort in mind.`}
+      {/* ------------------------------------------------------------ About */}
+      <Section labelledBy="about-heading">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:gap-16">
+          <div>
+            <div className="ff-reveal">
+              <Eyebrow className="mb-4">The essentials</Eyebrow>
+              <h2 id="about-heading" className="ff-h2">
+                About {service.title}
+              </h2>
+              <p className="mt-7 max-w-3xl font-display text-[1.35rem] font-medium leading-snug tracking-[-0.01em] text-ink sm:text-[1.6rem]">
+                {service.longDescription ||
+                  `Learn how our Los Gatos team approaches ${lowerTitle} with clear explanations, thoughtful planning, and your comfort in mind.`}
               </p>
             </div>
-            <div className="bg-muted/40 rounded-xl p-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">What's Included</h3>
-              <ul className="space-y-3 text-gray-600">
-                {service.details.map((detail: string, index: number) => (
-                  <li key={index} className="flex items-center">
-                    <MinimalGlyph name="check-circle" className="h-5 w-5 text-primary mr-3 flex-shrink-0" />
-                    {detail}
+            <div className="mt-12">
+              <h3 className="ff-reveal text-lg font-bold text-ink">What’s included</h3>
+              <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+                {details.map((detail, index) => (
+                  <li
+                    key={detail}
+                    className={cn(
+                      "ff-reveal flex items-start gap-3 rounded-2xl bg-white p-4 text-base leading-snug text-ink ring-1 ring-border",
+                      details.length % 2 === 1 && index === details.length - 1 && "sm:col-span-2",
+                    )}
+                    style={{ "--i": index % 2 } as CSSProperties}
+                  >
+                    <span aria-hidden="true" className={cn("grid size-6 shrink-0 place-items-center rounded-full text-xs text-ink", accent.solid)}>
+                      <MinimalGlyph name="check" />
+                    </span>
+                    <span className="pt-0.5">{detail}</span>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
-        </div>
-
-        {service.decisionGuide ? (
-          <section className="mb-16 space-y-10" aria-labelledby="planning-heading">
-            <JsonLd data={buildFaqSchema(service.decisionGuide.faqs)} />
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-primary">Plan your visit</p>
-              <h2 id="planning-heading" className="mt-3 text-3xl font-bold text-foreground">Is {service.title.toLowerCase()} right for you?</h2>
-              <div className="mt-6 grid gap-8 md:grid-cols-2">
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground">When it may help</h3>
-                  <p className="mt-3 leading-7 text-muted-foreground">{service.decisionGuide.candidacy}</p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground">Options to discuss</h3>
-                  <p className="mt-3 leading-7 text-muted-foreground">{service.decisionGuide.alternatives}</p>
-                </div>
-              </div>
-            </div>
-            <div className="border-y border-border py-8">
-              <h3 className="text-xl font-semibold text-foreground">What to expect</h3>
-              <p className="mt-3 max-w-4xl leading-7 text-muted-foreground">{service.decisionGuide.visitExpectations}</p>
-              <Link className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4" href="/new-patients">Preparing for your first visit</Link>
-            </div>
-            <div className="grid gap-8 md:grid-cols-2">
-              <div>
-                <h3 className="text-xl font-semibold text-foreground">What affects the cost?</h3>
-                <ul className="mt-4 list-disc space-y-3 pl-5 leading-7 text-muted-foreground">
-                  {service.decisionGuide.costFactors.map((factor) => <li key={factor}>{factor}</li>)}
-                </ul>
-                <Link className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4" href="/insurance-and-payment">Questions about an estimate or your plan</Link>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-foreground">Care and follow-up</h3>
-                <p className="mt-4 leading-7 text-muted-foreground">{service.decisionGuide.maintenance}</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-foreground">Common questions</h3>
-              <div className="mt-5 space-y-3">
-                {service.decisionGuide.faqs.map((faq) => (
-                  <details key={faq.question} className="rounded-lg border border-border bg-card px-5 py-4">
-                    <summary className="cursor-pointer font-semibold text-foreground">{faq.question}</summary>
-                    <p className="mt-3 leading-7 text-muted-foreground">{faq.answer}</p>
-                  </details>
-                ))}
-              </div>
-              <p className="mt-6 text-sm leading-6 text-muted-foreground">General information helps you prepare questions. Your examination and treatment plan determine the right approach for you.</p>
-              <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-3 text-sm">
-                {service.decisionGuide.sources.map((source) => <li key={source.href}><a className="font-semibold text-primary underline underline-offset-4" href={source.href} target="_blank" rel="noopener noreferrer">{source.label} (opens in a new tab)</a></li>)}
-              </ul>
-            </div>
-          </section>
-        ) : null}
-
-        {/* Services with a decision guide cover benefits and expectations above. */}
-        {!service.decisionGuide && service.benefits && (
-          <div className="mb-20">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">Benefits of {service.title}</h2>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                Discover how {service.title.toLowerCase()} can improve your oral health and overall well-being.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {service.benefits.map((benefit: string, index: number) => (
-                <div
-                  key={index}
-                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300"
-                >
-                  <p className="text-gray-700 font-medium">{benefit}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Process Section */}
-        {!service.decisionGuide && service.process && (
-          <div className="mb-20">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Process</h2>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                Here's what you can expect during your {service.title.toLowerCase()} treatment.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {service.process.map((step: string, index: number) => (
-                <div key={index} className="bg-muted/50 rounded-xl p-6 text-center">
-                  <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <span className="font-bold">{index + 1}</span>
-                  </div>
-                  <p className="text-gray-700 font-medium">{step}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {reviewData && reviewData.reviews.length > 0 && (
-          <div className="mb-12">
-            <ReviewsSection
-              reviews={reviewData.reviews}
-              title={`${service.title} Patient Reviews`}
-              showCTA={true}
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <VisitCard
+              tone={theme.tone}
+              facts={group ? [{ label: "Care area", value: group.label }] : undefined}
+              appointmentHref={buildAppointmentUrl({ serviceId: service.id, source: "service_detail_about" })}
+              source="service_detail_about"
+              serviceId={service.id}
+              className="ff-reveal"
             />
           </div>
-        )}
+        </div>
+      </Section>
 
-        <RelatedLinksSection title="Related Services & Resources" links={relatedLinks} />
+      {/* --------------------------------------------------------- Benefits */}
+      {service.benefits?.length ? (
+        <Section tone="white" labelledBy="benefits-heading">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <SectionHeader
+                id="benefits-heading"
+                eyebrow="Why it helps"
+                title={`Benefits of ${service.title}`}
+                lead={`What ${lowerTitle} can do for your oral health and everyday comfort.`}
+              />
+              <div aria-hidden="true" className="ff-reveal-pop mt-10 hidden items-end gap-3 lg:flex" style={{ "--i": 1 } as CSSProperties}>
+                {["var(--ff-periwinkle)", "var(--ff-blush)", "var(--ff-lime)", "var(--ff-cloud)"].map((color, index) => (
+                  <ToothPerson
+                    key={color}
+                    color={color}
+                    className={cn("w-auto", ["h-24", "h-20", "h-14", "h-16"][index], index === 3 && "[&_g]:stroke-ink/10 [&_g]:[stroke-width:3]")}
+                  />
+                ))}
+              </div>
+            </div>
+            <ol className="divide-y divide-border border-y border-border">
+              {service.benefits.map((benefit, index) => (
+                <li key={benefit} className="ff-reveal flex items-center gap-5 py-5 sm:gap-7 sm:py-6" style={{ "--i": index % 3 } as CSSProperties}>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "grid size-12 shrink-0 place-items-center rounded-full font-display text-xl font-semibold text-ink sm:size-14 sm:text-2xl",
+                      numberTones[index % numberTones.length],
+                    )}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="font-display text-xl font-medium leading-snug tracking-[-0.01em] text-ink sm:text-2xl">{benefit}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Section>
+      ) : null}
 
-        {/* Call to Action */}
-        <div className="bg-primary rounded-xl p-8 lg:p-12 text-center text-white mt-16">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-lg sm:text-xl mb-8 text-white/95 max-w-2xl mx-auto">
-            Schedule your consultation today and take the first step towards better oral health with our {service.title.toLowerCase()} services.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <div>
+      {/* ---------------------------------------------------------- Process */}
+      {service.process?.length ? (
+        <Section tone="cream" labelledBy="process-heading">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
+            <SectionHeader
+              id="process-heading"
+              eyebrow="What to expect"
+              title={
+                <>
+                  Your visit, <em className="ff-italic font-normal">step by step</em>
+                </>
+              }
+            />
+            <p className="ff-reveal ff-lead max-w-xl lg:justify-self-end">
+              Here’s how it usually goes with our team. We explain each step as we go, with time for every question.
+            </p>
+          </div>
+          <div className="mt-14">
+            <StepTimeline steps={service.process.map((step) => ({ title: step }))} />
+          </div>
+        </Section>
+      ) : null}
+
+      {/* ---------------------------------------------------- Decision guide */}
+      {service.decisionGuide ? (
+        <Section labelledBy="planning-heading">
+          <DecisionGuide title={service.title} guide={service.decisionGuide} tone={theme.tone} />
+        </Section>
+      ) : null}
+
+      {/* ---------------------------------------------------------- Reviews */}
+      {reviewData && reviewData.reviews.length > 0 ? (
+        <Section tone={accent.section} labelledBy="service-reviews-heading" className="overflow-clip">
+          <ReviewsSection
+            id="service-reviews-heading"
+            reviews={reviewData.reviews}
+            title={`${service.title} Patient Reviews`}
+            lead="Real experiences from our patients, shared on Google."
+            showCTA={true}
+            showBooking={false}
+          />
+        </Section>
+      ) : null}
+
+      {/* ---------------------------------------------------------- Related */}
+      <Section labelledBy="related-heading">
+        <ExploreLinks id="related-heading" links={relatedLinks} />
+      </Section>
+
+      {/* ---------------------------------------------------------- Closing */}
+      <CtaBand
+        id="service-cta-heading"
+        title={
+          <>
+            Ready to get <em className="ff-italic font-normal text-lime">started?</em>
+          </>
+        }
+        body={`Tell us what you need and when you prefer to visit. Our team will contact you to confirm the next step for your ${lowerTitle} visit.`}
+        actions={
+          <>
+            <Button asChild size="lg" variant="night" className="group h-14 pl-7 pr-3 text-base">
               <AppointmentLink
                 href={buildAppointmentUrl({ serviceId: service.id, source: "service_detail" })}
-                className="w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap rounded-xl bg-white px-8 py-4 text-lg font-semibold text-primary shadow-sm ring-offset-background transition-[transform,box-shadow] duration-200 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                 source="service_detail"
                 ctaType="consultation"
                 serviceId={service.id}
               >
                 Book Your Appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-ink/10">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
               </AppointmentLink>
-            </div>
+            </Button>
             <FinalCtaPhoneLink location="service_detail_final" serviceId={service.id}>
               or call (408) 358-8100
             </FinalCtaPhoneLink>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+        note={<>{practiceHoursSummary} · 15251 National Ave, Suite 102, Los Gatos</>}
+      />
     </div>
   );
 }

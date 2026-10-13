@@ -1,156 +1,135 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
+import type { CSSProperties } from "react";
+import { Section, SectionHeader } from "@/components/site/section";
+import { StepTimeline } from "@/components/site/step-timeline";
+import { ToothPerson } from "@/components/brand/pinwheel";
+import { FlossingArt, FlossToolArt, type FlossTool } from "@/components/guides/guide-art";
+import { GuideClosing, HabitTrio, OralHealthHero, RelatedReading } from "@/components/guides/oral-health";
+import { cn } from "@/lib/utils";
+
+const SOURCE = "patient_info_flossing";
+
+const options: { title: string; detail: string; tone: string; tool: FlossTool }[] = [
+  { title: "String floss", detail: "Waxed or unwaxed string floss.", tone: "bg-periwinkle-wash", tool: "string" },
+  { title: "Floss picks", detail: "Floss picks for on-the-go convenience.", tone: "bg-blush-wash", tool: "pick" },
+  { title: "Water flossers", detail: "Water flossers for braces or sensitive gums.", tone: "bg-lime-wash", tool: "water" },
+];
 
 export default function PatientInfoFlossing() {
   return (
-    <div className="pt-16 pb-20 bg-white">
-      <section className="relative bg-muted/40 py-20 lg:py-28">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center bg-white shadow-md rounded-lg px-4 py-2 text-sm font-semibold text-primary mb-4">
-            Oral Health Education
-          </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
-            Flossing Fundamentals
-          </h1>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            Flossing cleans the tight spaces your toothbrush cannot reach. Just a minute a day helps prevent
-            cavities and gum inflammation.
+    <div className="overflow-x-clip">
+      <OralHealthHero
+        title="Flossing Fundamentals"
+        lead="Flossing cleans the tight spaces your toothbrush cannot reach. Just a minute a day helps prevent cavities and gum inflammation."
+        tone="blush"
+        art={<FlossingArt />}
+        chips={["Once a day", "About 18 inches"]}
+        source={SOURCE}
+      />
+
+      <HabitTrio
+        id="flossing-habits-heading"
+        eyebrow="The basics"
+        title="Small string, big difference"
+        habits={[
+          { big: "18″", title: "Use enough floss", description: "About 18 inches gives you a clean section for each tooth." },
+          { big: "C", title: "Gentle C-shape", description: "Curve the floss around the tooth and slide up and down." },
+          { big: "1×", title: "Daily habit", description: "Once per day is enough to remove plaque between teeth." },
+        ]}
+      />
+
+      {/* ------------------------------------------------ Technique */}
+      <Section tone="cream" labelledBy="flossing-steps-heading">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end">
+          <SectionHeader
+            id="flossing-steps-heading"
+            eyebrow="Technique"
+            title={
+              <>
+                Step-by-Step <em className="ff-italic font-normal">Flossing</em>
+              </>
+            }
+          />
+          <p className="ff-reveal ff-lead max-w-xl lg:justify-self-end">
+            Go slowly the first few times. Once the motion feels familiar, the whole mouth takes about a minute.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6 py-3">
-              <Link href="/contact">Schedule a Checkup</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary/5 font-semibold px-6 py-3"
-            >
-              <Link href="/patient-info">Back to Patient Info</Link>
-            </Button>
-          </div>
         </div>
-      </section>
+        <div className="mt-14">
+          <StepTimeline
+            steps={[
+              { title: "Wrap and hold", body: "Wrap floss around your middle fingers, leaving 1-2 inches to work with." },
+              { title: "Glide in gently", body: "Guide the floss between teeth using a gentle sawing motion." },
+              {
+                title: "Hug the tooth",
+                body: "Curve the floss into a C shape against one tooth, then slide up and down to clean below the gumline.",
+              },
+              {
+                title: "Move along",
+                body: "Repeat for the neighboring tooth, then move to a fresh section. Floss behind the last molars and around any dental work.",
+              },
+            ]}
+          />
+        </div>
+      </Section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
-        <PageBreadcrumbs
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Patient Info", href: "/patient-info" },
-            { label: "Flossing Fundamentals" },
-          ]}
-        />
-
-        <section className="grid lg:grid-cols-3 gap-6">
-          {[
-            {
-              title: "Use enough floss",
-              description: "About 18 inches gives you a clean section for each tooth.",
-            },
-            {
-              title: "Gentle C-shape",
-              description: "Curve the floss around the tooth and slide up and down.",
-            },
-            {
-              title: "Daily habit",
-              description: "Once per day is enough to remove plaque between teeth.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-sm">
-              <div className="mb-3">
-                <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
-              </div>
-              <p className="text-gray-600">{item.description}</p>
-            </div>
-          ))}
-        </section>
-
-        <section className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Step-by-Step Flossing</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {[
-              "Wrap floss around your middle fingers, leaving 1-2 inches to work with.",
-              "Guide the floss between teeth using a gentle sawing motion.",
-              "Curve the floss into a C shape against one tooth.",
-              "Slide up and down to clean below the gumline.",
-              "Repeat for the neighboring tooth, then move to a fresh section.",
-              "Floss behind the last molars and around any dental work.",
-            ].map((step) => (
-              <div key={step} className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <p className="text-gray-700">{step}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-muted/40 rounded-xl p-8 border border-primary/10">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">If Your Gums Bleed</h2>
-            <p className="text-gray-700 mb-4">
+      {/* ------------------------------------------------ Gums + options */}
+      <Section labelledBy="flossing-options-heading">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-14">
+          <aside aria-labelledby="flossing-bleed-heading" className="ff-reveal relative overflow-clip rounded-3xl bg-night p-7 pb-12 text-white sm:p-9 sm:pb-14 lg:self-start">
+            <ToothPerson color="var(--ff-blush)" className="pointer-events-none absolute -bottom-10 -right-5 h-28 w-auto rotate-[-10deg] opacity-90" />
+            <p className="ff-eyebrow text-periwinkle">Good to know</p>
+            <h2 id="flossing-bleed-heading" className="ff-h3 mt-3 text-white">
+              If Your Gums Bleed
+            </h2>
+            <p className="relative mt-4 max-w-md text-base leading-relaxed text-white/80">
               Mild bleeding can be normal if you are new to flossing. It should improve within one to two weeks.
             </p>
-            <p className="text-gray-700">
+            <p className="relative mt-3 max-w-md pr-14 text-base leading-relaxed text-white/80 sm:pr-20">
               Persistent bleeding, swelling, or pain can be a sign of gum disease. Schedule a visit so we can help.
             </p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-8 border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Flossing Options</h2>
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <span>Waxed or unwaxed string floss.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <span>Floss picks for on-the-go convenience.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <MinimalGlyph name="check-circle" className="w-5 h-5 text-primary mt-1" />
-                <span>Water flossers for braces or sensitive gums.</span>
-              </li>
+          </aside>
+          <div>
+            <SectionHeader id="flossing-options-heading" eyebrow="Find your tool" title="Flossing Options" lead="The best floss is the one you’ll use every day." />
+            <ul className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+              {options.map((option, index) => (
+                <li
+                  key={option.title}
+                  className={cn("ff-reveal flex items-center gap-4 rounded-3xl p-5 sm:flex-col sm:items-start lg:flex-row lg:items-center xl:flex-col xl:items-start", option.tone)}
+                  style={{ "--i": index } as CSSProperties}
+                >
+                  <FlossToolArt kind={option.tool} className="size-20 shrink-0" />
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-ink">{option.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{option.detail}</p>
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
-        </section>
+        </div>
+      </Section>
 
-        <section className="bg-primary rounded-xl p-8 text-white">
-          <h2 className="text-2xl font-bold mb-3">Need Help With Technique?</h2>
-          <p className="text-white/95 mb-6">
-            We can demonstrate flossing during your cleaning and recommend the best tools for your needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="bg-white text-primary hover:bg-gray-100 font-semibold px-6 py-3">
-              <Link href="/contact">Book an Appointment</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="bg-white/5 border-white/25 text-white hover:bg-white hover:text-primary font-semibold px-6 py-3"
-            >
-              <Link href="/services/dental-hygiene">Learn About Hygiene Visits</Link>
-            </Button>
-          </div>
-        </section>
+      <RelatedReading
+        links={[
+          { href: "/patient-info/brushing", title: "How to Brush Properly", description: "Master the brushing basics that keep enamel strong." },
+          { href: "/patient-info/nutrition", title: "Nutrition for Healthy Teeth", description: "See which foods help protect your smile." },
+          {
+            href: "/blog/bleeding-gums-when-flossing-los-gatos",
+            title: "Why Gums Bleed When You Floss",
+            description: "What is normal, what is not, and when to schedule a visit.",
+          },
+        ]}
+      />
 
-        <section>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Related Reading</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Link href="/patient-info/brushing" className="block">
-              <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-                <h3 className="font-semibold text-gray-800 mb-2">How to Brush Properly</h3>
-                <p className="text-sm text-gray-600">Master the brushing basics that keep enamel strong.</p>
-              </div>
-            </Link>
-            <Link href="/patient-info/nutrition" className="block">
-              <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow duration-200">
-                <h3 className="font-semibold text-gray-800 mb-2">Nutrition for Healthy Teeth</h3>
-                <p className="text-sm text-gray-600">See which foods help protect your smile.</p>
-              </div>
-            </Link>
-          </div>
-        </section>
-      </div>
+      <GuideClosing
+        title={
+          <>
+            Need help with <em className="ff-italic font-normal text-lime">technique?</em>
+          </>
+        }
+        body="We can demonstrate flossing during your cleaning and recommend the best tools for your needs."
+        source={SOURCE}
+        secondary={{ href: "/services/dental-hygiene", label: "Learn about hygiene visits" }}
+      />
     </div>
   );
 }

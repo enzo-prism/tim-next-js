@@ -93,7 +93,7 @@ export default function ElevenLabsWidget() {
           data-testid="assistant-launcher"
           onClick={loadAssistant}
           disabled={status === "loading"}
-          className="min-h-11 rounded-lg border border-primary/25 bg-card px-4 text-sm font-semibold text-primary shadow-sm hover:border-primary/45 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
+          className="ff-press min-h-11 rounded-full border border-border bg-white px-5 text-sm font-semibold text-ink shadow-float hover:border-ink/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
         >
           {status === "loading"
             ? "Opening assistant…"

@@ -54,6 +54,7 @@ describe("accessibility component contracts", () => {
     expect(read("./ui/sheet.tsx")).toMatch(/Close className="[^"]*h-10 w-10/);
     expect(read("./ui/dialog.tsx")).toMatch(/Close className="[^"]*h-10 w-10/);
     expect(read("./ui/form.tsx")).toContain("text-sm font-medium text-primary");
+    expect(read("./ui/form.tsx")).toContain("text-sm font-medium text-destructive");
   });
 
   it("does not point form controls at missing description nodes", () => {
@@ -67,10 +68,18 @@ describe("accessibility component contracts", () => {
     const services = read("../legacy-pages/services.tsx");
     const serviceCard = read("./service-card.tsx");
 
-    expect(services).toContain("<Button\n                asChild");
+    // The closing CTA is the link itself (Button asChild), not a link nested in a button.
+    expect(services).toMatch(
+      /<Button asChild[^>]*>\s*<AppointmentLink href=\{buildAppointmentUrl\(\{ source: "services_hero" \}\)\} source="services_cta">/,
+    );
     expect(services).toContain("Our Comprehensive Services");
-    expect(serviceCard).toContain('<h3 className="font-bold');
-    expect(serviceCard).toContain('<h4 className="font-semibold');
+    // h1 (hero) > h2 (sections) > h3 (family groups) > h4 (service cards).
+    expect(services).toContain("<h3 id={headingId}");
+    expect(serviceCard).toContain('<h4 className="font-display');
+    expect(serviceCard).not.toMatch(/<h[1-3][\s>]/);
+    // Each card ends in a full-width, specifically named "Learn More About …" link.
+    expect(serviceCard).toContain("Learn More About {service.title}");
+    expect(serviceCard).toContain("min-h-12 w-full");
   });
 
   it("keeps visible link text inside the practice address accessible name", () => {
