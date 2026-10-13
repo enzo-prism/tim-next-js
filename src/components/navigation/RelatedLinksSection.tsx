@@ -8,19 +8,21 @@ const washes = ["bg-periwinkle-wash", "bg-blush-wash", "bg-lime-wash", "bg-cloud
 export default function RelatedLinksSection({
   title,
   links,
+  className = "mt-16",
 }: {
   title: string;
   links: RelatedLink[];
+  className?: string;
 }) {
   if (!links.length) return null;
 
   return (
-    <section className="mt-16">
+    <section className={className}>
       <div className="mb-6 flex items-end justify-between gap-6">
         <h2 className="ff-h3 ff-reveal text-2xl sm:text-3xl">{title}</h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className={`grid gap-4 ${links.length === 3 ? "md:grid-cols-3" : links.length === 2 || links.length === 4 ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"}`}>
         {links.map((link, index) => (
           <Link
             key={link.href}

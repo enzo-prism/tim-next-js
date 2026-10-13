@@ -1,9 +1,14 @@
-import { Link } from "wouter";
-import { MinimalGlyph } from "@/components/ui/minimal-glyph";
+import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
-import HeroBackdrop from "@/components/brand/HeroBackdrop";
-import PageBreadcrumbs from "@/components/navigation/PageBreadcrumbs";
+import { MinimalGlyph } from "@/components/ui/minimal-glyph";
 import RelatedLinksSection from "@/components/navigation/RelatedLinksSection";
+import { ToothPerson } from "@/components/brand/pinwheel";
+import { PageHero } from "@/components/site/page-hero";
+import { Section, SectionHeader } from "@/components/site/section";
+import { ReviewRows, type ReviewItem } from "@/components/site/review-rows";
+import { Stars } from "@/components/site/stars";
+import { CtaBand } from "@/components/site/cta-band";
+import { ReviewExplorer, type ExplorerReview, type ExplorerTheme } from "@/components/story/review-explorer";
 import {
   buildBreadcrumbSchema,
   buildCollectionPageSchema,
@@ -16,10 +21,106 @@ import {
   testimonialsReviewLibrarySummary,
   testimonialsPageRelatedLinks,
   testimonialsPageSummary,
-  testimonialThemes,
 } from "@/content/testimonials";
+import { practiceHoursSummary } from "@/content/practice-hours";
 import { buildAppointmentUrl } from "@/lib/analytics";
-import { AppointmentLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
+import { AppointmentLink, PhoneLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
+
+// Chip label + brand dot per curated section (ids from content/testimonials.ts).
+const themeStyle: Record<string, { label: string; dot: string; wash: string }> = {
+  "new-patients": { label: "First visits", dot: "bg-periwinkle", wash: "bg-periwinkle-wash" },
+  "gentle-care": { label: "Gentle care", dot: "bg-blush", wash: "bg-blush-wash" },
+  "family-dentistry": { label: "Families & kids", dot: "bg-lime", wash: "bg-lime-wash" },
+  "advanced-care": { label: "TMJ, Invisalign & tech", dot: "bg-cloud", wash: "bg-cloud-wash" },
+};
+
+// Masonry reading order, chosen so each column mixes themes and lengths
+// (CSS columns fill top to bottom). Reviews not listed follow at the end.
+const masonryOrder = [
+  "Priscilla Barajas",
+  "Jerry Jobe",
+  "Don Spingola",
+  "Jon Takagi",
+  "Jinny",
+  "Andrea Callaghan",
+  "Janey Lee",
+  "Kevin Lan",
+  "Todd McMasters",
+  "TO Preising",
+  "Dayn Le",
+  "Paula Gregoire",
+];
+
+// A few short quotes are set large on a soft wash; one longer one gets a wash only.
+const featured: Record<string, { large?: boolean }> = {
+  "Jerry Jobe": { large: true },
+  "TO Preising": { large: true },
+  "Kevin Lan": { large: true },
+  Jinny: {},
+};
+
+// Public feed entries without a written review add nothing to read: keep the
+// data, but don't display them.
+function hasWrittenReview(review: { name: string; quote: string }) {
+  return review.name.trim().length > 1 && !/without a written comment/i.test(review.quote);
+}
+
+const explorerThemes: ExplorerTheme[] = testimonialSections.map((section) => ({
+  id: section.id,
+  label: themeStyle[section.id]?.label ?? section.eyebrow,
+  title: section.title,
+  description: section.description,
+  dot: themeStyle[section.id]?.dot ?? "bg-cloud",
+  links: section.links,
+}));
+
+const rank = (name: string) => {
+  const index = masonryOrder.indexOf(name);
+  return index === -1 ? masonryOrder.length : index;
+};
+
+const explorerReviews: ExplorerReview[] = testimonialSections
+  .flatMap((section) =>
+    section.reviews.map((review) => ({
+      name: review.name,
+      quote: review.quote,
+      label: review.patientLabel,
+      meta: "Google review",
+      theme: section.id,
+      wash: featured[review.name] ? themeStyle[section.id]?.wash : undefined,
+      large: featured[review.name]?.large,
+    })),
+  )
+  .sort((a, b) => rank(a.name) - rank(b.name));
+
+const googleFeed = publicReviewFeedSections.find((section) => section.id === "latest-google-reviews");
+const yelpFeed = publicReviewFeedSections.find((section) => section.id === "yelp-reviews");
+
+// Longer reviews share the first drift row and shorter ones the second, so
+// no card sits half empty; within a row, long and short alternate.
+function arrangeFeed(items: ReviewItem[]) {
+  const sorted = [...items].sort((a, b) => b.quote.length - a.quote.length);
+  const half = Math.ceil(sorted.length / 2);
+  const alternate = (row: ReviewItem[]) =>
+    row.map((_, index) => (index % 2 === 0 ? row[index / 2] : row[row.length - 1 - (index - 1) / 2]));
+  return [...alternate(sorted.slice(0, half)), ...alternate(sorted.slice(half))];
+}
+
+const feedReviews: ReviewItem[] = arrangeFeed([
+  ...(googleFeed?.reviews ?? []).filter(hasWrittenReview).map((review) => ({
+    name: review.name,
+    quote: review.quote,
+    meta: `Google · ${review.dateLabel}`,
+  })),
+  ...(yelpFeed?.reviews ?? []).filter(hasWrittenReview).map((review) => ({
+    name: review.name,
+    quote: review.quote,
+    meta: `Yelp · ${review.dateLabel}`,
+  })),
+]);
+
+// A short line from the featured review, verbatim.
+const heroQuote = "Our kids actually enjoy going to the dentist now, which says everything.";
 
 export default function TestimonialsPage() {
   const pageUrl = `${practiceInfo.url}/testimonials`;
@@ -38,7 +139,7 @@ export default function TestimonialsPage() {
   });
 
   return (
-    <div className="bg-white pt-16 pb-20">
+    <div className="overflow-x-clip">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageSchema) }}
@@ -48,313 +149,205 @@ export default function TestimonialsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
-        <HeroBackdrop variant="default" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <PageBreadcrumbs items={[{ label: "Home", href: "/" }, { label: "Testimonials" }]} />
-
-          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
-            <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Verified patient feedback
-              </div>
-              <h1 className="max-w-3xl text-4xl font-bold leading-tight text-gray-800 sm:text-5xl">
-                <span className="inline-flex flex-wrap items-center gap-3">
-                  
-                  <span>{pageTitle}</span>
+      {/* ------------------------------------------------------------ Hero */}
+      <PageHero
+        id="testimonials-heading"
+        tone="lime"
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Testimonials" }]}
+        eyebrow="Verified patient feedback"
+        title={
+          <>
+            Patient <em className="ff-italic font-normal">Testimonials,</em>{" "}
+            <span className="mt-3 block text-[0.5em] leading-[1.15] tracking-[-0.02em]">Google Reviews &amp; Yelp Reviews</span>
+          </>
+        }
+        lead="Hear from Los Gatos patients and families who chose Family First Smile Care for gentle preventive visits, child-friendly dentistry, Invisalign, TMJ support, and clear treatment planning."
+        actions={
+          <>
+            <Button asChild size="lg" className="group h-14 pl-7 pr-5 text-base">
+              <AppointmentLink href={buildAppointmentUrl({ source: "testimonials_final_cta" })} source="testimonials_page">
+                Book an appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-white/15">
+                  <MinimalGlyph name="arrow-right" />
                 </span>
-              </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-gray-600 sm:text-xl">
-                Hear from Los Gatos patients and families who chose Family First Smile Care
-                for gentle preventive visits, child-friendly dentistry, Invisalign, TMJ
-                support, and clear treatment planning across both Google and Yelp.
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-14 px-7 text-base">
+              <PhoneLink location="testimonials_page">Call (408) 358-8100</PhoneLink>
+            </Button>
+          </>
+        }
+        media={
+          <div className="relative mx-auto w-full max-w-[26rem] pb-4 lg:max-w-[28rem] lg:pb-28">
+            <ToothPerson
+              color="var(--ff-lime)"
+              className="ff-intro-pop absolute -right-3 -top-10 z-0 h-28 w-auto rotate-[12deg] sm:-right-8 sm:h-32"
+              style={{ "--d": 760 } as CSSProperties}
+            />
+            <ToothPerson
+              color="var(--ff-periwinkle)"
+              className="ff-intro-pop absolute -right-12 bottom-[22%] z-0 hidden h-24 w-auto rotate-[16deg] lg:block"
+              style={{ "--d": 880 } as CSSProperties}
+            />
+            <div className="relative z-[1] rounded-3xl bg-white p-7 shadow-float ring-1 ring-border sm:p-9">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-cobalt-deep">Average rating</p>
+              <p className="mt-3 flex items-end gap-3">
+                <span className="font-display text-[5.5rem] font-semibold leading-[0.85] tracking-tight text-ink sm:text-[7rem]">
+                  {testimonialsReviewLibrarySummary.averageRating}
+                </span>
+                <span className="pb-2 text-sm font-semibold text-ink-soft">out of 5</span>
               </p>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-gray-600">
-                This page is designed to help prospective patients understand the experience
-                of visiting our office through selected excerpts from publicly posted reviews,
-                alongside direct links to the services those reviews mention most.
-              </p>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-                  <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    Average rating
-                  </div>
-                  <div className="mt-3 flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-slate-900">
-                      {testimonialsPageSummary.averageRating}
-                    </span>
-                    <span className="text-sm font-semibold text-slate-500">out of 5</span>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-                  <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    Review volume
-                  </div>
-                  <div className="mt-3 text-2xl font-bold text-slate-900">
-                    {testimonialsReviewLibrarySummary.reviewCountLabel}
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    {testimonialsReviewLibrarySummary.verifiedAtLabel}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-                  <div className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    Source
-                  </div>
-                  <div className="mt-3 text-2xl font-bold text-slate-900">
-                    {testimonialsReviewLibrarySummary.sourceLabel}
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    {testimonialsReviewLibrarySummary.editorialNote}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <aside className="rounded-xl border border-slate-200/90 bg-white/95 p-6 shadow-sm">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Featured Google review
-              </div>
-              <blockquote className="mt-5 text-lg leading-8 text-slate-700">
-                "{featuredReview.quote}"
-              </blockquote>
-              <div className="mt-6 border-t border-slate-200 pt-4">
-                <div className="font-semibold text-slate-900">{featuredReview.name}</div>
-                <div className="mt-1 text-sm text-slate-600">{featuredReview.patientLabel}</div>
-              </div>
-              <Button
-                asChild
-                variant="outline"
-                className="mt-6 w-full border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
-              >
-                <TrackedExternalLink
-                  href={testimonialsPageSummary.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  kind="review"
-                  provider="google"
-                  location="testimonials_featured"
-                >
-                  View Google profile
-                  <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
-                </TrackedExternalLink>
-              </Button>
-              <Button
-                asChild
-                variant="ghost"
-                className="mt-3 w-full text-primary hover:bg-primary/5 hover:text-primary"
-              >
-                <TrackedExternalLink
-                  href={publicReviewFeedSections[1].sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  kind="review"
-                  provider="yelp"
-                  location="testimonials_featured"
-                >
-                  View Yelp profile
-                  <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
-                </TrackedExternalLink>
-              </Button>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-8 sm:py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {testimonialThemes.map((theme) => (
-              <article key={theme.title} className="rounded-xl border border-slate-200 bg-slate-50/80 p-5">
-                <h2 className="text-lg font-semibold text-slate-900">{theme.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{theme.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {testimonialSections.map((section) => (
-        <section key={section.id} className="py-10 sm:py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-                {section.eyebrow}
-              </div>
-              <h2 className="mt-3 max-w-3xl text-3xl font-bold text-gray-800 sm:text-4xl">
-                {section.title}
-              </h2>
-              <p className="mt-4 max-w-4xl text-lg leading-8 text-gray-600">
-                {section.description}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                {section.links.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-5 lg:grid-cols-3">
-              {section.reviews.map((review) => (
-                <article
-                  key={`${section.id}-${review.name}`}
-                  className="h-full rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="inline-flex rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      Google Review
-                    </div>
-                    <div className="text-sm font-semibold text-slate-600" aria-label={`${review.rating} star review`}>
-                      {review.rating}.0 rating
-                    </div>
-                  </div>
-
-                  <blockquote className="mt-5 text-base leading-7 text-slate-700">
-                    "{review.quote}"
-                  </blockquote>
-
-                  <div className="mt-6 border-t border-slate-200 pt-4">
-                    <p className="font-semibold text-slate-900">{review.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">{review.patientLabel}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      ))}
-
-      {publicReviewFeedSections.map((section) => (
-        <section key={section.id} className="py-10 sm:py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-                {section.eyebrow}
-              </div>
-              <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <h2 className="max-w-3xl text-3xl font-bold text-gray-800 sm:text-4xl">
-                    {section.title}
-                  </h2>
-                  <p className="mt-4 max-w-4xl text-lg leading-8 text-gray-600">
-                    {section.description}
-                  </p>
-                </div>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
-                >
+              <Stars className="mt-4 text-2xl" />
+              <p className="mt-4 text-lg font-bold text-ink">{testimonialsReviewLibrarySummary.reviewCountLabel}</p>
+              <p className="mt-1 text-sm text-ink-soft">{testimonialsReviewLibrarySummary.verifiedAtLabel}</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm" className="h-10">
                   <TrackedExternalLink
-                    href={section.sourceUrl}
+                    href={testimonialsPageSummary.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     kind="review"
-                    provider={section.id === "yelp-reviews" ? "yelp" : "google"}
-                    location="testimonials_review_section"
+                    provider="google"
+                    location="testimonials_featured"
                   >
-                    {section.sourceLabel}
-                    <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
+                    View Google profile
+                    <MinimalGlyph name="external-link" className="h-4 w-4" />
+                    <span className="sr-only"> (opens in a new tab)</span>
                   </TrackedExternalLink>
                 </Button>
+                {yelpFeed ? (
+                  <Button asChild variant="outline" size="sm" className="h-10">
+                    <TrackedExternalLink
+                      href={yelpFeed.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      kind="review"
+                      provider="yelp"
+                      location="testimonials_featured"
+                    >
+                      View Yelp profile
+                      <MinimalGlyph name="external-link" className="h-4 w-4" />
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </TrackedExternalLink>
+                  </Button>
+                ) : null}
               </div>
             </div>
-
-            <div className="mt-8 grid gap-5 lg:grid-cols-2">
-              {section.reviews.map((review) => (
-                <article
-                  key={`${section.id}-${review.name}-${review.dateLabel}`}
-                  className="h-full rounded-xl border border-slate-200/90 bg-white p-6 shadow-sm"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="inline-flex rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                      {section.id === "yelp-reviews" ? "Yelp Review" : "Google Review"}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-sm font-semibold text-slate-600" aria-label={`${review.rating} star review`}>
-                        {review.rating}.0 rating
-                      </div>
-                      <span className="text-sm font-medium text-slate-500">{review.dateLabel}</span>
-                    </div>
-                  </div>
-
-                  <blockquote className="mt-5 text-base leading-7 text-slate-700">
-                    "{review.quote}"
-                  </blockquote>
-
-                  <div className="mt-6 border-t border-slate-200 pt-4">
-                    <p className="font-semibold text-slate-900">{review.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {section.id === "yelp-reviews" ? "Yelp reviewer" : "Google reviewer"}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <figure
+              className="ff-intro-pop relative z-[2] mx-4 -mt-4 rotate-[-2.5deg] rounded-2xl bg-ink p-5 text-white shadow-float sm:mx-8 lg:absolute lg:-bottom-4 lg:-left-12 lg:mx-0 lg:w-72"
+              style={{ "--d": 640 } as CSSProperties}
+            >
+              <blockquote className="font-display text-lg leading-snug">“{heroQuote}”</blockquote>
+              <figcaption className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-white/70">
+                {featuredReview.name} · {featuredReview.patientLabel}
+              </figcaption>
+            </figure>
           </div>
-        </section>
-      ))}
+        }
+      />
 
-      <section className="py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-xl border border-primary/10 bg-muted/40 p-8 sm:p-10">
-            <div className="max-w-4xl">
-              <h2 className="text-3xl font-bold text-gray-800">Ready to see what your visit could feel like?</h2>
-              <p className="mt-4 text-lg leading-8 text-gray-600">
-                If you are looking for a Los Gatos dentist who explains options clearly,
-                moves at your pace, and provides family-friendly care with modern dental
-                technology, we would love to help.
-              </p>
-            </div>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                <AppointmentLink
-                  href={buildAppointmentUrl({ source: "testimonials_final_cta" })}
-                  source="testimonials_page"
-                >
-                  Book an appointment
-                  <MinimalGlyph name="arrow-right" className="ml-2 h-4 w-4" />
-                </AppointmentLink>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
-              >
-                <TrackedExternalLink
-                  href={testimonialsPageSummary.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  kind="review"
-                  provider="google"
-                  location="testimonials_bottom_cta"
-                >
-                  Read more reviews on Google
-                  <MinimalGlyph name="external-link" className="ml-2 h-4 w-4" />
-                </TrackedExternalLink>
-              </Button>
-            </div>
-          </div>
-
-          <RelatedLinksSection
-            title="Explore More Patient Resources"
-            links={testimonialsPageRelatedLinks}
+      {/* -------------------------------------------------------- Explorer */}
+      <Section labelledBy="review-themes-heading">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-end">
+          <SectionHeader
+            id="review-themes-heading"
+            eyebrow="In their words"
+            title={
+              <>
+                What patients mention <em className="ff-italic font-normal">most</em>
+              </>
+            }
           />
+          <p className="ff-reveal ff-lead max-w-xl lg:justify-self-end">
+            {testimonialsPageSummary.editorialNote} Pick a theme to read the reviews that matter most to you.
+          </p>
         </div>
-      </section>
+        <div className="ff-reveal mt-10">
+          <ReviewExplorer themes={explorerThemes} reviews={explorerReviews} />
+        </div>
+      </Section>
+
+      {/* ----------------------------------------------------------- Feeds */}
+      <Section tone="periwinkle" labelledBy="public-reviews-heading" width="full" className="overflow-clip">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
+          <SectionHeader
+            id="public-reviews-heading"
+            eyebrow="Straight from Google & Yelp"
+            title={
+              <>
+                The latest <em className="ff-italic font-normal">public</em> reviews
+              </>
+            }
+            lead="Recent reviews from Google, plus excerpts from Yelp. Read every review in full on each site."
+          />
+          <div className="ff-reveal flex flex-col gap-3 sm:flex-row lg:shrink-0">
+            {[googleFeed, yelpFeed].map((feed) =>
+              feed ? (
+                <Button key={feed.id} asChild variant="outline" size="lg">
+                  <TrackedExternalLink
+                    href={feed.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    kind="review"
+                    provider={feed.id === "yelp-reviews" ? "yelp" : "google"}
+                    location="testimonials_review_section"
+                  >
+                    {feed.sourceLabel}
+                    <MinimalGlyph name="external-link" className="h-4 w-4" />
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </TrackedExternalLink>
+                </Button>
+              ) : null,
+            )}
+          </div>
+        </div>
+        <ReviewRows reviews={feedReviews} className="mt-12 [&_.ff-marquee]:items-start" />
+      </Section>
+
+      {/* --------------------------------------------------------- Related */}
+      <Section className="py-14 sm:py-16 lg:py-20">
+        <div className="[&>section]:mt-0">
+          <RelatedLinksSection title="Explore more patient resources" links={testimonialsPageRelatedLinks} />
+        </div>
+      </Section>
+
+      {/* ----------------------------------------------------------- Close */}
+      <CtaBand
+        id="testimonials-cta-heading"
+        title={
+          <>
+            Ready to see what your visit <em className="ff-italic font-normal text-lime">could feel like?</em>
+          </>
+        }
+        body="If you are looking for a Los Gatos dentist who explains options clearly, moves at your pace, and provides family-friendly care with modern dental technology, we would love to help."
+        actions={
+          <>
+            <Button asChild size="lg" variant="night" className="group h-14 pl-7 pr-5 text-base">
+              <AppointmentLink href={buildAppointmentUrl({ source: "testimonials_final_cta" })} source="testimonials_page">
+                Book an appointment
+                <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-ink/10">
+                  <MinimalGlyph name="arrow-right" />
+                </span>
+              </AppointmentLink>
+            </Button>
+            <Button asChild size="lg" variant="night-outline" className="h-14 px-7 text-base">
+              <TrackedExternalLink
+                href={testimonialsPageSummary.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                kind="review"
+                provider="google"
+                location="testimonials_bottom_cta"
+              >
+                Read more reviews on Google
+                <MinimalGlyph name="external-link" className="h-4 w-4" />
+                <span className="sr-only"> (opens in a new tab)</span>
+              </TrackedExternalLink>
+            </Button>
+          </>
+        }
+        note={<>{practiceHoursSummary} · 15251 National Ave, Suite 102, Los Gatos</>}
+      />
     </div>
   );
 }

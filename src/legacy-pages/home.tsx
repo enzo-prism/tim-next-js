@@ -24,7 +24,6 @@ import assistantPhoto from "@assets/Trang Assistant Headshot_1756845643362.jpg";
 import storefrontPhoto from "@assets/Office Photo 11_1753972057108.jpg";
 import windowRoomPhoto from "@assets/Office Photo 6_1753972057109.jpeg";
 import waitingRoomPhoto from "@assets/Office Photo 8_1753972057109.jpeg";
-import lobbyPhoto from "@assets/Office Photo 10_1753972057108.jpeg";
 import xrayAlcovePhoto from "@assets/Office Photo 4_1753972057109.jpeg";
 import treatmentHallPhoto from "@assets/Office Photo 5_1753972057109.jpeg";
 import { practiceHoursSummary } from "@/content/practice-hours";
@@ -468,7 +467,6 @@ export default function Home() {
             { src: waitingRoomPhoto, alt: "The waiting room with sofas and the moss tooth wall", caption: "A comfy waiting room", position: "62% 55%", zoom: 1.3 },
             { src: xrayAlcovePhoto, alt: "The imaging alcove beside a wall of Hawaii photos", caption: "Modern imaging" },
             { src: treatmentHallPhoto, alt: "The hallway of treatment rooms", caption: "Room to breathe" },
-            { src: lobbyPhoto, alt: "Daylight through the front windows of the lobby", caption: "Sunny front lobby", position: "70% 50%" },
           ]}
         />
       </Section>

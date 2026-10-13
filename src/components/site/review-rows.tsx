@@ -59,7 +59,7 @@ export function ReviewRows({ reviews, className, footer }: { reviews: ReviewItem
   return (
     <div className={cn("ff-marquee-scope space-y-4", className)}>
       {rows.map((row, rowIndex) => (
-        <ul key={rowIndex} className="ff-marquee" data-direction={rowIndex % 2 === 0 ? "left" : "right"} aria-label={rowIndex === 0 ? "Patient reviews" : "More patient reviews"}>
+        <ul key={rowIndex} className="ff-marquee items-start" data-direction={rowIndex % 2 === 0 ? "left" : "right"} aria-label={rowIndex === 0 ? "Patient reviews" : "More patient reviews"}>
           {row.map((review, index) => (
             <li key={`${review.name}-${index}`} className="w-[min(84vw,24rem)] lg:w-[26rem]" style={{ "--i": index } as CSSProperties}>
               <ReviewCard review={review} index={index + rowIndex} />

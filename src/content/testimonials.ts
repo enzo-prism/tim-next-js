@@ -74,9 +74,9 @@ export const testimonialsPageSummary: TestimonialSummary = {
 export const testimonialsReviewLibrarySummary: ReviewLibrarySummary = {
   averageRating: "5.0",
   reviewCountLabel: "82 Google reviews + 6 Yelp reviews",
-  sourceLabel: "Public Google and Yelp review listings",
+  sourceLabel: "Public Google and Yelp reviews",
   editorialNote:
-    "This page includes public Google review excerpts plus Yelp excerpts surfaced through Yahoo Local's Yelp feed.",
+    "Selected excerpts from public Google and Yelp reviews shared by patients and families.",
   verifiedAtLabel: "Google review count verified August 19, 2026",
 };
 
@@ -84,9 +84,9 @@ export const publicReviewFeedSections: PublicReviewFeedSection[] = [
   {
     id: "latest-google-reviews",
     eyebrow: "Public Google reviews",
-    title: "More experiences shared by patients",
+    title: "Recent Google reviews",
     description:
-      "These public Google review excerpts add more patient experiences without replacing the curated service-based testimonials above.",
+      "Recent public reviews from patients who visited our Los Gatos office.",
     sourceLabel: "Read all Google reviews",
     sourceUrl: googleBusinessProfileUrl,
     reviews: [
@@ -148,9 +148,9 @@ export const publicReviewFeedSections: PublicReviewFeedSection[] = [
   {
     id: "yelp-reviews",
     eyebrow: "Yelp reviews",
-    title: "Yelp feedback now visible alongside the Google testimonials",
+    title: "What patients say on Yelp",
     description:
-      "The website previously focused on Google-only social proof. These Yelp excerpts broaden that picture for families who check more than one review source before booking.",
+      "Excerpts from public Yelp reviews. Read the full reviews on Yelp.",
     sourceLabel: "Read Yelp reviews",
     sourceUrl: yelpBusinessProfileUrl,
     reviews: [
@@ -227,10 +227,10 @@ export const testimonialThemes: TestimonialTheme[] = [
 export const testimonialSections: TestimonialSection[] = [
   {
     id: "new-patients",
-    eyebrow: "New patient experience",
-    title: "Reviews about thorough exams and clear explanations",
+    eyebrow: "First visits",
+    title: "Thorough exams and clear explanations",
     description:
-      "People looking for a new dentist in Los Gatos often want to know whether the first visit feels thoughtful, modern, and easy to understand. These Google reviews repeatedly mention comprehensive exams, careful scans, and treatment plans explained in plain language.",
+      "Looking for a new dentist? New patients often mention careful exams, modern scans, and treatment plans explained in plain language.",
     links: [
       { href: "/services/dental-exams", label: "Dental Exams" },
       { href: "/services/dental-hygiene", label: "Dental Hygiene" },
@@ -262,10 +262,10 @@ export const testimonialSections: TestimonialSection[] = [
   },
   {
     id: "gentle-care",
-    eyebrow: "Comfort and trust",
-    title: "Patients highlight gentle care and low-stress visits",
+    eyebrow: "Gentle care",
+    title: "Calm, low-stress visits",
     description:
-      "For patients with dental anxiety or sensitivity, comfort matters as much as technical skill. These reviews speak to a style of care that feels patient, transparent, and reassuring during cleanings, treatment, and everyday visits.",
+      "For patients with dental anxiety or sensitivity, comfort matters as much as skill. These reviews describe care that feels patient, honest, and reassuring.",
     links: [
       { href: "/patient-info", label: "Patient Info" },
       { href: "/services/dental-hygiene", label: "Professional Cleanings" },
@@ -297,10 +297,10 @@ export const testimonialSections: TestimonialSection[] = [
   },
   {
     id: "family-dentistry",
-    eyebrow: "Family dentistry",
-    title: "Families talk about kindness, patience, and kid-friendly visits",
+    eyebrow: "Families & kids",
+    title: "Kindness, patience, and kid-friendly visits",
     description:
-      "Families choosing a long-term dental home want a practice that works for adults, children, and nervous first-timers alike. These testimonials describe a family dentist experience built around warmth, consistency, and visits that leave kids more comfortable instead of more worried.",
+      "Parents describe one dental home for the whole family, and visits that leave kids more comfortable instead of more worried.",
     links: [
       { href: "/services/family-dentistry", label: "Family Dentistry" },
       { href: "/services/children-dentistry", label: "Children's Dentistry" },
@@ -335,10 +335,10 @@ export const testimonialSections: TestimonialSection[] = [
   },
   {
     id: "advanced-care",
-    eyebrow: "TMJ, Invisalign, and technology",
-    title: "Patients mention modern technology and specialized treatment planning",
+    eyebrow: "TMJ, Invisalign & technology",
+    title: "Specialized care with modern tools",
     description:
-      "Beyond routine care, patients also talk about TMJ support, custom night guards, Invisalign planning, and up-to-date technology. These reviews help show how the practice supports both everyday family dentistry and more specialized needs in one office.",
+      "Beyond routine care, patients mention TMJ support, custom night guards, Invisalign planning, and up-to-date technology, all in one office.",
     links: [
       { href: "/tmj", label: "TMJ Treatment" },
       { href: "/services/night-guards", label: "Night Guards" },

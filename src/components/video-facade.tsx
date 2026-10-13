@@ -16,6 +16,8 @@ interface VideoFacadeProps {
   posterFetchPriority?: "high" | "low" | "auto";
   playLabel?: string;
   className?: string;
+  /** Tint over the poster; pass "bg-transparent" for light illustrated posters. */
+  overlayClassName?: string;
 }
 
 /**
@@ -34,6 +36,7 @@ export default function VideoFacade({
   posterFetchPriority,
   playLabel = "Play video",
   className,
+  overlayClassName,
 }: VideoFacadeProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -100,7 +103,7 @@ export default function VideoFacade({
         fetchPriority={posterFetchPriority}
         className="object-cover transition-[scale] duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04] motion-reduce:transition-none"
       />
-      <span className="absolute inset-0 bg-ink/25 transition-colors duration-500 group-hover:bg-ink/15" />
+      <span className={cn("absolute inset-0 bg-ink/25 transition-colors duration-500 group-hover:bg-ink/15", overlayClassName)} />
       <span className="absolute inset-0 flex flex-col items-center justify-center gap-3">
         <span className="flex size-[4.5rem] items-center justify-center rounded-full bg-white text-cobalt shadow-float transition-[scale] duration-500 ease-[var(--ease-spring)] group-hover:scale-110 motion-reduce:transition-none">
           <MinimalGlyph name="play" className="h-7 w-7 translate-x-0.5" />
