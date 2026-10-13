@@ -303,6 +303,7 @@
   }
 
   .ff-italic {
+    font-family: var(--font-fraunces-italic), var(--font-display);
     font-style: italic;
     font-variation-settings: "SOFT" 100;
   }

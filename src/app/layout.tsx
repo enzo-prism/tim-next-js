@@ -14,12 +14,22 @@ import { SeasonScript } from "@/components/seasonal/seasonal-art";
 import { SeasonRuntime } from "@/components/seasonal/seasonal-client";
 
 // Fraunces (soft axis) carries display type; Figtree carries reading and UI text.
+// The italic is a separate, non-preloaded file: it only sets a few emphasized words.
 const fraunces = Fraunces({
   subsets: ["latin"],
-  style: ["normal", "italic"],
-  axes: ["SOFT", "opsz"],
+  style: ["normal"],
+  axes: ["SOFT"],
   display: "swap",
   variable: "--font-fraunces",
+});
+
+const frauncesItalic = Fraunces({
+  subsets: ["latin"],
+  style: ["italic"],
+  axes: ["SOFT"],
+  display: "swap",
+  preload: false,
+  variable: "--font-fraunces-italic",
 });
 
 const figtree = Figtree({
@@ -41,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${figtree.variable}`}
+      className={`${fraunces.variable} ${frauncesItalic.variable} ${figtree.variable}`}
       // The season script may set data-ffsc-season before hydration.
       suppressHydrationWarning
     >
