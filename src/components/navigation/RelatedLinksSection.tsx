@@ -22,7 +22,7 @@ export default function RelatedLinksSection({
         <h2 className="ff-h3 ff-reveal text-2xl sm:text-3xl">{title}</h2>
       </div>
 
-      <div className={`grid gap-4 ${links.length === 3 ? "md:grid-cols-3" : links.length === 2 || links.length === 4 ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"}`}>
+      <div className={`grid gap-4 ${links.length === 3 ? "md:grid-cols-3" : links.length === 2 ? "md:grid-cols-2" : links.length === 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-2 lg:grid-cols-3"}`}>
         {links.map((link, index) => (
           <Link
             key={link.href}
