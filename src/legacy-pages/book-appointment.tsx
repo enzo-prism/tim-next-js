@@ -48,6 +48,13 @@ import { Eyebrow } from "@/components/site/section";
 import { StepTimeline } from "@/components/site/step-timeline";
 import { PracticeStatusPill } from "@/components/forms/practice-status-pill";
 
+// Choices made before the page hydrates (common on slow phones) would be reset
+// when React takes over the controlled fields. This tiny inline script records
+// them so the form can re-apply them on mount.
+const EARLY_INPUT_KEY = "__ffscEarlyInput";
+const EARLY_INPUT_SCRIPT = `(function(){if(window.${EARLY_INPUT_KEY})return;var s=window.${EARLY_INPUT_KEY}={};function r(e){var t=e.target;if(!t||!t.name||!t.closest||!t.closest("[data-early-input]"))return;s[t.name]=t.type==="checkbox"?t.checked:t.value}document.addEventListener("input",r,true);document.addEventListener("change",r,true)})();`;
+const earlyInputFields = ["service", "visitFor", "preferredContactMethod", "firstName", "lastName", "phone", "email"] as const;
+
 const officePhone = "(408) 358-8100";
 const officePhoneHref = "tel:+14083588100";
 const requiredDetailsFields = ["service", "firstName", "lastName", "phone", "email", "preferredContactMethod", "visitFor"] as const;
@@ -136,6 +143,18 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
   const preferredContactMethod = form.watch("preferredContactMethod");
   const visitFor = form.watch("visitFor");
   const selectedService = form.watch("service");
+
+  useEffect(() => {
+    const early = (window as Window & { [EARLY_INPUT_KEY]?: Record<string, string | boolean> })[EARLY_INPUT_KEY];
+    if (!early) return;
+    for (const name of earlyInputFields) {
+      const value = early[name];
+      if (typeof value === "string" && value !== form.getValues(name)) {
+        form.setValue(name, value as never, { shouldDirty: true });
+      }
+    }
+    for (const key of Object.keys(early)) delete early[key];
+  }, [form]);
 
   useEffect(() => {
     captureLeadAttribution();
@@ -499,7 +518,9 @@ export default function BookAppointment({ initialServiceId }: BookAppointmentPro
               </div>
             ) : (
               <Form {...form}>
+                <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: EARLY_INPUT_SCRIPT }} />
                 <form
+                  data-early-input=""
                   noValidate
                   aria-describedby="request-expectation"
                   aria-busy={appointmentMutation.isPending}

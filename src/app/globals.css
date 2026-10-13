@@ -189,6 +189,10 @@
   html {
     scroll-behavior: auto;
     -webkit-text-size-adjust: 100%;
+    /* Keep focused and scrolled-to elements clear of the sticky header and the
+       phone action bar (WCAG 2.4.11 Focus Not Obscured). */
+    scroll-padding-top: 6rem;
+    scroll-padding-bottom: calc(var(--mobile-action-bar-space) + 1rem);
   }
 
   @media (prefers-reduced-motion: no-preference) {
