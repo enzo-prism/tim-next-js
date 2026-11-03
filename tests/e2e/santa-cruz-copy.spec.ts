@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 const WIDGET_SCRIPT_URL =
   "https://unpkg.com/@elevenlabs/convai-widget-embed@0.11.4";

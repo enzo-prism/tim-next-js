@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { isolateGoogleAnalytics } from "./google-block";
+import { expect, test } from "./fixtures";
 
 // The October layer is decided in the browser, so force it on or off with
 // the query param instead of depending on the date CI runs.
@@ -39,6 +40,7 @@ test.describe("October seasonal layer", () => {
 
   test("decorations are hidden without JavaScript", async ({ browser, baseURL }, testInfo) => {
     const context = await browser.newContext({ javaScriptEnabled: false, baseURL, viewport: testInfo.project.use.viewport });
+    await isolateGoogleAnalytics(context);
     const page = await context.newPage();
     await page.goto("/?season=halloween");
     await expect(page.getByRole("heading", { level: 1, name: "A Gentle Family Dentist in Los Gatos" })).toBeVisible();

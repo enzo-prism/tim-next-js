@@ -14,6 +14,111 @@ export const GA_MEASUREMENT_ID = resolveGaMeasurementId(
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
 );
 
+export const ANALYTICS_CONSENT_STORAGE_KEY = "ffsc_analytics_consent_v1";
+
+export const GOOGLE_ANALYTICS_PRODUCTION_HOSTNAMES = [
+  "famfirstsmile.com",
+  "www.famfirstsmile.com",
+] as const;
+
+export const isGoogleAnalyticsProductionHostname = (hostname: string) =>
+  (GOOGLE_ANALYTICS_PRODUCTION_HOSTNAMES as readonly string[]).includes(
+    hostname.toLowerCase(),
+  );
+
+// EEA, UK, Switzerland, and associated territories: Consent Mode keeps
+// Analytics cookieless here until the visitor selects Allow.
+export const CONSENT_REQUIRED_REGIONS = [
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
+  "IS",
+  "LI",
+  "NO",
+  "GB",
+  "CH",
+  "GF",
+  "GP",
+  "MQ",
+  "RE",
+  "YT",
+  "MF",
+  "AX",
+  "GI",
+  "JE",
+  "GG",
+  "IM",
+] as const;
+
+export const ADS_CONSENT_DENIED = {
+  ad_storage: "denied",
+  ad_user_data: "denied",
+  ad_personalization: "denied",
+} as const;
+
+export const getGaDisableKey = (measurementId = GA_MEASUREMENT_ID) =>
+  `ga-disable-${measurementId}` as const;
+
+/**
+ * Early Consent Mode v2 defaults: analytics granted globally, denied for
+ * EEA/UK/CH, ads always denied. Returning visitors who chose No thanks get
+ * `ga-disable-<id>` before gtag.js can send a hit.
+ */
+export const buildConsentBootstrapScript = (measurementId = GA_MEASUREMENT_ID) => {
+  const disableKey = getGaDisableKey(measurementId);
+  const storageKey = ANALYTICS_CONSENT_STORAGE_KEY;
+  return `(function(){
+var host = (location.hostname || '').toLowerCase();
+if (${JSON.stringify(GOOGLE_ANALYTICS_PRODUCTION_HOSTNAMES)}.indexOf(host) === -1) return;
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = window.gtag || gtag;
+gtag('consent', 'default', {
+  analytics_storage: 'denied',
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  region: ${JSON.stringify(CONSENT_REQUIRED_REGIONS)}
+});
+gtag('consent', 'default', {
+  analytics_storage: 'granted',
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied'
+});
+try {
+  var denied = false;
+  try { if (localStorage.getItem(${JSON.stringify(storageKey)}) === 'denied') denied = true; } catch (e) {}
+  try { if (/(?:^|; )${storageKey}=denied(?:;|$)/.test(document.cookie)) denied = true; } catch (e) {}
+  if (denied) window[${JSON.stringify(disableKey)}] = true;
+} catch (e) {}
+})();`;
+};
+
 /**
  * Ads tagging is optional. Empty or whitespace env is unset.
  * The rejected Exquisite Dentistry Ads fallback is treated as unset

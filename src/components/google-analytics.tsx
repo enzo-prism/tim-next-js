@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
+import { GA_MEASUREMENT_ID, isGoogleAnalyticsProductionHostname } from "@/lib/tracking-config";
 import {
   ANALYTICS_CONSENT_EVENT,
-  ANALYTICS_CONSENT_STORAGE_KEY,
+  ANALYTICS_CONSENT_REOPEN_EVENT,
+  disableGoogleAnalytics,
   initGA,
+  isGoogleAnalyticsAllowed,
+  readAnalyticsConsent,
   setAnalyticsConsent,
 } from "@/lib/analytics";
 
@@ -22,6 +25,7 @@ const GTAG_SCRIPT_ID = "google-analytics";
 
 const loadGtagScript = () => {
   if (typeof document === "undefined") return;
+  if (!isGoogleAnalyticsProductionHostname(window.location.hostname)) return;
 
   const existing = document.getElementById(GTAG_SCRIPT_ID) as HTMLScriptElement | null;
   if (existing) {
@@ -46,22 +50,30 @@ const loadGtagScript = () => {
 export default function GoogleAnalytics() {
   const pathname = usePathname();
   const [consent, setConsent] = useState<ConsentState>("prompt");
+  const [hasLoadedPreference, setHasLoadedPreference] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY);
-      if (stored === "granted" || stored === "denied") {
-        setConsent(stored);
-      }
-    } catch {
-      // Keep the SSR prompt if storage is unavailable.
+    const stored = readAnalyticsConsent();
+    if (stored === "granted" || stored === "denied") {
+      setConsent(stored);
     }
+    setHasLoadedPreference(true);
   }, []);
 
   useEffect(() => {
-    if (consent !== "granted") return;
+    const onReopen = () => setConsent("prompt");
+    window.addEventListener(ANALYTICS_CONSENT_REOPEN_EVENT, onReopen);
+    return () => window.removeEventListener(ANALYTICS_CONSENT_REOPEN_EVENT, onReopen);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedPreference) return;
+    if (consent === "denied" || !isGoogleAnalyticsAllowed()) {
+      disableGoogleAnalytics();
+      return;
+    }
     loadGtagScript();
-  }, [consent]);
+  }, [consent, hasLoadedPreference]);
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) return null;
 
@@ -84,7 +96,7 @@ export default function GoogleAnalytics() {
         >
           <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3.5 py-2.5 shadow-float">
             <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground md:whitespace-nowrap">
-              Analytics and ad measurement? We never record what you type.{" "}
+              We use Google Analytics to understand visits. We never record what you type.{" "}
               <Link
                 href="/privacy-policy"
                 className="underline underline-offset-2 hover:text-foreground"

@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { isolateGoogleAnalytics } from "./google-block";
+import { expect, test, type Page } from "./fixtures";
 import { GOOGLE_ADS_CONVERSION_EVENT } from "../../src/lib/tracking-config";
 
 const countDataLayerEvents = async (
@@ -25,6 +26,7 @@ const countAppointmentAdsConversions = async (page: Page) =>
 test.describe("appointment request rendering and retry", () => {
   test("renders meaningful booking content without JavaScript", async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
+    await isolateGoogleAnalytics(context);
     const page = await context.newPage();
 
     await page.goto("/book-appointment?service=invisalign");

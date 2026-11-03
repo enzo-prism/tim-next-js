@@ -10,6 +10,7 @@ import RouteAnalytics from "@/components/route-analytics";
 import GoogleAnalytics from "@/components/google-analytics";
 import { buildLocalBusinessSchema } from "@/content/structured-data";
 import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
+import { buildConsentBootstrapScript } from "@/lib/tracking-config";
 import { SeasonScript } from "@/components/seasonal/seasonal-art";
 import { SeasonRuntime } from "@/components/seasonal/seasonal-client";
 
@@ -68,16 +69,7 @@ export default function RootLayout({
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-window.gtag = window.gtag || gtag;
-gtag('consent', 'default', {
-  analytics_storage: 'denied',
-  ad_storage: 'denied',
-  ad_user_data: 'denied',
-  ad_personalization: 'denied',
-  wait_for_update: 500
-});`,
+            __html: buildConsentBootstrapScript(),
           }}
         />
         <GoogleAnalytics />

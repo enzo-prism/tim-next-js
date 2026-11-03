@@ -1,8 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { isolateGoogleAnalytics } from "./google-block";
+import { expect, test } from "./fixtures";
 
 for (const path of ["/new-patients", "/insurance-and-payment", "/urgent-dental-care"]) {
   test(`${path} is available without JavaScript`, async ({ browser, baseURL }, testInfo) => {
     const context = await browser.newContext({ javaScriptEnabled: false, baseURL, viewport: testInfo.project.use.viewport });
+    await isolateGoogleAnalytics(context);
     const page = await context.newPage();
     const response = await page.goto(path);
     expect(response?.status()).toBe(200);

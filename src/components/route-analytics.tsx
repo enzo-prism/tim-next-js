@@ -6,6 +6,8 @@ import {
   ANALYTICS_CONSENT_EVENT,
   hasAnalyticsConsent,
   initGA,
+  isGoogleAnalyticsAllowed,
+  isGtagInitialized,
   trackPageView,
 } from "@/lib/analytics";
 import { captureLeadAttribution } from "@/lib/lead-attribution";
@@ -25,10 +27,15 @@ export default function RouteAnalytics() {
 
   useEffect(() => {
     const onConsent = () => {
-      if (!hasAnalyticsConsent()) return;
+      if (!isGoogleAnalyticsAllowed()) return;
       if (!pathname || pathname.startsWith("/admin")) return;
+      const alreadyInitialized = isGtagInitialized();
       initGA();
-      trackPageView(pathname);
+      // A first-visit Allow must not send a second page_view. A returning
+      // opted-out visitor who later allows still needs the first granted hit.
+      if (hasAnalyticsConsent() && !alreadyInitialized) {
+        trackPageView(pathname);
+      }
     };
 
     window.addEventListener(ANALYTICS_CONSENT_EVENT, onConsent);

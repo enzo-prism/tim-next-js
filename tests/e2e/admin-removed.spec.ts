@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 const retiredDashboardPages = ["/admin", "/admin/login", "/admin/leads"];
 const retiredDashboardApis = [

@@ -49,10 +49,21 @@ const sections: { id: string; title: string; body: ReactNode }[] = [
     body: (
       <>
         <p>
-          We use Google Analytics and Vercel Analytics to understand aggregate website use. We do not load a
-          session-replay service on this website. Our optional website voice assistant is provided by ElevenLabs and
-          loads only after a visitor interacts with the site or the page has been idle.
+          We use Google Analytics to understand aggregate website use and conversions. Google Analytics runs by
+          default, and you can turn it off by selecting No thanks in the analytics notice. Visitors in the
+          European Economic Area, the United Kingdom, and Switzerland are measured without analytics cookies
+          unless they select Allow. We do not use Google Analytics for advertising or ad personalization.
         </p>
+        <p>
+          Vercel Analytics loads only after you select Allow. We do not load a session-replay service on this
+          website. Our optional website voice assistant is provided by ElevenLabs and loads only after a visitor
+          interacts with the site or the page has been idle.
+        </p>
+        <p>
+          The effective date of this analytics-consent update is TBD, pending owner sign-off. The policy date
+          below is unchanged until that review is complete.
+        </p>
+        {/* TODO(enzo): Google Ads conversion-link disclosure versus removal is an Enzo/client decision. Do not change the Ads conversion setup in this PR. */}
         <p>
           Website form requests may be stored using Neon database services and relayed to our office using Formspree.
           Hosting and security services may process limited technical information needed to deliver and protect the
@@ -81,9 +92,11 @@ const sections: { id: string; title: string; body: ReactNode }[] = [
     title: "Your Choices",
     body: (
       <p>
-        You can limit cookies through your browser settings. You may also contact us to ask about access,
-        correction, or deletion of personal information submitted through this website, subject to legal and
-        recordkeeping requirements. Browser privacy controls may affect how some analytics tools operate.
+        You can turn off Google Analytics by selecting No thanks in the analytics notice, or reopen that notice
+        from Analytics choices in the footer. You may also limit cookies through your browser settings, or
+        contact us to ask about access, correction, or deletion of personal information submitted through this
+        website, subject to legal and recordkeeping requirements. Browser privacy controls may affect how some
+        analytics tools operate.
       </p>
     ),
   },
@@ -121,6 +134,7 @@ const highlights = [
   "We do not sell personal information collected through our website forms.",
   "This website is not a patient portal, so please keep urgent or highly sensitive medical details off it.",
   "You can ask us about access, correction, or deletion of what you submitted.",
+  "Google Analytics runs unless you select No thanks. Vercel Analytics loads only if you select Allow.",
 ];
 
 export default function PrivacyPolicy() {
