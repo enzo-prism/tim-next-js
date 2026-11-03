@@ -1,8 +1,13 @@
 import { track as trackVercelEvent } from "@vercel/analytics";
 import {
+  ADS_CONSENT_DENIED,
+  ANALYTICS_CONSENT_STORAGE_KEY,
+  ANALYTICS_TEST_PARAM,
+  ANALYTICS_TEST_STORAGE_KEY,
   APPOINTMENT_FORM_URL,
   buildAppointmentUrl,
   GA_MEASUREMENT_ID,
+  getGaDisableKey,
   GOOGLE_ADS_CONVERSION_EVENT,
   GOOGLE_ADS_TAG_ID,
 } from "@/lib/tracking-config";
@@ -48,8 +53,10 @@ const ALLOWED_EVENT_KEYS = new Set([
 ]);
 
 const MAX_EVENT_VALUE_LENGTH = 120;
-export const ANALYTICS_CONSENT_STORAGE_KEY = "ffsc_analytics_consent_v1";
+export { ANALYTICS_CONSENT_STORAGE_KEY };
 export const ANALYTICS_CONSENT_EVENT = "ffsc:analytics-consent";
+
+const PREVIEW_HOSTNAME_SUFFIX = ".vercel.app";
 
 type AnalyticsConsent = "granted" | "denied";
 
@@ -58,6 +65,7 @@ declare global {
   interface Window {
     dataLayer: any[];
     gtag: (...args: any[]) => void;
+    [gaDisableKey: `ga-disable-${string}`]: boolean | undefined;
   }
 }
 
@@ -78,6 +86,30 @@ const getStoredAnalyticsConsent = (): AnalyticsConsent | null => {
 };
 
 export const hasAnalyticsConsent = () => getStoredAnalyticsConsent() === "granted";
+
+// Google Analytics runs unless the visitor declined. Consent Mode keeps
+// EEA/UK/Swiss visitors cookieless until they allow it. Vercel Analytics
+// stays opt-in and still requires "granted".
+export const isGoogleAnalyticsAllowed = () => getStoredAnalyticsConsent() !== "denied";
+
+export const isAnalyticsDebugMode = () => {
+  if (typeof window === "undefined") return false;
+  const hostname = window.location.hostname.toLowerCase();
+  if (!hostname.endsWith(PREVIEW_HOSTNAME_SUFFIX)) return false;
+
+  const requested = new URLSearchParams(window.location.search).get(ANALYTICS_TEST_PARAM) === "1";
+  try {
+    if (requested) window.sessionStorage.setItem(ANALYTICS_TEST_STORAGE_KEY, "1");
+    return window.sessionStorage.getItem(ANALYTICS_TEST_STORAGE_KEY) === "1";
+  } catch {
+    return requested;
+  }
+};
+
+const setGaDisabled = (disabled: boolean) => {
+  if (typeof window === "undefined") return;
+  window[getGaDisableKey()] = disabled;
+};
 
 const sanitizePath = (path: string) => {
   const [pathWithoutHash] = path.split("#");
@@ -209,12 +241,17 @@ const ensureGtag = () => {
   return true;
 };
 
-const consentPayload = (consent: AnalyticsConsent) => ({
-  analytics_storage: consent,
-  ad_storage: consent,
-  ad_user_data: consent,
-  ad_personalization: consent,
+const analyticsConsentUpdate = (analyticsStorage: AnalyticsConsent) => ({
+  analytics_storage: analyticsStorage,
+  ...ADS_CONSENT_DENIED,
 });
+
+export const disableGoogleAnalytics = () => {
+  if (typeof window === "undefined") return;
+  setGaDisabled(true);
+  if (!ensureGtag()) return;
+  window.gtag("consent", "update", analyticsConsentUpdate("denied"));
+};
 
 export const setAnalyticsConsent = (consent: AnalyticsConsent) => {
   if (typeof window === "undefined") return;
@@ -225,8 +262,14 @@ export const setAnalyticsConsent = (consent: AnalyticsConsent) => {
     if (consent === "granted") return;
   }
 
+  if (consent === "denied") {
+    disableGoogleAnalytics();
+    return;
+  }
+
+  setGaDisabled(false);
   if (!ensureGtag()) return;
-  window.gtag("consent", "update", consentPayload(consent));
+  window.gtag("consent", "update", analyticsConsentUpdate("granted"));
 };
 
 export const triggerGoogleAdsConversion = (
@@ -235,7 +278,7 @@ export const triggerGoogleAdsConversion = (
   transactionId?: string,
 ) => {
   if (typeof window === "undefined") return;
-  if (!hasAnalyticsConsent()) return;
+  if (!isGoogleAnalyticsAllowed()) return;
 
   if (!initGA()) return;
   if (!window.gtag) return;
@@ -265,7 +308,7 @@ export const triggerGoogleAdsConversion = (
 export const trackSiteEvent = (eventName: SiteEventName, payload: SiteEventPayload = {}) => {
   if (typeof window === "undefined") return;
   if (isAdminPath()) return;
-  if (!hasAnalyticsConsent()) return;
+  if (!isGoogleAnalyticsAllowed()) return;
 
   const sanitizedPayload = sanitizeSiteEventPayload(payload);
 
@@ -277,6 +320,8 @@ export const trackSiteEvent = (eventName: SiteEventName, payload: SiteEventPaylo
     });
   }
 
+  if (!hasAnalyticsConsent()) return;
+
   try {
     trackVercelEvent(eventName, sanitizedPayload);
   } catch {
@@ -287,12 +332,20 @@ export const trackSiteEvent = (eventName: SiteEventName, payload: SiteEventPaylo
 // Initialize Google Analytics
 export const initGA = () => {
   if (gtagInitialized) return true;
-  if (!hasAnalyticsConsent()) return false;
+  if (!isGoogleAnalyticsAllowed()) return false;
   if (!ensureGtag()) return false;
 
-  window.gtag("consent", "update", consentPayload("granted"));
+  setGaDisabled(false);
+  // Only upgrade analytics_storage after an explicit Allow. A default
+  // "granted" update would override the EEA/UK/CH region default.
+  if (hasAnalyticsConsent()) {
+    window.gtag("consent", "update", analyticsConsentUpdate("granted"));
+  }
   window.gtag("js", new Date());
-  window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false });
+  window.gtag("config", GA_MEASUREMENT_ID, {
+    send_page_view: false,
+    ...(isAnalyticsDebugMode() ? { debug_mode: true } : {}),
+  });
   if (GOOGLE_ADS_TAG_ID) {
     window.gtag("config", GOOGLE_ADS_TAG_ID);
   }
@@ -304,7 +357,7 @@ export const initGA = () => {
 export const trackPageView = (url: string) => {
   if (typeof window === "undefined") return;
   if (isAdminPath()) return;
-  if (!hasAnalyticsConsent()) return;
+  if (!isGoogleAnalyticsAllowed()) return;
 
   if (!initGA()) return;
   if (!window.gtag) return;

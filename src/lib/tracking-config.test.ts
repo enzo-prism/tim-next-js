@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  ANALYTICS_CONSENT_STORAGE_KEY,
+  buildConsentBootstrapScript,
   CANONICAL_GA_MEASUREMENT_ID,
+  CONSENT_REQUIRED_REGIONS,
   RETIRED_GA_MEASUREMENT_IDS,
   resolveGaMeasurementId,
   resolveGoogleAdsTagId,
@@ -31,6 +34,25 @@ describe("GA4 measurement ID", () => {
 
     const { GA_MEASUREMENT_ID } = await import("@/lib/tracking-config");
     expect(GA_MEASUREMENT_ID).toBe("G-L7MH47XYXL");
+  });
+});
+
+describe("Consent Mode bootstrap", () => {
+  it("defaults analytics granted globally and denied for EEA, UK, and CH", () => {
+    const script = buildConsentBootstrapScript();
+
+    expect(script).toContain("analytics_storage: 'denied'");
+    expect(script).toContain("analytics_storage: 'granted'");
+    expect(script).toContain("ad_storage: 'denied'");
+    expect(script).toContain("ad_user_data: 'denied'");
+    expect(script).toContain("ad_personalization: 'denied'");
+    expect(script).not.toContain("ad_storage: 'granted'");
+    expect(script).toContain(`window[${JSON.stringify("ga-disable-G-L7MH47XYXL")}] = true`);
+    expect(script).toContain(ANALYTICS_CONSENT_STORAGE_KEY);
+    expect(CONSENT_REQUIRED_REGIONS).toEqual(
+      expect.arrayContaining(["FR", "DE", "GB", "CH", "IE", "NL"]),
+    );
+    expect(script).toContain(JSON.stringify(CONSENT_REQUIRED_REGIONS));
   });
 });
 

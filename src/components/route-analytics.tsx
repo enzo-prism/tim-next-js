@@ -6,6 +6,7 @@ import {
   ANALYTICS_CONSENT_EVENT,
   hasAnalyticsConsent,
   initGA,
+  isGoogleAnalyticsAllowed,
   trackPageView,
 } from "@/lib/analytics";
 import { captureLeadAttribution } from "@/lib/lead-attribution";
@@ -25,10 +26,13 @@ export default function RouteAnalytics() {
 
   useEffect(() => {
     const onConsent = () => {
-      if (!hasAnalyticsConsent()) return;
+      if (!isGoogleAnalyticsAllowed()) return;
       if (!pathname || pathname.startsWith("/admin")) return;
       initGA();
-      trackPageView(pathname);
+      // Explicit Allow upgrades EEA/UK/CH from cookieless to a granted hit.
+      if (hasAnalyticsConsent()) {
+        trackPageView(pathname);
+      }
     };
 
     window.addEventListener(ANALYTICS_CONSENT_EVENT, onConsent);

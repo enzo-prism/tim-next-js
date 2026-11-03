@@ -8,7 +8,9 @@ import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
 import {
   ANALYTICS_CONSENT_EVENT,
   ANALYTICS_CONSENT_STORAGE_KEY,
+  disableGoogleAnalytics,
   initGA,
+  isGoogleAnalyticsAllowed,
   setAnalyticsConsent,
 } from "@/lib/analytics";
 
@@ -46,6 +48,7 @@ const loadGtagScript = () => {
 export default function GoogleAnalytics() {
   const pathname = usePathname();
   const [consent, setConsent] = useState<ConsentState>("prompt");
+  const [hasLoadedPreference, setHasLoadedPreference] = useState(false);
 
   useEffect(() => {
     try {
@@ -56,12 +59,17 @@ export default function GoogleAnalytics() {
     } catch {
       // Keep the SSR prompt if storage is unavailable.
     }
+    setHasLoadedPreference(true);
   }, []);
 
   useEffect(() => {
-    if (consent !== "granted") return;
+    if (!hasLoadedPreference) return;
+    if (consent === "denied" || !isGoogleAnalyticsAllowed()) {
+      disableGoogleAnalytics();
+      return;
+    }
     loadGtagScript();
-  }, [consent]);
+  }, [consent, hasLoadedPreference]);
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) return null;
 
@@ -84,7 +92,7 @@ export default function GoogleAnalytics() {
         >
           <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3.5 py-2.5 shadow-float">
             <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground md:whitespace-nowrap">
-              Analytics and ad measurement? We never record what you type.{" "}
+              We use Google Analytics to understand visits. We never record what you type.{" "}
               <Link
                 href="/privacy-policy"
                 className="underline underline-offset-2 hover:text-foreground"

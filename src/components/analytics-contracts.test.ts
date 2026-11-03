@@ -6,20 +6,24 @@ function read(relativePath: string) {
 }
 
 describe("GA4 collection contracts", () => {
-  it("injects gtag.js after consent instead of conditionally rendering next/script", () => {
+  it("injects gtag.js unless the visitor opted out, instead of conditionally rendering next/script", () => {
     const source = read("./google-analytics.tsx");
 
     expect(source).not.toMatch(/from ["']next\/script["']/);
     expect(source).toContain("document.createElement(\"script\")");
     expect(source).toContain("https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}");
-    expect(source).toContain("consent !== \"granted\"");
+    expect(source).toContain("consent === \"denied\"");
+    expect(source).toContain("isGoogleAnalyticsAllowed()");
+    expect(source).toContain("disableGoogleAnalytics()");
+    expect(source).toContain("consent === \"granted\" ? <VercelAnalytics");
   });
 
-  it("sends page_view when analytics consent is granted on the current route", () => {
+  it("sends page_view unless the visitor opted out of Google Analytics", () => {
     const source = read("./route-analytics.tsx");
 
     expect(source).toContain("ANALYTICS_CONSENT_EVENT");
     expect(source).toContain("trackPageView(pathname)");
+    expect(source).toContain("isGoogleAnalyticsAllowed()");
     expect(source).toContain("hasAnalyticsConsent()");
   });
 
@@ -41,6 +45,13 @@ describe("GA4 collection contracts", () => {
     expect(source).toContain('useState<ConsentState>("prompt")');
     expect(source).not.toContain('"loading"');
     expect(source).toContain('aria-label="Allow analytics"');
+  });
+
+  it("bootstraps Consent Mode v2 defaults from the shared script builder", () => {
+    const layout = read("../app/layout.tsx");
+    expect(layout).toContain("buildConsentBootstrapScript()");
+    expect(layout).not.toContain("wait_for_update");
+    expect(layout).not.toContain("analytics_storage: 'denied'");
   });
 
   it("does not ship a hardcoded Google Ads tag", () => {

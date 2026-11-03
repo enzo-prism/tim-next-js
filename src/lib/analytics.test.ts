@@ -4,8 +4,12 @@ import {
   GOOGLE_ADS_CONVERSION_EVENT,
 } from "@/lib/tracking-config";
 import {
+  disableGoogleAnalytics,
+  initGA,
+  isGoogleAnalyticsAllowed,
   resetGtagInitialization,
   sanitizeSiteEventPayload,
+  setAnalyticsConsent,
   trackAppointmentBookingAbandonment,
   trackAppointmentBookingStepComplete,
   trackAppointmentBookingStepView,
@@ -27,10 +31,12 @@ const setupBrowserGlobals = (
   pathname = "/",
   analyticsConsent: "granted" | "denied" | null = "granted",
   search = "",
+  hostname = "famfirstsmile.com",
 ) => {
   const gtagMock = vi.fn();
   const appendChildMock = vi.fn();
   const storage = new Map<string, string>();
+  const session = new Map<string, string>();
   if (analyticsConsent) {
     storage.set("ffsc_analytics_consent_v1", analyticsConsent);
   }
@@ -40,14 +46,19 @@ const setupBrowserGlobals = (
     gtag: gtagMock,
     location: {
       assign: vi.fn(),
-      href: `https://famfirstsmile.com${pathname}${search}`,
-      origin: "https://famfirstsmile.com",
+      href: `https://${hostname}${pathname}${search}`,
+      hostname,
+      origin: `https://${hostname}`,
       pathname,
       search,
     },
     localStorage: {
       getItem: vi.fn((key: string) => storage.get(key) ?? null),
       setItem: vi.fn((key: string, value: string) => storage.set(key, value)),
+    },
+    sessionStorage: {
+      getItem: vi.fn((key: string) => session.get(key) ?? null),
+      setItem: vi.fn((key: string, value: string) => session.set(key, value)),
     },
     open: vi.fn(),
   });
@@ -132,14 +143,115 @@ describe("analytics custom events", () => {
     expect(vercelTrackMock).not.toHaveBeenCalled();
   });
 
-  it("does not send events before informed analytics consent", () => {
+  it("sends Google Analytics events before a banner choice and keeps Vercel opt-in", () => {
     const { gtagMock } = setupBrowserGlobals("/book-appointment", null);
 
+    expect(isGoogleAnalyticsAllowed()).toBe(true);
     trackAppointmentBookingStepView(1, "invisalign");
     trackSiteEvent("cta_click", { location: "header" });
 
+    expect(gtagMock).toHaveBeenCalledWith(
+      "event",
+      "cta_click",
+      expect.objectContaining({ location: "header" }),
+    );
+    expect(vercelTrackMock).not.toHaveBeenCalled();
+  });
+
+  it("drops Google Analytics and Vercel events after the visitor opts out", () => {
+    const { gtagMock } = setupBrowserGlobals("/book-appointment", "denied");
+
+    expect(isGoogleAnalyticsAllowed()).toBe(false);
+    trackAppointmentBookingStepView(1, "invisalign");
+    trackSiteEvent("cta_click", { location: "header" });
+    trackPageView("/book-appointment");
+
     expect(gtagMock).not.toHaveBeenCalled();
     expect(vercelTrackMock).not.toHaveBeenCalled();
+  });
+
+  it("sets ga-disable and never grants ad consent when the visitor opts out", () => {
+    const { gtagMock } = setupBrowserGlobals("/book-appointment", null);
+
+    setAnalyticsConsent("denied");
+
+    expect(window["ga-disable-G-L7MH47XYXL"]).toBe(true);
+    expect(gtagMock).toHaveBeenCalledWith(
+      "consent",
+      "update",
+      expect.objectContaining({
+        analytics_storage: "denied",
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+      }),
+    );
+  });
+
+  it("does not override the region default when initializing without an explicit Allow", () => {
+    const { gtagMock } = setupBrowserGlobals("/", null);
+
+    expect(initGA()).toBe(true);
+    expect(gtagMock).toHaveBeenCalledWith(
+      "config",
+      "G-L7MH47XYXL",
+      expect.objectContaining({ send_page_view: false }),
+    );
+    expect(
+      gtagMock.mock.calls.some(
+        (call) =>
+          call[0] === "consent" &&
+          call[1] === "update" &&
+          call[2]?.analytics_storage === "granted",
+      ),
+    ).toBe(false);
+  });
+
+  it("keeps ad consent denied when the visitor explicitly allows analytics", () => {
+    const { gtagMock } = setupBrowserGlobals("/", "granted");
+
+    expect(initGA()).toBe(true);
+    expect(gtagMock).toHaveBeenCalledWith(
+      "consent",
+      "update",
+      expect.objectContaining({
+        analytics_storage: "granted",
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+      }),
+    );
+  });
+
+  it("sets debug_mode on preview hosts opened with ?analytics_test=1", () => {
+    const { gtagMock } = setupBrowserGlobals(
+      "/",
+      null,
+      "?analytics_test=1",
+      "family-first-smile-care.vercel.app",
+    );
+
+    expect(initGA()).toBe(true);
+    expect(gtagMock).toHaveBeenCalledWith(
+      "config",
+      "G-L7MH47XYXL",
+      expect.objectContaining({ debug_mode: true, send_page_view: false }),
+    );
+  });
+
+  it("does not set debug_mode on production even when the test flag is present", () => {
+    const { gtagMock } = setupBrowserGlobals("/", null, "?analytics_test=1");
+
+    expect(initGA()).toBe(true);
+    const config = gtagMock.mock.calls.find((call) => call[0] === "config")?.[2];
+    expect(config).not.toHaveProperty("debug_mode");
+  });
+
+  it("stops further hits through disableGoogleAnalytics", () => {
+    setupBrowserGlobals("/", null);
+
+    disableGoogleAnalytics();
+    expect(window["ga-disable-G-L7MH47XYXL"]).toBe(true);
   });
 
   it("allowlists flat low-cardinality payload fields", () => {

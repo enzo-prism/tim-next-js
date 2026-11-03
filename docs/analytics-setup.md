@@ -4,13 +4,14 @@
 
 ### Consent gating (applies to everything below)
 
-Nothing described in this document runs before the visitor opts in.
+Google Analytics is opt-out. Vercel Analytics stays opt-in.
 
-1. `src/app/layout.tsx` sets `gtag('consent', 'default', ...)` to `denied` for `analytics_storage`, `ad_storage`, `ad_user_data`, and `ad_personalization`, with `wait_for_update: 500`, before any tag loads.
-2. `src/components/google-analytics.tsx` renders the consent prompt and injects `gtag.js` plus Vercel Analytics only after consent is granted. The tag is appended with `document.createElement("script")` (not a conditionally rendered `next/script`, which can fail to load). The choice persists in `localStorage` under `ffsc_analytics_consent_v1`.
-3. Every helper in `src/lib/analytics.ts` re-checks stored consent, so a denied or undecided visitor emits nothing even if a helper is called directly.
+1. `src/app/layout.tsx` sets Consent Mode v2 defaults before any tag loads: `analytics_storage` is `granted` globally and `denied` for EEA, UK, and CH via the `region` parameter. `ad_storage`, `ad_user_data`, and `ad_personalization` are always `denied`. Returning visitors who chose No thanks also get `ga-disable-G-L7MH47XYXL` from the same bootstrap script.
+2. `src/components/google-analytics.tsx` injects `gtag.js` unless the visitor declined. The tag is appended with `document.createElement("script")` (not a conditionally rendered `next/script`, which can fail to load). Vercel Analytics still mounts only after Allow. The choice persists in `localStorage` under `ffsc_analytics_consent_v1`.
+3. Helpers in `src/lib/analytics.ts` send Google Analytics events unless the visitor opted out. Vercel `track()` still requires an explicit Allow.
+4. Preview hosts (`*.vercel.app`) opened with `?analytics_test=1` set `debug_mode` on the GA config (visible in GA DebugView). The flag is remembered for that tab in `sessionStorage`.
 
-Expect reported traffic and conversions to be lower than raw visits. That is the consent gate working, not a tracking fault.
+Selecting **No thanks** sets `window['ga-disable-G-L7MH47XYXL']=true`, updates `analytics_storage` to `denied`, and skips gtag on later visits.
 
 ### The consent prompt UI
 
@@ -90,9 +91,9 @@ Vercel custom events require a Vercel plan that supports custom events. Pageview
 
 ### GA4 page tracking
 
-1. `src/components/google-analytics.tsx` loads `gtag.js` after Allow and initializes GA4 using measurement ID `G-L7MH47XYXL` only. `NEXT_PUBLIC_GA_MEASUREMENT_ID` is accepted when it matches that ID; empty, retired, or any other value is ignored.
+1. `src/components/google-analytics.tsx` loads `gtag.js` unless the visitor declined and initializes GA4 using measurement ID `G-L7MH47XYXL` only. `NEXT_PUBLIC_GA_MEASUREMENT_ID` is accepted when it matches that ID; empty, retired, or any other value is ignored.
 2. GA4 is configured with `send_page_view: false`.
-3. `src/components/route-analytics.tsx` listens for route changes **and** for `ffsc:analytics-consent`, so the first `page_view` after Allow does not depend on the script `load` callback.
+3. `src/components/route-analytics.tsx` listens for route changes **and** for `ffsc:analytics-consent`, so an explicit Allow can upgrade an EEA/UK/CH cookieless first hit without waiting on the script `load` callback.
 4. `trackPageView(...)` in `src/lib/analytics.ts` sends explicit `page_view` events to GA4, with `page_location` built through the shared URL policy so campaign parameters survive.
 
 This pattern is intentional for App Router SPA navigation accuracy. It only stays accurate while the GA4 property-side setting described in "Required GA4 property configuration" is left off.
@@ -170,14 +171,14 @@ Google-provided base snippet for this property:
 </script>
 ```
 
-This project already implements an equivalent setup: consent defaults in `src/app/layout.tsx`, then `gtag.js` injected from `src/components/google-analytics.tsx` after Allow.
+This project already implements an equivalent setup: Consent Mode defaults in `src/app/layout.tsx`, then `gtag.js` injected from `src/components/google-analytics.tsx` unless the visitor declined.
 
 ## Validation Checklist (Production)
 
-Run these two first, in a fresh browser profile, because everything after them depends on consent being granted:
+Run these two first, in a fresh browser profile:
 
-- Load a public route and confirm **no** GA or Vercel request fires before choosing "Allow" in the consent bar. Then accept and confirm tracking starts.
-- With consent granted, load a route with `?utm_source=test&gclid=test123&email=someone@example.com` and confirm the GA4 `page_view` `page_location` and the Vercel `[view]` URL both keep `utm_source`/`gclid` and both drop `email`.
+- Load a public route and confirm a GA `g/collect` request fires before any banner choice, with analytics granted (`gcs=G1x1` or similar) and ads denied. Confirm Vercel Analytics does **not** load until Allow.
+- With no decline stored, load a route with `?utm_source=test&gclid=test123&email=someone@example.com` and confirm the GA4 `page_view` `page_location` keeps `utm_source`/`gclid` and drops `email`. After Allow, the Vercel `[view]` URL follows the same policy.
 
 Then:
 
@@ -199,7 +200,7 @@ Then:
 
 1. GA detected by Tag Assistant but no page data in reports:
    - usually `NEXT_PUBLIC_GA_MEASUREMENT_ID` mismatch or filtering in GA4 property.
-   - also check consent: nothing is emitted until the visitor opts in, and a fresh browser profile starts undecided.
+   - also check consent: a fresh US profile should emit GA hits before any choice; a stored No thanks should emit nothing, including after reload.
 2. Route transitions not tracked:
    - `RouteAnalytics` removed or `trackPageView` not firing on pathname change.
    - First page view after Allow missing: consent event listener removed, so collection waits on a script callback that never runs.
