@@ -4,6 +4,7 @@ import {
   buildConsentBootstrapScript,
   CANONICAL_GA_MEASUREMENT_ID,
   CONSENT_REQUIRED_REGIONS,
+  isGoogleAnalyticsProductionHostname,
   RETIRED_GA_MEASUREMENT_IDS,
   resolveGaMeasurementId,
   resolveGoogleAdsTagId,
@@ -37,6 +38,17 @@ describe("GA4 measurement ID", () => {
   });
 });
 
+describe("production collection hosts", () => {
+  it("allows only the public Family First hostnames", () => {
+    expect(isGoogleAnalyticsProductionHostname("famfirstsmile.com")).toBe(true);
+    expect(isGoogleAnalyticsProductionHostname("www.famfirstsmile.com")).toBe(true);
+    expect(isGoogleAnalyticsProductionHostname("WWW.FAMFIRSTSMILE.COM")).toBe(true);
+    expect(isGoogleAnalyticsProductionHostname("localhost")).toBe(false);
+    expect(isGoogleAnalyticsProductionHostname("127.0.0.1")).toBe(false);
+    expect(isGoogleAnalyticsProductionHostname("family-first.vercel.app")).toBe(false);
+  });
+});
+
 describe("Consent Mode bootstrap", () => {
   it("defaults analytics granted globally and denied for EEA, UK, and CH", () => {
     const script = buildConsentBootstrapScript();
@@ -50,9 +62,29 @@ describe("Consent Mode bootstrap", () => {
     expect(script).toContain(`window[${JSON.stringify("ga-disable-G-L7MH47XYXL")}] = true`);
     expect(script).toContain(ANALYTICS_CONSENT_STORAGE_KEY);
     expect(CONSENT_REQUIRED_REGIONS).toEqual(
-      expect.arrayContaining(["FR", "DE", "GB", "CH", "IE", "NL"]),
+      expect.arrayContaining([
+        "FR",
+        "DE",
+        "GB",
+        "CH",
+        "IE",
+        "NL",
+        "GF",
+        "GP",
+        "MQ",
+        "RE",
+        "YT",
+        "MF",
+        "AX",
+        "GI",
+        "JE",
+        "GG",
+        "IM",
+      ]),
     );
     expect(script).toContain(JSON.stringify(CONSENT_REQUIRED_REGIONS));
+    expect(script).toContain("famfirstsmile.com");
+    expect(script).toContain("www.famfirstsmile.com");
   });
 });
 

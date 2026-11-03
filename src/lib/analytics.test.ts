@@ -37,12 +37,42 @@ const setupBrowserGlobals = (
   const appendChildMock = vi.fn();
   const storage = new Map<string, string>();
   const session = new Map<string, string>();
+  const cookies = new Map<string, string>();
   if (analyticsConsent) {
     storage.set("ffsc_analytics_consent_v1", analyticsConsent);
+    cookies.set("ffsc_analytics_consent_v1", analyticsConsent);
   }
 
-  vi.stubGlobal("window", {
-    dataLayer: [],
+  const documentMock = {
+    cookie: "",
+    createElement: vi.fn(() => ({
+      async: false,
+      id: "",
+      src: "",
+      textContent: "",
+    })),
+    head: {
+      appendChild: appendChildMock,
+    },
+    title: "Family First Smile Care",
+  };
+  Object.defineProperty(documentMock, "cookie", {
+    get: () => [...cookies.entries()].map(([key, value]) => `${key}=${value}`).join("; "),
+    set: (value: string) => {
+      const [pair] = value.split(";");
+      const eq = pair.indexOf("=");
+      const key = pair.slice(0, eq).trim();
+      const cookieValue = pair.slice(eq + 1).trim();
+      if (/Max-Age=0/i.test(value) || cookieValue === "") {
+        cookies.delete(key);
+        return;
+      }
+      cookies.set(key, cookieValue);
+    },
+  });
+
+  const windowMock = {
+    dataLayer: [] as unknown[],
     gtag: gtagMock,
     location: {
       assign: vi.fn(),
@@ -50,6 +80,7 @@ const setupBrowserGlobals = (
       hostname,
       origin: `https://${hostname}`,
       pathname,
+      protocol: "https:",
       search,
     },
     localStorage: {
@@ -61,20 +92,11 @@ const setupBrowserGlobals = (
       setItem: vi.fn((key: string, value: string) => session.set(key, value)),
     },
     open: vi.fn(),
-  });
+    document: documentMock,
+  };
 
-  vi.stubGlobal("document", {
-    createElement: vi.fn(() => ({
-      async: false,
-      id: "",
-      src: "",
-      textContent: "",
-    })),
-    head: {
-      appendChild: appendChildMock,
-    },
-    title: "Family First Smile Care",
-  });
+  vi.stubGlobal("window", windowMock);
+  vi.stubGlobal("document", documentMock);
 
   return { appendChildMock, gtagMock };
 };
@@ -223,28 +245,71 @@ describe("analytics custom events", () => {
     );
   });
 
-  it("sets debug_mode on preview hosts opened with ?analytics_test=1", () => {
-    const { gtagMock } = setupBrowserGlobals(
-      "/",
-      null,
-      "?analytics_test=1",
-      "family-first-smile-care.vercel.app",
-    );
-
-    expect(initGA()).toBe(true);
-    expect(gtagMock).toHaveBeenCalledWith(
-      "config",
-      "G-L7MH47XYXL",
-      expect.objectContaining({ debug_mode: true, send_page_view: false }),
-    );
+  it("does not initialize Google Analytics off the production hostnames", () => {
+    for (const hostname of ["localhost", "127.0.0.1", "family-first.vercel.app"]) {
+      resetGtagInitialization();
+      const { gtagMock } = setupBrowserGlobals("/", null, "", hostname);
+      expect(initGA()).toBe(false);
+      trackPageView("/");
+      trackSiteEvent("cta_click", { location: "header" });
+      expect(gtagMock.mock.calls.some((call) => call[0] === "config")).toBe(false);
+      expect(gtagMock.mock.calls.some((call) => call[0] === "js")).toBe(false);
+    }
   });
 
-  it("does not set debug_mode on production even when the test flag is present", () => {
-    const { gtagMock } = setupBrowserGlobals("/", null, "?analytics_test=1");
+  it("still forwards stubbed gtag events on localhost without loading the tag", () => {
+    const { gtagMock } = setupBrowserGlobals("/", null, "", "127.0.0.1");
 
-    expect(initGA()).toBe(true);
-    const config = gtagMock.mock.calls.find((call) => call[0] === "config")?.[2];
-    expect(config).not.toHaveProperty("debug_mode");
+    expect(initGA()).toBe(false);
+    trackSiteEvent("generate_lead", {
+      form_type: "contact",
+      lead_source: "contact_form",
+    });
+
+    expect(gtagMock).toHaveBeenCalledWith(
+      "event",
+      "generate_lead",
+      expect.objectContaining({
+        send_to: "G-L7MH47XYXL",
+        form_type: "contact",
+      }),
+    );
+    expect(gtagMock.mock.calls.some((call) => call[0] === "config")).toBe(false);
+  });
+
+  it("does not queue gtag on localhost when no stub is present", () => {
+    setupBrowserGlobals("/", null, "", "localhost");
+    // @ts-expect-error -- test removes the stub so collection cannot start a queue
+    delete window.gtag;
+
+    expect(initGA()).toBe(false);
+    trackSiteEvent("cta_click", { location: "header" });
+    expect(window.gtag).toBeUndefined();
+  });
+
+  it("persists opt-out in a first-party cookie and drops same-tick events", () => {
+    const { gtagMock } = setupBrowserGlobals("/contact", null);
+
+    setAnalyticsConsent("denied");
+    expect(document.cookie).toContain("ffsc_analytics_consent_v1=denied");
+    expect(window["ga-disable-G-L7MH47XYXL"]).toBe(true);
+
+    gtagMock.mockClear();
+    trackSiteEvent("generate_lead", { form_type: "contact", lead_source: "contact_form" });
+    expect(gtagMock).not.toHaveBeenCalled();
+  });
+
+  it("initializes Google Analytics on both public production hosts", () => {
+    for (const hostname of ["famfirstsmile.com", "www.famfirstsmile.com"]) {
+      resetGtagInitialization();
+      const { gtagMock } = setupBrowserGlobals("/", null, "", hostname);
+      expect(initGA()).toBe(true);
+      expect(gtagMock).toHaveBeenCalledWith(
+        "config",
+        "G-L7MH47XYXL",
+        expect.objectContaining({ send_page_view: false }),
+      );
+    }
   });
 
   it("stops further hits through disableGoogleAnalytics", () => {

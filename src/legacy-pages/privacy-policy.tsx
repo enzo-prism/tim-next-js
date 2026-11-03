@@ -63,6 +63,7 @@ const sections: { id: string; title: string; body: ReactNode }[] = [
           The effective date of this analytics-consent update is TBD, pending owner sign-off. The policy date
           below is unchanged until that review is complete.
         </p>
+        {/* TODO(enzo): Google Ads conversion-link disclosure versus removal is an Enzo/client decision. Do not change the Ads conversion setup in this PR. */}
         <p>
           Website form requests may be stored using Neon database services and relayed to our office using Formspree.
           Hosting and security services may process limited technical information needed to deliver and protect the
@@ -91,10 +92,11 @@ const sections: { id: string; title: string; body: ReactNode }[] = [
     title: "Your Choices",
     body: (
       <p>
-        You can turn off Google Analytics by selecting No thanks in the analytics notice, or limit cookies
-        through your browser settings. You may also contact us to ask about access, correction, or deletion of
-        personal information submitted through this website, subject to legal and recordkeeping requirements.
-        Browser privacy controls may affect how some analytics tools operate.
+        You can turn off Google Analytics by selecting No thanks in the analytics notice, or reopen that notice
+        from Analytics choices in the footer. You may also limit cookies through your browser settings, or
+        contact us to ask about access, correction, or deletion of personal information submitted through this
+        website, subject to legal and recordkeeping requirements. Browser privacy controls may affect how some
+        analytics tools operate.
       </p>
     ),
   },

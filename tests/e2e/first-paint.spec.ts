@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { isolateGoogleAnalytics } from "./google-block";
+import { expect, test } from "./fixtures";
 
 // Pages that ads and search land on must be readable from the server HTML,
 // before (or without) JavaScript. Scroll-reveal wrappers used to ship these
@@ -25,6 +26,7 @@ test.describe("content is visible on first paint", () => {
 
   test("service headings and calls to action render without JavaScript", async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
+    await isolateGoogleAnalytics(context);
     const page = await context.newPage();
 
     for (const { route, heading } of landingRoutes) {

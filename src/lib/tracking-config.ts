@@ -15,11 +15,19 @@ export const GA_MEASUREMENT_ID = resolveGaMeasurementId(
 );
 
 export const ANALYTICS_CONSENT_STORAGE_KEY = "ffsc_analytics_consent_v1";
-export const ANALYTICS_TEST_PARAM = "analytics_test";
-export const ANALYTICS_TEST_STORAGE_KEY = "ffsc_analytics_test";
 
-// EEA, UK, and Switzerland: Consent Mode keeps Analytics cookieless here
-// until the visitor selects Allow. Everywhere else it is opt-out.
+export const GOOGLE_ANALYTICS_PRODUCTION_HOSTNAMES = [
+  "famfirstsmile.com",
+  "www.famfirstsmile.com",
+] as const;
+
+export const isGoogleAnalyticsProductionHostname = (hostname: string) =>
+  (GOOGLE_ANALYTICS_PRODUCTION_HOSTNAMES as readonly string[]).includes(
+    hostname.toLowerCase(),
+  );
+
+// EEA, UK, Switzerland, and associated territories: Consent Mode keeps
+// Analytics cookieless here until the visitor selects Allow.
 export const CONSENT_REQUIRED_REGIONS = [
   "AT",
   "BE",
@@ -53,6 +61,17 @@ export const CONSENT_REQUIRED_REGIONS = [
   "NO",
   "GB",
   "CH",
+  "GF",
+  "GP",
+  "MQ",
+  "RE",
+  "YT",
+  "MF",
+  "AX",
+  "GI",
+  "JE",
+  "GG",
+  "IM",
 ] as const;
 
 export const ADS_CONSENT_DENIED = {
@@ -71,7 +90,11 @@ export const getGaDisableKey = (measurementId = GA_MEASUREMENT_ID) =>
  */
 export const buildConsentBootstrapScript = (measurementId = GA_MEASUREMENT_ID) => {
   const disableKey = getGaDisableKey(measurementId);
-  return `window.dataLayer = window.dataLayer || [];
+  const storageKey = ANALYTICS_CONSENT_STORAGE_KEY;
+  return `(function(){
+var host = (location.hostname || '').toLowerCase();
+if (${JSON.stringify(GOOGLE_ANALYTICS_PRODUCTION_HOSTNAMES)}.indexOf(host) === -1) return;
+window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 window.gtag = window.gtag || gtag;
 gtag('consent', 'default', {
@@ -88,10 +111,12 @@ gtag('consent', 'default', {
   ad_personalization: 'denied'
 });
 try {
-  if (localStorage.getItem(${JSON.stringify(ANALYTICS_CONSENT_STORAGE_KEY)}) === 'denied') {
-    window[${JSON.stringify(disableKey)}] = true;
-  }
-} catch (e) {}`;
+  var denied = false;
+  try { if (localStorage.getItem(${JSON.stringify(storageKey)}) === 'denied') denied = true; } catch (e) {}
+  try { if (/(?:^|; )${storageKey}=denied(?:;|$)/.test(document.cookie)) denied = true; } catch (e) {}
+  if (denied) window[${JSON.stringify(disableKey)}] = true;
+} catch (e) {}
+})();`;
 };
 
 /**

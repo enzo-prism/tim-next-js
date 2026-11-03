@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 const bar = (page: Page) => page.getByRole("navigation", { name: "Call or request a visit" });
 

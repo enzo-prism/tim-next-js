@@ -1,8 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { isolateGoogleAnalytics } from "./google-block";
+import { expect, test } from "./fixtures";
 
 // The first decision should work from server HTML even if hydration fails.
 test("homepage shows its dentist, proof and patient paths without JavaScript", async ({ browser, baseURL }, testInfo) => {
   const context = await browser.newContext({ javaScriptEnabled: false, baseURL, viewport: testInfo.project.use.viewport });
+  await isolateGoogleAnalytics(context);
   const page = await context.newPage();
   await page.goto("/");
 

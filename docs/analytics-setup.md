@@ -9,9 +9,9 @@ Google Analytics is opt-out. Vercel Analytics stays opt-in.
 1. `src/app/layout.tsx` sets Consent Mode v2 defaults before any tag loads: `analytics_storage` is `granted` globally and `denied` for EEA, UK, and CH via the `region` parameter. `ad_storage`, `ad_user_data`, and `ad_personalization` are always `denied`. Returning visitors who chose No thanks also get `ga-disable-G-L7MH47XYXL` from the same bootstrap script.
 2. `src/components/google-analytics.tsx` injects `gtag.js` unless the visitor declined. The tag is appended with `document.createElement("script")` (not a conditionally rendered `next/script`, which can fail to load). Vercel Analytics still mounts only after Allow. The choice persists in `localStorage` under `ffsc_analytics_consent_v1`.
 3. Helpers in `src/lib/analytics.ts` send Google Analytics events unless the visitor opted out. Vercel `track()` still requires an explicit Allow.
-4. Preview hosts (`*.vercel.app`) opened with `?analytics_test=1` set `debug_mode` on the GA config (visible in GA DebugView). The flag is remembered for that tab in `sessionStorage`.
+4. Google Analytics loads only on `famfirstsmile.com` and `www.famfirstsmile.com`. Localhost, `127.0.0.1`, and `*.vercel.app` previews never load gtag or send hits, including when a preview env falls back to `G-L7MH47XYXL`. There is no query-param or env test override.
 
-Selecting **No thanks** sets `window['ga-disable-G-L7MH47XYXL']=true`, updates `analytics_storage` to `denied`, and skips gtag on later visits.
+Selecting **No thanks** sets `window['ga-disable-G-L7MH47XYXL']=true`, stores `denied` in `localStorage` and a first-party cookie, and skips gtag on later visits. **Analytics choices** in the footer reopens the notice.
 
 ### The consent prompt UI
 

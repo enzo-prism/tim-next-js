@@ -5,6 +5,7 @@ import { yelpBusinessProfileUrl } from "@/data/reviews";
 import { PhoneLink, TrackedExternalLink } from "@/components/tracking/tracked-links";
 import { FooterPumpkinPatch } from "@/components/seasonal/seasonal-client";
 import { Pinwheel } from "@/components/brand/pinwheel";
+import AnalyticsChoicesLink from "@/components/analytics-choices-link";
 
 const footerLinkClass =
   "inline-flex min-h-8 items-center text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-periwinkle focus-visible:ring-offset-2 focus-visible:ring-offset-night rounded-sm";
@@ -205,6 +206,8 @@ export default function Footer() {
             <Link href="/privacy-policy" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>{" "}
+            |{" "}
+            <AnalyticsChoicesLink className="hover:text-white transition-colors" />{" "}
             |{" "}
             <Link href="/sitemap" className="hover:text-white transition-colors">
               Site Map

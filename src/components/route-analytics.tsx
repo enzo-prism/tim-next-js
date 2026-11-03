@@ -7,6 +7,7 @@ import {
   hasAnalyticsConsent,
   initGA,
   isGoogleAnalyticsAllowed,
+  isGtagInitialized,
   trackPageView,
 } from "@/lib/analytics";
 import { captureLeadAttribution } from "@/lib/lead-attribution";
@@ -28,9 +29,11 @@ export default function RouteAnalytics() {
     const onConsent = () => {
       if (!isGoogleAnalyticsAllowed()) return;
       if (!pathname || pathname.startsWith("/admin")) return;
+      const alreadyInitialized = isGtagInitialized();
       initGA();
-      // Explicit Allow upgrades EEA/UK/CH from cookieless to a granted hit.
-      if (hasAnalyticsConsent()) {
+      // A first-visit Allow must not send a second page_view. A returning
+      // opted-out visitor who later allows still needs the first granted hit.
+      if (hasAnalyticsConsent() && !alreadyInitialized) {
         trackPageView(pathname);
       }
     };

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 function read(relativePath: string) {
@@ -15,16 +15,30 @@ describe("GA4 collection contracts", () => {
     expect(source).toContain("consent === \"denied\"");
     expect(source).toContain("isGoogleAnalyticsAllowed()");
     expect(source).toContain("disableGoogleAnalytics()");
+    expect(source).toContain("isGoogleAnalyticsProductionHostname");
     expect(source).toContain("consent === \"granted\" ? <VercelAnalytics");
+    expect(source).toContain("ANALYTICS_CONSENT_REOPEN_EVENT");
   });
 
-  it("sends page_view unless the visitor opted out of Google Analytics", () => {
+  it("sends page_view on route change and does not duplicate it on Allow", () => {
     const source = read("./route-analytics.tsx");
 
     expect(source).toContain("ANALYTICS_CONSENT_EVENT");
     expect(source).toContain("trackPageView(pathname)");
     expect(source).toContain("isGoogleAnalyticsAllowed()");
-    expect(source).toContain("hasAnalyticsConsent()");
+    expect(source).toContain("isGtagInitialized()");
+    expect(source).toContain("hasAnalyticsConsent() && !alreadyInitialized");
+  });
+
+  it("does not ship an analytics_test override", () => {
+    const tracking = read("../lib/tracking-config.ts");
+    const analytics = read("../lib/analytics.ts");
+    const tag = read("./google-analytics.tsx");
+
+    expect(tracking).not.toContain("analytics_test");
+    expect(analytics).not.toContain("analytics_test");
+    expect(tag).not.toContain("analytics_test");
+    expect(tracking).toContain("isGoogleAnalyticsProductionHostname");
   });
 
   it("does not ship a second GA4 measurement ID", () => {
@@ -52,6 +66,16 @@ describe("GA4 collection contracts", () => {
     expect(layout).toContain("buildConsentBootstrapScript()");
     expect(layout).not.toContain("wait_for_update");
     expect(layout).not.toContain("analytics_storage: 'denied'");
+  });
+
+  it("isolates every Playwright spec from Google and Ads hosts", () => {
+    const dir = new URL("../../tests/e2e/", import.meta.url);
+    const specs = readdirSync(dir).filter((name) => name.endsWith(".spec.ts"));
+    expect(specs).toHaveLength(14);
+    for (const spec of specs) {
+      const source = readFileSync(new URL(spec, dir), "utf8");
+      expect(source, spec).toContain('from "./fixtures"');
+    }
   });
 
   it("does not ship a hardcoded Google Ads tag", () => {

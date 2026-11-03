@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
+import { GA_MEASUREMENT_ID, isGoogleAnalyticsProductionHostname } from "@/lib/tracking-config";
 import {
   ANALYTICS_CONSENT_EVENT,
-  ANALYTICS_CONSENT_STORAGE_KEY,
+  ANALYTICS_CONSENT_REOPEN_EVENT,
   disableGoogleAnalytics,
   initGA,
   isGoogleAnalyticsAllowed,
+  readAnalyticsConsent,
   setAnalyticsConsent,
 } from "@/lib/analytics";
 
@@ -24,6 +25,7 @@ const GTAG_SCRIPT_ID = "google-analytics";
 
 const loadGtagScript = () => {
   if (typeof document === "undefined") return;
+  if (!isGoogleAnalyticsProductionHostname(window.location.hostname)) return;
 
   const existing = document.getElementById(GTAG_SCRIPT_ID) as HTMLScriptElement | null;
   if (existing) {
@@ -51,15 +53,17 @@ export default function GoogleAnalytics() {
   const [hasLoadedPreference, setHasLoadedPreference] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(ANALYTICS_CONSENT_STORAGE_KEY);
-      if (stored === "granted" || stored === "denied") {
-        setConsent(stored);
-      }
-    } catch {
-      // Keep the SSR prompt if storage is unavailable.
+    const stored = readAnalyticsConsent();
+    if (stored === "granted" || stored === "denied") {
+      setConsent(stored);
     }
     setHasLoadedPreference(true);
+  }, []);
+
+  useEffect(() => {
+    const onReopen = () => setConsent("prompt");
+    window.addEventListener(ANALYTICS_CONSENT_REOPEN_EVENT, onReopen);
+    return () => window.removeEventListener(ANALYTICS_CONSENT_REOPEN_EVENT, onReopen);
   }, []);
 
   useEffect(() => {
