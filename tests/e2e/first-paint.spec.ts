@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // Pages that ads and search land on must be readable from the server HTML,
 // before (or without) JavaScript. Scroll-reveal wrappers used to ship these

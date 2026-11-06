@@ -4,7 +4,7 @@ import ServiceDetailPage from "@/legacy-pages/service-detail";
 import JsonLd from "@/components/seo/json-ld";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { services } from "@/content/services";
-import { buildMedicalProcedureSchema } from "@/content/structured-data";
+import { buildBreadcrumbSchema, practiceInfo, buildMedicalProcedureSchema } from "@/content/structured-data";
 import { getServiceDetailStaticParams } from "@/content/service-routes";
 
 const allServices = services.flatMap((service) => [service, ...(service.subServices ?? [])]);
@@ -43,6 +43,7 @@ export default async function Page({ params }: ServiceRouteProps) {
   return (
     <>
       <JsonLd data={buildMedicalProcedureSchema(service)} />
+      <JsonLd data={buildBreadcrumbSchema([{ name: "Home", item: practiceInfo.url }, { name: "Services", item: `${practiceInfo.url}/services` }, { name: service.title, item: `${practiceInfo.url}/services/${service.id}` }])} />
       <ServiceDetailPage serviceId={serviceId} />
     </>
   );

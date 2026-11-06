@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // The October layer is decided in the browser, so force it on or off with
 // the query param instead of depending on the date CI runs.

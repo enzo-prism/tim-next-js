@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 for (const path of ["/new-patients", "/insurance-and-payment", "/urgent-dental-care"]) {
   test(`${path} is available without JavaScript`, async ({ browser, baseURL }, testInfo) => {

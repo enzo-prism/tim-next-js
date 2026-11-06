@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 const bar = (page: Page) => page.getByRole("navigation", { name: "Call or request a visit" });
 
@@ -21,7 +21,7 @@ test.describe("mobile action bar", () => {
     await expect(call).toHaveClass(/bg-primary/);
     await expect(bar(page).getByRole("link", { name: "Request visit" })).toHaveAttribute(
       "href",
-      /\/book-appointment\?source=mobile_action_bar/,
+      /\/book-appointment$/,
     );
   });
 

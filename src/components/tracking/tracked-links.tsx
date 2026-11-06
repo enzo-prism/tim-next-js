@@ -33,6 +33,13 @@ export function AppointmentLink({
   return (
     <Link
       {...props}
+      href={(() => {
+        if (typeof props.href !== "string") return props.href;
+        const [path, query] = props.href.split("?");
+        const params = new URLSearchParams(query);
+        params.delete("source");
+        return params.size ? `${path}?${params}` : path;
+      })()}
       onClick={(event) => {
         trackAppointmentCtaClick(source, { ctaType, serviceId });
         onClick?.(event);

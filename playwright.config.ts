@@ -15,6 +15,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
+    env: { NEXT_PUBLIC_ANALYTICS_TEST_MODE: "true" },
     command: process.env.CI
       ? productionServerCommand
       : `npm run build && ${productionServerCommand}`,

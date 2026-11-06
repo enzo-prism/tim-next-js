@@ -57,6 +57,15 @@ export function NewPatientGuide({ sections, source }: { sections: readonly Patie
 
   return (
     <>
+      <Section tone="white" labelledBy="np-care-heading">
+        <SectionHeader id="np-care-heading" eyebrow="Plan your care" title="An exam, a cleaning, or a first visit for your child?" lead="Start with the visit that fits your needs, then confirm the details with our team." />
+        <nav aria-label="Care before your first visit" className="mt-6 flex flex-wrap gap-4">
+          <Link className="ff-link inline-flex min-h-11 items-center" href="/services/dental-exams">What a comprehensive dental exam includes</Link>
+          <Link className="ff-link inline-flex min-h-11 items-center" href="/services/dental-hygiene">Teeth cleaning and gum health</Link>
+          <Link className="ff-link inline-flex min-h-11 items-center" href="/services/childrens-dentistry/babys-first-visit">Your baby's first dental visit</Link>
+        </nav>
+      </Section>
+
       {/* ---------------------------------------------------- The visit */}
       <Section labelledBy="np-visit-heading">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-end">

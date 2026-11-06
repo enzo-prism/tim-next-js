@@ -15,3 +15,7 @@ Before replacing those questions with specific answers, ask the practice to conf
 | Follow-up | A response window the team can meet, follow-up channel, and what patients should do if a reply does not arrive. |
 
 Do not publish plan participation, payment products, prices, specific visit lengths, same-day availability, after-hours contacts, or medical triage rules without confirmation. Existing published amenities are blankets, water, and entertainment during treatment.
+
+## November 2026 search-content follow-up
+
+Confirm TMJ evaluation fees and actual scope/referral arrangements; exam/cleaning duration and scheduling; current sedation services, provider qualifications and referral options; and whether an Invisalign consultation has a fee. The legacy consultation article URL does not establish a free offer. Obtain explicit final-content review before adding clinician-review claims. Request verified Santa Cruz patient experience and arrival/access details before expanding that page.

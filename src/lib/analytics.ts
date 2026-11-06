@@ -1,3 +1,4 @@
+import { canCollectAnalytics } from "./analytics-host";
 import { track as trackVercelEvent } from "@vercel/analytics";
 import {
   APPOINTMENT_FORM_URL,
@@ -77,7 +78,7 @@ const getStoredAnalyticsConsent = (): AnalyticsConsent | null => {
   }
 };
 
-export const hasAnalyticsConsent = () => getStoredAnalyticsConsent() === "granted";
+export const hasAnalyticsConsent = () => canCollectAnalytics() && getStoredAnalyticsConsent() === "granted";
 
 const sanitizePath = (path: string) => {
   const [pathWithoutHash] = path.split("#");

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // The first decision should work from server HTML even if hydration fails.
 test("homepage shows its dentist, proof and patient paths without JavaScript", async ({ browser, baseURL }, testInfo) => {

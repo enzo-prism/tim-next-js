@@ -198,12 +198,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "Los Gatos family dental care"
       ],
       "publishedAt": "2026-04-04",
-      "updatedAt": "2026-04-04",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 7,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "Learn when kids usually transition from a pediatric dentist to a family dentist, what signs matter most, and how Los Gatos families can make the switch smoothly.",
-      "quickAnswer": "Parents usually know when it is time to replace outgrown shoes, swap the car seat, or stop cutting sandwiches into tiny geometric masterpieces.",
-      "quickAnswerSupport": "The dentist transition is less obvious.",
+      "quickAnswer": "There is no single age when every child must switch from a pediatric dentist to a family dentist.",
+      "quickAnswerSupport": "Consider your child’s treatment needs, comfort, and the care available from each provider; discuss the transition with the current dentist.",
       "intro": [
         "Parents usually know when it is time to replace outgrown shoes, swap the car seat, or stop cutting sandwiches into tiny geometric masterpieces. The dentist transition is less obvious.",
         "If your child has been seeing a pediatric dentist for years, you may wonder when it makes sense to switch to a family dentist. Is there a standard age? Should you wait until the teenage years? Does it depend on braces, comfort level, or whether they still have baby teeth hanging around like tiny tenants refusing to move out?",
@@ -395,12 +395,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "iTero scan Invisalign Los Gatos"
       ],
       "publishedAt": "2026-04-03",
-      "updatedAt": "2026-04-03",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 6,
       "heroEyebrow": "Smile Planning Guide",
       "heroSummary": "Learn what happens at an Invisalign consultation in Los Gatos, from digital scanning and smile goals to treatment planning, timeline questions, and next steps.",
-      "quickAnswer": "If you have been thinking about straightening your teeth but keep wondering what the first appointment is actually like, you are not alone.",
-      "quickAnswerSupport": "A lot of Los Gatos patients are interested in Invisalign because it feels lower friction than braces, but they still want to know what happens before they commit.",
+      "quickAnswer": "An Invisalign consultation reviews your teeth, bite, goals, and whether clear aligners may be appropriate.",
+      "quickAnswerSupport": "Ask about examination and scan details, treatment limitations, fees, follow-up, and retainers. Confirm the consultation fee with the office; the legacy URL does not establish a free offer.",
       "intro": [
         "If you have been thinking about straightening your teeth but keep wondering what the first appointment is actually like, you are not alone. A lot of Los Gatos patients are interested in Invisalign because it feels lower friction than braces, but they still want to know what happens before they commit.",
         "Knowing what to expect can make an Invisalign consultation feel much easier. The visit is a chance to discuss your goals, review your oral health, and understand the possible next steps before deciding whether treatment is right for you."
@@ -595,12 +595,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "kids Invisalign consultation Los Gatos"
       ],
       "publishedAt": "2026-04-02",
-      "updatedAt": "2026-04-02",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 5,
       "heroEyebrow": "Smile Planning Guide",
       "heroSummary": "Learn when children should have their first orthodontic evaluation, what signs parents in Los Gatos should watch for, and why early checks do not always mean early braces.",
-      "quickAnswer": "A lot of parents assume orthodontic concerns can wait until all the baby teeth are gone.",
-      "quickAnswerSupport": "Sometimes that works out. Sometimes it means a problem gets bigger, harder, or more expensive to correct.",
+      "quickAnswer": "An initial orthodontic evaluation is commonly recommended around age seven, while earlier concerns can be discussed with a dentist.",
+      "quickAnswerSupport": "An evaluation does not mean treatment must start immediately. The provider may recommend monitoring or a referral based on development.",
       "intro": [
         "A lot of parents assume orthodontic concerns can wait until all the baby teeth are gone. Sometimes that works out. Sometimes it means a problem gets bigger, harder, or more expensive to correct.",
         "So when should a child have their first orthodontic evaluation?",
@@ -792,12 +792,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "when to call dentist for shark teeth"
       ],
       "publishedAt": "2026-04-01",
-      "updatedAt": "2026-04-01",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 6,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "Seeing an adult tooth grow behind a baby tooth can be alarming. Learn why shark teeth happen, when Los Gatos parents can watch and wait, and when it is time to call the dentist.",
-      "quickAnswer": "Few parenting moments create faster dental panic than looking into your child's mouth and seeing two rows of teeth.",
-      "quickAnswerSupport": "Seeing an adult tooth grow behind a baby tooth can be alarming. Learn why shark teeth happen, when Los Gatos parents can watch and wait, and when it is time to call the dentist.",
+      "quickAnswer": "A permanent tooth can appear behind a baby tooth before the baby tooth falls out.",
+      "quickAnswerSupport": "A dentist can assess whether to monitor or intervene based on the teeth involved, space, and the child’s development. Avoid forcing a tooth out at home.",
       "intro": [
         "Few parenting moments create faster dental panic than looking into your child's mouth and seeing two rows of teeth.",
         "One tooth is still hanging on in front. A new permanent tooth is coming in behind it. Suddenly your kid looks part adorable, part tiny shark, and now you are wondering if this is normal or if you need to sprint to the dentist.",
@@ -993,12 +993,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "digital dental X-rays for children"
       ],
       "publishedAt": "2026-03-31",
-      "updatedAt": "2026-03-31",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 7,
       "heroEyebrow": "Prevention Guide",
       "heroSummary": "Wondering if kids need dental X-rays in Los Gatos? Learn when they are recommended, how often they may be needed, and why modern digital imaging is considered safe.",
-      "quickAnswer": "If a dentist mentions X-rays for your child, it is completely normal to have questions.",
-      "quickAnswerSupport": "Parents usually want the same three answers right away: Do we really need them, how often are they used, and are they safe?",
+      "quickAnswer": "Children may need dental X-rays when an examination and their individual risk factors indicate a benefit.",
+      "quickAnswerSupport": "The decision considers symptoms, cavity risk, development, and previous images rather than an automatic schedule for every child.",
       "intro": [
         "If a dentist mentions X-rays for your child, it is completely normal to have questions. Parents usually want the same three answers right away: Do we really need them, how often are they used, and are they safe?",
         "Dental X-rays can sound bigger and scarier than they are, especially when your child is young and you are trying to make good decisions without overdoing anything.",
@@ -1226,12 +1226,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "cavity prevention for molars"
       ],
       "publishedAt": "2026-03-29",
-      "updatedAt": "2026-03-29",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 5,
       "heroEyebrow": "Prevention Guide",
       "heroSummary": "Wondering when your child should get dental sealants? Learn the best ages, why molars need extra protection, and what Los Gatos parents should expect at the visit.",
-      "quickAnswer": "Many parents hear about dental sealants only after a cavity shows up on a back tooth.",
-      "quickAnswerSupport": "Wondering when your child should get dental sealants? Learn the best ages, why molars need extra protection, and what Los Gatos parents should expect at the visit.",
+      "quickAnswer": "Sealants may help protect the chewing surfaces of susceptible molars after those teeth have erupted.",
+      "quickAnswerSupport": "A dentist assesses cavity risk and tooth condition to decide which teeth would benefit and when to apply sealants.",
       "intro": [
         "Many parents hear about dental sealants only after a cavity shows up on a back tooth.",
         "That is frustrating, because sealants work best before there is a problem.",
@@ -1448,12 +1448,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "family dentist gum bleeding Los Gatos"
       ],
       "publishedAt": "2026-03-27",
-      "updatedAt": "2026-03-27",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 6,
       "heroEyebrow": "Prevention Guide",
       "heroSummary": "If your gums bleed when you floss, it may be a sign of irritation or early gum disease. Learn what is normal, what is not, and when to schedule a visit in Los Gatos.",
-      "quickAnswer": "Seeing blood in the sink after flossing can be unsettling.",
-      "quickAnswerSupport": "A lot of patients assume it means they should floss less, switch products immediately, or just wait and see if it goes away.",
+      "quickAnswer": "Bleeding during flossing can reflect gum inflammation, plaque buildup, or irritation from technique.",
+      "quickAnswerSupport": "Ask a dentist about bleeding that persists or returns, especially with swelling, pain, or other changes. An examination helps identify the cause.",
       "intro": [
         "Seeing blood in the sink after flossing can be unsettling. A lot of patients assume it means they should floss less, switch products immediately, or just wait and see if it goes away.",
         "Usually, that is the wrong takeaway.",
@@ -1679,12 +1679,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "youth sports dental injuries"
       ],
       "publishedAt": "2026-03-26",
-      "updatedAt": "2026-03-26",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 6,
       "heroEyebrow": "Spring Sports Guide",
       "heroSummary": "Spring sports can increase the risk of chipped, loose, or knocked-out teeth. Learn when Los Gatos parents should get a sports mouthguard for kids and teens, including athletes with braces.",
-      "quickAnswer": "Spring sports season gets busy fast.",
-      "quickAnswerSupport": "One week your child is trying on shin guards or picking out a glove, and the next week you are at practice three nights in a row. In all that motion, one piece of gear is easy to overlook: a mouthguard.",
+      "quickAnswer": "A sports mouthguard can help protect a child’s teeth during activities with a risk of blows to the mouth.",
+      "quickAnswerSupport": "Fit, comfort, the activity, and braces matter when choosing a guard. A sports mouthguard has a different purpose from a night guard for grinding.",
       "intro": [
         "Spring sports season gets busy fast. One week your child is trying on shin guards or picking out a glove, and the next week you are at practice three nights in a row. In all that motion, one piece of gear is easy to overlook: a mouthguard.",
         "A lot of parents assume sports mouthguards are only for football, hockey, or the most intense contact sports. In reality, plenty of common youth sports can lead to dental injuries from a fall, a collision, an elbow, a bat, a ball, or even another player’s head.",
@@ -1887,10 +1887,10 @@ export const additionalBlogPosts: BlogPost[] = [
     },
   {
       "slug": "dental-sedation-for-kids-los-gatos",
-      "title": "Is Dental Sedation Safe for Kids? A Los Gatos Parent Guide",
-      "metaTitle": "Dental Sedation for Kids in Los Gatos | Family First Smile Care",
-      "metaDescription": "A clear, parent friendly guide to dental sedation for children in Los Gatos. Learn when sedation is considered, what types are used, safety steps, and how we prepare kids for a calm visit.",
-      "excerpt": "Why parents ask about sedation",
+      "title": "Dental Sedation for Children: Questions to Ask Before Treatment",
+      "metaTitle": "Dental Sedation for Kids: Parent Guide | Los Gatos",
+      "metaDescription": "Understand sedation options, safety questions, preparation, and referrals for children. Confirm available services with our Los Gatos dental team.",
+      "excerpt": "Sedation is an individual treatment decision. Learn which questions to ask about your child’s needs, the treating team, preparation, and recovery.",
       "category": "Children's Dentistry",
       "primaryKeyword": "dental sedation for kids Los Gatos",
       "secondaryKeywords": [
@@ -1899,31 +1899,71 @@ export const additionalBlogPosts: BlogPost[] = [
         "mild sedation kids dental"
       ],
       "publishedAt": "2026-03-24",
-      "updatedAt": "2026-03-24",
-      "readingTimeMinutes": 3,
+      "updatedAt": "2026-11-06",
+      "readingTimeMinutes": 4,
       "heroEyebrow": "Los Gatos Parents Guide",
-      "heroSummary": "A clear, parent friendly guide to dental sedation for children in Los Gatos. Learn when sedation is considered, what types are used, safety steps, and how we prepare kids for a calm visit.",
-      "quickAnswer": "Why parents ask about sedation",
-      "quickAnswerSupport": "A clear, parent friendly guide to dental sedation for children in Los Gatos. Learn when sedation is considered, what types are used, safety steps, and how we prepare kids for a calm visit.",
+      "heroSummary": "A parent’s guide to discussing comfort, sedation, and the right treatment setting for a child.",
+      "quickAnswer": "Dental sedation can help some children receive treatment, but it has risks and is not needed for every child.",
+      "quickAnswerSupport": "The decision depends on the child, the procedure, and the treating team. Confirm which options are available at Family First Smile Care and whether a referral is needed before arranging treatment.",
       "intro": [
-        "Why parents ask about sedation",
-        "A visit for fillings or extractions can be stressful for a child and for parents. Sedation can make treatment safer and less traumatic when a child cannot cooperate, has special needs, or needs longer treatment. This guide explains common options, how we keep children safe, and how to decide if sedation is right for your child.",
-        "Common types of sedation used in pediatric dentistry",
-        "- Nitrous oxide or laughing gas: A minimal sedative that helps children relax during the visit. It wears off quickly and has a fast recovery time."
+        "A child who feels nervous about dental care may need reassurance, a different visit pace, or additional support. Sedation is one possible approach, chosen after an assessment rather than assumed from a child’s age or anxiety.",
+        "This guide explains general questions to discuss with a qualified treating clinician. It does not establish that any particular sedation service is offered at this office."
       ],
-      "sections": [],
+      "sections": [
+        {
+          "id": "options-to-discuss",
+          "title": "What options might be discussed?",
+          "paragraphs": [
+            "Nitrous oxide mixed with oxygen can help a patient relax while remaining responsive. Other sedation levels involve different medicines, monitoring, recovery needs, and provider qualifications. General anesthesia is a distinct approach that requires an appropriate treatment setting.",
+            "Ask the treating clinician to explain the proposed level, why it suits your child, and alternatives such as a gradual introduction, a shorter visit, or referral."
+          ]
+        },
+        {
+          "id": "individual-safety",
+          "title": "What makes the safety discussion individual?",
+          "paragraphs": [
+            "Share your child’s health history, current medicines, allergies, and any previous reactions to sedation or anesthesia. Ask who will provide treatment, who will monitor your child, and what recovery arrangements are planned. No sedation method is entirely without risk."
+          ],
+          "bullets": [
+            "What training and qualifications does the treating team have?",
+            "How will breathing and recovery be monitored?",
+            "What is the plan if deeper sedation or emergency care is needed?",
+            "Would a specialist or a different setting be more appropriate?"
+          ]
+        },
+        {
+          "id": "preparing-for-treatment",
+          "title": "How should parents prepare?",
+          "paragraphs": [
+            "Follow the treating team’s written instructions for food, drink, medicines, transportation, and supervision. Those instructions depend on the proposed treatment; do not use a general online fasting schedule or give a sedating medicine on your own.",
+            "Ask whom to contact if your child becomes ill before the appointment or if anything about the instructions is unclear."
+          ]
+        },
+        {
+          "id": "recovery-and-cost",
+          "title": "What should be clear before you agree?",
+          "paragraphs": [
+            "Ask for the expected recovery plan, written aftercare instructions, a contact for questions, and an estimate explaining treatment and sedation charges. Confirm coverage with your exact plan.",
+            "At Family First Smile Care, start by describing your child’s needs to our Los Gatos team. Confirm available comfort options, any proposed provider or referral, and the planned setting before booking a sedation visit."
+          ]
+        }
+      ],
       "faq": [
         {
-          "question": "When should you call a dentist about dental sedation for kids?",
-          "answer": "A clear, parent friendly guide to dental sedation for children in Los Gatos. If the issue is worsening, painful, or keeps coming back, it is smart to have it checked instead of waiting for it to turn into a bigger problem."
+          "question": "Is laughing gas the same as being asleep?",
+          "answer": "Nitrous oxide with oxygen is generally used to help a patient relax while remaining responsive. It is different from general anesthesia. Ask what level of sedation is proposed."
         },
         {
-          "question": "Can this wait until the next routine visit?",
-          "answer": "Sometimes, but not always. The safest move is to ask when the symptom is new, persistent, or getting worse, especially if it affects eating, sleeping, sports, or school."
+          "question": "Does my child need sedation for a filling?",
+          "answer": "A filling alone does not determine the need. The clinician considers the child’s health, treatment needs, and ability to participate, along with other comfort options."
         },
         {
-          "question": "Who can help with this in Los Gatos?",
-          "answer": "Family First Smile Care helps Los Gatos families with children's dentistry questions, preventive visits, and next-step planning that feels calm instead of confusing."
+          "question": "Is sedation available at Family First Smile Care?",
+          "answer": "Call the office to confirm current services, the treating provider, and whether your child would need a referral. This general guide is not a promise of a particular sedation service."
+        },
+        {
+          "question": "Can I use an online fasting schedule?",
+          "answer": "Use the treating clinician’s written instructions for your child’s procedure. Ask the team before changing medicines, meals, or drinks."
         }
       ],
       "relatedLinks": [
@@ -1960,19 +2000,20 @@ export const additionalBlogPosts: BlogPost[] = [
       ],
       "sources": [
         {
-          "label": "American Academy of Pediatric Dentistry",
-          "href": "https://www.aapd.org/resources/parent/"
+          "label": "ADA: Nitrous oxide",
+          "href": "https://www.mouthhealthy.org/all-topics-a-z/nitrous-oxide"
         },
         {
-          "label": "Stanford Medicine Children's Health oral health guidance",
-          "href": "https://www.stanfordchildrens.org/en/topic/default?id=oral-health-90-P01835"
+          "label": "AAP/AAPD: Monitoring and management of pediatric sedation",
+          "href": "https://www.aapd.org/globalassets/media/policies_guidelines/bp_monitoringsedation.pdf"
         }
       ],
-      "ctaTitle": "Get a clear answer before this becomes a bigger problem",
-      "ctaBody": "Family First Smile Care helps Los Gatos families sort out prevention questions early, with calm guidance and visits that feel straightforward instead of stressful.",
-      "ctaHref": "/book-appointment",
-      "ctaLabel": "Book an appointment"
+      "ctaTitle": "Discuss the right next step for your child",
+      "ctaBody": "Tell our team about your child’s comfort needs and ask which care options or referrals are appropriate.",
+      "ctaHref": "/contact",
+      "ctaLabel": "Ask our team"
     },
+
   {
       "slug": "do-baby-teeth-need-fillings-los-gatos",
       "title": "Do Baby Teeth Need Fillings in Los Gatos? What Parents Should Know Before a Small Cavity Becomes a Bigger Problem",
@@ -1989,12 +2030,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "kids dentist Los Gatos cavities"
       ],
       "publishedAt": "2026-03-22",
-      "updatedAt": "2026-03-22",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 6,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "Wondering if cavities in baby teeth really need treatment? Learn when baby teeth need fillings, when monitoring may be enough, and how Los Gatos parents can protect spacing and comfort.",
-      "quickAnswer": "A lot of parents have the same first reaction after hearing that their child has a cavity in a baby tooth:",
-      "quickAnswerSupport": "Wondering if cavities in baby teeth really need treatment? Learn when baby teeth need fillings, when monitoring may be enough, and how Los Gatos parents can protect spacing and comfort.",
+      "quickAnswer": "Some cavities in baby teeth need fillings or other treatment even though those teeth will eventually fall out.",
+      "quickAnswerSupport": "The dentist considers the cavity, symptoms, the tooth’s condition, and expected replacement timing before recommending treatment or monitoring.",
       "intro": [
         "A lot of parents have the same first reaction after hearing that their child has a cavity in a baby tooth:",
         "\"But that tooth is going to fall out anyway. Do we really need to fix it?\"",
@@ -2403,12 +2444,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "what causes white marks on teeth in children"
       ],
       "publishedAt": "2026-03-20",
-      "updatedAt": "2026-03-20",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 5,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "Noticing white spots on your child's teeth? Learn common causes, when they can signal early enamel changes or decay, and what Los Gatos parents should do next.",
-      "quickAnswer": "If you notice chalky white spots on your child's teeth, it is understandable to worry.",
-      "quickAnswerSupport": "Parents often wonder if the spots are just cosmetic, a sign of weak enamel, or the beginning of a cavity.",
+      "quickAnswer": "White spots on a child’s teeth can have several causes, including early enamel changes or differences in enamel development.",
+      "quickAnswerSupport": "An examination helps distinguish causes and choose the appropriate next step. Appearance alone cannot establish a diagnosis.",
       "intro": [
         "If you notice chalky white spots on your child's teeth, it is understandable to worry. Parents often wonder if the spots are just cosmetic, a sign of weak enamel, or the beginning of a cavity.",
         "The answer depends on what is causing them. White spots can come from a few different things, including early enamel demineralization, mineral changes that happened while the tooth was developing, or changes that show up more clearly after orthodontic treatment or dryness. The important part is this: white spots are worth checking early, because some are harmless and some are the earliest visible sign that a tooth is starting to lose minerals.",
@@ -2592,12 +2633,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "dental emergency child Los Gatos"
       ],
       "publishedAt": "2026-03-19",
-      "updatedAt": "2026-03-19",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 5,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "If your child knocks out a tooth, fast action matters. Learn what Los Gatos parents should do right away, when to call the dentist, and how baby teeth differ from permanent teeth.",
-      "quickAnswer": "If your child knocks out a tooth, the first minute feels chaotic.",
-      "quickAnswerSupport": "If your child knocks out a tooth, fast action matters. Learn what Los Gatos parents should do right away, when to call the dentist, and how baby teeth differ from permanent teeth.",
+      "quickAnswer": "A knocked-out permanent tooth needs urgent dental attention; a knocked-out baby tooth should not be replanted.",
+      "quickAnswerSupport": "Call a dentist promptly for guidance and explain whether the tooth is a baby or permanent tooth. The next steps depend on which tooth was injured.",
       "intro": [
         "If your child knocks out a tooth, the first minute feels chaotic.",
         "There may be tears, blood, panic, and a dozen questions all at once. Was it a baby tooth or a permanent tooth? Do you put it back? Should you use water? Can it be saved?",
@@ -2791,12 +2832,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "children dentistry Los Gatos"
       ],
       "publishedAt": "2026-03-17",
-      "updatedAt": "2026-03-17",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 7,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "If your child keeps getting cavities despite brushing, learn the most common hidden causes and what Los Gatos parents can do to lower risk before the next checkup.",
-      "quickAnswer": "It is one of the most frustrating things a parent can hear at a checkup.",
-      "quickAnswerSupport": "If your child keeps getting cavities despite brushing, learn the most common hidden causes and what Los Gatos parents can do to lower risk before the next checkup.",
+      "quickAnswer": "Repeated cavities can reflect a combination of plaque, frequent sugar exposure, brushing gaps, and individual risk factors.",
+      "quickAnswerSupport": "A dentist can review habits, fluoride exposure, and oral health to help build a prevention plan suited to your child.",
       "intro": [
         "It is one of the most frustrating things a parent can hear at a checkup.",
         "\"Your child has another cavity.\"",
@@ -3017,12 +3058,12 @@ export const additionalBlogPosts: BlogPost[] = [
         "family dentist for kids Los Gatos"
       ],
       "publishedAt": "2026-04-05",
-      "updatedAt": "2026-04-05",
+      "updatedAt": "2026-11-06",
       "readingTimeMinutes": 8,
       "heroEyebrow": "Los Gatos Parents Guide",
       "heroSummary": "Learn common causes of child tooth pain, what parents can do at home, and when to call a Los Gatos dentist for prompt evaluation.",
-      "quickAnswer": "A child toothache has a way of turning a normal day into chaos fast.",
-      "quickAnswerSupport": "Maybe it starts at breakfast. Maybe it shows up at bedtime. Maybe your kid points to one side of their mouth, looks miserable, and suddenly every parent instinct in your body starts sprinting laps.",
+      "quickAnswer": "Contact a dentist about a child’s toothache so the cause and urgency can be assessed.",
+      "quickAnswerSupport": "Pain that persists, swelling, or trouble eating deserves prompt attention. This guide explains questions to ask and general steps while arranging care.",
       "intro": [
         "A child toothache has a way of turning a normal day into chaos fast.",
         "Maybe it starts at breakfast. Maybe it shows up at bedtime. Maybe your kid points to one side of their mouth, looks miserable, and suddenly every parent instinct in your body starts sprinting laps.",

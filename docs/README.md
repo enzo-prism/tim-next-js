@@ -22,6 +22,7 @@
 1. [Testing and Quality](./testing-and-quality.md)
 2. [Analytics Setup (Vercel + GA4 + Ads + GSC)](./analytics-setup.md)
 3. [Growth and Lead Measurement](./growth-and-lead-measurement.md)
+4. [SEO/AEO Implementation and Acceptance](./seo-aeo-implementation.md)
 
 ## Suggested Reading Order for New Engineers
 

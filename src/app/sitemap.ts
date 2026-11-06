@@ -17,6 +17,12 @@ const blogLastModified = new Map(
   ]),
 );
 
+const serviceLastModified = new Map([
+  "/tmj", "/services/dental-exams", "/services/dental-hygiene",
+  "/services/family-dentistry", "/services/children-dentistry",
+  "/services/invisalign", "/new-patients",
+].map((route) => [route, new Date("2026-11-06T00:00:00Z")]));
+
 const routePriorityMap: Partial<Record<string, number>> = {
   "/": 1,
   "/services": 0.9,
@@ -67,7 +73,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return allCanonicalRoutes
     .filter((route) => !excludedRoutes.has(route))
     .map((route) => {
-      const lastModified = blogLastModified.get(route);
+      const lastModified = blogLastModified.get(route) ?? serviceLastModified.get(route);
 
       return {
         url: `${baseUrl}${route === "/" ? "" : route}`,
