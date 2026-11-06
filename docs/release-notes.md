@@ -7,7 +7,7 @@
 - Complete the children’s sedation article with relevant questions, safety discussion and primary sources; replace 13 other article opening summaries with direct answers. Keep editorial updates separate from clinician review.
 - Improve Invisalign consultation questions, new-patient/service/article links, service breadcrumbs, verified doctor identity and sitemap modification dates. Remove internal appointment source parameters while retaining service selection and CTA event attributes.
 - Restrict GA4 and Vercel analytics to the production HTTPS hosts after consent. Browser tests use intercepted analytics and an explicit loopback-only test flag.
-- Local validation: 203 browser checks passed across three viewports (19 viewport-specific skips); unit, lint, type, monitor, design and production-build checks. Production database schema read-back passed; this release adds no migration. See [SEO/AEO implementation](./seo-aeo-implementation.md) for verification and remaining practice confirmations.
+- Local validation: full browser suite across three viewports (viewport-specific skips); unit, lint, type, monitor, design and production-build checks. Production database schema read-back passed; this release adds no migration. See [SEO/AEO implementation](./seo-aeo-implementation.md) for verification and remaining practice confirmations.
 
 ## 2026-10-12 — "One family, every smile" redesign
 

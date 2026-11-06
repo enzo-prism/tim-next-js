@@ -16,7 +16,7 @@ GA4 property 518867337 / stream 13261242785 / G-L7MH47XYXL was checked live. Str
 
 ## Acceptance evidence
 
-- Local full E2E: 203 passed, 19 intentionally skipped by viewport; desktop, tablet and mobile.
+- Full E2E across desktop, tablet and mobile, including global/header/contact appointment URL regression coverage; 19 checks intentionally skip non-applicable viewports. Use the release commit’s CI run as the exact test-count record.
 - Unit/type/lint/monitor/design checks and production build; GitHub CI additionally exercises isolated PostgreSQL integration tests.
 - Production database schema read-back passed using the SELECT-only verifier. No migration or patient record was changed.
 - Release from reviewed main commit through the Git-connected `tim-next-js` Vercel project. Verify the source SHA and custom-domain aliases, then check all sitemap routes, rendered metadata/JSON-LD, redirects, assets and invalid empty API submissions (HTTP 400 without creating leads).

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  buildAppointmentUrl,
   CANONICAL_GA_MEASUREMENT_ID,
   RETIRED_GA_MEASUREMENT_IDS,
   resolveGaMeasurementId,
@@ -60,5 +61,12 @@ describe("Google Ads tag ID", () => {
 
     const { GOOGLE_ADS_TAG_ID } = await import("@/lib/tracking-config");
     expect(GOOGLE_ADS_TAG_ID).toBeUndefined();
+  });
+});
+
+describe("appointment URLs", () => {
+  it("retains selected care while keeping CTA sources out of crawlable links", () => {
+    expect(buildAppointmentUrl({source: "header_desktop"})).toBe("/book-appointment");
+    expect(buildAppointmentUrl({serviceId: "family-dentistry", source: "service_detail"})).toBe("/book-appointment?service=family-dentistry");
   });
 });

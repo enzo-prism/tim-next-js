@@ -183,3 +183,7 @@ A release is ready when:
 6. Admin protection and an authorized status-only read are verified without printing patient records.
 7. GA4 script and pageview flow verified on preview or production.
 8. ElevenLabs widget smoke tests pass across desktop, tablet, and mobile viewports.
+
+## Running alongside other local projects
+
+Set `PLAYWRIGHT_PORT=3187 npm run test:e2e` (or another free port) when the default 3100 is occupied. Do not stop another project’s server. Analytics requests are intercepted by `tests/e2e/fixtures.ts`; the explicit loopback test flag exercises consent without sending synthetic traffic to production providers.

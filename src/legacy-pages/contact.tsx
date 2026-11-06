@@ -221,7 +221,7 @@ export default function Contact() {
         actions={
           <>
             <Button asChild size="lg" className="group h-14 pl-7 pr-5 text-base">
-              <Link href="/book-appointment?source=contact_hero" onClick={() => trackAppointmentCtaClick("contact_hero")}>
+              <Link href="/book-appointment" onClick={() => trackAppointmentCtaClick("contact_hero")}>
                 Request an Appointment
                 <span aria-hidden="true" className="ff-arrow grid size-8 place-items-center rounded-full bg-white/15">
                   <MinimalGlyph name="arrow-right" />
@@ -396,7 +396,7 @@ export default function Contact() {
             <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-ink">Send us a message</h2>
             <p id="contact-form-help" className="mt-3 text-base leading-relaxed text-ink-soft">
               Fields marked * are required. For appointment requests, use our{" "}
-              <Link href="/book-appointment?source=contact_form" className="ff-link">appointment form</Link>.
+              <Link href="/book-appointment" className="ff-link">appointment form</Link>.
             </p>
             {submission ? (
               <div

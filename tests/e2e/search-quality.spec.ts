@@ -49,3 +49,13 @@ test("appointment links keep visit intent without proliferating source URLs", as
   await request.click();
   await expect(page).toHaveURL(/\/book-appointment\?service=family-dentistry$/);
 });
+
+test("global and contact appointment links use clean URLs", async ({ request }) => {
+  for (const path of ["/", "/contact", "/services/dental-hygiene"]) {
+    const response = await request.get(path);
+    const html = await response.text();
+    const appointmentHrefs = [...html.matchAll(/href="(\/book-appointment[^"<>]*)"/g)].map((match) => match[1]);
+    expect(appointmentHrefs.length).toBeGreaterThan(0);
+    for (const href of appointmentHrefs) expect(href).not.toMatch(/[?&]source=/);
+  }
+});
