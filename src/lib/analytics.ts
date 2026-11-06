@@ -1,3 +1,4 @@
+import { captureLeadAttribution } from "./lead-attribution";
 import { canCollectAnalytics } from "./analytics-host";
 import { track as trackVercelEvent } from "@vercel/analytics";
 import {
@@ -341,6 +342,8 @@ export const trackAppointmentCtaClick = (
     serviceId?: string;
   } = {},
 ) => {
+  // Preserve first-touch operational attribution without adding source URLs.
+  captureLeadAttribution(location);
   trackSiteEvent("cta_click", {
     cta_type: details.ctaType || "appointment",
     destination: details.destination || APPOINTMENT_FORM_URL,

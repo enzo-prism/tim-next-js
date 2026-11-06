@@ -48,6 +48,7 @@ test("appointment links keep visit intent without proliferating source URLs", as
   await expect(request).toHaveAttribute("href", "/book-appointment?service=family-dentistry");
   await request.click();
   await expect(page).toHaveURL(/\/book-appointment\?service=family-dentistry$/);
+  expect(await page.evaluate(() => JSON.parse(sessionStorage.getItem("ffsc_lead_attribution_v1") || "{}").ctaSource)).toBe("service_detail_hero");
 });
 
 test("global and contact appointment links use clean URLs", async ({ request }) => {

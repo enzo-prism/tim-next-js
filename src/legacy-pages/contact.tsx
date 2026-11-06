@@ -396,7 +396,7 @@ export default function Contact() {
             <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-ink">Send us a message</h2>
             <p id="contact-form-help" className="mt-3 text-base leading-relaxed text-ink-soft">
               Fields marked * are required. For appointment requests, use our{" "}
-              <Link href="/book-appointment" className="ff-link">appointment form</Link>.
+              <Link href="/book-appointment" className="ff-link" onClick={() => trackAppointmentCtaClick("contact_form")}>appointment form</Link>.
             </p>
             {submission ? (
               <div
