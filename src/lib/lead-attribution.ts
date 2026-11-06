@@ -40,7 +40,7 @@ const readStoredAttribution = (): LeadAttribution => {
   }
 };
 
-export const captureLeadAttribution = (): LeadAttribution => {
+export const captureLeadAttribution = (ctaSource?: string): LeadAttribution => {
   if (typeof window === "undefined") return {};
 
   const existing = readStoredAttribution();
@@ -48,7 +48,7 @@ export const captureLeadAttribution = (): LeadAttribution => {
   const captured: LeadAttribution = {
     landingPage: existing.landingPage || cleanValue(window.location.pathname, 300),
     referrer: existing.referrer || getReferrerHost(),
-    ctaSource: existing.ctaSource || cleanValue(params.get("source"), 100),
+    ctaSource: existing.ctaSource || cleanValue(ctaSource ?? params.get("source"), 100),
     utmSource: existing.utmSource || cleanValue(params.get("utm_source"), 120),
     utmMedium: existing.utmMedium || cleanValue(params.get("utm_medium"), 120),
     utmCampaign: existing.utmCampaign || cleanValue(params.get("utm_campaign"), 180),

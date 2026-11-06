@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("unknown services stay hard-404 and valid services keep canonical metadata", async ({
   page,

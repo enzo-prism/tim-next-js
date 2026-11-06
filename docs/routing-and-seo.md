@@ -104,3 +104,9 @@ Configured in `next.config.ts` and middleware:
    Include the two exact mixed-case Google Ads landing routes and confirm `utm_*`, `gclid`,
    `gbraid`, and `wbraid` parameters survive the redirect.
 5. Validate JSON-LD snippets with Google Rich Results Test.
+
+## November 2026 content and AEO maintenance
+
+Priority service planning data lives in `src/content/service-planning.ts`, consumed by the shared decision guide. Dynamic services now include breadcrumbs. Doctor identity links to the verified ADA profile. Sitemap dates change only for actual content revisions, including editorial blog dates. Internal appointment links omit source parameters and retain service selection.
+
+See [implementation and acceptance evidence](./seo-aeo-implementation.md). Visible FAQs help readers; FAQ markup and llms.txt are not promises of Google rich results or AI inclusion. Clinical review remains governed by exact-content attestations.

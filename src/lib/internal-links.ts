@@ -100,6 +100,10 @@ const staticLinksByHref: Record<string, RelatedLink> = {
     title: "iTero Digital Scanner",
     description: "Comfortable 3D digital scans for Invisalign planning and smile previews.",
   },
+  "/blog/jaw-pain-when-you-wake-up-los-gatos": { href: "/blog/jaw-pain-when-you-wake-up-los-gatos", title: "Jaw Pain When You Wake Up", description: "Questions about grinding, jaw symptoms, and when to arrange an evaluation." },
+  "/blog/do-kids-need-dental-x-rays-los-gatos": { href: "/blog/do-kids-need-dental-x-rays-los-gatos", title: "Do Kids Need Dental X-rays?", description: "How examinations, previous images, and individual needs guide imaging." },
+  "/blog/bleeding-gums-when-flossing-los-gatos": { href: "/blog/bleeding-gums-when-flossing-los-gatos", title: "Bleeding Gums When Flossing", description: "Possible causes and questions to discuss with a dentist." },
+  "/blog/dental-sedation-for-kids-los-gatos": { href: "/blog/dental-sedation-for-kids-los-gatos", title: "Questions About Dental Sedation", description: "Discuss comfort, safety, preparation, and referral options for children." },
   "/tmj": {
     href: "/tmj",
     title: "TMJ Treatment",
@@ -124,6 +128,7 @@ const asRelatedLink = (value: string): RelatedLink | null => {
 
 const curatedBoosts: Record<string, string[]> = {
   "dental-exams": [
+    "/new-patients",
     "dental-hygiene",
     "family-dentistry",
     "/blog/how-often-dental-cleaning-los-gatos",
@@ -132,12 +137,14 @@ const curatedBoosts: Record<string, string[]> = {
   ],
   "dental-hygiene": [
     "dental-exams",
+    "/blog/bleeding-gums-when-flossing-los-gatos",
     "/blog/how-often-dental-cleaning-los-gatos",
     "/patient-info/flossing",
     "/patient-info/brushing",
     "/contact",
   ],
   "family-dentistry": [
+    "children-dentistry",
     "dental-exams",
     "dental-hygiene",
     "/blog/how-often-dental-cleaning-los-gatos",
@@ -148,10 +155,11 @@ const curatedBoosts: Record<string, string[]> = {
     "childrens-dentistry/babys-first-visit",
     "/blog/when-should-kids-first-see-a-dentist-los-gatos",
     "/blog/why-does-my-child-have-bad-breath-even-after-brushing-los-gatos",
-    "/patient-info/brushing",
+    "/blog/do-kids-need-dental-x-rays-los-gatos",
+    "/blog/dental-sedation-for-kids-los-gatos",
     "/contact",
   ],
-  "night-guards": ["tmj", "dental-exams", "/insurance-and-payment", "/contact"],
+  "night-guards": ["tmj", "/blog/jaw-pain-when-you-wake-up-los-gatos", "dental-exams", "/insurance-and-payment", "/contact"],
   "restorative-dentistry": ["invisalign", "teeth-whitening", "dental-crowns", "dental-exams"],
   invisalign: ["/technology/itero-digital-scanner", "restorative-dentistry", "teeth-whitening", "/contact"],
   "teeth-whitening": ["dental-hygiene", "restorative-dentistry", "/contact"],

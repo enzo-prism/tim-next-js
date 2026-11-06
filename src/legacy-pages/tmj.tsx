@@ -18,21 +18,24 @@ import { CtaBand } from "@/components/site/cta-band";
 import { BrandDots, ToothPerson } from "@/components/brand/pinwheel";
 import { Squiggle } from "@/components/brand/squiggle";
 import { HeroPhoto } from "@/components/services/hero-photo";
+import { DecisionGuide } from "@/components/services/decision-guide";
+import { tmjPlanningGuide } from "@/content/service-planning";
 import { SymptomChecklist } from "@/components/services/symptom-checklist";
 import { ExploreLinks } from "@/components/services/explore-links";
 import { officePhotos } from "@/components/services/service-themes";
 import { cn } from "@/lib/utils";
 
 const relatedLinks: RelatedLink[] = [
+  { href: "/blog/jaw-pain-when-you-wake-up-los-gatos", title: "Why does my jaw hurt in the morning?", description: "Read about jaw symptoms, grinding, and questions to bring to an evaluation." },
   {
     href: "/services/night-guards",
     title: "Night Guards",
-    description: "Custom protection for grinding and jaw tension that can worsen TMJ symptoms.",
+    description: "Custom protection for teeth affected by grinding or clenching.",
   },
   {
     href: "/services/invisalign",
     title: "Invisalign Clear Aligners",
-    description: "Orthodontic options that may help with bite-related jaw strain (doctor will confirm).",
+    description: "Explore aligners for tooth alignment, a separate decision from evaluating jaw pain.",
   },
   {
     href: "/services/dental-exams",
@@ -54,7 +57,7 @@ const relatedLinks: RelatedLink[] = [
 // The first few facts from the Night Guards service, shown on its card.
 const nightGuardPoints = (services.find((service) => service.id === "night-guards")?.details ?? []).slice(0, 3);
 
-const symptoms = ["Jaw pain and stiffness", "Frequent headaches", "Difficulty chewing", "Clicking or popping sounds", "Limited jaw movement"];
+const symptoms = ["Jaw pain and stiffness", "Frequent headaches", "Difficulty chewing", "Painful clicking or popping", "Limited jaw movement"];
 
 type CareOption = {
   title: string;
@@ -72,7 +75,7 @@ type CareOption = {
 const careOptions: CareOption[] = [
   {
     title: "Custom Night Guards",
-    body: "We design night guards to prevent teeth grinding and clenching, which can exacerbate TMJ discomfort.",
+    body: "A custom guard can separate and protect teeth affected by grinding. It may be discussed after an examination; it does not guarantee relief from TMD or stop grinding.",
     href: "/services/night-guards",
     linkLabel: "Explore night guards",
     points: nightGuardPoints,
@@ -81,10 +84,10 @@ const careOptions: CareOption[] = [
     tooth: "var(--ff-periwinkle)",
   },
   {
-    title: "Orthodontic Solutions",
-    body: "Conditions related to bite misalignment can be treated through customized orthodontic treatment plans, such as braces or Invisalign.",
-    href: "/services/invisalign",
-    linkLabel: "Explore Invisalign",
+    title: "A conservative starting point",
+    body: "TMD has several possible causes. Start with an evaluation and discuss reversible care before considering treatment that changes your teeth or bite.",
+    href: "/services/dental-exams",
+    linkLabel: "Explore dental exams",
     className: "",
     tone: "bg-blush-wash",
   },
@@ -98,19 +101,19 @@ const careOptions: CareOption[] = [
   },
   {
     title: "Physical Therapy",
-    body: "Jaw exercises and muscle relaxation techniques can alleviate tension and improve function.",
+    body: "Ask whether guided exercises or evaluation by a physical therapist would suit your findings. Follow individual instructions rather than forcing a painful jaw movement.",
     className: "",
     tone: "bg-white ring-1 ring-border",
   },
   {
     title: "Lifestyle Modifications",
-    body: "Stress reduction, dietary changes, and exercise can often significantly improve the management of TMJ symptoms.",
+    body: "Your clinician may discuss habits, reducing jaw strain, or other conservative approaches based on your symptoms. What helps varies from person to person.",
     className: "",
     tone: "bg-white ring-1 ring-border",
   },
   {
-    title: "Advanced Procedures",
-    body: "For more severe cases, we may recommend targeted treatments, such as restorative dental work, to improve the alignment of your bite.",
+    title: "When another opinion may help",
+    body: "Persistent or complex symptoms may need another clinician's evaluation. Ask about referral options and the evidence, benefits, and risks of any proposed treatment. NIDCR reports insufficient evidence that changing the teeth or bite treats TMD.",
     className: "md:col-span-2 lg:col-span-3",
     tone: "bg-cream",
   },
@@ -199,8 +202,8 @@ export default function TMJ() {
           { label: "TMJ Treatment" },
         ]}
         eyebrow="Jaw comfort · Los Gatos"
-        titleText="TMJ Treatment in Los Gatos"
-        lead="Find relief from jaw pain and dysfunction with personalized TMJ treatment from Dr. Tim J. Chuang. We listen first, look closely at your jaw and bite, and build a plan around your symptoms."
+        titleText="TMJ & Jaw Pain Evaluation in Los Gatos"
+        lead="Jaw pain, clenching, or painful clicking? Dr. Tim J. Chuang listens to your concerns, evaluates your symptoms, and discusses conservative care or referral when appropriate."
         actions={
           <>
             <Button asChild size="lg" className="group h-14 pl-7 pr-3 text-base">
@@ -245,7 +248,7 @@ export default function TMJ() {
               The temporomandibular joint, commonly referred to as TMJ, is one of the most complex joints in the human body. Located on both sides of your jaw, it connects your jawbone to your skull and allows for essential functions like chewing, speaking, and even smiling.
             </p>
             <p className="ff-lead mt-6">
-              However, when this joint becomes inflamed or dysfunctional, it can lead to a condition known as temporomandibular joint disorder (TMD). Common symptoms include jaw pain, stiffness, headaches, difficulty chewing, and clicking sounds when opening or closing your mouth.
+              TMD describes disorders affecting the jaw joints or chewing muscles. Symptoms can include pain, stiffness, locking, or difficulty chewing. Clicking without pain is common and often does not need treatment. A dental evaluation helps distinguish these concerns from other causes of facial pain.
             </p>
           </div>
           <div className="ff-reveal pt-6 lg:sticky lg:top-28 lg:pt-0" style={{ "--i": 1 } as CSSProperties}>
@@ -378,6 +381,10 @@ export default function TMJ() {
             </div>
           </div>
         </div>
+      </Section>
+
+      <Section labelledBy="planning-heading">
+        <DecisionGuide title="TMJ evaluation" guide={tmjPlanningGuide} tone="blush" />
       </Section>
 
       {/* ---------------------------------------------------------- Related */}

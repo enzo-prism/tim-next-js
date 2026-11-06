@@ -35,6 +35,18 @@ export const invisalignContent = {
   },
   faqs: [
     {
+      question: "What will the consultation help me decide?",
+      answer: "An examination, a discussion of your goals, and digital scanning when appropriate help determine whether aligners suit your teeth and bite. Ask about alternatives, limitations, follow-up visits, and retainers before deciding.",
+    },
+    {
+      question: "How much does Invisalign cost, and is the consultation free?",
+      answer: "Call the office for the current consultation fee and an individual treatment estimate. Costs depend on the proposed plan, follow-up, and retainers. Confirm benefits with your exact insurer; a free consultation or coverage is not assumed.",
+    },
+    {
+      question: "What if clear aligners are not the right option?",
+      answer: "Dr. Chuang can explain the findings and discuss alternatives or a referral when appropriate. A scan or smile preview is a planning aid and does not establish that a particular treatment is suitable.",
+    },
+    {
       question: "What is the iTero scanner?",
       answer:
         "iTero is a handheld intraoral scanner that captures a detailed 3D digital model of your teeth. We use it to plan Invisalign treatment and to reduce the need for traditional impressions.",

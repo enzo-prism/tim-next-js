@@ -1,3 +1,5 @@
+import { servicePlanningGuides } from "./service-planning";
+
 export interface ServiceDecisionGuide {
   candidacy: string;
   alternatives: string;
@@ -28,6 +30,7 @@ export interface Service {
 export const services: Service[] = [
   {
     id: "children-dentistry",
+    decisionGuide: servicePlanningGuides["children-dentistry"],
     title: "Children's Dentistry",
     description: "Gentle care for little smiles",
     icon: "child",
@@ -85,12 +88,15 @@ export const services: Service[] = [
   },
   {
     id: "dental-exams",
+    decisionGuide: servicePlanningGuides["dental-exams"],
     title: "Dental Exams",
+    seoTitle: "Comprehensive Dental Exams in Los Gatos | Family First Smile Care",
+    seoDescription: "Learn what a dental exam includes at Family First Smile Care in Los Gatos: health history, teeth and gum checks, imaging when needed, and a clear care plan.",
     description: "Comprehensive oral health evaluations",
     icon: "dental-exam",
     details: [
       "Thorough oral health examinations",
-      "Digital X-rays and imaging",
+      "Digital X-rays and imaging when clinically needed",
       "Early detection of dental issues",
       "Personalized treatment planning",
       "Regular check-up recommendations",
@@ -114,7 +120,10 @@ export const services: Service[] = [
   },
   {
     id: "dental-hygiene",
-    title: "Dental Hygiene",
+    decisionGuide: servicePlanningGuides["dental-hygiene"],
+    title: "Teeth Cleaning & Dental Hygiene",
+    seoTitle: "Teeth Cleaning in Los Gatos | Family First Smile Care",
+    seoDescription: "Professional teeth cleaning in Los Gatos. Learn about routine cleanings, gum assessments, sensitivity, and how preventive care differs from deep cleaning.",
     description: "Professional cleanings and education",
     icon: "hygiene-sparkle",
     details: [
@@ -136,13 +145,14 @@ export const services: Service[] = [
     process: [
       "Gum health evaluation",
       "Professional plaque and tartar removal",
-      "Deep cleaning and polishing",
+      "Cleaning and polishing appropriate to your gum health",
       "Fluoride treatment if recommended",
       "Home care instruction and tips",
     ],
   },
   {
     id: "family-dentistry",
+    decisionGuide: servicePlanningGuides["family-dentistry"],
     title: "General & Family Dentistry",
     description: "Comprehensive care for all ages",
     icon: "family-dentistry",
@@ -377,14 +387,14 @@ export const services: Service[] = [
   {
     id: "tmj",
     title: "TMJ Treatment",
-    description: "Relief for jaw pain and dysfunction",
+    description: "Evaluation and next steps for jaw pain and dysfunction",
     icon: "jaw-tmj",
     details: [
       "Comprehensive TMJ/TMD evaluation and diagnosis",
-      "Custom night guards to prevent teeth grinding",
-      "Physical therapy and jaw exercises",
-      "Advanced CBCT imaging for precise assessment",
-      "Personalized treatment plans for lasting relief",
+      "Custom night guards to help protect teeth from grinding",
+      "Discussion of conservative care and referral when appropriate",
+      "Imaging when clinically indicated",
+      "Personalized recommendations and follow-up",
     ],
   },
 ];

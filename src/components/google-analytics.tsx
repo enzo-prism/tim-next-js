@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { canCollectAnalytics } from "@/lib/analytics-host";
 import { GA_MEASUREMENT_ID } from "@/lib/tracking-config";
 import {
   ANALYTICS_CONSENT_EVENT,
@@ -21,7 +22,7 @@ const VercelAnalytics = dynamic(() => import("@/components/vercel-analytics"), {
 const GTAG_SCRIPT_ID = "google-analytics";
 
 const loadGtagScript = () => {
-  if (typeof document === "undefined") return;
+  if (typeof document === "undefined" || !canCollectAnalytics()) return;
 
   const existing = document.getElementById(GTAG_SCRIPT_ID) as HTMLScriptElement | null;
   if (existing) {
@@ -75,7 +76,7 @@ export default function GoogleAnalytics() {
 
   return (
     <>
-      {consent === "granted" ? <VercelAnalytics /> : null}
+      {consent === "granted" && canCollectAnalytics() ? <VercelAnalytics /> : null}
 
       {consent === "prompt" ? (
         <section

@@ -98,8 +98,8 @@ const staticMeta: Record<string, PageMeta> = {
     description: "Tooth-friendly nutrition tips, foods to limit, and daily habits that help prevent decay and support healthy gums.",
   },
   "/tmj": {
-    title: "TMJ Treatment Los Gatos | Family First Smile Care",
-    description: "Personalized TMJ care in Los Gatos for jaw pain, headaches, and TMD symptoms. Learn about evaluation and treatment options with Dr. Tim J. Chuang.",
+    title: "TMJ & Jaw Pain Evaluation in Los Gatos | Dr. Chuang",
+    description: "Jaw pain, clenching or painful clicking? Learn how Dr. Chuang evaluates symptoms, discusses conservative options and recommends next steps in Los Gatos.",
   },
   "/technology/itero-digital-scanner": {
     title: "iTero Digital Scanner Los Gatos | Family First Smile Care",

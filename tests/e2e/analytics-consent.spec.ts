@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { CANONICAL_GA_MEASUREMENT_ID } from "../../src/lib/tracking-config";
 
 const countDataLayerEvents = async (page: Page, eventName: string) =>
@@ -40,7 +40,7 @@ test.describe("GA4 consent collection", () => {
     );
     expect(gtagRequests.some((url) => url.includes("G-54ESSN4BF8"))).toBe(false);
 
-    await expect.poll(async () => countDataLayerEvents(page, "page_view")).toBeGreaterThan(0);
+    await expect.poll(async () => countDataLayerEvents(page, "page_view")).toBe(1);
 
     const sendTo = await page.evaluate(() => {
       const event = window.dataLayer.find(
@@ -50,4 +50,21 @@ test.describe("GA4 consent collection", () => {
     });
     expect(sendTo).toBe(CANONICAL_GA_MEASUREMENT_ID);
   });
+
+  test("declining stays declined through navigation and reload", async ({ page }) => {
+    const requests: string[] = [];
+    await page.route("https://www.googletagmanager.com/gtag/js**", async (route) => {
+      requests.push(route.request().url());
+      await route.fulfill({ contentType: "application/javascript", body: "" });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: "No thanks", exact: true }).click();
+    await page.goto("/services/dental-exams");
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Allow analytics", exact: true })).toHaveCount(0);
+    expect(requests).toEqual([]);
+    expect(await countDataLayerEvents(page, "page_view")).toBe(0);
+  });
+
 });

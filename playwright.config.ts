@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const port = 3100;
+const port = Number(process.env.PLAYWRIGHT_PORT || 3100);
 const baseURL = `http://127.0.0.1:${port}`;
 const productionServerCommand = `npm run start -- --hostname 127.0.0.1 --port ${port}`;
 
@@ -15,6 +15,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
+    env: { NEXT_PUBLIC_ANALYTICS_TEST_MODE: "true" },
     command: process.env.CI
       ? productionServerCommand
       : `npm run build && ${productionServerCommand}`,

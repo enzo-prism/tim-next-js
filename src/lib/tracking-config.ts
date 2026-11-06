@@ -38,7 +38,8 @@ export const APPOINTMENT_FORM_URL = "/book-appointment";
 export const buildAppointmentUrl = (options: { serviceId?: string; source?: string } = {}) => {
   const params = new URLSearchParams();
   if (options.serviceId) params.set("service", options.serviceId);
-  if (options.source) params.set("source", options.source);
+  // CTA source belongs in the click event, not in crawlable appointment URLs.
+  // Keep the optional input compatible with existing callers.
   const query = params.toString();
   return query ? `${APPOINTMENT_FORM_URL}?${query}` : APPOINTMENT_FORM_URL;
 };

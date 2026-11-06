@@ -1,6 +1,7 @@
 "use client";
 
 import { Analytics, type BeforeSendEvent } from "@vercel/analytics/next";
+import { canCollectAnalytics } from "@/lib/analytics-host";
 import { sanitizeAnalyticsUrl } from "@/lib/analytics";
 
 const isAdminUrl = (rawUrl: string) => {
@@ -19,7 +20,7 @@ const isAdminUrl = (rawUrl: string) => {
  * before the event is allowed to leave the browser.
  */
 const filterVercelAnalyticsEvent = (event: BeforeSendEvent) => {
-  if (isAdminUrl(event.url)) {
+  if (!canCollectAnalytics() || isAdminUrl(event.url)) {
     return null;
   }
 

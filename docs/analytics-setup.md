@@ -8,7 +8,7 @@ Nothing described in this document runs before the visitor opts in.
 
 1. `src/app/layout.tsx` sets `gtag('consent', 'default', ...)` to `denied` for `analytics_storage`, `ad_storage`, `ad_user_data`, and `ad_personalization`, with `wait_for_update: 500`, before any tag loads.
 2. `src/components/google-analytics.tsx` renders the consent prompt and injects `gtag.js` plus Vercel Analytics only after consent is granted. The tag is appended with `document.createElement("script")` (not a conditionally rendered `next/script`, which can fail to load). The choice persists in `localStorage` under `ffsc_analytics_consent_v1`.
-3. Every helper in `src/lib/analytics.ts` re-checks stored consent, so a denied or undecided visitor emits nothing even if a helper is called directly.
+3. `src/lib/analytics-host.ts` allows collection only on the two production HTTPS hosts. An explicit loopback-only test flag is used by intercepted browser tests; preview domains remain excluded. Every helper in `src/lib/analytics.ts` re-checks host eligibility and stored consent, so a denied or undecided visitor emits nothing even if a helper is called directly.
 
 Expect reported traffic and conversions to be lower than raw visits. That is the consent gate working, not a tracking fault.
 
@@ -113,6 +113,10 @@ Live tagging host is `www.famfirstsmile.com`. Apex `famfirstsmile.com` 308s ther
 - A notification-only retry for an existing lead does not emit another `generate_lead`; an
   appointment retry also does not emit another Ads conversion.
 - CTA clicks remain non-conversion navigation events.
+
+## November 6, 2026 verification
+
+The live stream URL was updated to `https://www.famfirstsmile.com`. Automatic history page views and form interactions were already off, and email redaction was active. Consent gating is preserved. The live stream still displayed a 48-hour collection warning; allow real consented traffic to establish a fresh baseline. See [implementation record](./seo-aeo-implementation.md).
 
 ## Required GA4 Property Configuration
 

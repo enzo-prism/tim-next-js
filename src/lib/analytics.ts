@@ -1,3 +1,5 @@
+import { captureLeadAttribution } from "./lead-attribution";
+import { canCollectAnalytics } from "./analytics-host";
 import { track as trackVercelEvent } from "@vercel/analytics";
 import {
   APPOINTMENT_FORM_URL,
@@ -77,7 +79,7 @@ const getStoredAnalyticsConsent = (): AnalyticsConsent | null => {
   }
 };
 
-export const hasAnalyticsConsent = () => getStoredAnalyticsConsent() === "granted";
+export const hasAnalyticsConsent = () => canCollectAnalytics() && getStoredAnalyticsConsent() === "granted";
 
 const sanitizePath = (path: string) => {
   const [pathWithoutHash] = path.split("#");
@@ -340,6 +342,8 @@ export const trackAppointmentCtaClick = (
     serviceId?: string;
   } = {},
 ) => {
+  // Preserve first-touch operational attribution without adding source URLs.
+  captureLeadAttribution(location);
   trackSiteEvent("cta_click", {
     cta_type: details.ctaType || "appointment",
     destination: details.destination || APPOINTMENT_FORM_URL,

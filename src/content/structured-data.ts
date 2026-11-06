@@ -157,6 +157,8 @@ export const buildDentistPersonSchema = () => ({
   "@type": "Person",
   "@id": `${practiceInfo.url}/team#dr-tim-chuang`,
   name: "Dr. Tim J. Chuang",
+  alternateName: ["Dr. Timothy Chuang", "Timothy Chuang", "Tim Chuang"],
+  sameAs: ["https://findadentist.ada.org/dentists/dr-timothy-chuang-los-gatos-0038V00002yiVEoQAM-a1C8V00000lZh2bUAC"],
   honorificSuffix: "DDS",
   jobTitle: "Lead Dentist & Practice Owner",
   url: `${practiceInfo.url}/team`,
