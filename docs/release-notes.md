@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2026-11-20 — Entity graph, crawl access and article links
+
+- Render one sitewide JSON-LD `@graph` (WebSite, practice, Dr. Chuang) joined by `@id`; add the footer's Yelp profile to `sameAs`; drop duplicate `Person` blocks on About and Team.
+- Add `BreadcrumbList` to the 15 static pages that lacked it, from a tested registry (`src/content/breadcrumbs.ts`).
+- Remove `Crawl-delay` from robots.txt; add an IndexNow key and `npm run seo:indexnow` for Bing/Copilot/ChatGPT-search freshness.
+- Generate `/llms.txt` from content modules (services, guides, article short answers) instead of a static file.
+- Rotate "More articles" so every article is linked from at least two others; trim over-long blog `<title>`s.
+- See [SEO/AEO implementation](./seo-aeo-implementation.md#november-20-2026-follow-up-entity-graph-crawl-access-and-internal-links).
+
 ## 2026-11-06 — Search answers and clean measurement
 
 - Add practical planning guides for exams, teeth cleaning, family and children’s dentistry, and TMJ evaluation; improve exam/cleaning/TMJ search titles without changing established URLs.

@@ -79,11 +79,12 @@ Configured in `next.config.ts` and middleware:
 ## Crawl Assets
 
 - `GET /robots.txt` from `src/app/robots.ts`
-  - allows crawling except `/api/` and `/admin`
+  - allows crawling except `/api/` and `/admin`, with no `Crawl-delay` (Bing honors it and feeds Copilot/ChatGPT search)
 - `GET /sitemap.xml` from `src/app/sitemap.ts`
   - built from `allCanonicalRoutes`
 - `/sitemap` human-readable page
-- `/llms.txt` static file in `public/llms.txt`
+- `GET /llms.txt` from `src/app/llms.txt/route.ts`, built by `src/lib/llms-txt.ts` from the service, page-metadata and blog modules (no hand-maintained copy)
+- `/<IndexNow key>.txt` in `public/` for `npm run seo:indexnow`
 
 ## Route Inventory Sources
 
@@ -108,5 +109,7 @@ Configured in `next.config.ts` and middleware:
 ## November 2026 content and AEO maintenance
 
 Priority service planning data lives in `src/content/service-planning.ts`, consumed by the shared decision guide. Dynamic services now include breadcrumbs. Doctor identity links to the verified ADA profile. Sitemap dates change only for actual content revisions, including editorial blog dates. Internal appointment links omit source parameters and retain service selection.
+
+Structured data is one sitewide `@graph` from the root layout (`buildSiteGraphSchema`): `WebSite` (`/#website`), the practice (`/#dentist`) and Dr. Chuang (`/team#dr-tim-chuang`), joined by `@id`. Page-level schema refers to those IDs. Static pages without their own trail register one in `src/content/breadcrumbs.ts`; `breadcrumbs.test.ts` keeps the registry and route files in sync.
 
 See [implementation and acceptance evidence](./seo-aeo-implementation.md). Visible FAQs help readers; FAQ markup and llms.txt are not promises of Google rich results or AI inclusion. Clinical review remains governed by exact-content attestations.

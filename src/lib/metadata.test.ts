@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { fitSearchTitle } from "@/lib/metadata";
 
 describe("metadata canonical host", () => {
   afterEach(() => {
@@ -16,5 +17,24 @@ describe("metadata canonical host", () => {
     expect(buildRouteMetadata("/services/invisalign").alternates?.canonical).toBe(
       "/services/invisalign",
     );
+  });
+});
+
+describe("fitSearchTitle", () => {
+  it("keeps titles that fit", () => {
+    expect(fitSearchTitle("Comprehensive Dental Exams in Los Gatos | Family First Smile Care")).toBe(
+      "Comprehensive Dental Exams in Los Gatos | Family First Smile Care",
+    );
+  });
+
+  it("drops the brand suffix from titles that would be cut off", () => {
+    expect(
+      fitSearchTitle("When Should Your Child Switch from a Pediatric to Family Dentist in Los Gatos? | Family First Smile Care"),
+    ).toBe("When Should Your Child Switch from a Pediatric to Family Dentist in Los Gatos?");
+  });
+
+  it("leaves long titles without the suffix unchanged", () => {
+    const title = "A".repeat(80);
+    expect(fitSearchTitle(title)).toBe(title);
   });
 });

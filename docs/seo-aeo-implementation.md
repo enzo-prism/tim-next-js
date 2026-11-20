@@ -33,3 +33,19 @@ Original, consented cases and current local listing/review facts require verifie
 After 28 complete days of clean data, compare equal periods for US/device GSC Web clicks and impressions on the changed pages, Google AI impressions, qualified organic requests and confirmed appointments. Use actual lead outcomes rather than phone-click counts. Reporting is manual; no schedule was created. Search lift and index inclusion require observation and are not release acceptance guarantees.
 
 Google’s [AI optimization guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide) is the current reference. Useful visible FAQs support readers; do not promise FAQ rich results or ranking lift from llms.txt. Keep accurate visible content, source links and entity details as the foundation.
+
+## November 20, 2026 follow-up: entity graph, crawl access and internal links
+
+A fresh crawl of all 48 sitemap URLs found the Nov 6 content work live and these remaining technical gaps, now fixed:
+
+- **One entity graph.** The root layout renders a single `@graph` with `WebSite`, the practice and Dr. Chuang, joined by `@id` (`employee` / `worksFor` / `publisher`). Before, the `WebSite` entity appeared only on `/testimonials` and the dentist only on `/about` and `/team`. The duplicate `Person` blocks on those two pages are removed. `sameAs` now includes the Yelp profile the footer already links. `isAcceptingNewPatients` reflects the published new-patient flow.
+- **Breadcrumbs everywhere.** 15 static pages (about, services, team, patient info and its guides, new patients, insurance, urgent care, contact, booking, privacy, Invisalign, iTero) now emit `BreadcrumbList` matching their visible breadcrumbs. All 48 sitemap pages have one.
+- **Crawl access.** `Crawl-delay: 1` is removed from the `*` group. Google ignores it, but Bing honors it, and Bing's index feeds Copilot and ChatGPT search.
+- **IndexNow.** `public/<key>.txt` plus `npm run seo:indexnow` (all sitemap URLs, or named paths; `--dry-run` prints the payload). Run it after a production deploy that changes content. Google does not use IndexNow.
+- **Generated llms.txt.** `/llms.txt` is built from the content modules: practice facts and hours, every service with its summary, patient guides, and each article with its short answer. It cannot drift from the pages. It is for assistants that read it; it does not affect Google Search.
+- **Article cross-links.** "More articles" takes up to two articles from the same reader topic in a ring after the current one, plus one rotating pick from another topic. Three articles previously had no links from other articles; every article now has at least two.
+- **Titles.** Blog titles over 70 characters drop the " | Family First Smile Care" suffix in the `<title>` (Open Graph keeps it). One 88-character title without a suffix was rewritten.
+
+Verification: 372 unit tests (new: entity graph, breadcrumb registry, llms.txt, title fitting, related-article coverage, robots), lint, typecheck, production build, 67 desktop Playwright checks, and a local production crawl confirming JSON-LD parses on all 48 pages, every page has a breadcrumb, and no full entity is duplicated on a page.
+
+No practice facts, prices, credentials, review counts or clinical-review claims were added. The practice-confirmation list above is unchanged.

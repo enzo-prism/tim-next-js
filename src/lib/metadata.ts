@@ -14,6 +14,21 @@ const defaultHost = normalizeCanonicalHost(
 
 export const metadataBase = new URL(defaultHost);
 
+const brandSuffix = " | Family First Smile Care";
+const maxSearchTitleLength = 70;
+
+/**
+ * Search results cut titles at roughly 60–70 characters. When a title with the
+ * brand suffix runs past that, drop the suffix so the topic stays readable;
+ * Open Graph titles keep the full text.
+ */
+export function fitSearchTitle(title: string) {
+  if (title.length <= maxSearchTitleLength || !title.endsWith(brandSuffix)) {
+    return title;
+  }
+  return title.slice(0, -brandSuffix.length);
+}
+
 export function buildRouteMetadata(path: string): Metadata {
   const canonicalPath = resolveCanonicalPath(path);
   const meta = resolvePageMeta(path);

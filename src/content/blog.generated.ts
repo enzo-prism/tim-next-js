@@ -186,7 +186,7 @@ export const additionalBlogPosts: BlogPost[] = [
   {
       "slug": "when-should-your-child-switch-from-pediatric-to-family-dentist-los-gatos",
       "title": "When Should Your Child Switch From a Pediatric Dentist to a Family Dentist in Los Gatos?",
-      "metaTitle": "When Should Your Child Switch From a Pediatric Dentist to a Family Dentist in Los Gatos?",
+      "metaTitle": "When to Switch From a Pediatric to a Family Dentist | Los Gatos",
       "metaDescription": "Learn when kids usually transition from a pediatric dentist to a family dentist, what signs matter most, and how Los Gatos families can make the switch smoothly.",
       "excerpt": "Parents usually know when it is time to replace outgrown shoes, swap the car seat, or stop cutting sandwiches into tiny geometric masterpieces. The dentist transition is less obvious.",
       "category": "Children's Dentistry",

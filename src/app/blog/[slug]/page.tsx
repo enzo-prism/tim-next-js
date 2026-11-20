@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import {
   blogTopics,
   getAllBlogPosts,
+  getMoreArticlesFor,
   getBlogPostBySlug,
   getBlogPostHref,
   getBlogTopicHref,
@@ -33,7 +34,7 @@ import {
   practiceInfo,
 } from "@/content/structured-data";
 import { practiceHoursSummary } from "@/content/practice-hours";
-import { metadataBase } from "@/lib/metadata";
+import { fitSearchTitle, metadataBase } from "@/lib/metadata";
 import { getClinicalReview } from "@/content/clinical-review";
 import ClinicalReviewByline from "@/components/blog/clinical-review-byline";
 
@@ -97,12 +98,13 @@ function renderIntro(intro: string[]) {
   return blocks;
 }
 
-/** Three more articles: same category first, then the newest of the rest. */
+/**
+ * Three more articles. Same-category articles come first, taken in a ring
+ * starting after this one, so every article is linked from its neighbours
+ * instead of every page pointing at the same newest posts.
+ */
 function getMoreArticles(post: BlogPost) {
-  const others = getAllBlogPosts().filter((item) => item.slug !== post.slug);
-  const sameCategory = others.filter((item) => item.category === post.category);
-  const rest = others.filter((item) => item.category !== post.category);
-  return [...sameCategory, ...rest].slice(0, 3);
+  return getMoreArticlesFor(post, getAllBlogPosts());
 }
 
 export function generateStaticParams() {
@@ -129,7 +131,7 @@ export async function generateMetadata({
 
   return {
     metadataBase,
-    title: post.metaTitle,
+    title: fitSearchTitle(post.metaTitle),
     description: post.metaDescription,
     keywords,
     authors: [{ name: "Family First Smile Care Editorial Team", url: practiceInfo.url }],

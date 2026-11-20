@@ -3,6 +3,8 @@ import BookAppointmentPage from "@/legacy-pages/book-appointment";
 import QueryProvider from "@/components/query-provider";
 import { leadServiceIds } from "@/content/form-schemas";
 import { buildRouteMetadata } from "@/lib/metadata";
+import JsonLd from "@/components/seo/json-ld";
+import { buildRouteBreadcrumbSchema } from "@/content/breadcrumbs";
 
 export const metadata: Metadata = buildRouteMetadata("/book-appointment");
 
@@ -20,6 +22,7 @@ export default async function Page({ searchParams }: BookAppointmentRouteProps) 
 
   return (
     <QueryProvider>
+      <JsonLd data={buildRouteBreadcrumbSchema("/book-appointment")} />
       <BookAppointmentPage initialServiceId={initialServiceId} />
     </QueryProvider>
   );

@@ -33,3 +33,30 @@ describe("local business structured data", () => {
     );
   });
 });
+
+describe("sitewide entity graph", () => {
+  it("joins the website, practice and lead dentist by stable IDs", async () => {
+    const { buildSiteGraphSchema, entityIds } = await import("@/content/structured-data");
+    const graph = buildSiteGraphSchema();
+    const nodes = graph["@graph"] as Array<Record<string, unknown>>;
+
+    expect(graph["@context"]).toBe("https://schema.org");
+    expect(nodes.map((node) => node["@id"])).toEqual([
+      entityIds.website,
+      entityIds.practice,
+      entityIds.leadDentist,
+    ]);
+    nodes.forEach((node) => expect(node).not.toHaveProperty("@context"));
+
+    const [website, practice, dentist] = nodes;
+    expect(website.publisher).toEqual({ "@id": entityIds.practice });
+    expect(practice.employee).toEqual({ "@id": entityIds.leadDentist });
+    expect(dentist.worksFor).toEqual({ "@id": entityIds.practice });
+  });
+
+  it("lists the Yelp profile the footer links to", async () => {
+    const { buildLocalBusinessSchema } = await import("@/content/structured-data");
+    const { yelpBusinessProfileUrl } = await import("@/data/reviews");
+    expect(buildLocalBusinessSchema().sameAs).toContain(yelpBusinessProfileUrl);
+  });
+});

@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
 import PrivacyPolicyPage from "@/legacy-pages/privacy-policy";
 import { buildRouteMetadata } from "@/lib/metadata";
+import JsonLd from "@/components/seo/json-ld";
+import { buildRouteBreadcrumbSchema } from "@/content/breadcrumbs";
 
 export const metadata: Metadata = buildRouteMetadata("/privacy-policy");
 
 export default function Page() {
-  return <PrivacyPolicyPage />;
+  return (
+    <>
+      <JsonLd data={buildRouteBreadcrumbSchema("/privacy-policy")} />
+      <PrivacyPolicyPage />
+    </>
+  );
 }

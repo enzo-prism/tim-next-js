@@ -84,7 +84,7 @@ The former on-site password-protected leads dashboard is not part of this public
 - `src/server`: DB schema/storage and form-processing server helpers
 - `src/lib`: Metadata/tracking/internal linking utilities
 - `src/types`: Public TypeScript DTO contracts
-- `public`: Static assets and `llms.txt`
+- `public`: Static assets and the IndexNow key file
 
 ## Content and SEO Model
 
@@ -98,7 +98,7 @@ The former on-site password-protected leads dashboard is not part of this public
 - Crawl assets:
   - `src/app/robots.ts`
   - `src/app/sitemap.ts`
-  - `public/llms.txt`
+  - `src/app/llms.txt/route.ts` (content from `src/lib/llms-txt.ts`)
 
 ## Security Model
 

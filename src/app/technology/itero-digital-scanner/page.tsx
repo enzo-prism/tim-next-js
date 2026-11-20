@@ -4,6 +4,7 @@ import JsonLd from "@/components/seo/json-ld";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { iteroContent } from "@/content/marketing-pages";
 import { buildFaqSchema, buildServiceSchema, practiceInfo } from "@/content/structured-data";
+import { buildRouteBreadcrumbSchema } from "@/content/breadcrumbs";
 
 export const metadata: Metadata = buildRouteMetadata("/technology/itero-digital-scanner");
 
@@ -16,6 +17,7 @@ const serviceSchema = buildServiceSchema(
 export default function Page() {
   return (
     <>
+      <JsonLd data={buildRouteBreadcrumbSchema("/technology/itero-digital-scanner")} />
       <JsonLd data={serviceSchema} />
       <JsonLd data={buildFaqSchema(iteroContent.faqs)} />
       <IteroPage />

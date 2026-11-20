@@ -8,7 +8,7 @@ import MobileActionBar from "@/components/layout/mobile-action-bar";
 import ElevenLabsWidget from "@/components/elevenlabs-widget";
 import RouteAnalytics from "@/components/route-analytics";
 import GoogleAnalytics from "@/components/google-analytics";
-import { buildLocalBusinessSchema } from "@/content/structured-data";
+import { buildSiteGraphSchema } from "@/content/structured-data";
 import { buildRouteMetadata, metadataBase } from "@/lib/metadata";
 import { SeasonScript } from "@/components/seasonal/seasonal-art";
 import { SeasonRuntime } from "@/components/seasonal/seasonal-client";
@@ -96,7 +96,7 @@ gtag('consent', 'default', {
         <script
           type="application/ld+json"
           suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLocalBusinessSchema()) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildSiteGraphSchema()).replace(/</g, "\\u003c") }}
         />
         <ElevenLabsWidget />
       </body>

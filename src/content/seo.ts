@@ -20,7 +20,7 @@ export interface PageMeta {
   description: string;
 }
 
-const staticMeta: Record<string, PageMeta> = {
+export const staticMeta: Record<string, PageMeta> = {
   "/": {
     title: "Los Gatos Dentist | Family First Smile Care",
     description: "Gentle, compassionate dental care for the whole family in Los Gatos, CA. Dr. Tim J. Chuang provides comprehensive dentistry in a welcoming environment.",

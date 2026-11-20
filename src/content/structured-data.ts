@@ -1,6 +1,7 @@
 import type { FaqItem } from "./marketing-pages";
 import { services } from "./services";
 import type { PublishedClinicalReview } from "./clinical-review";
+import { yelpBusinessProfileUrl } from "@/data/reviews";
 
 export const practiceInfo = {
   name: "Family First Smile Care",
@@ -27,6 +28,7 @@ export const practiceInfo = {
     "https://www.facebook.com/famfirstsmile/",
     "https://www.instagram.com/famfirstsmile/",
     "https://g.page/r/Cej0Xl18KcCyEAE",
+    yelpBusinessProfileUrl,
   ],
   hasMap: "https://maps.app.goo.gl/RVPut9T6J8XDvHWi7",
 } as const;
@@ -52,10 +54,17 @@ export const serviceAreas = [
   },
 ] as const;
 
+/** Stable entity IDs shared by every page so search and answer engines can join the graph. */
+export const entityIds = {
+  website: `${practiceInfo.url}/#website`,
+  practice: `${practiceInfo.url}/#dentist`,
+  leadDentist: `${practiceInfo.url}/team#dr-tim-chuang`,
+} as const;
+
 export const buildLocalBusinessSchema = () => ({
   "@context": "https://schema.org",
   "@type": ["Dentist", "MedicalBusiness", "LocalBusiness"],
-  "@id": `${practiceInfo.url}/#dentist`,
+  "@id": entityIds.practice,
   name: practiceInfo.name,
   url: practiceInfo.url,
   logo: practiceInfo.logo,
@@ -71,6 +80,8 @@ export const buildLocalBusinessSchema = () => ({
   priceRange: "$$",
   hasMap: practiceInfo.hasMap,
   medicalSpecialty: "Dentistry",
+  isAcceptingNewPatients: true,
+  employee: { "@id": entityIds.leadDentist },
   areaServed: serviceAreas,
   openingHoursSpecification: [
     {
@@ -155,7 +166,7 @@ export const buildServiceSchema = (
 export const buildDentistPersonSchema = () => ({
   "@context": "https://schema.org",
   "@type": "Person",
-  "@id": `${practiceInfo.url}/team#dr-tim-chuang`,
+  "@id": entityIds.leadDentist,
   name: "Dr. Tim J. Chuang",
   alternateName: ["Dr. Timothy Chuang", "Timothy Chuang", "Tim Chuang"],
   sameAs: ["https://findadentist.ada.org/dentists/dr-timothy-chuang-los-gatos-0038V00002yiVEoQAM-a1C8V00000lZh2bUAC"],
@@ -164,7 +175,7 @@ export const buildDentistPersonSchema = () => ({
   url: `${practiceInfo.url}/team`,
   image: `${practiceInfo.url}/attached_assets/Dr.%20Chuang_1753977515693.png`,
   worksFor: {
-    "@id": `${practiceInfo.url}/#dentist`,
+    "@id": entityIds.practice,
   },
   alumniOf: [
     {
@@ -182,6 +193,38 @@ export const buildDentistPersonSchema = () => ({
     "Invisalign",
     "TMJ treatment",
     "Restorative dentistry",
+  ],
+});
+
+export const buildWebSiteSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": entityIds.website,
+  name: practiceInfo.name,
+  alternateName: "FamFirstSmile",
+  url: practiceInfo.url,
+  inLanguage: "en-US",
+  publisher: { "@id": entityIds.practice },
+  about: { "@id": entityIds.practice },
+});
+
+const withoutContext = <T extends { "@context"?: string }>(node: T): Omit<T, "@context"> => {
+  const rest: Partial<T> = { ...node };
+  delete rest["@context"];
+  return rest as Omit<T, "@context">;
+};
+
+/**
+ * Sitewide entity graph rendered once in the root layout: the website, the
+ * practice and its lead dentist, joined by `@id`. Page-level schema refers
+ * to these IDs instead of redefining the entities.
+ */
+export const buildSiteGraphSchema = () => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    withoutContext(buildWebSiteSchema()),
+    withoutContext(buildLocalBusinessSchema()),
+    withoutContext(buildDentistPersonSchema()),
   ],
 });
 
@@ -264,12 +307,7 @@ export const buildCollectionPageSchema = ({
   about: {
     "@id": `${practiceInfo.url}/#dentist`,
   },
-  isPartOf: {
-    "@type": "WebSite",
-    "@id": `${practiceInfo.url}/#website`,
-    name: practiceInfo.name,
-    url: practiceInfo.url,
-  },
+  isPartOf: { "@id": entityIds.website },
   primaryImageOfPage: practiceInfo.image[0],
 });
 
@@ -358,6 +396,7 @@ export const buildBlogPostingSchema = ({
   datePublished,
   dateModified: dateModified ?? datePublished,
   articleSection,
+  inLanguage: "en-US",
   keywords: keywords?.join(", "),
   image: [image],
   author: {

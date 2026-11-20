@@ -711,6 +711,34 @@ export function getBlogPostBySlug(slug: string) {
   return blogPosts.find((post) => post.slug === slug);
 }
 
+const rotate = <T,>(items: readonly T[], start: number) =>
+  items.length ? [...items.slice(start % items.length), ...items.slice(0, start % items.length)] : [];
+
+/**
+ * Picks `count` related articles: up to `count - 1` from the same category,
+ * taken in a ring starting after `post`, plus one from another category,
+ * rotated by the article's position. Every article then gets inbound links
+ * from other articles instead of all pages pointing at the newest posts.
+ */
+export function getMoreArticlesFor(post: BlogPost, posts: readonly BlogPost[], count = 3) {
+  // Categories that share a reader topic (e.g. the two prevention labels) count as one.
+  const group = (item: BlogPost) =>
+    blogTopics.find((topic) => topic.categories.includes(item.category))?.id ?? item.category;
+  const postGroup = group(post);
+  const sameCategory = posts.filter((item) => group(item) === postGroup);
+  const index = sameCategory.findIndex((item) => item.slug === post.slug);
+  const sameRing = rotate(sameCategory, index + 1).filter((item) => item.slug !== post.slug);
+  const others = posts.filter((item) => group(item) !== postGroup);
+  const otherRing = rotate(others, Math.max(index, 0) * 2 + 1);
+
+  const picks = [
+    ...sameRing.slice(0, count - 1),
+    ...otherRing,
+    ...sameRing.slice(count - 1),
+  ];
+  return [...new Map(picks.map((item) => [item.slug, item])).values()].slice(0, count);
+}
+
 export function getAllBlogRoutes() {
   return getAllBlogPosts().map((post) => getBlogPostHref(post.slug));
 }

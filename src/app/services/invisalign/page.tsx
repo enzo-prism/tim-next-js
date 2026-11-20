@@ -4,6 +4,7 @@ import JsonLd from "@/components/seo/json-ld";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { invisalignContent } from "@/content/marketing-pages";
 import { buildFaqSchema, buildServiceSchema, practiceInfo } from "@/content/structured-data";
+import { buildRouteBreadcrumbSchema } from "@/content/breadcrumbs";
 
 export const metadata: Metadata = buildRouteMetadata("/services/invisalign");
 
@@ -16,6 +17,7 @@ const serviceSchema = buildServiceSchema(
 export default function Page() {
   return (
     <>
+      <JsonLd data={buildRouteBreadcrumbSchema("/services/invisalign")} />
       <JsonLd data={serviceSchema} />
       <JsonLd data={buildFaqSchema(invisalignContent.faqs)} />
       <InvisalignPage />

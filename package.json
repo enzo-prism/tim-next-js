@@ -22,7 +22,8 @@
     "db:verify": "node scripts/check-production-schema.mjs",
     "check": "npm run typecheck && npm run lint && npm run test",
     "release:prod": "bash scripts/release-prod.sh",
-    "test:monitor": "node --test scripts/monitor-lead-health.node-test.mjs"
+    "test:monitor": "node --test scripts/monitor-lead-health.node-test.mjs",
+    "seo:indexnow": "node scripts/indexnow-submit.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
