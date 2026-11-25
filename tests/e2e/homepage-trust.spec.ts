@@ -9,13 +9,14 @@ test("homepage shows its dentist, proof and patient paths without JavaScript", a
   const dentist = page.getByRole("img", { name: "Dr. Tim J. Chuang, DDS", exact: true });
   await expect(dentist).toBeVisible();
   await expect(page.locator("[data-home-review-proof]")).toContainText("5.0 on Google");
-  await expect(page.locator("[data-home-review-proof]")).toContainText("verified August 19, 2026");
+  await expect(page.locator("[data-home-review-proof]")).toContainText("verified November 24, 2026");
   await expect(page.locator("[data-home-static-reviews] blockquote")).toHaveCount(3);
   await expect(page.getByRole("button", { name: "Next testimonial" })).toHaveCount(0);
 
   for (const [name, href] of [
     [/Your first visit/, "/new-patients"],
     [/Insurance & payment/, "/insurance-and-payment"],
+    [/Jaw pain or clenching/, "/tmj"],
     [/Something hurts/, "/urgent-dental-care"],
   ] as const) {
     await expect(page.getByRole("link", { name })).toHaveAttribute("href", href);

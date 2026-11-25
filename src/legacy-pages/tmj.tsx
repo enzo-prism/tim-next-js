@@ -203,7 +203,7 @@ export default function TMJ() {
         ]}
         eyebrow="Jaw comfort · Los Gatos"
         titleText="TMJ & Jaw Pain Evaluation in Los Gatos"
-        lead="Jaw pain, clenching, or painful clicking? Dr. Tim J. Chuang listens to your concerns, evaluates your symptoms, and discusses conservative care or referral when appropriate."
+        lead="Jaw pain, clenching, or painful clicking? At our Los Gatos office, Dr. Tim J. Chuang examines how your jaw moves and discusses your symptoms. He can explain whether a custom night guard, another conservative option, or a referral makes sense for you."
         actions={
           <>
             <Button asChild size="lg" className="group h-14 pl-7 pr-3 text-base">
@@ -227,11 +227,14 @@ export default function TMJ() {
           </>
         }
         meta={
-          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-semibold text-ink">{practiceHoursSummary}</span>
-            <span aria-hidden="true">·</span>
-            <span>15251 National Ave, Suite 102</span>
-          </span>
+          <div className="space-y-2">
+            <p>Call for the evaluation fee and time to set aside. If imaging or a guard is recommended, ask for a separate estimate.</p>
+            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-semibold text-ink">{practiceHoursSummary}</span>
+              <span aria-hidden="true">·</span>
+              <span>15251 National Ave, Suite 102</span>
+            </span>
+          </div>
         }
         media={<HeroPhoto photo={officePhotos.hallway} chips={["Blankets & pillow support", "TVs in treatment rooms"]} chipColors={["var(--ff-periwinkle)", "var(--ff-lime)"]} />}
       />

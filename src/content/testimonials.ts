@@ -63,21 +63,21 @@ export type PublicReviewFeedSection = {
 
 export const testimonialsPageSummary: TestimonialSummary = {
   averageRating: "5.0",
-  reviewCountLabel: "82 Google reviews",
+  reviewCountLabel: "85 Google reviews",
   sourceLabel: "Public Google reviews",
   sourceUrl: googleBusinessProfileUrl,
   editorialNote:
     "Selected excerpts from publicly posted Google reviews shared by patients and families.",
-  verifiedAtLabel: "Google review count verified August 19, 2026",
+  verifiedAtLabel: "Google review count verified November 24, 2026",
 };
 
 export const testimonialsReviewLibrarySummary: ReviewLibrarySummary = {
   averageRating: "5.0",
-  reviewCountLabel: "82 Google reviews + 6 Yelp reviews",
+  reviewCountLabel: `${testimonialsPageSummary.reviewCountLabel} + 6 Yelp reviews`,
   sourceLabel: "Public Google and Yelp reviews",
   editorialNote:
     "Selected excerpts from public Google and Yelp reviews shared by patients and families.",
-  verifiedAtLabel: "Google review count verified August 19, 2026",
+  verifiedAtLabel: testimonialsPageSummary.verifiedAtLabel,
 };
 
 export const publicReviewFeedSections: PublicReviewFeedSection[] = [

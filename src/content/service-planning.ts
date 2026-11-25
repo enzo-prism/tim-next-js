@@ -17,7 +17,7 @@ export const servicePlanningGuides: Record<string, ServiceDecisionGuide> = {
       { question: "What is included in a comprehensive dental exam?", answer: "An examination reviews your history, teeth, gums, bite, and oral tissues, including an oral cancer screening. Dr. Chuang explains the findings and next steps. Imaging is considered when clinically needed." },
       { question: "Will I have X-rays at every visit?", answer: "Not necessarily. The need for imaging depends on your examination, symptoms, risk factors, and previous images. Tell the team when and where your last dental X-rays were taken." },
       { question: "Does my first dental exam include a cleaning?", answer: "An exam and a cleaning serve different purposes. Confirm with the office whether both are planned for your appointment; gum findings can affect which cleaning is appropriate." },
-      { question: "How long will my appointment take?", answer: "Ask the team to confirm the time reserved for your particular visit, including any planned cleaning or imaging, before you arrive." },
+      { question: "How long will my appointment take?", answer: "When the office calls to confirm, ask for your start and finish times and whether cleaning is scheduled. Mention any recent X-rays so the team can tell you how to share them." },
       { question: "How is a child's exam different?", answer: "A child's visit also considers tooth development, brushing habits, feeding, and cavity prevention. Parents can share questions and comfort needs so the visit fits their child's age." },
     ],
     sources: [{ label: "MedlinePlus: Dental exam", href: "https://medlineplus.gov/lab-tests/dental-exam/" }],
@@ -46,7 +46,7 @@ export const servicePlanningGuides: Record<string, ServiceDecisionGuide> = {
   "family-dentistry": {
     candidacy: "Family dentistry provides a dental home for children, teens, adults, and older adults. At Family First Smile Care, Dr. Chuang and the Los Gatos team offer examinations, cleanings, preventive guidance, and individualized treatment planning.",
     alternatives: "A family dentist can help with everyday care and identify when a specialist's evaluation would be useful. Children's care from a general dentist and care from a pediatric specialist are different options; ask which setting fits your child's needs.",
-    visitExpectations: "Tell us who needs a visit and whether each person has a concern, past dental anxiety, or previous treatment to discuss. Each family member needs an individual health history and care plan. Ask the office how to coordinate appointments rather than assuming everyone can be seen at the same time.",
+    visitExpectations: "Each person has their own exam and care plan. If you want to bring a child and a parent, or two siblings, tell us who needs care and which days work. The team will confirm the available times for each person.",
     costFactors: [
       "The examination and preventive or restorative care planned for each person",
       "Any imaging or follow-up recommended for individual needs",
@@ -56,6 +56,8 @@ export const servicePlanningGuides: Record<string, ServiceDecisionGuide> = {
     faqs: [
       { question: "Can children and adults come to the same dental office?", answer: "Yes. Family First Smile Care sees children, teens, adults, and grandparents in its Los Gatos office. Each person's examination and recommendations are tailored to their needs." },
       { question: "Can we coordinate appointments for our family?", answer: "Tell the team how many people need care and your preferred days. They can explain the available scheduling options and confirm each appointment." },
+      { question: "Can my family have exams and cleanings on the same trip?", answer: "When requesting your visits, tell us who wants a cleaning as well as an exam. Before making travel or school plans, confirm the time reserved for each person and which services are scheduled." },
+      { question: "What if we are paying for our own visits?", answer: "Request an estimate for each person. Ask what the exam costs, whether imaging and cleaning are priced separately, and when payment is due. If you have insurance, check each family member’s benefits with your insurer." },
       { question: "What if I feel anxious about dental treatment?", answer: "Share your concerns when arranging the visit. Dr. Chuang explains findings and options, and you can ask for a pause. Blankets, water, and entertainment are available during treatment." },
       { question: "When might a specialist be involved?", answer: "Some concerns need additional expertise or a different treatment setting. After examining you, the dentist can explain whether a referral would help and what to discuss with that provider." },
     ],

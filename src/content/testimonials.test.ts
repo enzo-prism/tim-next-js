@@ -6,13 +6,13 @@ import {
 } from "@/content/testimonials";
 
 describe("public review snapshot", () => {
-  it("uses the verified August 2026 Google review count everywhere", () => {
-    expect(testimonialsPageSummary.reviewCountLabel).toBe("82 Google reviews");
+  it("uses the verified November 2026 Google review count everywhere", () => {
+    expect(testimonialsPageSummary.reviewCountLabel).toBe("85 Google reviews");
     expect(testimonialsReviewLibrarySummary.reviewCountLabel).toBe(
-      "82 Google reviews + 6 Yelp reviews",
+      "85 Google reviews + 6 Yelp reviews",
     );
     expect(testimonialsPageSummary.verifiedAtLabel).toBe(
-      "Google review count verified August 19, 2026",
+      "Google review count verified November 24, 2026",
     );
   });
 

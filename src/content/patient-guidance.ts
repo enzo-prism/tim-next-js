@@ -76,7 +76,7 @@ export const insuranceSections: readonly PatientGuidanceSection[] = [
     id: "cost-and-payment",
     title: "Questions to ask us about cost",
     description:
-      "A treatment recommendation and an insurance benefit are two different parts of planning a visit. Ask about both, and we'll walk through them with you.",
+      "Paying out of pocket? Request an estimate for the exam and ask whether it includes X-rays or a cleaning. If you have insurance, give your insurer the Los Gatos office address and Dr. Chuang’s name to check network status for your exact plan.",
     items: [
       "Can you explain the expected cost of the proposed care and what I may pay myself?",
       "What payment methods are available right now, and when is payment due?",

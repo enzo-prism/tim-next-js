@@ -58,7 +58,7 @@ export function NewPatientGuide({ sections, source }: { sections: readonly Patie
   return (
     <>
       <Section tone="white" labelledBy="np-care-heading">
-        <SectionHeader id="np-care-heading" eyebrow="Plan your care" title="An exam, a cleaning, or a first visit for your child?" lead="Start with the visit that fits your needs, then confirm the details with our team." />
+        <SectionHeader id="np-care-heading" eyebrow="Plan your care" title="An exam, a cleaning, or a first visit for your child?" lead="Your first exam includes a conversation with Dr. Chuang about his findings. If you’d like a cleaning on the same trip, mention it when you request the exam. Confirm which services are scheduled and how long to allow before you come." />
         <nav aria-label="Care before your first visit" className="mt-6 flex flex-wrap gap-4">
           <Link className="ff-link inline-flex min-h-11 items-center" href="/services/dental-exams">What a comprehensive dental exam includes</Link>
           <Link className="ff-link inline-flex min-h-11 items-center" href="/services/dental-hygiene">Teeth cleaning and gum health</Link>

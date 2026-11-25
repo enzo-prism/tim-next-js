@@ -57,6 +57,13 @@ const nextSteps = [
     color: "var(--ff-periwinkle)",
   },
   {
+    href: "/tmj",
+    title: "Jaw pain or clenching?",
+    body: "See what happens at a TMJ evaluation with Dr. Chuang.",
+    tone: "bg-cloud-wash",
+    color: "var(--ff-cloud)",
+  },
+  {
     href: "/urgent-dental-care",
     title: "Something hurts?",
     body: "See how to contact the office about urgent dental concerns.",
@@ -214,7 +221,7 @@ export default function Home() {
           <h2 id="visit-next-steps-heading" className="ff-reveal text-center font-display text-2xl font-semibold text-ink sm:text-3xl">
             Make your next step a little easier
           </h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {nextSteps.map((step, index) => (
               <Link
                 key={step.href}

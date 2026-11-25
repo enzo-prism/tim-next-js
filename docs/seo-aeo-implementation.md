@@ -1,5 +1,16 @@
 # SEO and AEO implementation — November 6, 2026
 
+## November 24, 2026 organic search update
+
+The homepage links directly to the TMJ evaluation from its main patient paths. The evaluation describes local care and referral, with fee and time guidance beside the booking button. The family service leads with the verified family-of-seven testimonial. Updated family, first-visit, exam and insurance answers cover coordinating visits, confirming a planned cleaning, and requesting a self-pay estimate. The review summary now uses the Google Maps snapshot of 5.0 from 85 reviews, verified November 24. The sitemap records the content date for the six materially edited routes.
+
+### Measuring this release
+
+- Baseline, October 26–November 22: 32 Google Web clicks and approximately 2,750 impressions worldwide. The www host in GA4 property 518867337 recorded one Organic Search session. Consent coverage and different counting rules limit comparisons. Exclude test hosts.
+- Compare the first 28 complete days after deployment with the preceding 28, recording Google's recrawl date if available. Filter GSC Web to the US and compare clicks, impressions, CTR and position on the TMJ and family service URLs for their nonbrand Los Gatos query groups. The three-month baseline through November 22 was 690 US impressions for three TMJ terms and 501 for three family terms, with zero clicks in both groups.
+- Report Google Business Profile actions separately. Use the intake dashboard for accepted appointment requests and the practice's confirmation for actual new patients. Retain unknown source when attribution is unavailable.
+- Exact fees, visit lengths, insurance participation and same-trip scheduling policies need practice confirmation. See [practice details](./practice-content-confirmation.md). The [client audit](https://app.notion.com/p/4103429581eb8183be6ae1f155bd0e56) holds the dated Google listing and indexing status.
+
 ## Scope and evidence
 
 This release implements the code and content work supported by the [GA4/GSC audit](https://app.notion.com/p/4103429581eb8183be6ae1f155bd0e56). Baseline: August 5–November 4, 2026, 96 Google Web clicks / 7,582 impressions and 266 property-level Google AI impressions. Privacy-filtered query rows, page rows and AI page rows do not add to property totals. Historical GA4 key events are not unique leads; use production-host segments and preserve consent caveats.

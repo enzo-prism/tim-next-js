@@ -15,6 +15,13 @@ export const googleBusinessProfileUrl = "https://share.google/DP6ywkAGrYi3gCyEA"
 export const yelpBusinessProfileUrl =
   "https://www.yelp.com/biz/tim-j-chuang-dds-family-first-smile-care-los-gatos-4";
 
+const familyOfSevenReview: Review = {
+  name: "Priscilla Barajas",
+  rating: 5,
+  text: "I can't say enough wonderful things about Dr. Chuang and the staff at this office. Georgia has been more than incredible. They have treated my entire family of seven with so much kindness, patience, and care. Every visit feels comfortable, and they always go above and beyond to make sure each one of us - from the youngest to the oldest - is taken care of. My husband and I truly love going here, and we trust them completely. They do an amazing job every single time, and it's clear they genuinely care about their patients' well-being. Our kids actually enjoy going to the dentist now, which says everything! This will absolutely be our family dentist from now on, and I highly recommend them to anyone who has children of any age - or anyone who wants a dentist who treats you like family. We are so grateful to have found them!",
+  isComplete: true
+};
+
 export const serviceReviews: ServiceReviews[] = [
   {
     serviceId: "restorative-dentistry",
@@ -81,12 +88,7 @@ export const serviceReviews: ServiceReviews[] = [
   {
     serviceId: "children-dentistry",
     reviews: [
-      {
-        name: "Priscilla Barajas",
-        rating: 5,
-        text: "I can't say enough wonderful things about Dr. Chuang and the staff at this office. Georgia has been more than incredible. They have treated my entire family of seven with so much kindness, patience, and care. Every visit feels comfortable, and they always go above and beyond to make sure each one of us - from the youngest to the oldest - is taken care of. My husband and I truly love going here, and we trust them completely. They do an amazing job every single time, and it's clear they genuinely care about their patients' well-being. Our kids actually enjoy going to the dentist now, which says everything! This will absolutely be our family dentist from now on, and I highly recommend them to anyone who has children of any age - or anyone who wants a dentist who treats you like family. We are so grateful to have found them!",
-        isComplete: true
-      },
+      familyOfSevenReview,
       {
         name: "Kevin Lan",
         rating: 5,
@@ -150,12 +152,7 @@ export const serviceReviews: ServiceReviews[] = [
   {
     serviceId: "family-dentistry",
     reviews: [
-      {
-        name: "Jon Takagi",
-        rating: 5,
-        text: "I recommend Family First Smile Care for anyone's dental needs. Dr. Chuang and his staff are very friendly and were quick...",
-        isComplete: false
-      },
+      familyOfSevenReview,
       {
         name: "Lew Ammann",
         rating: 5,
@@ -198,12 +195,7 @@ export const serviceReviews: ServiceReviews[] = [
 
 // Reviews to show across multiple services or as general testimonials
 export const generalReviews: Review[] = [
-  {
-    name: "Priscilla Barajas",
-    rating: 5,
-    text: "I can't say enough wonderful things about Dr. Chuang and the staff at this office. Georgia has been more than incredible. They have treated my entire family of seven with so much kindness, patience, and care. Every visit feels comfortable, and they always go above and beyond to make sure each one of us - from the youngest to the oldest - is taken care of. My husband and I truly love going here, and we trust them completely. They do an amazing job every single time, and it's clear they genuinely care about their patients' well-being. Our kids actually enjoy going to the dentist now, which says everything! This will absolutely be our family dentist from now on, and I highly recommend them to anyone who has children of any age - or anyone who wants a dentist who treats you like family. We are so grateful to have found them!",
-    isComplete: true
-  },
+  familyOfSevenReview,
   {
     name: "Don Spingola",
     rating: 5,
